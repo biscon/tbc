@@ -173,7 +173,7 @@ static int CalculateDamage(CombatState& combat, Character &attacker, Character &
         std::string logMessage = attacker.name + " misses the attack!";
         combat.log.push_back(logMessage);
         Animation damageNumberAnim{};
-        SetupDamageNumberAnimation(damageNumberAnim, "MISS", defenderX, defenderY-25, WHITE, 10);
+        SetupDamageNumberAnimation(damageNumberAnim, "MISS", attackerX, attackerY-25, WHITE, 10);
         combat.animations.push_back(damageNumberAnim);
         return 0;  // No damage if the attack misses
     }
@@ -198,11 +198,14 @@ static int CalculateDamage(CombatState& combat, Character &attacker, Character &
         std::string logMessage = "**Critical Hit!** ";
         combat.log.push_back(logMessage);
         Animation damageNumberAnim{};
-        SetupDamageNumberAnimation(damageNumberAnim, "CRITICAL!!!", defenderX, defenderY, WHITE, 10);
+        SetupDamageNumberAnimation(damageNumberAnim, "CRITICAL!!!", attackerX, attackerY, WHITE, 10);
         combat.animations.push_back(damageNumberAnim);
+        Animation speechBubble{};
+        SetupSpeechBubbleAnimation(speechBubble, "Ouch!!", defenderX, defenderY - 25, 1.5f, 0.0f);
+        combat.animations.push_back(speechBubble);
     }
     Animation damageNumberAnim{};
-    SetupDamageNumberAnimation(damageNumberAnim, TextFormat("%d", baseDamage), attackerX, attackerY-25, YELLOW, 20);
+    SetupDamageNumberAnimation(damageNumberAnim, TextFormat("%d", baseDamage), defenderX, defenderY-25, YELLOW, 20);
     combat.animations.push_back(damageNumberAnim);
 
     return baseDamage;
@@ -270,3 +273,63 @@ void InitCombat(CombatState &combat, std::vector<Character> &playerCharacters, s
     combat.animations.push_back(textAnim);
 }
 
+void UpdateStatusEffects(CombatState &combat) {
+    for(auto &character : combat.turnOrder) {
+        for(auto &effect : character->statusEffects) {
+            if(effect.roundsLeft > 0) {
+                effect.roundsLeft--;
+                // maybe apply them here
+            }
+        }
+        // Use erase-remove idiom to remove animations which are done
+        character->statusEffects.erase(
+                std::remove_if(character->statusEffects.begin(), character->statusEffects.end(),
+                               [&combat, &character](const StatusEffect& effect) {
+                                   if(effect.roundsLeft == 0) {
+                                       std::string logMessage = character->name + " is no longer affected by " + GetStatusEffectName(effect.type);
+                                       combat.log.push_back(logMessage);
+                                   }
+                                   return effect.roundsLeft == 0;
+                               }),
+                character->statusEffects.end()
+        );
+    }
+}
+
+void UpdateSkillCooldown(CombatState &combat) {
+    for(auto &character : combat.turnOrder) {
+        DecreaseSkillCooldown(*character);
+    }
+}
+
+void NextCharacter(CombatState &combat) {
+    combat.currentCharacterIdx++;
+    // skip dead characters
+    while (combat.currentCharacterIdx < combat.turnOrder.size() && combat.turnOrder[combat.currentCharacterIdx]->health <= 0) {
+        combat.currentCharacterIdx++;
+    }
+    bool nextRound = combat.currentCharacterIdx >= combat.turnOrder.size();
+    // check for end of turn/round
+    if (nextRound) {
+        combat.currentCharacterIdx = 0;
+    }
+    // skip dead characters
+    while (combat.currentCharacterIdx < combat.turnOrder.size() && combat.turnOrder[combat.currentCharacterIdx]->health <= 0) {
+        combat.currentCharacterIdx++;
+    }
+    combat.selectedCharacter = nullptr;
+    combat.currentCharacter = combat.turnOrder[combat.currentCharacterIdx];
+    // log current character health
+    std::string logMessage = combat.currentCharacter->name + " has " + std::to_string(combat.currentCharacter->health) + " health.";
+    TraceLog(LOG_INFO, logMessage.c_str());
+    if(nextRound) {
+        combat.nextState = TurnState::EndRound;
+        combat.waitTime = 1.0f;
+    } else {
+        combat.nextState = TurnState::StartTurn;
+        combat.waitTime = 0.5f;
+    }
+
+    combat.turnState = TurnState::Waiting;
+    TraceLog(LOG_INFO, "Next character: %s", combat.currentCharacter->name.c_str());
+}

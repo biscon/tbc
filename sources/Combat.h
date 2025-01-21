@@ -18,5 +18,8 @@ Character* GetFirstLivingEnemy(CombatState &combat);
 bool IsIncapacitated(Character* character);
 void DecayThreat(CombatState& combat, int amount);
 void SetTaunt(CombatState& combat, Character* target);
+void UpdateStatusEffects(CombatState &combat);
+void UpdateSkillCooldown(CombatState &combat);
+void NextCharacter(CombatState &combat);
 
 #endif //SANDBOX_COMBAT_H

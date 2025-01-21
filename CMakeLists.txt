@@ -44,12 +44,21 @@ add_executable(${PROJECT_NAME}
         sources/Grid.h
         sources/ui.cpp
         sources/ui.h
-        sources/mathutil.cpp
-        sources/mathutil.h
+        sources/MathUtil.cpp
+        sources/MathUtil.h
         sources/CombatState.cpp
         sources/CombatState.h
-        sources/EnemyAi.cpp
-        sources/EnemyAi.h
+        sources/ai/Ai.cpp
+        sources/ai/Ai.h
+        sources/ai/FighterAi.cpp
+        sources/ai/FighterAi.h
+        sources/cute_tiled.h
+        sources/PathFinding.cpp
+        sources/PathFinding.h
+        sources/TileMap.cpp
+        sources/TileMap.h
+        sources/Blood.cpp
+        sources/Blood.h
 )
 target_sources(${PROJECT_NAME} PRIVATE ${PROJECT_SOURCES})
 target_include_directories(${PROJECT_NAME} PRIVATE ${PROJECT_INCLUDE})

@@ -99,12 +99,18 @@ void DrawSpriteAnimation(SpriteAnimationPlayer& player) {
     }
     Rectangle sourceRect = spriteSheet->frameRects[frameIndex];
 
-    // Calculate destination rectangle
+    // Calculate destination rectangle without manually applying origin
     Rectangle destRect = {
-            player.position.x - player.animation->origin.x * player.scale.x,
-            player.position.y - player.animation->origin.y * player.scale.y,
-            sourceRect.width * player.scale.x,
-            sourceRect.height * player.scale.y
+            player.position.x,                                // World x position
+            player.position.y,                                // World y position
+            sourceRect.width * player.scale.x, // Scaled width
+            sourceRect.height * player.scale.y // Scaled height
+    };
+
+    // Define the rotation origin relative to the sprite space
+    Vector2 rotationOrigin = {
+            player.animation->origin.x * player.scale.x, // Scaled x origin
+            player.animation->origin.y * player.scale.y  // Scaled y origin
     };
 
     // Draw the texture with rotation, scale, and tint
@@ -112,7 +118,47 @@ void DrawSpriteAnimation(SpriteAnimationPlayer& player) {
             spriteSheet->texture, // The texture
             sourceRect,           // The source rectangle
             destRect,             // The destination rectangle
-            {0, 0},               // No additional rotation origin (handled by destRect positioning)
+            rotationOrigin,       // Rotation origin relative to destRect
+            player.rotation,      // The rotation in degrees
+            player.tint           // The color tint
+    );
+}
+
+void DrawSpriteAnimation(SpriteAnimationPlayer& player, float x, float y) {
+    if (!player.animation || !player.animation->spriteSheet || player.animation->frames.empty()) {
+        return;
+    }
+
+    // Get the current frame index
+    int frameIndex = player.animation->frames[player.currentFrame];
+
+    // Get the source rectangle from the sprite sheet
+    const SpriteSheet* spriteSheet = player.animation->spriteSheet;
+    if (frameIndex < 0 || frameIndex >= spriteSheet->frameRects.size()) {
+        return; // Invalid frame index, skip drawing
+    }
+    Rectangle sourceRect = spriteSheet->frameRects[frameIndex];
+
+    // Calculate destination rectangle without manually applying origin
+    Rectangle destRect = {
+            x,                                // World x position
+            y,                                // World y position
+            sourceRect.width * player.scale.x, // Scaled width
+            sourceRect.height * player.scale.y // Scaled height
+    };
+
+    // Define the rotation origin relative to the sprite space
+    Vector2 rotationOrigin = {
+            player.animation->origin.x * player.scale.x, // Scaled x origin
+            player.animation->origin.y * player.scale.y  // Scaled y origin
+    };
+
+    // Draw the texture with rotation, scale, and tint
+    DrawTexturePro(
+            spriteSheet->texture, // The texture
+            sourceRect,           // The source rectangle
+            destRect,             // The destination rectangle
+            rotationOrigin,       // Rotation origin relative to destRect
             player.rotation,      // The rotation in degrees
             player.tint           // The color tint
     );

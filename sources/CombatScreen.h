@@ -23,7 +23,7 @@ struct CombatUIState {
 
 void InitCombatUIState(CombatUIState &uiState);
 void DisplayCombatScreen(CombatState &combat, CombatUIState &uiState, GridState &gridState);
-void UpdateCombatScreen(CombatState &combat, float dt);
+void UpdateCombatScreen(CombatState &combat, CombatUIState &uiState, GridState& gridState, float dt);
 Character* SelectTargetBasedOnThreat(CombatState& combat);
 
 #endif //SANDBOX_COMBATSCREEN_H

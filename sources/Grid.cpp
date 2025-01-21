@@ -4,25 +4,15 @@
 
 #include <algorithm>
 #include <cmath>
-#include <queue>
-#include <functional>
 #include "Grid.h"
 #include "raylib.h"
 #include "ui.h"
 #include "raymath.h"
-
-struct Node {
-    Vector2i position;
-    int gCost, hCost;
-    Node* parent;
-    Node(Vector2i pos, int g, int h, Node* p = nullptr) : position(pos), gCost(g), hCost(h), parent(p) {}
-    int fCost() const { return gCost + hCost; }
-};
-
+#include "Blood.h"
 
 static bool IsCharacterVisible(CombatState &combat, Character *character) {
     // Check if the character is visible (not blinking)
-    for (auto & animation : combat.animations) {
+    for (auto &animation: combat.animations) {
         if (animation.type == AnimationType::Blink) {
             if (animation.state.blink.character == character) {
                 if (!animation.state.blink.visible) {
@@ -34,12 +24,24 @@ static bool IsCharacterVisible(CombatState &combat, Character *character) {
     return true;
 }
 
+static Vector2 GetAnimatedCharPos(CombatState &combat, Character *character) {
+    // Check if the character is visible (not blinking)
+    for (auto &animation: combat.animations) {
+        if (animation.type == AnimationType::Attack) {
+            if (animation.state.attack.attacker == character) {
+                return {animation.state.attack.currentX, animation.state.attack.currentY};
+            }
+        }
+    }
+    return character->sprite.player.position;
+}
+
 void InitGrid(GridState &gridState, SpriteAnimationManager &animationManager) {
     gridState.animationManager = &animationManager;
     gridState.moving = false;
     gridState.mode = GridMode::Normal;
     gridState.selectedCharacter = nullptr;
-    gridState.selectedTile = { -1, -1 };
+    gridState.selectedTile = {-1, -1};
     gridState.path = {};
     gridState.floatingStatsCharacter = nullptr;
 }
@@ -48,39 +50,11 @@ static void ResetGridState(GridState &gridState) {
     gridState.moving = false;
     gridState.mode = GridMode::Normal;
     gridState.selectedCharacter = nullptr;
-    gridState.selectedTile = { -1, -1 };
+    gridState.selectedTile = {-1, -1};
     gridState.path = {};
 }
 
-Vector2 PixelToGridPosition(float pixelX, float pixelY) {
-    int gridX = static_cast<int>((pixelX - GRID_CENTER_OFFSET) / 16.0f);
-    int gridY = static_cast<int>((pixelY - GRID_CENTER_OFFSET) / 16.0f);
-    return { static_cast<float>(gridX), static_cast<float>(gridY) };
-}
 
-Vector2 PixelToGridPositionNoOffset(float pixelX, float pixelY) {
-    int gridX = static_cast<int>((pixelX) / 16.0f);
-    int gridY = static_cast<int>((pixelY) / 16.0f);
-    return { static_cast<float>(gridX), static_cast<float>(gridY) };
-}
-
-Vector2i PixelToGridPositionI(int pixelX, int pixelY) {
-    int gridX = static_cast<int>(((float) pixelX - GRID_CENTER_OFFSET) / 16.0f);
-    int gridY = static_cast<int>(((float) pixelY - GRID_CENTER_OFFSET) / 16.0f);
-    return { gridX, gridY };
-}
-
-Vector2i PixelToGridPositionNoOffsetI(int pixelX, int pixelY) {
-    int gridX = pixelX / 16.0f;
-    int gridY = pixelY / 16.0f;
-    return { gridX, gridY };
-}
-
-
-// Helper function: Convert grid position to pixel position
-Vector2 GridToPixelPosition(int gridX, int gridY) {
-    return { gridX * 16.0f + 8.0f, gridY * 16.0f + 8.0f };
-}
 
 // Helper function: Calculate vertical center offset in grid space
 int CalculateVerticalCenterOffset(int gridHeight, int numCharacters) {
@@ -95,8 +69,10 @@ void SetInitialGridPositions(GridState &gridState, CombatState &combat) {
     const int gridHeightPixels = 208;
 
     // Calculate vertical offsets in grid space
-    int playerVerticalCenterOffset = CalculateVerticalCenterOffset(gridHeightPixels, (int) combat.playerCharacters.size());
-    int enemyVerticalCenterOffset = CalculateVerticalCenterOffset(gridHeightPixels, (int) combat.enemyCharacters.size());
+    int playerVerticalCenterOffset = CalculateVerticalCenterOffset(gridHeightPixels,
+                                                                   (int) combat.playerCharacters.size());
+    int enemyVerticalCenterOffset = CalculateVerticalCenterOffset(gridHeightPixels,
+                                                                  (int) combat.enemyCharacters.size());
 
     // Set initial grid positions for player characters
     for (int i = 0; i < combat.playerCharacters.size(); i++) {
@@ -132,27 +108,31 @@ void SetInitialGridPositions(GridState &gridState, CombatState &combat) {
 void DrawPathSelection(GridState &gridState, CombatState &combat) {
     // check if mouse is over tile
     Vector2 mousePos = GetMousePosition();
-    Vector2 gridPos = PixelToGridPositionNoOffset(mousePos.x, mousePos.y);
-    if(IsTileOccupied(combat, static_cast<int>(gridPos.x), static_cast<int>(gridPos.y), nullptr)) {
+    Vector2 gridPos = PixelToGridPosition(mousePos.x, mousePos.y);
+    if (IsTileOccupied(combat, static_cast<int>(gridPos.x), static_cast<int>(gridPos.y), nullptr)) {
         gridState.selectedTile = gridPos;
         // calculate a path and draw it as lines
-        GridPath path;
-        Vector2i target = PixelToGridPositionNoOffsetI(static_cast<int>(mousePos.x), static_cast<int>(mousePos.y));
-        if(InitPath(combat, path, PixelToGridPositionNoOffsetI((int) combat.currentCharacter->sprite.player.position.x, (int) combat.currentCharacter->sprite.player.position.y), target)) {
-            Color pathColor = Fade(GREEN, gridState.highlightAlpha);
-            if(path.cost > combat.currentCharacter->movePoints) {
-                DrawStatusText(TextFormat("Not enough movement points (%d)", combat.currentCharacter->movePoints), WHITE, 10, 10);
+        Path path;
+        Vector2i target = PixelToGridPositionI(static_cast<int>(mousePos.x), static_cast<int>(mousePos.y));
+        if (InitPath(combat, path, PixelToGridPositionI((int) combat.currentCharacter->sprite.player.position.x,
+                                                        (int) combat.currentCharacter->sprite.player.position.y),
+                     target, combat.currentCharacter)) {
+            Color pathColor = Fade(WHITE, gridState.highlightAlpha);
+            if (path.cost > combat.currentCharacter->movePoints) {
+                DrawStatusText(TextFormat("Not enough movement points (%d)", combat.currentCharacter->movePoints),
+                               WHITE, 10, 10);
                 pathColor = Fade(RED, gridState.highlightAlpha);
                 // Draw cross
-                DrawLine(gridPos.x * 16, gridPos.y * 16+1, gridPos.x * 16 + 15, gridPos.y * 16 + 16, pathColor);
-                DrawLine(gridPos.x * 16 + 15, gridPos.y * 16+1, gridPos.x * 16, gridPos.y * 16 + 16, pathColor);
+                DrawLine(gridPos.x * 16, gridPos.y * 16 + 1, gridPos.x * 16 + 15, gridPos.y * 16 + 16, pathColor);
+                DrawLine(gridPos.x * 16 + 15, gridPos.y * 16 + 1, gridPos.x * 16, gridPos.y * 16 + 16, pathColor);
 
             } else {
-                DrawStatusText(TextFormat("Movement points %d/%d", path.cost, combat.currentCharacter->movePoints), YELLOW, 10, 10);
+                DrawStatusText(TextFormat("Movement points %d/%d", path.cost, combat.currentCharacter->movePoints),
+                               WHITE, 10, 10);
             }
-            for(int i = 0; i < path.path.size()-1; i++) {
+            for (int i = 0; i < path.path.size() - 1; i++) {
                 Vector2 start = GridToPixelPosition(path.path[i].x, path.path[i].y);
-                Vector2 end = GridToPixelPosition(path.path[i+1].x, path.path[i+1].y);
+                Vector2 end = GridToPixelPosition(path.path[i + 1].x, path.path[i + 1].y);
                 DrawLineEx(start, end, 1, pathColor);
             }
             int gridX = static_cast<int>(gridPos.x);
@@ -174,15 +154,10 @@ void DrawPathSelection(GridState &gridState, CombatState &combat) {
                 gridState.moving = true;
                 combat.currentCharacter->movePoints -= path.cost;
                 // cap at zero
-                if(combat.currentCharacter->movePoints < 0) {
+                if (combat.currentCharacter->movePoints < 0) {
                     combat.currentCharacter->movePoints = 0;
                 }
                 combat.turnState = TurnState::Move;
-
-            }
-            if (IsMouseButtonReleased(MOUSE_BUTTON_RIGHT)) {
-                ResetGridState(gridState);
-                combat.turnState = TurnState::SelectAction;
             }
         }
     } else {
@@ -195,22 +170,35 @@ void DrawPathSelection(GridState &gridState, CombatState &combat) {
                 1, Fade(RED, gridState.highlightAlpha)
         );
         // Draw cross
-        DrawLine(gridPos.x * 16, gridPos.y * 16+1, gridPos.x * 16 + 15, gridPos.y * 16 + 16, Fade(RED, gridState.highlightAlpha));
-        DrawLine(gridPos.x * 16 + 15, gridPos.y * 16+1, gridPos.x * 16, gridPos.y * 16 + 16, Fade(RED, gridState.highlightAlpha));
+        DrawLine(gridPos.x * 16, gridPos.y * 16 + 1, gridPos.x * 16 + 15, gridPos.y * 16 + 16,
+                 Fade(RED, gridState.highlightAlpha));
+        DrawLine(gridPos.x * 16 + 15, gridPos.y * 16 + 1, gridPos.x * 16, gridPos.y * 16 + 16,
+                 Fade(RED, gridState.highlightAlpha));
+    }
+    if (IsMouseButtonReleased(MOUSE_BUTTON_RIGHT)) {
+        ResetGridState(gridState);
+        combat.turnState = TurnState::SelectAction;
     }
 }
 
-void DrawSelectCharacters(GridState& gridState, std::vector<Character*> &characters, Color color) {
+void DrawSelectCharacters(GridState &gridState, std::vector<Character *> &characters, Color color) {
     Vector2 mousePos = GetMousePosition();
-    Vector2 gridPos = PixelToGridPositionNoOffset(mousePos.x, mousePos.y);
+    Vector2 gridPos = PixelToGridPosition(mousePos.x, mousePos.y);
     for (auto &character: characters) {
-        Vector2 gridPosCharacter = PixelToGridPositionNoOffset(character->sprite.player.position.x,
-                                                               character->sprite.player.position.y);
+        // skip death characters
+        if (character->health <= 0) {
+            continue;
+        }
+        Vector2 gridPosCharacter = PixelToGridPosition(character->sprite.player.position.x,
+                                                       character->sprite.player.position.y);
         if ((int) gridPosCharacter.x == (int) gridPos.x && (int) gridPosCharacter.y == (int) gridPos.y) {
-            DrawCircleLines(character->sprite.player.position.x, character->sprite.player.position.y, 10, Fade(color, gridState.highlightAlpha));
+            DrawCircleLines(character->sprite.player.position.x, character->sprite.player.position.y, 10,
+                            Fade(color, gridState.highlightAlpha));
             // Draw plus
-            DrawLine(gridPos.x * 16 + 8, gridPos.y * 16-1, gridPos.x * 16 + 8, gridPos.y * 16 + 17, Fade(color, gridState.highlightAlpha)); // Vertical line
-            DrawLine(gridPos.x * 16 - 1, gridPos.y * 16 + 8, gridPos.x * 16 + 17, gridPos.y * 16 + 8, Fade(color, gridState.highlightAlpha)); // Horizontal line
+            DrawLine(gridPos.x * 16 + 8, gridPos.y * 16 - 1, gridPos.x * 16 + 8, gridPos.y * 16 + 17,
+                     Fade(color, gridState.highlightAlpha)); // Vertical line
+            DrawLine(gridPos.x * 16 - 1, gridPos.y * 16 + 8, gridPos.x * 16 + 17, gridPos.y * 16 + 8,
+                     Fade(color, gridState.highlightAlpha)); // Horizontal line
             gridState.selectedCharacter = character;
         }
     }
@@ -218,41 +206,33 @@ void DrawSelectCharacters(GridState& gridState, std::vector<Character*> &charact
 
 void DrawSelectCharacter(GridState &gridState, CombatState &combat, bool onlyEnemies) {
     gridState.selectedCharacter = nullptr;
-    if(!onlyEnemies) {
+    if (!onlyEnemies) {
         DrawSelectCharacters(gridState, combat.playerCharacters, YELLOW);
     }
     DrawSelectCharacters(gridState, combat.enemyCharacters, RED);
-    if(gridState.selectedCharacter != nullptr) {
+    if (gridState.selectedCharacter != nullptr) {
         DrawStatusText(TextFormat("Selected: %s", gridState.selectedCharacter->name.c_str()), YELLOW, 10, 10);
 
-        int charX = static_cast<int>(gridState.selectedCharacter->sprite.player.position.x);
-        int charY = static_cast<int>(gridState.selectedCharacter->sprite.player.position.y);
-
-        // calculate a path and draw it as lines
-        GridPath path;
-        Vector2i target = PixelToGridPositionNoOffsetI(charX, charY);
-        if(InitPathIgnoreOccupied(combat, path, PixelToGridPositionNoOffsetI((int) combat.currentCharacter->sprite.player.position.x, (int) combat.currentCharacter->sprite.player.position.y), target)) {
-            Color pathColor = Fade(RED, gridState.highlightAlpha);
-            if(path.cost <= 2) {
-                for(int i = 0; i < path.path.size()-1; i++) {
-                    Vector2 start = GridToPixelPosition(path.path[i].x, path.path[i].y);
-                    Vector2 end = GridToPixelPosition(path.path[i+1].x, path.path[i+1].y);
-                    DrawLineEx(start, end, 1, pathColor);
-                }
-                // Check for a mouse click
-                if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
-                    combat.turnState = TurnState::Waiting;
-                    combat.waitTime = 0.25f;
-                    combat.selectedCharacter = gridState.selectedCharacter;
-                    if(combat.selectedSkill == nullptr)
-                        combat.nextState = TurnState::Attack;
-                    else
-                        combat.nextState = TurnState::UseSkill;
-                    ResetGridState(gridState);
-                }
-            } else {
-                DrawStatusText(TextFormat("Too far away!"), WHITE, 25, 10);
+        if (IsCharacterAdjacentToPlayer(combat, *combat.currentCharacter, *gridState.selectedCharacter)) {
+            // draw last line from player to selected character
+            Vector2 start = GridToPixelPosition((int) combat.currentCharacter->sprite.player.position.x,
+                                                (int) combat.currentCharacter->sprite.player.position.y);
+            Vector2 end = GridToPixelPosition((int) gridState.selectedCharacter->sprite.player.position.x,
+                                              (int) gridState.selectedCharacter->sprite.player.position.y);
+            DrawLineEx(start, end, 1, Fade(RED, gridState.highlightAlpha));
+            // Check for a mouse click
+            if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
+                combat.turnState = TurnState::Waiting;
+                combat.waitTime = 0.25f;
+                combat.selectedCharacter = gridState.selectedCharacter;
+                if (combat.selectedSkill == nullptr)
+                    combat.nextState = TurnState::Attack;
+                else
+                    combat.nextState = TurnState::UseSkill;
+                ResetGridState(gridState);
             }
+        } else {
+            DrawStatusText(TextFormat("Too far away!"), WHITE, 25, 10);
         }
     } else {
         DrawStatusText("Select a character", WHITE, 10, 10);
@@ -278,25 +258,27 @@ void DrawHealthBar(float x, float y, float width, float health, float maxHealth)
 
 void DrawGridCharacters(GridState &state, CombatState &combat) {
     // Sort characters by y position
-    std::vector<Character*> sortedCharacters;
-    for (auto &character : combat.playerCharacters) {
+    std::vector<Character *> sortedCharacters;
+    for (auto &character: combat.playerCharacters) {
         sortedCharacters.push_back(character);
     }
-    for (auto &character : combat.enemyCharacters) {
+    for (auto &character: combat.enemyCharacters) {
         sortedCharacters.push_back(character);
     }
-    std::sort(sortedCharacters.begin(), sortedCharacters.end(), [](Character* a, Character* b) {
-        return a->sprite.player.position.y < b->sprite.player.position.y;
+    std::sort(sortedCharacters.begin(), sortedCharacters.end(), [&combat](Character *a, Character *b) {
+        return GetAnimatedCharPos(combat, a).y < GetAnimatedCharPos(combat, b).y;
+        //return a->sprite.player.position.y < b->sprite.player.position.y;
     });
 
 
     // Draw a highlight for the current character if not moving
-    if (combat.currentCharacter != nullptr && !state.moving && state.mode == GridMode::Normal) {
+    if (combat.currentCharacter != nullptr && (combat.turnState == TurnState::SelectAction || combat.turnState == TurnState::SelectEnemy)) {
+        Vector2 charPos = GetAnimatedCharPos(combat, combat.currentCharacter);
         Color outlineColor = Fade(YELLOW, state.highlightAlpha);
         DrawRectangleLinesEx(
                 Rectangle{
-                        combat.currentCharacter->sprite.player.position.x - 9,
-                        combat.currentCharacter->sprite.player.position.y - 18,
+                        charPos.x - 9,
+                        charPos.y - 18,
                         17, 24
                 },
                 1, outlineColor
@@ -304,194 +286,44 @@ void DrawGridCharacters(GridState &state, CombatState &combat) {
     }
 
     // Draw characters
-    for (auto &character : sortedCharacters) {
+    for (auto &character: sortedCharacters) {
+        Vector2 charPos = GetAnimatedCharPos(combat, character);
         // Draw oval shadow underneath
-        DrawEllipse(character->sprite.player.position.x, character->sprite.player.position.y, 6, 4, Fade(BLACK, 0.25f));
+        if(character->health > 0)
+            DrawEllipse((int) charPos.x, (int) charPos.y, 6, 4, Fade(BLACK, 0.25f));
 
         if (IsCharacterVisible(combat, character)) {
-            DrawSpriteAnimation(character->sprite.player);
+            DrawSpriteAnimation(character->sprite.player, charPos.x, charPos.y);
         } else {
-            character->sprite.player.tint = { 255, 255, 255, 64 }; // Semi-transparent tint
-            DrawSpriteAnimation(character->sprite.player);
+            character->sprite.player.tint = {255, 255, 255, 64}; // Semi-transparent tint
+            DrawSpriteAnimation(character->sprite.player, charPos.x, charPos.y);
             character->sprite.player.tint = WHITE; // Reset tint
         }
 
         // Draw health bar
-        DrawHealthBar(character->sprite.player.position.x - 8, character->sprite.player.position.y - 21, 15, character->health, character->maxHealth);
+        if(character->health > 0)
+            DrawHealthBar(charPos.x - 8, charPos.y - 21, 15, character->health, character->maxHealth);
     }
 }
 
-void DrawGridLines(GridState &gridState, CombatState &combat) {
+static void DrawGridLines() {
     // draw a line grid of 30x13 16x16 tiles taking up a rectangle of 480x208
-    for(int i = 0; i < GRID_WIDTH+1; i++) {
-        DrawLine(16*i, 0, 16*i, 208, Fade(BLACK, 0.15));
+    for (int i = 0; i < GRID_WIDTH + 1; i++) {
+        DrawLine(16 * i, 0, 16 * i, 208, Fade(BLACK, 0.15));
     }
     // draw vertical lines
-    for(int i = 0; i < GRID_HEIGHT+1; i++) {
-        DrawLine(0, 16*i, 480, 16*i, Fade(BLACK, 0.15));
+    for (int i = 0; i < GRID_HEIGHT + 1; i++) {
+        DrawLine(0, 16 * i, 480, 16 * i, Fade(BLACK, 0.15));
     }
-    if(gridState.mode == GridMode::SelectingTile) {
+}
+
+static void DrawPathAndSelection(GridState &gridState, CombatState &combat) {
+    if (gridState.mode == GridMode::SelectingTile) {
         DrawPathSelection(gridState, combat);
     }
-    if(gridState.mode == GridMode::SelectingEnemyTarget) {
+    if (gridState.mode == GridMode::SelectingEnemyTarget) {
         DrawTargetSelection(gridState, combat, true);
     }
-}
-
-bool IsTileOccupied(CombatState &combat, int x, int y, Character *exceptCharacter) {
-    // Check if the tile is walkable, returning false if out of bounds
-    if (x < 0 || x >= GRID_WIDTH || y < 0 || y >= GRID_HEIGHT) return false;
-    // check if any characters are in the way
-    for(auto &character : combat.playerCharacters) {
-        Vector2 gridPos = PixelToGridPositionNoOffset(character->sprite.player.position.x, character->sprite.player.position.y);
-        if((int) gridPos.x == x && (int) gridPos.y == y && character != exceptCharacter) {
-            //TraceLog(LOG_WARNING, "Player character in the way, x: %d, y: %d", x, y);
-            return false;
-        }
-    }
-    for(auto &character : combat.enemyCharacters) {
-        Vector2 gridPos = PixelToGridPositionNoOffset(character->sprite.player.position.x, character->sprite.player.position.y);
-        if((int) gridPos.x == x && (int) gridPos.y == y && character != exceptCharacter) {
-            //TraceLog(LOG_WARNING, "Enemy character in the way, x: %d, y: %d", x, y);
-            return false;
-        }
-    }
-    return true;
-}
-
-bool IsTileWalkable(CombatState &combat, int x, int y) {
-    // Check if the tile is walkable, returning false if out of bounds
-    if (x < 0 || x >= GRID_WIDTH || y < 0 || y >= GRID_HEIGHT) return false;
-    return true;
-}
-
-bool InitPath(CombatState &combat, GridPath &path, Vector2i start, Vector2i end) {
-    if (!IsTileOccupied(combat, start.x, start.y, combat.currentCharacter) || !IsTileOccupied(combat, end.x, end.y,
-                                                                                              combat.currentCharacter)) {
-        TraceLog(LOG_WARNING, "Start or end position is blocked, startX: %d, startY: %d, endX: %d, endY: %d", start.x, start.y, end.x, end.y);
-        return false;  // If the start or end is blocked, return false
-    }
-
-    std::vector<std::vector<bool>> closedSet(GRID_WIDTH, std::vector<bool>(GRID_HEIGHT, false));
-    std::vector<std::vector<Node*>> allNodes(GRID_WIDTH, std::vector<Node*>(GRID_HEIGHT, nullptr));
-    std::priority_queue<Node*, std::vector<Node*>, std::function<bool(Node*, Node*)>> openSet(
-            [](Node* a, Node* b) { return a->fCost() > b->fCost(); });
-
-    Node* startNode = new Node(start, 0, std::abs(start.x - end.x) + std::abs(start.y - end.y));
-    openSet.push(startNode);
-    allNodes[start.x][start.y] = startNode;
-
-    const std::vector<Vector2i> directions = {{0, 1}, {1, 0}, {0, -1}, {-1, 0}};
-
-    while (!openSet.empty()) {
-        Node* currentNode = openSet.top();
-        openSet.pop();
-
-        if (currentNode->position == end) {
-            // Reconstruct the path from end to start
-            path.path.clear();
-            Node* temp = currentNode;
-            while (temp) {
-                path.path.push_back(temp->position);
-                temp = temp->parent;
-            }
-            std::reverse(path.path.begin(), path.path.end());
-
-            // Calculate cost and return true
-            path.cost = currentNode->gCost;
-            path.currentStep = 0;
-            path.moveTime = 0.0f;
-            path.moveSpeed = 0.15f;  // This can be adjusted based on game mechanics
-            return true;
-        }
-
-        closedSet[currentNode->position.x][currentNode->position.y] = true;
-
-        for (const Vector2i& dir : directions) {
-            int neighborX = currentNode->position.x + dir.x;
-            int neighborY = currentNode->position.y + dir.y;
-
-            if (neighborX < 0 || neighborX >= GRID_WIDTH || neighborY < 0 || neighborY >= GRID_HEIGHT) continue;
-            if (!IsTileOccupied(combat, neighborX, neighborY, combat.currentCharacter)) continue;
-            if (closedSet[neighborX][neighborY]) continue;
-
-            int tentativeGCost = currentNode->gCost + 1;
-            Node* neighborNode = allNodes[neighborX][neighborY];
-
-            if (!neighborNode || tentativeGCost < neighborNode->gCost) {
-                neighborNode = new Node(Vector2i(neighborX, neighborY), tentativeGCost,
-                                        std::abs(neighborX - end.x) + std::abs(neighborY - end.y), currentNode);
-
-                allNodes[neighborX][neighborY] = neighborNode;
-                openSet.push(neighborNode);
-            }
-        }
-    }
-    return false;  // Path not found
-}
-
-bool InitPathIgnoreOccupied(CombatState &combat, GridPath &path, Vector2i start, Vector2i end) {
-    if (!IsTileWalkable(combat, start.x, start.y) || !IsTileWalkable(combat, end.x, end.y)) {
-        TraceLog(LOG_WARNING, "Start or end position is blocked, startX: %d, startY: %d, endX: %d, endY: %d", start.x, start.y, end.x, end.y);
-        return false;  // If the start or end is blocked, return false
-    }
-
-    std::vector<std::vector<bool>> closedSet(GRID_WIDTH, std::vector<bool>(GRID_HEIGHT, false));
-    std::vector<std::vector<Node*>> allNodes(GRID_WIDTH, std::vector<Node*>(GRID_HEIGHT, nullptr));
-    std::priority_queue<Node*, std::vector<Node*>, std::function<bool(Node*, Node*)>> openSet(
-            [](Node* a, Node* b) { return a->fCost() > b->fCost(); });
-
-    Node* startNode = new Node(start, 0, std::abs(start.x - end.x) + std::abs(start.y - end.y));
-    openSet.push(startNode);
-    allNodes[start.x][start.y] = startNode;
-
-    const std::vector<Vector2i> directions = {{0, 1}, {1, 0}, {0, -1}, {-1, 0}};
-
-    while (!openSet.empty()) {
-        Node* currentNode = openSet.top();
-        openSet.pop();
-
-        if (currentNode->position == end) {
-            // Reconstruct the path from end to start
-            path.path.clear();
-            Node* temp = currentNode;
-            while (temp) {
-                path.path.push_back(temp->position);
-                temp = temp->parent;
-            }
-            std::reverse(path.path.begin(), path.path.end());
-
-            // Calculate cost and return true
-            path.cost = currentNode->gCost;
-            path.currentStep = 0;
-            path.moveTime = 0.0f;
-            path.moveSpeed = 0.15f;  // This can be adjusted based on game mechanics
-            return true;
-        }
-
-        closedSet[currentNode->position.x][currentNode->position.y] = true;
-
-        for (const Vector2i& dir : directions) {
-            int neighborX = currentNode->position.x + dir.x;
-            int neighborY = currentNode->position.y + dir.y;
-
-            if (neighborX < 0 || neighborX >= GRID_WIDTH || neighborY < 0 || neighborY >= GRID_HEIGHT) continue;
-            if (!IsTileWalkable(combat, neighborX, neighborY)) continue;
-            if (closedSet[neighborX][neighborY]) continue;
-
-            int tentativeGCost = currentNode->gCost + 1;
-            Node* neighborNode = allNodes[neighborX][neighborY];
-
-            if (!neighborNode || tentativeGCost < neighborNode->gCost) {
-                neighborNode = new Node(Vector2i(neighborX, neighborY), tentativeGCost,
-                                        std::abs(neighborX - end.x) + std::abs(neighborY - end.y), currentNode);
-
-                allNodes[neighborX][neighborY] = neighborNode;
-                openSet.push(neighborNode);
-            }
-        }
-    }
-    return false;  // Path not found
 }
 
 void UpdateGrid(GridState &gridState, CombatState &combat, float dt) {
@@ -566,37 +398,74 @@ void UpdateGrid(GridState &gridState, CombatState &combat, float dt) {
                     combat.currentCharacter->sprite.player.playing = false;
                     SetFrame(combat.currentCharacter->sprite.player, 0);
                     // set final position
-                    auto finalPos = gridState.path.path[gridState.path.path.size()-1];
+                    auto finalPos = gridState.path.path[gridState.path.path.size() - 1];
                     combat.currentCharacter->sprite.player.position = GridToPixelPosition(finalPos.x, finalPos.y);
-                    combat.turnState = TurnState::SelectAction;
+                    if (IsPlayerCharacter(combat, *combat.currentCharacter)) {
+                        combat.turnState = TurnState::SelectAction;
+                    } else {
+                        combat.turnState = TurnState::EnemyTurn;
+                    }
                 }
             }
         }
     }
 
     // Update animations for all characters
-    for (auto &character : combat.playerCharacters) {
+    for (auto &character: combat.playerCharacters) {
         UpdateSpriteAnimation(character->sprite.player, dt);
     }
-    for (auto &character : combat.enemyCharacters) {
+    for (auto &character: combat.enemyCharacters) {
         UpdateSpriteAnimation(character->sprite.player, dt);
     }
 }
+/*
+static void DrawBloodPools(CombatState &combat) {
+    // Check if the character is visible (not blinking)
+    for (auto &animation: combat.animations) {
+        if (animation.type == AnimationType::BloodPool) {
+            // Set the blend mode to additive blending
+            BeginBlendMode(BLEND_ADDITIVE);
+            int posX = (int) animation.state.bloodPool.position.x + (int) animation.state.bloodPool.offset1.x;
+            int posY = (int) animation.state.bloodPool.position.y + (int) animation.state.bloodPool.offset1.y;
+            DrawEllipse(posX, posY, animation.state.bloodPool.radius1, 0.65f * animation.state.bloodPool.radius1, Fade(DARK_BLOOD_RED, 0.5f));
+            posX = (int) animation.state.bloodPool.position.x + (int) animation.state.bloodPool.offset2.x;
+            posY = (int) animation.state.bloodPool.position.y + (int) animation.state.bloodPool.offset2.y;
+            DrawEllipse(posX, posY, animation.state.bloodPool.radius2, 0.70f * animation.state.bloodPool.radius2, Fade(DARK_BLOOD_RED, 0.65f));
+            posX = (int) animation.state.bloodPool.position.x + (int) animation.state.bloodPool.offset3.x;
+            posY = (int) animation.state.bloodPool.position.y + (int) animation.state.bloodPool.offset3.y;
+            DrawCircle(posX, posY, animation.state.bloodPool.radius3, Fade(DARK_BLOOD_RED, 0.85f));
+            EndBlendMode();
+        }
+    }
+}
+*/
+
 
 void DrawGrid(GridState &gridState, CombatState &combat) {
-    DrawGridLines(gridState, combat);
+    DrawGridLines();
+    // Draw tilemap layer 0
+    DrawTileLayer(combat.tileMap, BOTTOM_LAYER, 0, 0);
+    DrawBloodPools();
+    DrawTileLayer(combat.tileMap, MIDDLE_LAYER, 0, 0);
+    DrawPathAndSelection(gridState, combat);
     DrawGridCharacters(gridState, combat);
+    DrawTileLayer(combat.tileMap, TOP_LAYER, 0, 0);
     // get mouse position
     gridState.floatingStatsCharacter = nullptr;
     Vector2 mousePos = GetMousePosition();
-    Vector2 gridPos = PixelToGridPositionNoOffset(mousePos.x, mousePos.y);
+    Vector2 gridPos = PixelToGridPosition(mousePos.x, mousePos.y);
     // check if mouse is over character
-    for(auto &character : combat.turnOrder) {
-        Vector2 gridPosCharacter = PixelToGridPositionNoOffset(character->sprite.player.position.x, character->sprite.player.position.y);
-        if((int) gridPosCharacter.x == (int) gridPos.x && (int) gridPosCharacter.y == (int) gridPos.y) {
+    for (auto &character: combat.turnOrder) {
+        Vector2 gridPosCharacter = PixelToGridPosition(character->sprite.player.position.x,
+                                                       character->sprite.player.position.y);
+        if ((int) gridPosCharacter.x == (int) gridPos.x && (int) gridPosCharacter.y == (int) gridPos.y) {
             gridState.floatingStatsCharacter = character;
         }
     }
 }
 
-
+bool IsCharacterAdjacentToPlayer(CombatState &combat, Character &player, Character &character) {
+    Vector2i charGridPos = PixelToGridPositionI(character.sprite.player.position.x, character.sprite.player.position.y);
+    Vector2i playerGridPos = PixelToGridPositionI(player.sprite.player.position.x, player.sprite.player.position.y);
+    return abs(playerGridPos.x - charGridPos.x) <= 1 && abs(playerGridPos.y - charGridPos.y) <= 1;
+}

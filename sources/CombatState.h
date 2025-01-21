@@ -8,6 +8,7 @@
 #include <map>
 #include "Character.h"
 #include "Animation.h"
+#include "TileMap.h"
 
 enum class TurnState {
     StartTurn,
@@ -40,6 +41,7 @@ struct CombatState {
     float waitTime;
     TurnState nextState;
     std::map<Character*, int> threatTable;
+    TileMap tileMap;
 };
 
 #endif //SANDBOX_COMBATSTATE_H

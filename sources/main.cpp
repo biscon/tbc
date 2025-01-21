@@ -20,6 +20,9 @@
 #include "Combat.h"
 #include "CombatScreen.h"
 #include "Sprite.h"
+#include "ai/FighterAi.h"
+#include "ui.h"
+#include "Blood.h"
 
 #define MAX(a, b) ((a)>(b)? (a) : (b))
 #define MIN(a, b) ((a)<(b)? (a) : (b))
@@ -39,7 +42,7 @@ void fun() {
     */
 
     // Create a character with Dodge skill at rank 2 (10% bonus to miss chance)
-    Character player = {"Player", 100, 100, 15, 5, 10, 100, 100, {}};
+    Character player = {"Player", "FighterAi", 100, 100, 15, 5, 10, 100, 100, {}};
     DisplayCharacterInfo(player);
     Character enemy = GenerateRandomCharacter("Enemy", true);
     //Character enemy = {"Enemy", 50, 50, 10, 3, 8, 100, 100, {}};
@@ -77,51 +80,80 @@ int main(void) {
     SetTargetFPS(60);                   // Set our game to run at 60 frames-per-second
     //--------------------------------------------------------------------------------------
 
+    // Create AI
+    CreateFighterAi("Fighter");
+
     // Load sprite sheet and create animations
-    SpriteSheet spriteSheet;
-    LoadSpriteSheet(spriteSheet, ASSETS_PATH"base_char_32x32.png", 32, 32);
+    SpriteSheet baseCharSpriteSheet;
+    LoadSpriteSheet(baseCharSpriteSheet, ASSETS_PATH"base_char_32x32.png", 32, 32);
+
+    SpriteSheet warriorSpriteSheet;
+    LoadSpriteSheet(warriorSpriteSheet, ASSETS_PATH"warrior_male_16x16.png", 32, 32);
+
+    SpriteSheet ninjaSpriteSheet;
+    LoadSpriteSheet(ninjaSpriteSheet, ASSETS_PATH"ninja_male_32x32.png", 32, 32);
 
     SpriteAnimationManager spriteAnimationManager;
-    CreateSpriteAnimation(spriteAnimationManager, "BaseWalkRight", SpriteAnimationType::WalkRight, &spriteSheet,
+    CreateSpriteAnimation(spriteAnimationManager, "BaseWalkRight", SpriteAnimationType::WalkRight, &baseCharSpriteSheet,
                           {3, 4, 5}, {0.15f, 0.15f, 0.15f}, {16, 30});
-    CreateSpriteAnimation(spriteAnimationManager, "BaseWalkLeft", SpriteAnimationType::WalkLeft, &spriteSheet,
+    CreateSpriteAnimation(spriteAnimationManager, "BaseWalkLeft", SpriteAnimationType::WalkLeft, &baseCharSpriteSheet,
                           {9, 10, 11}, {0.15f, 0.15f, 0.15f}, {16, 30});
-    CreateSpriteAnimation(spriteAnimationManager, "BaseWalkUp", SpriteAnimationType::WalkUp, &spriteSheet,
+    CreateSpriteAnimation(spriteAnimationManager, "BaseWalkUp", SpriteAnimationType::WalkUp, &baseCharSpriteSheet,
                           {0, 1, 2}, {0.15f, 0.15f, 0.15f}, {16, 30});
-    CreateSpriteAnimation(spriteAnimationManager, "BaseWalkDown", SpriteAnimationType::WalkDown, &spriteSheet,
+    CreateSpriteAnimation(spriteAnimationManager, "BaseWalkDown", SpriteAnimationType::WalkDown, &baseCharSpriteSheet,
                           {6, 7, 8}, {0.15f, 0.15f, 0.15f}, {16, 30});
 
+    CreateSpriteAnimation(spriteAnimationManager, "WarriorWalkRight", SpriteAnimationType::WalkRight, &warriorSpriteSheet,
+                          {3, 4, 5}, {0.15f, 0.15f, 0.15f}, {16, 30});
+    CreateSpriteAnimation(spriteAnimationManager, "WarriorWalkLeft", SpriteAnimationType::WalkLeft, &warriorSpriteSheet,
+                          {9, 10, 11}, {0.15f, 0.15f, 0.15f}, {16, 30});
+    CreateSpriteAnimation(spriteAnimationManager, "WarriorWalkUp", SpriteAnimationType::WalkUp, &warriorSpriteSheet,
+                          {0, 1, 2}, {0.15f, 0.15f, 0.15f}, {16, 30});
+    CreateSpriteAnimation(spriteAnimationManager, "WarriorWalkDown", SpriteAnimationType::WalkDown, &warriorSpriteSheet,
+                          {6, 7, 8}, {0.15f, 0.15f, 0.15f}, {16, 30});
+
+    CreateSpriteAnimation(spriteAnimationManager, "NinjaWalkRight", SpriteAnimationType::WalkRight, &ninjaSpriteSheet,
+                          {3, 4, 5}, {0.15f, 0.15f, 0.15f}, {16, 30});
+    CreateSpriteAnimation(spriteAnimationManager, "NinjaWalkLeft", SpriteAnimationType::WalkLeft, &ninjaSpriteSheet,
+                          {9, 10, 11}, {0.15f, 0.15f, 0.15f}, {16, 30});
+    CreateSpriteAnimation(spriteAnimationManager, "NinjaWalkUp", SpriteAnimationType::WalkUp, &ninjaSpriteSheet,
+                          {0, 1, 2}, {0.15f, 0.15f, 0.15f}, {16, 30});
+    CreateSpriteAnimation(spriteAnimationManager, "NinjaWalkDown", SpriteAnimationType::WalkDown, &ninjaSpriteSheet,
+                          {6, 7, 8}, {0.15f, 0.15f, 0.15f}, {16, 30});
 
     // Sample player and enemy data
     std::vector<Character> playerCharacters = {
-            {"Player1", 120, 120, 20, 10, 10, 0, 0, 0, {}, {
+            {"Player1", "Fighter", 120, 120, 20, 10, 10, 0, 0, 0, {}, {
                 {SkillType::Taunt, "Howling Scream", 1, false, true, 0, 3},
             }},
-            {"Player2", 80,  80,  25, 5,  20, 0, 0, 0, {}, {
+            {"Player2", "Fighter", 80,  80,  25, 5,  20, 0, 0, 0, {}, {
                 {SkillType::Dodge, "Dodge", 3, true, true, 0, 0},
                 {SkillType::Stun, "Stunning Blow", 1, false, false, 0, 3},
             }, {{StatusEffectType::ThreatModifier, -1, 0.75f}}},
-            {"Player3", 100,  100,  15, 15,  5, 0, 0, 0, {}, {
+            /*
+            {"Player3", "Fighter", 100,  100,  15, 15,  5, 0, 0, 0, {}, {
                         {SkillType::Taunt, "Howling Scream", 1, false, true, 0, 3},
                         {SkillType::Stun, "Stunning Blow", 1, false, false, 0, 3},
                 }, {
-
             }}
+                */
     };
     std::vector<Character> enemyCharacters = {
-            {"Enemy1", 50,  50,  15, 2, 5, 0, 0, {}},
-            {"Enemy2", 40, 40, 25, 2, 15, 0, 0, {}},
-            {"Enemy3", 40, 40, 18, 5, 5, 0, 0, {}},
-            {"Enemy4", 40,  40,  18, 5, 5, 0, 0, {}},
-            {"Enemy5", 100, 100, 25, 7, 5, 0, 0, {}},
-            {"Enemy6", 100, 100, 25, 7, 5, 0, 0, {}}
+            {"Enemy1", "Fighter", 50,  50,  15, 2, 5, 0, 0, {}},
+            {"Enemy2", "Fighter", 40, 40, 25, 2, 15, 0, 0, {}},
+            {"Enemy3", "Fighter", 40, 40, 18, 5, 5, 0, 0, {}},
+            {"Enemy4", "Fighter", 40,  40,  18, 5, 5, 0, 0, {}},
+            {"Enemy5", "Fighter", 100, 100, 25, 7, 5, 0, 0, {}},
+            {"Enemy6", "Fighter", 100, 100, 25, 7, 5, 0, 0, {}}
     };
 
     for(auto &character : playerCharacters) {
-        InitCharacterSprite(character.sprite, spriteAnimationManager, "BaseWalkUp", "BaseWalkDown", "BaseWalkLeft", "BaseWalkRight");
+        InitCharacterSprite(character.sprite, spriteAnimationManager, "WarriorWalkUp", "WarriorWalkDown", "WarriorWalkLeft", "WarriorWalkRight");
     }
+    InitCharacterSprite(playerCharacters[0].sprite, spriteAnimationManager, "BaseWalkUp", "BaseWalkDown", "BaseWalkLeft", "BaseWalkRight");
     for(auto &character : enemyCharacters) {
-        InitCharacterSprite(character.sprite, spriteAnimationManager, "BaseWalkUp", "BaseWalkDown", "BaseWalkLeft", "BaseWalkRight");
+        //InitCharacterSprite(character.sprite, spriteAnimationManager, "BaseWalkUp", "BaseWalkDown", "BaseWalkLeft", "BaseWalkRight");
+        InitCharacterSprite(character.sprite, spriteAnimationManager, "NinjaWalkUp", "NinjaWalkDown", "NinjaWalkLeft", "NinjaWalkRight");
     }
 
     CombatState combat;
@@ -133,6 +165,18 @@ int main(void) {
     InitGrid(gridState, spriteAnimationManager);
     SetInitialGridPositions(gridState, combat);
 
+    SpriteSheet tileSet;
+    LoadSpriteSheet(tileSet, ASSETS_PATH"town_tiles.png", 16, 16);
+
+    LoadTileMap(combat.tileMap, ASSETS_PATH"test_map_01.json", &tileSet);
+
+    InitializeBloodRendering();
+
+    /*
+    Animation bloodAnim{};
+    SetupBloodPoolAnimation(bloodAnim, {75,120}, 5.0f);
+    combat.animations.push_back(bloodAnim);
+    */
 
     // Main game loop
     while (!WindowShouldClose())        // Detect window close button or ESC key
@@ -142,7 +186,7 @@ int main(void) {
         }
 
         // Update
-        UpdateCombatScreen(combat, GetFrameTime());
+        UpdateCombatScreen(combat, combatUIState, gridState, GetFrameTime());
         UpdateGrid(gridState, combat, GetFrameTime());
 
 
@@ -164,6 +208,7 @@ int main(void) {
         SetMouseScale(1 / scale, 1 / scale);
         //----------------------------------------------------------------------------------
 
+        PreRenderBloodPools(combat);
         // Draw
         //----------------------------------------------------------------------------------
         // Draw everything in the render texture, note this will not be rendered on screen, yet
@@ -207,9 +252,16 @@ int main(void) {
     //--------------------------------------------------------------------------------------
     UnloadRenderTexture(target);        // Unload render texture
 
+    UnloadBloodRendering();
+
     //UnloadFont(font);                   // Unload custom font
     UnloadFont(font2);                   // Unload custom font
-    UnloadSpriteSheet(spriteSheet);     // Unload sprite sheet
+    UnloadSpriteSheet(baseCharSpriteSheet);     // Unload sprite sheet
+    UnloadSpriteSheet(warriorSpriteSheet);     // Unload sprite sheet
+    UnloadSpriteSheet(ninjaSpriteSheet);     // Unload sprite sheet
+
+    UnloadTileMap(combat.tileMap);     // Unload tile map (free memory
+    UnloadSpriteSheet(tileSet);     // Unload sprite sheet
 
     CloseWindow();                      // Close window and OpenGL context
     //--------------------------------------------------------------------------------------

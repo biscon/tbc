@@ -47,6 +47,7 @@ struct StatusEffect {
 
 struct Character {
     std::string name;
+    std::string ai;
     int health;
     int maxHealth;
     int attack;

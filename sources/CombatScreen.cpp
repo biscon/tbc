@@ -14,6 +14,7 @@
 #include "Grid.h"
 #include "ui.h"
 #include "Skills.h"
+#include "ai/Ai.h"
 
 const Color BACKGROUND_GREY = Color{50, 50, 50, 255};
 
@@ -285,6 +286,16 @@ static void DisplayTextAnimations(CombatState &combat) {
     }
 }
 
+static void DisplaySpeechBubbleAnimations(CombatState &combat) {
+    for (auto &animation: combat.animations) {
+        if (animation.type == AnimationType::SpeechBubble) {
+            // Draw the speech bubble
+            DrawSpeechBubble(animation.state.speechBubble.x, animation.state.speechBubble.y, animation.state.speechBubble.text, animation.state.speechBubble.alpha);
+        }
+    }
+}
+
+
 // Function to display combat screen
 void DisplayCombatScreen(CombatState &combat, CombatUIState &uiState, GridState &gridState) {
     // Clear screen with a background color (dark gray)
@@ -323,6 +334,8 @@ void DisplayCombatScreen(CombatState &combat, CombatUIState &uiState, GridState 
         }
     }
 
+    DisplaySpeechBubbleAnimations(combat);
+
     DisplayDamageNumbers(combat);
     DisplayTextAnimations(combat);
 
@@ -349,77 +362,46 @@ static void UpdateAnimations(CombatState &combat, float dt) {
     );
 }
 
-static void UpdateStatusEffects(CombatState &combat) {
-    for(auto &character : combat.turnOrder) {
-        for(auto &effect : character->statusEffects) {
-            if(effect.roundsLeft > 0) {
-                effect.roundsLeft--;
-                // maybe apply them here
-            }
+static void SetSpriteAnimPaused(CharacterSprite& sprite, SpriteAnimationType type) {
+    PlaySpriteAnimation(sprite.player, GetCharacterAnimation(sprite, type), true);
+    SetFrame(sprite.player, 0);
+    sprite.player.playing = false;
+}
+
+static void FaceCharacter(Character &attacker, Character &defender) {
+    // Determine the direction of movement and set the appropriate animation
+    Vector2 start = attacker.sprite.player.position;
+    Vector2 end = defender.sprite.player.position;
+    if (fabs(end.x - start.x) > fabs(end.y - start.y)) {
+        // Horizontal movement
+        if (end.x > start.x) {
+            SetSpriteAnimPaused(attacker.sprite, SpriteAnimationType::WalkRight);
+        } else {
+            SetSpriteAnimPaused(attacker.sprite, SpriteAnimationType::WalkLeft);
         }
-        // Use erase-remove idiom to remove animations which are done
-        character->statusEffects.erase(
-                std::remove_if(character->statusEffects.begin(), character->statusEffects.end(),
-                               [&combat, &character](const StatusEffect& effect) {
-                                   if(effect.roundsLeft == 0) {
-                                       std::string logMessage = character->name + " is no longer affected by " + GetStatusEffectName(effect.type);
-                                       combat.log.push_back(logMessage);
-                                   }
-                                   return effect.roundsLeft == 0;
-                               }),
-                character->statusEffects.end()
-        );
-    }
-}
-
-static void UpdateSkillCooldown(CombatState &combat) {
-    for(auto &character : combat.turnOrder) {
-        DecreaseSkillCooldown(*character);
-    }
-}
-
-static void NextCharacter(CombatState &combat) {
-    combat.currentCharacterIdx++;
-    // skip dead characters
-    while (combat.currentCharacterIdx < combat.turnOrder.size() && combat.turnOrder[combat.currentCharacterIdx]->health <= 0) {
-        combat.currentCharacterIdx++;
-    }
-    bool nextRound = combat.currentCharacterIdx >= combat.turnOrder.size();
-    // check for end of turn/round
-    if (nextRound) {
-        combat.currentCharacterIdx = 0;
-    }
-    // skip dead characters
-    while (combat.currentCharacterIdx < combat.turnOrder.size() && combat.turnOrder[combat.currentCharacterIdx]->health <= 0) {
-        combat.currentCharacterIdx++;
-    }
-    combat.selectedCharacter = nullptr;
-    combat.currentCharacter = combat.turnOrder[combat.currentCharacterIdx];
-    // log current character health
-    std::string logMessage = combat.currentCharacter->name + " has " + std::to_string(combat.currentCharacter->health) + " health.";
-    TraceLog(LOG_INFO, logMessage.c_str());
-    if(nextRound) {
-        combat.nextState = TurnState::EndRound;
-        combat.waitTime = 1.0f;
     } else {
-        combat.nextState = TurnState::StartTurn;
-        combat.waitTime = 0.5f;
+        // Vertical movement
+        if (end.y > start.y) {
+            SetSpriteAnimPaused(attacker.sprite, SpriteAnimationType::WalkDown);
+        } else {
+            SetSpriteAnimPaused(attacker.sprite, SpriteAnimationType::WalkUp);
+        }
     }
-
-    combat.turnState = TurnState::Waiting;
-    TraceLog(LOG_INFO, "Next character: %s", combat.currentCharacter->name.c_str());
 }
 
-void UpdateCombatScreen(CombatState &combat, float dt) {
+void UpdateCombatScreen(CombatState &combat, CombatUIState &uiState, GridState& gridState, float dt) {
     switch(combat.turnState) {
         case TurnState::StartTurn: {
             TraceLog(LOG_INFO, "Start turn");
             Animation blinkAnim{};
 
             // restore movepoints
-            combat.currentCharacter->movePoints = 2*combat.currentCharacter->speed;
+            int movePoints = (int) (5 + sqrt(combat.currentCharacter->speed) * 2);
+            combat.currentCharacter->movePoints = movePoints;
+            TraceLog(LOG_INFO, "Restored move points for %s: %d", combat.currentCharacter->name.c_str(), movePoints);
 
-            combat.waitTime = 1.5f;
+
+            combat.waitTime = 0.5f;
             if(IsPlayerCharacter(combat, *combat.currentCharacter)) {
                 SetupBlinkAnimation(blinkAnim, combat.currentCharacter, 2.0f);
                 combat.nextState = TurnState::SelectAction;
@@ -456,12 +438,15 @@ void UpdateCombatScreen(CombatState &combat, float dt) {
             float attackerX = combat.currentCharacter->sprite.player.position.x;
             float attackerY = combat.currentCharacter->sprite.player.position.y;
             if(!combat.selectedSkill->noTarget) {
-                Animation attackAnim{};
                 float defenderX = combat.selectedCharacter->sprite.player.position.x;
-                if (IsPlayerCharacter(combat, *combat.currentCharacter)) {
-                    SetupAttackAnimation(attackAnim, combat.currentCharacter, 0.5f, 170, 85, attackerX, defenderX);
+                float defenderY = combat.selectedCharacter->sprite.player.position.y;
+                FaceCharacter(*combat.currentCharacter, *combat.selectedCharacter);
+                FaceCharacter(*combat.selectedCharacter, *combat.currentCharacter);
+                Animation attackAnim{};
+                if(IsPlayerCharacter(combat, *combat.currentCharacter)) {
+                    SetupAttackAnimation(attackAnim, combat.currentCharacter, 0.5f, attackerY, defenderY, attackerX, defenderX);
                 } else {
-                    SetupAttackAnimation(attackAnim, combat.currentCharacter, 0.5f, 75, 160, attackerX, defenderX);
+                    SetupAttackAnimation(attackAnim, combat.currentCharacter, 0.5f, attackerY, defenderY, attackerX, defenderX);
                 }
                 combat.animations.push_back(attackAnim);
             }
@@ -503,15 +488,20 @@ void UpdateCombatScreen(CombatState &combat, float dt) {
         }
         case TurnState::Attack: {
             TraceLog(LOG_INFO, "Attack");
+            FaceCharacter(*combat.currentCharacter, *combat.selectedCharacter);
+            FaceCharacter(*combat.selectedCharacter, *combat.currentCharacter);
             Animation attackAnim{};
 
             float attackerX = combat.currentCharacter->sprite.player.position.x;
             float defenderX = combat.selectedCharacter->sprite.player.position.x;
+            float attackerY = combat.currentCharacter->sprite.player.position.y;
+            float defenderY = combat.selectedCharacter->sprite.player.position.y;
             if(IsPlayerCharacter(combat, *combat.currentCharacter)) {
-                SetupAttackAnimation(attackAnim, combat.currentCharacter, 0.5f, 170, 85, attackerX, defenderX);
+                SetupAttackAnimation(attackAnim, combat.currentCharacter, 0.5f, attackerY, defenderY, attackerX, defenderX);
             } else {
-                SetupAttackAnimation(attackAnim, combat.currentCharacter, 0.5f, 75, 160, attackerX, defenderX);
+                SetupAttackAnimation(attackAnim, combat.currentCharacter, 0.5f, attackerY, defenderY, attackerX, defenderX);
             }
+
             combat.animations.push_back(attackAnim);
             combat.waitTime = 0.75f;
             combat.nextState = TurnState::AttackDone;
@@ -521,10 +511,29 @@ void UpdateCombatScreen(CombatState &combat, float dt) {
         case TurnState::AttackDone: {
             Attack(combat, *combat.currentCharacter, *combat.selectedCharacter);
             if(combat.selectedCharacter->health <= 0) {
+
+                float attackerX = combat.currentCharacter->sprite.player.position.x;
+                float defenderX = combat.selectedCharacter->sprite.player.position.x;
+                float attackerY = combat.currentCharacter->sprite.player.position.y;
+                float defenderY = combat.selectedCharacter->sprite.player.position.y;
+                Animation speechBubble{};
+                SetupSpeechBubbleAnimation(speechBubble, "Haha!", attackerX, attackerY - 25, 1.5f, 0.0f);
+                combat.animations.push_back(speechBubble);
+
                 std::string logMessage = combat.selectedCharacter->name + " is defeated!";
                 combat.log.push_back(logMessage);
+                Animation deathAnim{};
+                SetupDeathAnimation(deathAnim, combat.selectedCharacter, 0.5f);
+                combat.animations.push_back(deathAnim);
+                combat.waitTime = 0.6f;
+                combat.nextState = TurnState::EndTurn;
+                combat.turnState = TurnState::Waiting;
+                Animation bloodAnim{};
+                SetupBloodPoolAnimation(bloodAnim, combat.selectedCharacter->sprite.player.position, 5.0f);
+                combat.animations.push_back(bloodAnim);
+            } else {
+                combat.turnState = TurnState::EndTurn;
             }
-            combat.turnState = TurnState::EndTurn;
             break;
         }
         case TurnState::EnemyTurn: {
@@ -536,11 +545,14 @@ void UpdateCombatScreen(CombatState &combat, float dt) {
             }
             */
 
-            combat.selectedCharacter = SelectTargetBasedOnThreat(combat);
-            TraceLog(LOG_INFO, "Enemy attacking: %s", combat.selectedCharacter->name.c_str());
-
-
-            combat.turnState = TurnState::EndTurn;
+            // obtain AiInterface
+            AiInterface* ai = GetAiInterface(combat.currentCharacter->ai);
+            if(ai != nullptr) {
+                HandleTurn(*ai, combat, gridState);
+            } else {
+                TraceLog(LOG_WARNING, "No AI interface found for %s", combat.currentCharacter->ai.c_str());
+                combat.turnState = TurnState::EndTurn;
+            }
             break;
         }
         case TurnState::Waiting: {
@@ -553,9 +565,9 @@ void UpdateCombatScreen(CombatState &combat, float dt) {
         }
         case TurnState::EndRound: {
             Animation textAnim{};
-            SetupTextAnimation(textAnim, "Next round!", 125, 2.0f, 1.0f);
+            SetupTextAnimation(textAnim, "Next round!", 125, 1.0f, 1.0f);
             combat.animations.push_back(textAnim);
-            combat.waitTime = 3.0f;
+            combat.waitTime = 2.0f;
             combat.nextState = TurnState::StartTurn;
             combat.turnState = TurnState::Waiting;
             UpdateStatusEffects(combat);
@@ -575,7 +587,7 @@ void UpdateCombatScreen(CombatState &combat, float dt) {
     }
     if(allEnemiesDefeated) {
         combat.turnState = TurnState::Victory;
-        combat.animations.clear();
+        //combat.animations.clear();
     }
     // check defeat condition, all players have zero health
     bool allPlayersDefeated = true;
@@ -587,6 +599,6 @@ void UpdateCombatScreen(CombatState &combat, float dt) {
     }
     if(allPlayersDefeated) {
         combat.turnState = TurnState::Defeat;
-        combat.animations.clear();
+        //combat.animations.clear();
     }
 }
