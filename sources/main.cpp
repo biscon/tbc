@@ -140,11 +140,11 @@ int main(void) {
     };
     std::vector<Character> enemyCharacters = {
             {"Enemy1", "Fighter", 50,  50,  15, 2, 5, 0, 0, {}},
-            {"Enemy2", "Fighter", 40, 40, 25, 2, 15, 0, 0, {}},
-            {"Enemy3", "Fighter", 40, 40, 18, 5, 5, 0, 0, {}},
-            {"Enemy4", "Fighter", 40,  40,  18, 5, 5, 0, 0, {}},
-            {"Enemy5", "Fighter", 100, 100, 25, 7, 5, 0, 0, {}},
-            {"Enemy6", "Fighter", 100, 100, 25, 7, 5, 0, 0, {}}
+            {"Enemy2", "Fighter", 20, 20, 25, 2, 15, 0, 0, {}},
+            {"Enemy3", "Fighter", 30, 30, 18, 5, 5, 0, 0, {}},
+            {"Enemy4", "Fighter", 40, 40,  18, 5, 5, 0, 0, {}},
+            {"Enemy5", "Fighter", 50, 50, 25, 7, 5, 0, 0, {}},
+            {"Enemy6", "Fighter", 60, 60, 25, 7, 5, 0, 0, {}}
     };
 
     for(auto &character : playerCharacters) {
