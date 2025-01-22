@@ -120,7 +120,7 @@ void DrawPathSelection(GridState &gridState, CombatState &combat) {
             Color pathColor = Fade(WHITE, gridState.highlightAlpha);
             if (path.cost > combat.currentCharacter->movePoints) {
                 DrawStatusText(TextFormat("Not enough movement points (%d)", combat.currentCharacter->movePoints),
-                               WHITE, 10, 10);
+                               WHITE, 220, 10);
                 pathColor = Fade(RED, gridState.highlightAlpha);
                 // Draw cross
                 DrawLine(gridPos.x * 16, gridPos.y * 16 + 1, gridPos.x * 16 + 15, gridPos.y * 16 + 16, pathColor);
@@ -128,7 +128,7 @@ void DrawPathSelection(GridState &gridState, CombatState &combat) {
 
             } else {
                 DrawStatusText(TextFormat("Movement points %d/%d", path.cost, combat.currentCharacter->movePoints),
-                               WHITE, 10, 10);
+                               WHITE, 220, 10);
             }
             for (int i = 0; i < path.path.size() - 1; i++) {
                 Vector2 start = GridToPixelPosition(path.path[i].x, path.path[i].y);
@@ -211,7 +211,7 @@ void DrawSelectCharacter(GridState &gridState, CombatState &combat, bool onlyEne
     }
     DrawSelectCharacters(gridState, combat.enemyCharacters, RED);
     if (gridState.selectedCharacter != nullptr) {
-        DrawStatusText(TextFormat("Selected: %s", gridState.selectedCharacter->name.c_str()), YELLOW, 10, 10);
+        DrawStatusText(TextFormat("Selected: %s", gridState.selectedCharacter->name.c_str()), YELLOW, 220, 10);
 
         if (IsCharacterAdjacentToPlayer(combat, *combat.currentCharacter, *gridState.selectedCharacter)) {
             // draw last line from player to selected character
@@ -232,10 +232,10 @@ void DrawSelectCharacter(GridState &gridState, CombatState &combat, bool onlyEne
                 ResetGridState(gridState);
             }
         } else {
-            DrawStatusText(TextFormat("Too far away!"), WHITE, 25, 10);
+            DrawStatusText(TextFormat("Too far away!"), WHITE, 240, 10);
         }
     } else {
-        DrawStatusText("Select a character", WHITE, 10, 10);
+        DrawStatusText("Select a character", WHITE, 220, 10);
     }
 }
 
@@ -290,7 +290,7 @@ void DrawGridCharacters(GridState &state, CombatState &combat) {
         Vector2 charPos = GetAnimatedCharPos(combat, character);
         // Draw oval shadow underneath
         if(character->health > 0)
-            DrawEllipse((int) charPos.x, (int) charPos.y, 6, 4, Fade(BLACK, 0.25f));
+            DrawEllipse((int) charPos.x, (int) charPos.y, 6, 4, Fade(BLACK, 0.5f));
 
         if (IsCharacterVisible(combat, character)) {
             DrawSpriteAnimation(character->sprite.player, charPos.x, charPos.y);
@@ -450,6 +450,7 @@ void DrawGrid(GridState &gridState, CombatState &combat) {
     DrawPathAndSelection(gridState, combat);
     DrawGridCharacters(gridState, combat);
     DrawTileLayer(combat.tileMap, TOP_LAYER, 0, 0);
+
     // get mouse position
     gridState.floatingStatsCharacter = nullptr;
     Vector2 mousePos = GetMousePosition();

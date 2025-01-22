@@ -80,8 +80,7 @@ static bool DrawActionIcon(float x, float y, ActionIcon &actionIcon, CombatUISta
 }
 
 static void DisplayActionUI(CombatState &combat, CombatUIState &uiState, GridState &gridState) {
-    //DrawRectangle(0, 220, 480, 270, Fade(BLACK, 0.75f));
-    DrawRectangleRounded((Rectangle) {0, 209, 480, 60}, 0.2f, 16, Fade(BLACK, 0.75f));
+    //DrawRectangleRec((Rectangle) {0, 209, 480, 65}, Fade(BLACK, 0.75f));
 
     float iconWidth = 32;
     float iconHeight = 32;
@@ -304,15 +303,17 @@ void DisplayCombatScreen(CombatState &combat, CombatUIState &uiState, GridState 
     // Draw the dividing line in the middle of the screen
     //DrawLine(0, 125, 480, 125, LIGHTGRAY); // Horizontal dividing line
 
+    // Draw the combat log
+    /*
+    if (combat.turnState != TurnState::Victory && combat.turnState != TurnState::Defeat &&
+        combat.turnState != TurnState::SelectEnemy && combat.turnState != TurnState::SelectAction && combat.turnState != TurnState::SelectDestination) {
+        DisplayCombatLog(combat);
+    }
+     */
+
     // Draw the grid
     DrawGrid(gridState, combat);
 
-
-    // Draw the combat log
-    if (combat.turnState != TurnState::Victory && combat.turnState != TurnState::Defeat &&
-        combat.turnState != TurnState::SelectEnemy) {
-        DisplayCombatLog(combat);
-    }
 
     if (combat.turnState == TurnState::SelectAction) {
         DisplayActionUI(combat, uiState, gridState);
