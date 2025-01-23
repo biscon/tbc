@@ -5,10 +5,10 @@
 #ifndef SANDBOX_COMBATSCREEN_H
 #define SANDBOX_COMBATSCREEN_H
 
-#include "Character.h"
-#include "Combat.h"
+#include "character/Character.h"
+#include "combat/Combat.h"
 #include "Grid.h"
-#include "ParticleSystem.h"
+#include "graphics/ParticleSystem.h"
 
 struct ActionIcon {
     char text[64];
@@ -20,9 +20,13 @@ struct ActionIcon {
 struct CombatUIState {
     int actionIconScrollIndex;
     bool showActionBarTitle;
+    Music combatMusic;
+    Music combatVictoryMusic;
+    Music combatDefeatMusic;
 };
 
 void InitCombatUIState(CombatUIState &uiState);
+void DestroyCombatUIState(CombatUIState &uiState);
 void DisplayCombatScreen(CombatState &combat, CombatUIState &uiState, GridState &gridState);
 void UpdateCombatScreen(CombatState &combat, CombatUIState &uiState, GridState& gridState, float dt);
 Character* SelectTargetBasedOnThreat(CombatState& combat);

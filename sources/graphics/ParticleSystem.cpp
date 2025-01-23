@@ -165,7 +165,7 @@ void CreateSmokeEffect(ParticleManager &manager, Vector2 position, float duratio
     emitter->blendAdditive = false;
 }
 
-void CreateExplosionEffect(ParticleManager &manager, Vector2 position, int count, float power) {
+void CreateExplosionEffect(ParticleManager &manager, Vector2 position, int count, float power, float duration) {
     ParticleEmitter* emitter = CreateParticleEmitter(manager, count * 3, position);
     emitter->emitCallback = [power](ParticleEmitter &emitter) {
         const Color FIRE_RED = Color{255, 69, 0, 255};   // Fire red (#FF4500)
@@ -173,6 +173,6 @@ void CreateExplosionEffect(ParticleManager &manager, Vector2 position, int count
         EmitParticles(emitter, emitter.maxParticles/4, { power, 0 }, 0.0f, FIRE_RED, 2.0f, 0.75f, EMIT_RADIAL);
         EmitParticles(emitter, emitter.maxParticles/4, { power, 0 }, 0.0f, FIRE_RED, 1.0f, 0.75f, EMIT_RADIAL);
     };
-    emitter->duration = -1; // Quick burst
+    emitter->duration = duration; // Quick burst
     emitter->blendAdditive = true;
 }

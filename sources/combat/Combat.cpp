@@ -6,9 +6,12 @@
 #include <cmath>
 #include <climits>
 #include "Combat.h"
-#include "Random.h"
-#include "Animation.h"
+#include "util/Random.h"
+#include "graphics/Animation.h"
 #include "raylib.h"
+#include "ui/UI.h"
+#include "ui/CombatScreen.h"
+
 
 static void InitializeThreatTable(CombatState& combat) {
     combat.threatTable.clear();
@@ -66,7 +69,7 @@ void IncreaseThreat(CombatState& combat, Character* target, int amount) {
     float additiveModifier = 0.0f;
     float multiplicativeModifier = 1.0f;
 
-    auto effects = GetStatusEffectsByType(*target, StatusEffectType::ThreatModifier);
+    auto effects = GetStatusEffectsByType(target->statusEffects, StatusEffectType::ThreatModifier);
     for (auto& effect : effects) {
         if (effect->value >= 1.0f) {
             // Treat values >= 1 as multiplicative modifiers
@@ -101,7 +104,7 @@ void SetTaunt(CombatState& combat, Character* target) {
 
 bool IsIncapacitated(Character* character) {
     // Check if the character is stunned
-    if (GetStatusEffectByType(*character, StatusEffectType::Stun) != nullptr) {
+    if (GetStatusEffectByType(character->statusEffects, StatusEffectType::Stun) != nullptr) {
         return true;
     }
     // Check if the character is dead
@@ -126,7 +129,7 @@ static int CalculateMissChance(Character &attacker, Character &defender) {
     int missChance = baseMissChance - (attacker.speed * 3); // Higher speed reduces miss chance
 
     // Use helper function to get the rank of the Dodge skill
-    int dodgeRank = GetSkillRank(defender, SkillType::Dodge);
+    int dodgeRank = GetSkillRank(defender.skills, SkillType::Dodge);
 
     // Apply dodge bonus if the character has the Dodge skill
     if (dodgeRank == 1) missChance += 5;  // +5% miss chance for Dodge Rank 1
@@ -148,7 +151,7 @@ static int CalculateMissChance(Character &attacker, Character &defender) {
 static int CalculateDamageReduction(Character &defender, int baseDamage) {
     // loop through all status effects and calculate damage reduction
     float damageReductionPct = 0;
-    auto effects = GetStatusEffectsByType(defender, StatusEffectType::DamageReduction);
+    auto effects = GetStatusEffectsByType(defender.statusEffects, StatusEffectType::DamageReduction);
     for (auto &effect : effects) {
         damageReductionPct += effect->value;
     }
@@ -204,7 +207,8 @@ static int CalculateDamage(CombatState& combat, Character &attacker, Character &
         combat.animations.push_back(speechBubble);
     }
     Animation damageNumberAnim{};
-    SetupDamageNumberAnimation(damageNumberAnim, TextFormat("%d", baseDamage), defenderX, defenderY-25, YELLOW, 20);
+    Color dmgColor = GetDamageColor(baseDamage);
+    SetupDamageNumberAnimation(damageNumberAnim, TextFormat("%d", baseDamage), defenderX, defenderY-25, dmgColor, isCritical ? 20 : 10);
     combat.animations.push_back(damageNumberAnim);
 
     return baseDamage;
@@ -258,15 +262,15 @@ int DealDamage(CombatState& combat, Character &attacker, Character &defender, in
         //std::cout << "**Critical Hit!** ";
         std::string logMessage = "**Critical Hit!** ";
         combat.log.push_back(logMessage);
+        /*
         Animation damageNumberAnim{};
-        SetupDamageNumberAnimation(damageNumberAnim, "CRITICAL!!!", attackerX, attackerY, WHITE, 10);
+        SetupDamageNumberAnimation(damageNumberAnim, "CRITICAL!!!", defenderX, defenderY-45, WHITE, 10);
         combat.animations.push_back(damageNumberAnim);
-        Animation speechBubble{};
-        SetupSpeechBubbleAnimation(speechBubble, "Gotta hurt!", defenderX, defenderY - 25, 1.5f, 0.0f);
-        combat.animations.push_back(speechBubble);
+         */
     }
     Animation damageNumberAnim{};
-    SetupDamageNumberAnimation(damageNumberAnim, TextFormat("%d", baseDamage), defenderX, defenderY-25, YELLOW, 20);
+    Color dmgColor = GetDamageColor(baseDamage);
+    SetupDamageNumberAnimation(damageNumberAnim, TextFormat("%d", baseDamage), defenderX, defenderY-25, dmgColor, isCritical ? 20 : 10);
     combat.animations.push_back(damageNumberAnim);
 
     defender.health -= baseDamage;
@@ -285,6 +289,50 @@ int DealDamage(CombatState& combat, Character &attacker, Character &defender, in
     std::string logMessage2 = defender.name + " has " + std::to_string(defender.health) + " health left.";
     combat.log.push_back(logMessage2);
     return baseDamage;
+}
+
+int DealDamageStatusEffect(CombatState& combat, Character &target, int damage) {
+    float targetX = target.sprite.player.position.x;
+    float targetY = target.sprite.player.position.y;
+
+    // Base damage calculation
+    int baseDamage = damage;
+    int damageReduction = CalculateDamageReduction(target, baseDamage);
+    TraceLog(LOG_INFO, "Damage reduction: %i", damageReduction);
+    baseDamage -= damageReduction;
+    if (baseDamage < 0) baseDamage = 0;  // No negative damage
+
+    Animation damageNumberAnim{};
+    Color dmgColor = GetDamageColor(baseDamage);
+    SetupDamageNumberAnimation(damageNumberAnim, TextFormat("%d", baseDamage), targetX, targetY-25, dmgColor, 10);
+    combat.animations.push_back(damageNumberAnim);
+
+    target.health -= baseDamage;
+
+    // Ensure health does not drop below 0
+    if (target.health < 0) target.health = 0;
+
+    // Log the attack and damage dealt
+    std::string logMessage = target.name + " takes " + std::to_string(damage) + " damage! (status effect)";
+    combat.log.push_back(logMessage);
+
+    std::string logMessage2 = target.name + " has " + std::to_string(target.health) + " health left.";
+    combat.log.push_back(logMessage2);
+    return baseDamage;
+}
+
+void KillCharacter(CombatState &combat, Character &character) {
+    std::string logMessage = character.name + " is defeated!";
+    combat.log.push_back(logMessage);
+    Animation deathAnim{};
+    SetupDeathAnimation(deathAnim, &character, 0.5f);
+    combat.animations.push_back(deathAnim);
+    character.health = 0;
+    // Remove character from turn order
+    //combat.turnOrder.erase(std::remove(combat.turnOrder.begin(), combat.turnOrder.end(), &character), combat.turnOrder.end());
+    Animation bloodAnim{};
+    SetupBloodPoolAnimation(bloodAnim, character.sprite.player.position, 5.0f);
+    combat.animations.push_back(bloodAnim);
 }
 
 bool IsPlayerCharacter(CombatState &combat, Character &character) {
@@ -319,41 +367,12 @@ void InitCombat(CombatState &combat, std::vector<Character> &playerCharacters, s
 
     combat.currentCharacter = combat.turnOrder[0];
     combat.currentCharacterIdx = 0;
-    combat.nextState = TurnState::StartTurn;
+    combat.nextState = TurnState::StartRound;
     combat.waitTime = 3.0f;
     combat.turnState = TurnState::Waiting;
     Animation textAnim{};
     SetupTextAnimation(textAnim, "First round!", 125, 2.0f, 0.0f);
     combat.animations.push_back(textAnim);
-}
-
-void UpdateStatusEffects(CombatState &combat) {
-    for(auto &character : combat.turnOrder) {
-        for(auto &effect : character->statusEffects) {
-            if(effect.roundsLeft > 0) {
-                effect.roundsLeft--;
-                // maybe apply them here
-            }
-        }
-        // Use erase-remove idiom to remove animations which are done
-        character->statusEffects.erase(
-                std::remove_if(character->statusEffects.begin(), character->statusEffects.end(),
-                               [&combat, &character](const StatusEffect& effect) {
-                                   if(effect.roundsLeft == 0) {
-                                       std::string logMessage = character->name + " is no longer affected by " + GetStatusEffectName(effect.type);
-                                       combat.log.push_back(logMessage);
-                                   }
-                                   return effect.roundsLeft == 0;
-                               }),
-                character->statusEffects.end()
-        );
-    }
-}
-
-void UpdateSkillCooldown(CombatState &combat) {
-    for(auto &character : combat.turnOrder) {
-        DecreaseSkillCooldown(*character);
-    }
 }
 
 void NextCharacter(CombatState &combat) {

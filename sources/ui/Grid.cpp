@@ -6,10 +6,10 @@
 #include <cmath>
 #include "Grid.h"
 #include "raylib.h"
-#include "ui.h"
+#include "UI.h"
 #include "raymath.h"
-#include "Blood.h"
-#include "ParticleSystem.h"
+#include "graphics/BloodPool.h"
+#include "graphics/ParticleSystem.h"
 
 static bool IsCharacterVisible(CombatState &combat, Character *character) {
     // Check if the character is visible (not blinking)

@@ -2,11 +2,11 @@
 // Created by bison on 13-01-25.
 //
 
-#include "Skills.h"
-#include "Random.h"
+#include "SkillRunner.h"
+#include "util/Random.h"
 #include "raymath.h"
 
-SkillResult UseSkill(CombatState& combat, GridState& gridState) {
+SkillResult ExecuteSkill(CombatState& combat, GridState& gridState) {
     SkillResult result;
     result.success = false;
     result.attack = false;
@@ -27,6 +27,11 @@ SkillResult UseSkill(CombatState& combat, GridState& gridState) {
                 result.message = user.name + " used " + skill->name + " on " + target.name + " and stunned them!";
                 result.attack = true;
                 result.consumeAction = true;
+                Animation damageNumberAnim{};
+                float userX = user.sprite.player.position.x;
+                float userY = user.sprite.player.position.y;
+                SetupDamageNumberAnimation(damageNumberAnim, combat.selectedSkill->name, userX, userY - 25, YELLOW, 10);
+                combat.animations.push_back(damageNumberAnim);
             } else {
                 result.message = user.name + " used " + skill->name + " on " + target.name + " but it failed!";
                 result.attack = true;
@@ -67,10 +72,15 @@ SkillResult UseSkill(CombatState& combat, GridState& gridState) {
 
                 std::vector<Character*> targets = GetTargetsInLine(combat, startPos, gridDir, skill->range, &user);
                 for(auto &t : targets) {
-                    t->statusEffects.push_back({StatusEffectType::Burning, skill->rank + 2, 10.0f});
+                    AssignStatusEffect(t->statusEffects, StatusEffectType::Burning, skill->rank + 2, 5.0f);
                     // calculate damage
                     int damage = RandomInRange(10, 20);
                     DealDamage(combat, user, *t, damage);
+                    CreateExplosionEffect(*gridState.particleManager, {t->sprite.player.position.x, t->sprite.player.position.y}, 10, 16.0f, 0.2f);
+                    // check if dead
+                    if(t->health <= 0) {
+                        KillCharacter(combat, *t);
+                    }
                 }
             } else {
                 result.success = false;
@@ -86,3 +96,8 @@ SkillResult UseSkill(CombatState& combat, GridState& gridState) {
     return result;
 }
 
+void UpdateSkillCooldown(CombatState &combat) {
+    for(auto &character : combat.turnOrder) {
+        DecreaseSkillCooldown(character->skills);
+    }
+}

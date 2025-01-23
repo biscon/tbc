@@ -4,8 +4,8 @@
 
 #include <algorithm>
 #include "FighterAi.h"
-#include "CombatState.h"
-#include "Grid.h"
+#include "combat/CombatState.h"
+#include "ui/Grid.h"
 #include "Ai.h"
 
 static bool AttackIfPossible(CombatState &combat) {

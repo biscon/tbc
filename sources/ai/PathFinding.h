@@ -5,8 +5,8 @@
 #ifndef SANDBOX_PATHFINDING_H
 #define SANDBOX_PATHFINDING_H
 
-#include "CombatState.h"
-#include "MathUtil.h"
+#include "combat/CombatState.h"
+#include "util/MathUtil.h"
 
 const int GRID_WIDTH = 30;
 const int GRID_HEIGHT = 13;

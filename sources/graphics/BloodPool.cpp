@@ -2,7 +2,7 @@
 // Created by bison on 21-01-25.
 //
 
-#include "Blood.h"
+#include "BloodPool.h"
 #include "raylib.h"
 
 const Color DARK_BLOOD_RED = Color{139, 0, 0, 255};   // Dark blood red (#8B0000)
@@ -12,12 +12,12 @@ const Color LIGHT_BLOOD_RED = Color{204, 51, 51, 255};  // Light blood red (#FF6
 static RenderTexture2D bloodTexture;
 
 // Initialize the blood texture
-void InitializeBloodRendering() {
+void InitBloodRendering() {
     bloodTexture = LoadRenderTexture(480, 270); // Assuming the screen size
 }
 
 // Clean up when done
-void UnloadBloodRendering() {
+void DestroyBloodRendering() {
     UnloadRenderTexture(bloodTexture);
 }
 

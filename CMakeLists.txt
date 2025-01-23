@@ -25,42 +25,48 @@ set(PROJECT_INCLUDE "${CMAKE_CURRENT_LIST_DIR}/sources/") # Define PROJECT_INCLU
 
 # Declaring our executable
 add_executable(${PROJECT_NAME}
-        sources/Character.h
-        sources/Combat.cpp
-        sources/Combat.h
-        sources/Random.cpp
-        sources/Random.h
-        sources/CombatScreen.cpp
-        sources/CombatScreen.h
+        sources/character/Character.h
+        sources/combat/Combat.cpp
+        sources/combat/Combat.h
+        sources/util/Random.cpp
+        sources/util/Random.h
+        sources/ui/CombatScreen.cpp
+        sources/ui/CombatScreen.h
         sources/raygui.h
-        sources/Animation.cpp
-        sources/Animation.h
+        sources/graphics/Animation.cpp
+        sources/graphics/Animation.h
         sources/reasings.h
-        sources/Skills.cpp
-        sources/Skills.h
-        sources/Sprite.cpp
-        sources/Sprite.h
-        sources/Grid.cpp
-        sources/Grid.h
-        sources/ui.cpp
-        sources/ui.h
-        sources/MathUtil.cpp
-        sources/MathUtil.h
-        sources/CombatState.cpp
-        sources/CombatState.h
+        sources/combat/SkillRunner.cpp
+        sources/combat/SkillRunner.h
+        sources/graphics/Sprite.cpp
+        sources/graphics/Sprite.h
+        sources/ui/Grid.cpp
+        sources/ui/Grid.h
+        sources/ui/UI.cpp
+        sources/ui/UI.h
+        sources/util/MathUtil.cpp
+        sources/util/MathUtil.h
+        sources/combat/CombatState.cpp
+        sources/combat/CombatState.h
         sources/ai/Ai.cpp
         sources/ai/Ai.h
         sources/ai/FighterAi.cpp
         sources/ai/FighterAi.h
-        sources/cute_tiled.h
-        sources/PathFinding.cpp
-        sources/PathFinding.h
-        sources/TileMap.cpp
-        sources/TileMap.h
-        sources/Blood.cpp
-        sources/Blood.h
-        sources/ParticleSystem.cpp
-        sources/ParticleSystem.h
+        sources/util/cute_tiled.h
+        sources/ai/PathFinding.cpp
+        sources/ai/PathFinding.h
+        sources/graphics/TileMap.cpp
+        sources/graphics/TileMap.h
+        sources/graphics/BloodPool.cpp
+        sources/graphics/BloodPool.h
+        sources/graphics/ParticleSystem.cpp
+        sources/graphics/ParticleSystem.h
+        sources/character/StatusEffect.cpp
+        sources/character/StatusEffect.h
+        sources/character/Skill.cpp
+        sources/character/Skill.h
+        sources/combat/StatusEffectRunner.cpp
+        sources/combat/StatusEffectRunner.h
 )
 target_sources(${PROJECT_NAME} PRIVATE ${PROJECT_SOURCES})
 target_include_directories(${PROJECT_NAME} PRIVATE ${PROJECT_INCLUDE})

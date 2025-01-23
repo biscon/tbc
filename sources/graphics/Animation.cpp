@@ -7,7 +7,7 @@
 #include "raylib.h"
 #include "reasings.h"
 #include "raymath.h"
-#include "Random.h"
+#include "util/Random.h"
 
 void SetupBlinkAnimation(Animation &animation, Character *character, float duration) {
     animation.type = AnimationType::Blink;

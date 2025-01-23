@@ -5,8 +5,8 @@
 #ifndef SANDBOX_AI_H
 #define SANDBOX_AI_H
 
-#include "CombatState.h"
-#include "Grid.h"
+#include "combat/CombatState.h"
+#include "ui/Grid.h"
 
 struct AiInterface {
     void (*HandleTurn)(CombatState &combat, GridState &gridState);

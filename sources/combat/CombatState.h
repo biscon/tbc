@@ -6,9 +6,9 @@
 #define SANDBOX_COMBATSTATE_H
 
 #include <map>
-#include "Character.h"
-#include "Animation.h"
-#include "TileMap.h"
+#include "character/Character.h"
+#include "graphics/Animation.h"
+#include "graphics/TileMap.h"
 
 enum class TurnState {
     StartTurn,
@@ -24,6 +24,7 @@ enum class TurnState {
     Waiting,
     Victory,
     Defeat,
+    StartRound,
     EndRound,
 };
 

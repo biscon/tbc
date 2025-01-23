@@ -5,7 +5,7 @@
 #include "TileMap.h"
 
 #define CUTE_TILED_IMPLEMENTATION
-#include "cute_tiled.h"
+#include "util/cute_tiled.h"
 
 void LoadTileMap(TileMap &tileMap, const char *filename, SpriteSheet* tileSet) {
     tileMap.tileSet = tileSet;

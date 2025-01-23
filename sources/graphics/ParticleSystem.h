@@ -59,6 +59,6 @@ void DrawParticleManager(ParticleManager &manager);
 void CreateBloodSplatter(ParticleManager &manager, Vector2 position, int count, float power);
 void CreateFireEffect(ParticleManager &manager, Vector2 position, Vector2 direction, float duration, float intensity);
 void CreateSmokeEffect(ParticleManager &manager, Vector2 position, float duration, float intensity);
-void CreateExplosionEffect(ParticleManager &manager, Vector2 position, int count, float power);
+void CreateExplosionEffect(ParticleManager &manager, Vector2 position, int count, float power, float duration);
 
 #endif //SANDBOX_PARTICLESYSTEM_H

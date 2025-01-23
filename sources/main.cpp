@@ -16,14 +16,14 @@
 #include "raylib.h"
 
 #include "raymath.h"        // Required for: Vector2Clamp()
-#include "Character.h"
-#include "Combat.h"
-#include "CombatScreen.h"
-#include "Sprite.h"
+#include "character/Character.h"
+#include "combat/Combat.h"
+#include "ui/CombatScreen.h"
+#include "graphics/Sprite.h"
 #include "ai/FighterAi.h"
-#include "ui.h"
-#include "Blood.h"
-#include "ParticleSystem.h"
+#include "ui/UI.h"
+#include "graphics/BloodPool.h"
+#include "graphics/ParticleSystem.h"
 
 #define MAX(a, b) ((a)>(b)? (a) : (b))
 #define MIN(a, b) ((a)<(b)? (a) : (b))
@@ -40,6 +40,8 @@ int main(void) {
     SetConfigFlags(FLAG_WINDOW_RESIZABLE | FLAG_VSYNC_HINT);
     InitWindow(windowWidth, windowHeight, "RPG");
     SetWindowMinSize(320, 240);
+
+    InitAudioDevice();      // Initialize audio device
 
     int gameScreenWidth = 480;
     int gameScreenHeight = 270;
@@ -155,17 +157,15 @@ int main(void) {
     InitGrid(gridState, spriteAnimationManager, &particleManager);
     SetInitialGridPositions(gridState, combat);
 
-    InitializeBloodRendering();
+    InitBloodRendering();
 
 
 
     // Create effects
-    /*
-    CreateBloodSplatter(particleManager, {100, 150}, 10, 20.0f);
-    CreateFireEffect(particleManager, {240, 150}, -1, 5);        // Longer duration, reduced intensity
-    CreateSmokeEffect(particleManager, {380, 150}, -1, 50);      // Longer smoke, fewer particles
-    CreateExplosionEffect(particleManager, {100, 30}, 10, 50.0f);
-    */
+
+    //CreateBloodSplatter(particleManager, {100, 150}, 10, 20.0f);
+    //CreateSmokeEffect(particleManager, {380, 150}, -1, 50);      // Longer smoke, fewer particles
+    //CreateExplosionEffect(particleManager, {100, 30}, 10, 50.0f);
 
 
     /*
@@ -251,9 +251,10 @@ int main(void) {
     //--------------------------------------------------------------------------------------
     UnloadRenderTexture(target);        // Unload render texture
 
-
     DestroyParticleManager(particleManager);
-    UnloadBloodRendering();
+    DestroyBloodRendering();
+
+    DestroyCombatUIState(combatUIState);
 
     //UnloadFont(font);                   // Unload custom font
     UnloadFont(font2);                   // Unload custom font
@@ -263,6 +264,8 @@ int main(void) {
 
     UnloadTileMap(combat.tileMap);     // Unload tile map (free memory
     UnloadSpriteSheet(tileSet);     // Unload sprite sheet
+
+    CloseAudioDevice();     // Close audio device
 
     CloseWindow();                      // Close window and OpenGL context
     //--------------------------------------------------------------------------------------

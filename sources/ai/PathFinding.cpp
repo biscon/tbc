@@ -472,6 +472,9 @@ std::vector<Character*> GetTargetsInLine(CombatState &combat, Vector2i start, Ve
 
         // Check if a character is on this tile
         for (auto &character : combat.playerCharacters) {
+            if(character == exceptCharacter) continue;
+            // skip dead
+            if (character->health <= 0) continue;
             Vector2i gridPos = PixelToGridPositionI(character->sprite.player.position.x, character->sprite.player.position.y);
             if (gridPos == tilePos) {
                 affectedCharacters.push_back(character);
@@ -479,6 +482,9 @@ std::vector<Character*> GetTargetsInLine(CombatState &combat, Vector2i start, Ve
         }
 
         for (auto &character : combat.enemyCharacters) {
+            if(character == exceptCharacter) continue;
+            // skip dead
+            if (character->health <= 0) continue;
             Vector2i gridPos = PixelToGridPositionI(character->sprite.player.position.x, character->sprite.player.position.y);
             if (gridPos == tilePos) {
                 affectedCharacters.push_back(character);

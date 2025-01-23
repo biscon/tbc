@@ -10,19 +10,30 @@
 #define RAYGUI_IMPLEMENTATION
 
 #include "raygui.h"
-#include "Character.h"
+#include "character/Character.h"
 #include "Grid.h"
-#include "ui.h"
-#include "Skills.h"
+#include "UI.h"
+#include "combat/SkillRunner.h"
 #include "ai/Ai.h"
 #include "raymath.h"
-#include "Random.h"
+#include "util/Random.h"
+#include "combat/StatusEffectRunner.h"
 
 const Color BACKGROUND_GREY = Color{50, 50, 50, 255};
 
 void InitCombatUIState(CombatUIState &uiState) {
     uiState.actionIconScrollIndex = 0;
     uiState.showActionBarTitle = true;
+    uiState.combatMusic = LoadMusicStream(ASSETS_PATH"music/combat_music.ogg");
+    uiState.combatVictoryMusic = LoadMusicStream(ASSETS_PATH"music/victory_music.ogg");
+    uiState.combatDefeatMusic = LoadMusicStream(ASSETS_PATH"music/defeat_music.ogg");
+    PlayMusicStream(uiState.combatMusic);
+}
+
+void DestroyCombatUIState(CombatUIState &uiState) {
+    UnloadMusicStream(uiState.combatMusic);
+    UnloadMusicStream(uiState.combatVictoryMusic);
+    UnloadMusicStream(uiState.combatDefeatMusic);
 }
 
 static bool IsCharacterVisible(CombatState &combat, Character *character) {
@@ -162,8 +173,7 @@ static void DisplayActionUI(CombatState &combat, CombatUIState &uiState, GridSta
             if (i + uiState.actionIconScrollIndex == 2) {
                 // Defend button pressed
                 combat.turnState = TurnState::EndTurn;
-                StatusEffect effect = {StatusEffectType::DamageReduction, 1, 0.5f};
-                combat.currentCharacter->statusEffects.push_back(effect);
+                AssignStatusEffectAllowStacking(combat.currentCharacter->statusEffects, StatusEffectType::DamageReduction, 1, 0.5f);
                 float charX = combat.currentCharacter->sprite.player.position.x;
                 float charY = combat.currentCharacter->sprite.player.position.y;
                 Animation anim{};
@@ -393,7 +403,18 @@ static void FaceCharacter(Character &attacker, Character &defender) {
 }
 
 void UpdateCombatScreen(CombatState &combat, CombatUIState &uiState, GridState& gridState, float dt) {
+    UpdateMusicStream(uiState.combatMusic);
+    UpdateMusicStream(uiState.combatVictoryMusic);
+    UpdateMusicStream(uiState.combatDefeatMusic);
     switch(combat.turnState) {
+        case TurnState::StartRound: {
+            TraceLog(LOG_INFO, "Start round");
+            combat.waitTime = 1.0f;
+            combat.nextState = TurnState::StartTurn;
+            combat.turnState = TurnState::Waiting;
+            ApplyStatusEffects(combat, gridState);
+            break;
+        }
         case TurnState::StartTurn: {
             TraceLog(LOG_INFO, "Start turn");
             Animation blinkAnim{};
@@ -402,7 +423,6 @@ void UpdateCombatScreen(CombatState &combat, CombatUIState &uiState, GridState& 
             int movePoints = (int) (5 + sqrt(combat.currentCharacter->speed) * 2);
             combat.currentCharacter->movePoints = movePoints;
             TraceLog(LOG_INFO, "Restored move points for %s: %d", combat.currentCharacter->name.c_str(), movePoints);
-
 
             combat.waitTime = 0.5f;
             if(IsPlayerCharacter(combat, *combat.currentCharacter)) {
@@ -441,14 +461,10 @@ void UpdateCombatScreen(CombatState &combat, CombatUIState &uiState, GridState& 
             float attackerX = combat.currentCharacter->sprite.player.position.x;
             float attackerY = combat.currentCharacter->sprite.player.position.y;
 
-            SkillResult result = UseSkill(combat, gridState);
+            SkillResult result = ExecuteSkill(combat, gridState);
             Animation damageNumberAnim{};
             if(!combat.selectedSkill->noTarget) {
-                float defenderX = combat.selectedCharacter->sprite.player.position.x;
-                float defenderY = combat.selectedCharacter->sprite.player.position.y;
-                if(result.success) {
-                    SetupDamageNumberAnimation(damageNumberAnim, combat.selectedSkill->name, defenderX, defenderY-25, YELLOW, 10);
-                } else {
+                if(!result.success) {
                     SetupDamageNumberAnimation(damageNumberAnim, "FAILED", attackerX, attackerY-25, WHITE, 10);
                 }
             } else {
@@ -527,22 +543,13 @@ void UpdateCombatScreen(CombatState &combat, CombatUIState &uiState, GridState& 
             }
 
             if(combat.selectedCharacter->health <= 0) {
-
                 Animation speechBubble{};
                 SetupSpeechBubbleAnimation(speechBubble, "Haha!", attackerX, attackerY - 25, 1.5f, 0.0f);
                 combat.animations.push_back(speechBubble);
-
-                std::string logMessage = combat.selectedCharacter->name + " is defeated!";
-                combat.log.push_back(logMessage);
-                Animation deathAnim{};
-                SetupDeathAnimation(deathAnim, combat.selectedCharacter, 0.5f);
-                combat.animations.push_back(deathAnim);
+                KillCharacter(combat, *combat.selectedCharacter);
                 combat.waitTime = 0.6f;
                 combat.nextState = TurnState::EndTurn;
                 combat.turnState = TurnState::Waiting;
-                Animation bloodAnim{};
-                SetupBloodPoolAnimation(bloodAnim, combat.selectedCharacter->sprite.player.position, 5.0f);
-                combat.animations.push_back(bloodAnim);
             } else {
                 combat.waitTime = 0.25f;
                 combat.nextState = TurnState::EndTurn;
@@ -582,7 +589,7 @@ void UpdateCombatScreen(CombatState &combat, CombatUIState &uiState, GridState& 
             SetupTextAnimation(textAnim, "Next round!", 125, 1.0f, 1.0f);
             combat.animations.push_back(textAnim);
             combat.waitTime = 2.0f;
-            combat.nextState = TurnState::StartTurn;
+            combat.nextState = TurnState::StartRound;
             combat.turnState = TurnState::Waiting;
             UpdateStatusEffects(combat);
             DecayThreat(combat, 10);
@@ -599,8 +606,10 @@ void UpdateCombatScreen(CombatState &combat, CombatUIState &uiState, GridState& 
             break;
         }
     }
-    if(allEnemiesDefeated) {
+    if(allEnemiesDefeated && combat.turnState != TurnState::Victory) {
         combat.turnState = TurnState::Victory;
+        StopMusicStream(uiState.combatMusic);
+        PlayMusicStream(uiState.combatVictoryMusic);
         //combat.animations.clear();
     }
     // check defeat condition, all players have zero health
@@ -611,8 +620,17 @@ void UpdateCombatScreen(CombatState &combat, CombatUIState &uiState, GridState& 
             break;
         }
     }
-    if(allPlayersDefeated) {
+    if(allPlayersDefeated && combat.turnState != TurnState::Defeat) {
         combat.turnState = TurnState::Defeat;
+        StopMusicStream(uiState.combatMusic);
+        PlayMusicStream(uiState.combatDefeatMusic);
         //combat.animations.clear();
+    }
+    // Check if the music has finished playing
+    if (GetMusicTimePlayed(uiState.combatVictoryMusic) >= GetMusicTimeLength(uiState.combatVictoryMusic)) {
+        StopMusicStream(uiState.combatVictoryMusic); // Stop the music manually
+    }
+    if (GetMusicTimePlayed(uiState.combatDefeatMusic) >= GetMusicTimeLength(uiState.combatDefeatMusic)) {
+        StopMusicStream(uiState.combatDefeatMusic); // Stop the music manually
     }
 }

@@ -5,7 +5,7 @@
 #ifndef SANDBOX_ANIMATION_H
 #define SANDBOX_ANIMATION_H
 
-#include "Character.h"
+#include "character/Character.h"
 #include "raylib.h"
 
 enum class AnimationType {

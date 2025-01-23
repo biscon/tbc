@@ -5,11 +5,11 @@
 #ifndef SANDBOX_GRID_H
 #define SANDBOX_GRID_H
 
-#include "Combat.h"
-#include "MathUtil.h"
-#include "PathFinding.h"
-#include "TileMap.h"
-#include "ParticleSystem.h"
+#include "combat/Combat.h"
+#include "util/MathUtil.h"
+#include "ai/PathFinding.h"
+#include "graphics/TileMap.h"
+#include "graphics/ParticleSystem.h"
 
 
 enum class GridMode {

@@ -2,7 +2,8 @@
 // Created by bison on 19-01-25.
 //
 
-#include "ui.h"
+#include "UI.h"
+#include "raymath.h"
 
 void DrawStatusText(const char* text, Color color, int y, int size) {
     DrawText(text, 240 - (MeasureText(text, size) / 2), y, size, color);
@@ -74,3 +75,35 @@ void DrawSpeechBubble(float x, float y, const char *text, float alpha) {
     // Draw the text inside the bubble
     DrawText(text, bubbleX + 10, bubbleY + 5, 10, Fade(BLACK, alpha));
 }
+
+Color GetDamageColor(int dmg) {
+    // Clamp damage between 1 and 40
+    dmg = Clamp(dmg, 1, 40);
+
+    // Define key gradient colors
+    Color white = WHITE;
+    Color yellow = YELLOW;
+    Color red = RED;
+
+    // Determine gradient range
+    if (dmg <= 20) {
+        // Interpolate from white to yellow (1 to 20)
+        float t = (float)(dmg - 1) / 19.0f; // Normalized to 0-1
+        return Color{
+                (unsigned char)Lerp(white.r, yellow.r, t),
+                (unsigned char)Lerp(white.g, yellow.g, t),
+                (unsigned char)Lerp(white.b, yellow.b, t),
+                255
+        };
+    } else {
+        // Interpolate from yellow to red (21 to 40)
+        float t = (float)(dmg - 21) / 19.0f; // Normalized to 0-1
+        return Color{
+                (unsigned char)Lerp(yellow.r, red.r, t),
+                (unsigned char)Lerp(yellow.g, red.g, t),
+                (unsigned char)Lerp(yellow.b, red.b, t),
+                255
+        };
+    }
+}
+
