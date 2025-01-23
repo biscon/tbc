@@ -23,34 +23,11 @@
 #include "ai/FighterAi.h"
 #include "ui.h"
 #include "Blood.h"
+#include "ParticleSystem.h"
 
 #define MAX(a, b) ((a)>(b)? (a) : (b))
 #define MIN(a, b) ((a)<(b)? (a) : (b))
 
-void fun() {
-    // Generate a player character
-    /*
-    Character player = GenerateRandomCharacter("Player", false);
-    DisplayCharacterInfo(player);
-
-    // Generate an enemy character
-    Character enemy = GenerateRandomCharacter("Enemy", true);
-    DisplayCharacterInfo(enemy);
-
-    // Start combat between player and enemy
-    Combat(player, enemy);
-    */
-
-    // Create a character with Dodge skill at rank 2 (10% bonus to miss chance)
-    Character player = {"Player", "FighterAi", 100, 100, 15, 5, 10, 100, 100, {}};
-    DisplayCharacterInfo(player);
-    Character enemy = GenerateRandomCharacter("Enemy", true);
-    //Character enemy = {"Enemy", 50, 50, 10, 3, 8, 100, 100, {}};
-    DisplayCharacterInfo(enemy);
-    //Combat(player, enemy);
-// Player attacks Enemy
-    //Attack(player, enemy);
-}
 
 //------------------------------------------------------------------------------------
 // Program main entry point
@@ -124,11 +101,12 @@ int main(void) {
     // Sample player and enemy data
     std::vector<Character> playerCharacters = {
             {"Player1", "Fighter", 120, 120, 20, 10, 10, 0, 0, 0, {}, {
-                {SkillType::Taunt, "Howling Scream", 1, false, true, 0, 3},
+                {SkillType::Taunt, "Howling Scream", 1, false, true, 0, 3, 0},
+                {SkillType::FlameJet, "Burning Hands", 1, false, false, 0, 1, 5},
             }},
             {"Player2", "Fighter", 80,  80,  25, 5,  20, 0, 0, 0, {}, {
-                {SkillType::Dodge, "Dodge", 3, true, true, 0, 0},
-                {SkillType::Stun, "Stunning Blow", 1, false, false, 0, 3},
+                {SkillType::Dodge, "Dodge", 3, true, true, 0, 0, 0},
+                {SkillType::Stun, "Stunning Blow", 1, false, false, 0, 3, 1},
             }, {{StatusEffectType::ThreatModifier, -1, 0.75f}}},
             /*
             {"Player3", "Fighter", 100,  100,  15, 15,  5, 0, 0, 0, {}, {
@@ -144,7 +122,7 @@ int main(void) {
             {"Enemy3", "Fighter", 30, 30, 18, 5, 5, 0, 0, {}},
             {"Enemy4", "Fighter", 40, 40,  18, 5, 5, 0, 0, {}},
             {"Enemy5", "Fighter", 50, 50, 25, 7, 5, 0, 0, {}},
-            {"Enemy6", "Fighter", 60, 60, 25, 7, 5, 0, 0, {}}
+            {"Enemy6", "Fighter", 60, 60, 25, 7, 5, 0, 0, {}},
     };
 
     for(auto &character : playerCharacters) {
@@ -161,16 +139,34 @@ int main(void) {
     CombatUIState combatUIState = {};
     InitCombatUIState(combatUIState);
 
+    SpriteSheet tileSet;
+    //LoadSpriteSheet(tileSet, ASSETS_PATH"town_tiles.png", 16, 16);
+    //LoadTileMap(combat.tileMap, ASSETS_PATH"test_map_01.json", &tileSet);
+    LoadSpriteSheet(tileSet, ASSETS_PATH"sewer_tiles.png", 16, 16);
+    LoadTileMap(combat.tileMap, ASSETS_PATH"test_map_02.json", &tileSet);
+
+    //LoadSpriteSheet(tileSet, ASSETS_PATH"forest_tiles.png", 16, 16);
+    //LoadTileMap(combat.tileMap, ASSETS_PATH"test_map_03.json", &tileSet);
+
+    ParticleManager particleManager;
+    CreateParticleManager(particleManager, {0, 0}, 480, 270);
+
     GridState gridState{};
-    InitGrid(gridState, spriteAnimationManager);
+    InitGrid(gridState, spriteAnimationManager, &particleManager);
     SetInitialGridPositions(gridState, combat);
 
-    SpriteSheet tileSet;
-    LoadSpriteSheet(tileSet, ASSETS_PATH"town_tiles.png", 16, 16);
-
-    LoadTileMap(combat.tileMap, ASSETS_PATH"test_map_01.json", &tileSet);
-
     InitializeBloodRendering();
+
+
+
+    // Create effects
+    /*
+    CreateBloodSplatter(particleManager, {100, 150}, 10, 20.0f);
+    CreateFireEffect(particleManager, {240, 150}, -1, 5);        // Longer duration, reduced intensity
+    CreateSmokeEffect(particleManager, {380, 150}, -1, 50);      // Longer smoke, fewer particles
+    CreateExplosionEffect(particleManager, {100, 30}, 10, 50.0f);
+    */
+
 
     /*
     Animation bloodAnim{};
@@ -209,6 +205,9 @@ int main(void) {
         //----------------------------------------------------------------------------------
 
         PreRenderBloodPools(combat);
+
+        UpdateParticleManager(particleManager, GetFrameTime());
+        PreRenderParticleManager(particleManager);
         // Draw
         //----------------------------------------------------------------------------------
         // Draw everything in the render texture, note this will not be rendered on screen, yet
@@ -216,7 +215,7 @@ int main(void) {
         // Draw combat screen
         DisplayCombatScreen(combat, combatUIState, gridState);
 
-
+        DrawParticleManager(particleManager);
         //DrawTextEx(font2, "Hello, World!. You cannot dickfucksoul to highen GI Joe 50%", (Vector2){10, 30}, (float) font2.baseSize, 1.0f, WHITE);
 
 
@@ -252,6 +251,8 @@ int main(void) {
     //--------------------------------------------------------------------------------------
     UnloadRenderTexture(target);        // Unload render texture
 
+
+    DestroyParticleManager(particleManager);
     UnloadBloodRendering();
 
     //UnloadFont(font);                   // Unload custom font

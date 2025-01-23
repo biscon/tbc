@@ -8,6 +8,7 @@
 #include "Character.h"
 #include "Combat.h"
 #include "Grid.h"
+#include "ParticleSystem.h"
 
 struct ActionIcon {
     char text[64];

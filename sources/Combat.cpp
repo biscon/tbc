@@ -4,12 +4,11 @@
 
 #include <algorithm>
 #include <cmath>
-#include <limits.h>
+#include <climits>
 #include "Combat.h"
 #include "Random.h"
 #include "Animation.h"
 #include "raylib.h"
-#include "Skills.h"
 
 static void InitializeThreatTable(CombatState& combat) {
     combat.threatTable.clear();
@@ -212,7 +211,7 @@ static int CalculateDamage(CombatState& combat, Character &attacker, Character &
 }
 
 // Function for a character to attack another
-void Attack(CombatState& combat, Character &attacker, Character &defender) {
+int Attack(CombatState& combat, Character &attacker, Character &defender) {
     int damage = CalculateDamage(combat, attacker, defender);
     if (damage > 0) {
         defender.health -= damage;
@@ -231,6 +230,61 @@ void Attack(CombatState& combat, Character &attacker, Character &defender) {
         std::string logMessage2 = defender.name + " has " + std::to_string(defender.health) + " health left.";
         combat.log.push_back(logMessage2);
     }
+    return damage;
+}
+
+int DealDamage(CombatState& combat, Character &attacker, Character &defender, int damage) {
+    float defenderX = defender.sprite.player.position.x;
+    float defenderY = defender.sprite.player.position.y;
+    float attackerX = attacker.sprite.player.position.x;
+    float attackerY = attacker.sprite.player.position.y;
+
+    // Base damage calculation
+    int baseDamage = damage;
+    int damageReduction = CalculateDamageReduction(defender, baseDamage);
+    TraceLog(LOG_INFO, "Damage reduction: %i", damageReduction);
+    baseDamage -= damageReduction;
+    if (baseDamage < 0) baseDamage = 0;  // No negative damage
+    //int critChance = 1 + (attacker.speed * 1);  // 1% base + 1% per speed point
+    // Base critical hit chance (1%), diminishing returns
+    int critChance = 1 + static_cast<int>(sqrt(attacker.speed) * 5);  // Scales slower
+    if (critChance > 25) critChance = 25;  // Max 25% crit chance
+    int roll = RandomInRange(1, 100);  // Random roll between 1 and 100
+    bool isCritical = roll <= critChance;
+
+    // Apply critical multiplier
+    if (isCritical) {
+        baseDamage *= 2;  // Double the damage for critical hit
+        //std::cout << "**Critical Hit!** ";
+        std::string logMessage = "**Critical Hit!** ";
+        combat.log.push_back(logMessage);
+        Animation damageNumberAnim{};
+        SetupDamageNumberAnimation(damageNumberAnim, "CRITICAL!!!", attackerX, attackerY, WHITE, 10);
+        combat.animations.push_back(damageNumberAnim);
+        Animation speechBubble{};
+        SetupSpeechBubbleAnimation(speechBubble, "Gotta hurt!", defenderX, defenderY - 25, 1.5f, 0.0f);
+        combat.animations.push_back(speechBubble);
+    }
+    Animation damageNumberAnim{};
+    SetupDamageNumberAnimation(damageNumberAnim, TextFormat("%d", baseDamage), defenderX, defenderY-25, YELLOW, 20);
+    combat.animations.push_back(damageNumberAnim);
+
+    defender.health -= baseDamage;
+    if(IsPlayerCharacter(combat, attacker)) {
+        // If the attacker is a player character, increase their threat
+        IncreaseThreat(combat, &attacker, damage);
+    }
+
+    // Ensure health does not drop below 0
+    if (defender.health < 0) defender.health = 0;
+
+    // Log the attack and damage dealt
+    std::string logMessage = attacker.name + " hits " + defender.name + " for " + std::to_string(damage) + " damage!";
+    combat.log.push_back(logMessage);
+
+    std::string logMessage2 = defender.name + " has " + std::to_string(defender.health) + " health left.";
+    combat.log.push_back(logMessage2);
+    return baseDamage;
 }
 
 bool IsPlayerCharacter(CombatState &combat, Character &character) {

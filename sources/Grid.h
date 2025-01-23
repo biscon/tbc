@@ -9,6 +9,7 @@
 #include "MathUtil.h"
 #include "PathFinding.h"
 #include "TileMap.h"
+#include "ParticleSystem.h"
 
 
 enum class GridMode {
@@ -30,13 +31,12 @@ struct GridState {
     float pulseSpeed = 4.0f; // Speed of the pulsing
     Character* floatingStatsCharacter;
     TileMap* tileMap;
+    ParticleManager* particleManager;
 };
 
-void InitGrid(GridState &gridState, SpriteAnimationManager &animationManager);
+void InitGrid(GridState &gridState, SpriteAnimationManager &animationManager, ParticleManager* particleManager);
 void UpdateGrid(GridState &gridState, CombatState &combat, float dt);
 void DrawGrid(GridState &gridState, CombatState &combat);
 void SetInitialGridPositions(GridState &gridState, CombatState &combat);
-
-bool IsCharacterAdjacentToPlayer(CombatState &combat, Character &player, Character &character);
 
 #endif //SANDBOX_GRID_H

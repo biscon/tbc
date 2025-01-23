@@ -9,6 +9,7 @@
 #include "ui.h"
 #include "raymath.h"
 #include "Blood.h"
+#include "ParticleSystem.h"
 
 static bool IsCharacterVisible(CombatState &combat, Character *character) {
     // Check if the character is visible (not blinking)
@@ -36,8 +37,9 @@ static Vector2 GetAnimatedCharPos(CombatState &combat, Character *character) {
     return character->sprite.player.position;
 }
 
-void InitGrid(GridState &gridState, SpriteAnimationManager &animationManager) {
+void InitGrid(GridState &gridState, SpriteAnimationManager &animationManager, ParticleManager* particleManager) {
     gridState.animationManager = &animationManager;
+    gridState.particleManager = particleManager;
     gridState.moving = false;
     gridState.mode = GridMode::Normal;
     gridState.selectedCharacter = nullptr;
@@ -63,23 +65,14 @@ int CalculateVerticalCenterOffset(int gridHeight, int numCharacters) {
     return emptySpaceInTiles / 2; // Center the characters
 }
 
-// Main function: Set initial grid positions
 void SetInitialGridPositions(GridState &gridState, CombatState &combat) {
-    // Grid dimensions
-    const int gridHeightPixels = 208;
-
-    // Calculate vertical offsets in grid space
-    int playerVerticalCenterOffset = CalculateVerticalCenterOffset(gridHeightPixels,
-                                                                   (int) combat.playerCharacters.size());
-    int enemyVerticalCenterOffset = CalculateVerticalCenterOffset(gridHeightPixels,
-                                                                  (int) combat.enemyCharacters.size());
-
+    auto positions = FindFreePositionsCircular(combat, 6, 7, 5);
     // Set initial grid positions for player characters
     for (int i = 0; i < combat.playerCharacters.size(); i++) {
-        int gridX = i % 2 + 1; // Stagger between gridx = 0 and gridx = 1
-        int gridY = playerVerticalCenterOffset + i; // Row position
-        combat.playerCharacters[i]->sprite.player.position = GridToPixelPosition(gridX, gridY);
-
+        // take a position from the list
+        auto pos = positions.back();
+        positions.pop_back();
+        combat.playerCharacters[i]->sprite.player.position = GridToPixelPosition(pos.x, pos.y);
         // Set initial animation to paused
         PlaySpriteAnimation(
                 combat.playerCharacters[i]->sprite.player,
@@ -89,12 +82,13 @@ void SetInitialGridPositions(GridState &gridState, CombatState &combat) {
         combat.playerCharacters[i]->sprite.player.playing = false;
     }
 
+    positions = FindFreePositionsCircular(combat, 23, 7, 5);
     // Set initial grid positions for enemy characters
     for (int i = 0; i < combat.enemyCharacters.size(); i++) {
-        int gridX = 28 - (i % 2); // Stagger between gridx = 29 and gridx = 28
-        int gridY = enemyVerticalCenterOffset + i; // Row position
-        combat.enemyCharacters[i]->sprite.player.position = GridToPixelPosition(gridX, gridY);
-
+        // take a position from the list
+        auto pos = positions.back();
+        positions.pop_back();
+        combat.enemyCharacters[i]->sprite.player.position = GridToPixelPosition(pos.x, pos.y);
         // Set initial animation to paused
         PlaySpriteAnimation(
                 combat.enemyCharacters[i]->sprite.player,
@@ -212,27 +206,55 @@ void DrawSelectCharacter(GridState &gridState, CombatState &combat, bool onlyEne
     DrawSelectCharacters(gridState, combat.enemyCharacters, RED);
     if (gridState.selectedCharacter != nullptr) {
         DrawStatusText(TextFormat("Selected: %s", gridState.selectedCharacter->name.c_str()), YELLOW, 220, 10);
-
-        if (IsCharacterAdjacentToPlayer(combat, *combat.currentCharacter, *gridState.selectedCharacter)) {
-            // draw last line from player to selected character
-            Vector2 start = GridToPixelPosition((int) combat.currentCharacter->sprite.player.position.x,
-                                                (int) combat.currentCharacter->sprite.player.position.y);
-            Vector2 end = GridToPixelPosition((int) gridState.selectedCharacter->sprite.player.position.x,
-                                              (int) gridState.selectedCharacter->sprite.player.position.y);
-            DrawLineEx(start, end, 1, Fade(RED, gridState.highlightAlpha));
-            // Check for a mouse click
-            if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
-                combat.turnState = TurnState::Waiting;
-                combat.waitTime = 0.25f;
-                combat.selectedCharacter = gridState.selectedCharacter;
-                if (combat.selectedSkill == nullptr)
-                    combat.nextState = TurnState::Attack;
-                else
-                    combat.nextState = TurnState::UseSkill;
-                ResetGridState(gridState);
+        int range = 1;
+        if(combat.selectedSkill != nullptr) {
+            range = combat.selectedSkill->range;
+        }
+        if(range == 1) {
+            if (IsCharacterAdjacentToPlayer(*combat.currentCharacter, *gridState.selectedCharacter)) {
+                // draw last line from player to selected character
+                Vector2 start = combat.currentCharacter->sprite.player.position;
+                Vector2 end = gridState.selectedCharacter->sprite.player.position;
+                DrawLineEx(start, end, 1, Fade(RED, gridState.highlightAlpha));
+                // Check for a mouse click
+                if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
+                    combat.turnState = TurnState::Waiting;
+                    combat.waitTime = 0.25f;
+                    combat.selectedCharacter = gridState.selectedCharacter;
+                    if (combat.selectedSkill == nullptr)
+                        combat.nextState = TurnState::Attack;
+                    else
+                        combat.nextState = TurnState::UseSkill;
+                    ResetGridState(gridState);
+                }
+            } else {
+                DrawStatusText(TextFormat("Too far away!"), WHITE, 240, 10);
             }
         } else {
-            DrawStatusText(TextFormat("Too far away!"), WHITE, 240, 10);
+            // draw last line from player to selected character
+            Vector2 start = combat.currentCharacter->sprite.player.position;
+            Vector2 end = gridState.selectedCharacter->sprite.player.position;
+            if(HasLineOfSight(combat, PixelToGridPositionI((int) start.x, (int) start.y), PixelToGridPositionI((int) end.x, (int) end.y))) {
+                int distance = (int) Vector2Distance(start, end);
+                if(distance <= range * 16) {
+                    DrawLineEx(start, end, 1, Fade(RED, gridState.highlightAlpha));
+                    // Check for a mouse click
+                    if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
+                        combat.turnState = TurnState::Waiting;
+                        combat.waitTime = 0.25f;
+                        combat.selectedCharacter = gridState.selectedCharacter;
+                        if (combat.selectedSkill == nullptr)
+                            combat.nextState = TurnState::Attack;
+                        else
+                            combat.nextState = TurnState::UseSkill;
+                        ResetGridState(gridState);
+                    }
+                } else {
+                    DrawStatusText(TextFormat("Too far away!"), WHITE, 240, 10);
+                }
+            } else {
+                DrawStatusText(TextFormat("No line of sight!"), WHITE, 240, 10);
+            }
         }
     } else {
         DrawStatusText("Select a character", WHITE, 220, 10);
@@ -242,6 +264,8 @@ void DrawSelectCharacter(GridState &gridState, CombatState &combat, bool onlyEne
 void DrawTargetSelection(GridState &gridState, CombatState &combat, bool onlyEnemies) {
     DrawSelectCharacter(gridState, combat, onlyEnemies);
     if (IsMouseButtonReleased(MOUSE_BUTTON_RIGHT)) {
+        combat.selectedSkill = nullptr;
+        combat.selectedCharacter = nullptr;
         ResetGridState(gridState);
         combat.turnState = TurnState::SelectAction;
     }
@@ -418,27 +442,6 @@ void UpdateGrid(GridState &gridState, CombatState &combat, float dt) {
         UpdateSpriteAnimation(character->sprite.player, dt);
     }
 }
-/*
-static void DrawBloodPools(CombatState &combat) {
-    // Check if the character is visible (not blinking)
-    for (auto &animation: combat.animations) {
-        if (animation.type == AnimationType::BloodPool) {
-            // Set the blend mode to additive blending
-            BeginBlendMode(BLEND_ADDITIVE);
-            int posX = (int) animation.state.bloodPool.position.x + (int) animation.state.bloodPool.offset1.x;
-            int posY = (int) animation.state.bloodPool.position.y + (int) animation.state.bloodPool.offset1.y;
-            DrawEllipse(posX, posY, animation.state.bloodPool.radius1, 0.65f * animation.state.bloodPool.radius1, Fade(DARK_BLOOD_RED, 0.5f));
-            posX = (int) animation.state.bloodPool.position.x + (int) animation.state.bloodPool.offset2.x;
-            posY = (int) animation.state.bloodPool.position.y + (int) animation.state.bloodPool.offset2.y;
-            DrawEllipse(posX, posY, animation.state.bloodPool.radius2, 0.70f * animation.state.bloodPool.radius2, Fade(DARK_BLOOD_RED, 0.65f));
-            posX = (int) animation.state.bloodPool.position.x + (int) animation.state.bloodPool.offset3.x;
-            posY = (int) animation.state.bloodPool.position.y + (int) animation.state.bloodPool.offset3.y;
-            DrawCircle(posX, posY, animation.state.bloodPool.radius3, Fade(DARK_BLOOD_RED, 0.85f));
-            EndBlendMode();
-        }
-    }
-}
-*/
 
 
 void DrawGrid(GridState &gridState, CombatState &combat) {
@@ -449,6 +452,7 @@ void DrawGrid(GridState &gridState, CombatState &combat) {
     DrawTileLayer(combat.tileMap, MIDDLE_LAYER, 0, 0);
     DrawPathAndSelection(gridState, combat);
     DrawGridCharacters(gridState, combat);
+    DrawParticleManager(*gridState.particleManager);
     DrawTileLayer(combat.tileMap, TOP_LAYER, 0, 0);
 
     // get mouse position
@@ -457,6 +461,10 @@ void DrawGrid(GridState &gridState, CombatState &combat) {
     Vector2 gridPos = PixelToGridPosition(mousePos.x, mousePos.y);
     // check if mouse is over character
     for (auto &character: combat.turnOrder) {
+        // skip dead
+        if (character->health <= 0) {
+            continue;
+        }
         Vector2 gridPosCharacter = PixelToGridPosition(character->sprite.player.position.x,
                                                        character->sprite.player.position.y);
         if ((int) gridPosCharacter.x == (int) gridPos.x && (int) gridPosCharacter.y == (int) gridPos.y) {
@@ -465,8 +473,4 @@ void DrawGrid(GridState &gridState, CombatState &combat) {
     }
 }
 
-bool IsCharacterAdjacentToPlayer(CombatState &combat, Character &player, Character &character) {
-    Vector2i charGridPos = PixelToGridPositionI(character.sprite.player.position.x, character.sprite.player.position.y);
-    Vector2i playerGridPos = PixelToGridPositionI(player.sprite.player.position.x, player.sprite.player.position.y);
-    return abs(playerGridPos.x - charGridPos.x) <= 1 && abs(playerGridPos.y - charGridPos.y) <= 1;
-}
+

@@ -103,6 +103,42 @@ std::vector<std::pair<Character*, Path>> GetEnemiesWithinMoveRange(CombatState &
     return GetCharactersWithinMoveRange(combat, character, attackRange, combat.enemyCharacters, checkPoints);
 }
 
+
+static std::vector<std::pair<Character*, Path>> GetCharactersWithinMoveRangePartial(CombatState &combat, Character &character, int attackRange, std::vector<Character*> &characters, bool checkPoints) {
+    // loop through all characters in combat
+    Vector2i charGridPos = PixelToGridPositionI(character.sprite.player.position.x, character.sprite.player.position.y);
+    std::vector<std::pair<Character*, Path>> charactersInRange;
+    for(auto &c : characters) {
+        // skip same and death characters
+        if(c == &character || c->health <= 0) {
+            continue;
+        }
+        Path path;
+        Vector2i cGridPos = PixelToGridPositionI(c->sprite.player.position.x, c->sprite.player.position.y);
+        InitPathWithRangePartial(combat, path, charGridPos, cGridPos, attackRange, &character);
+        if(!path.path.empty()) {
+            if(checkPoints) {
+                if (path.cost <= character.movePoints) {
+                    charactersInRange.push_back(std::make_pair(c, path));
+                }
+            } else {
+                charactersInRange.push_back(std::make_pair(c, path));
+            }
+        }
+    }
+    return charactersInRange;
+}
+
+std::vector<std::pair<Character*, Path>> GetPlayersWithinMoveRangePartial(CombatState &combat, Character &character, int attackRange, bool checkPoints) {
+    return GetCharactersWithinMoveRangePartial(combat, character, attackRange, combat.playerCharacters, checkPoints);
+}
+
+std::vector<std::pair<Character*, Path>> GetEnemiesWithinMoveRangePartial(CombatState &combat, Character &character, int attackRange, bool checkPoints) {
+    return GetCharactersWithinMoveRangePartial(combat, character, attackRange, combat.enemyCharacters, checkPoints);
+}
+
+
+
 std::vector<Character *> GetAdjacentEnemies(CombatState &combat, Character &character) {
     Vector2i charGridPos = PixelToGridPositionI(character.sprite.player.position.x, character.sprite.player.position.y);
     std::vector<Character*> charactersInRange;

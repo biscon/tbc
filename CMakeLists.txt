@@ -59,6 +59,8 @@ add_executable(${PROJECT_NAME}
         sources/TileMap.h
         sources/Blood.cpp
         sources/Blood.h
+        sources/ParticleSystem.cpp
+        sources/ParticleSystem.h
 )
 target_sources(${PROJECT_NAME} PRIVATE ${PROJECT_SOURCES})
 target_include_directories(${PROJECT_NAME} PRIVATE ${PROJECT_INCLUDE})

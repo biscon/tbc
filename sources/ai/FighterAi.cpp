@@ -48,7 +48,7 @@ static bool MoveIfPossible(CombatState& combat, GridState& gridState) {
 }
 
 static bool PartialMoveIfPossible(CombatState& combat, GridState& gridState) {
-    auto playersWithinRange = GetPlayersWithinMoveRange(combat, *combat.currentCharacter, 1, false);
+    auto playersWithinRange = GetPlayersWithinMoveRangePartial(combat, *combat.currentCharacter, 1, false);
     SortCharactersByThreat(combat, playersWithinRange);
 
     if((int) playersWithinRange.size() > 0 && combat.currentCharacter->movePoints > 0) {
@@ -59,7 +59,8 @@ static bool PartialMoveIfPossible(CombatState& combat, GridState& gridState) {
             path.path.resize(combat.currentCharacter->movePoints);
             path.cost = combat.currentCharacter->movePoints;
         }
-        if(path.cost > combat.currentCharacter->movePoints) {
+        if(path.cost > combat.currentCharacter->movePoints || path.cost == 0) {
+            TraceLog(LOG_INFO, "Cant move further toward player");
             combat.turnState = TurnState::EndTurn;
             return false;
         }

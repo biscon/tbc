@@ -4,13 +4,18 @@
 
 #include "Skills.h"
 #include "Random.h"
+#include "raymath.h"
 
-SkillResult UseSkill(Skill *skill, Character &user, Character &target) {
+SkillResult UseSkill(CombatState& combat, GridState& gridState) {
     SkillResult result;
     result.success = false;
     result.attack = false;
     result.consumeAction = true;
     result.giveAggro = false;
+
+    Skill* skill = combat.selectedSkill;
+    Character &user = *combat.currentCharacter;
+    Character &target = *combat.selectedCharacter;
 
     switch(skill->type) {
         case SkillType::Stun: {
@@ -45,15 +50,39 @@ SkillResult UseSkill(Skill *skill, Character &user, Character &target) {
             result.consumeAction = false;
             break;
         }
+        case SkillType::FlameJet: {
+            int success = RandomInRange(0, 100);
+            if (success > 5) {
+                // Apply taunt effect to target
+                //user.statusEffects.push_back({StatusEffectType::ThreatModifier, skill->rank + 1, 2.0f});
+                result.success = true;
+                result.message = user.name + " used " + skill->name;
+                Vector2 dir = CalculateDirection(user.sprite.player.position, target.sprite.player.position);
+                dir.x *= 100;
+                dir.y *= 100;
+                CreateFireEffect(*gridState.particleManager, user.sprite.player.position, dir, 0.2f, 5);
+                Vector2i startPos = PixelToGridPositionI(user.sprite.player.position.x, user.sprite.player.position.y);
+                Vector2i endPos = PixelToGridPositionI(target.sprite.player.position.x, target.sprite.player.position.y);
+                Vector2 gridDir = CalculateDirection(startPos, endPos);
+
+                std::vector<Character*> targets = GetTargetsInLine(combat, startPos, gridDir, skill->range, &user);
+                for(auto &t : targets) {
+                    t->statusEffects.push_back({StatusEffectType::Burning, skill->rank + 2, 10.0f});
+                    // calculate damage
+                    int damage = RandomInRange(10, 20);
+                    DealDamage(combat, user, *t, damage);
+                }
+            } else {
+                result.success = false;
+                result.message = user.name + " used " + skill->name + " but it failed!";
+            }
+            result.attack = false;
+            result.giveAggro = false;
+            result.consumeAction = true;
+            break;
+        }
     }
     skill->cooldown = skill->maxCooldown;
     return result;
 }
 
-void DecreaseSkillCooldown(Character &character) {
-    for (Skill &skill : character.skills) {
-        if (skill.cooldown > 0) {
-            skill.cooldown--;
-        }
-    }
-}

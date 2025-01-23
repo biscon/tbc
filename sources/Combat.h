@@ -11,7 +11,8 @@
 #include "CombatState.h"
 
 //int CalculateDamage(const Character &attacker, const Character &defender);
-void Attack(CombatState &combat, Character &attacker, Character &defender);
+int Attack(CombatState &combat, Character &attacker, Character &defender);
+int DealDamage(CombatState& combat, Character &attacker, Character &defender, int damage);
 void InitCombat(CombatState &combat, std::vector<Character> &playerCharacters, std::vector<Character> &enemyCharacters);
 bool IsPlayerCharacter(CombatState &combat, Character &character);
 Character* GetFirstLivingEnemy(CombatState &combat);

@@ -14,6 +14,7 @@ enum class SkillType {
     Dodge,
     Stun,
     Taunt,
+    FlameJet,
     Bleed
 };
 
@@ -26,6 +27,7 @@ struct Skill {
     bool noTarget;  // Skills that don't require a target
     int cooldown; // How many rounds before the skill can be used again
     int maxCooldown; // The maximum cooldown for the skill
+    int range;  // How far the skill can reach
 };
 
 enum class StatusEffectType {
@@ -37,6 +39,7 @@ enum class StatusEffectType {
     Bleed,
     Confusion,
     Fear,
+    Burning,
 };
 
 struct StatusEffect {
@@ -72,5 +75,6 @@ bool CheckStatusEffectByType(Character &character, StatusEffectType type);
 StatusEffect* GetStatusEffectByType(Character &character, StatusEffectType type);
 std::vector<StatusEffect*> GetStatusEffectsByType(Character &character, StatusEffectType type);
 std::string GetStatusEffectName(StatusEffectType type);
+void DecreaseSkillCooldown(Character &character);
 
 #endif //SANDBOX_CHARACTER_H

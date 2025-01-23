@@ -15,6 +15,8 @@
 #include "ui.h"
 #include "Skills.h"
 #include "ai/Ai.h"
+#include "raymath.h"
+#include "Random.h"
 
 const Color BACKGROUND_GREY = Color{50, 50, 50, 255};
 
@@ -438,23 +440,8 @@ void UpdateCombatScreen(CombatState &combat, CombatUIState &uiState, GridState& 
             TraceLog(LOG_INFO, "Use skill");
             float attackerX = combat.currentCharacter->sprite.player.position.x;
             float attackerY = combat.currentCharacter->sprite.player.position.y;
-            if(!combat.selectedSkill->noTarget) {
-                float defenderX = combat.selectedCharacter->sprite.player.position.x;
-                float defenderY = combat.selectedCharacter->sprite.player.position.y;
-                FaceCharacter(*combat.currentCharacter, *combat.selectedCharacter);
-                FaceCharacter(*combat.selectedCharacter, *combat.currentCharacter);
-                Animation attackAnim{};
-                if(IsPlayerCharacter(combat, *combat.currentCharacter)) {
-                    SetupAttackAnimation(attackAnim, combat.currentCharacter, 0.5f, attackerY, defenderY, attackerX, defenderX);
-                } else {
-                    SetupAttackAnimation(attackAnim, combat.currentCharacter, 0.5f, attackerY, defenderY, attackerX, defenderX);
-                }
-                combat.animations.push_back(attackAnim);
-            }
-            combat.waitTime = 1.0f;
-            combat.nextState = TurnState::EndTurn;
-            combat.turnState = TurnState::Waiting;
-            SkillResult result = UseSkill(combat.selectedSkill, *combat.currentCharacter, *combat.selectedCharacter);
+
+            SkillResult result = UseSkill(combat, gridState);
             Animation damageNumberAnim{};
             if(!combat.selectedSkill->noTarget) {
                 float defenderX = combat.selectedCharacter->sprite.player.position.x;
@@ -471,6 +458,23 @@ void UpdateCombatScreen(CombatState &combat, CombatUIState &uiState, GridState& 
                     SetupDamageNumberAnimation(damageNumberAnim, "FAILED", attackerX, attackerY-25, WHITE, 10);
                 }
             }
+
+            if(!combat.selectedSkill->noTarget && result.attack) {
+                float defenderX = combat.selectedCharacter->sprite.player.position.x;
+                float defenderY = combat.selectedCharacter->sprite.player.position.y;
+                FaceCharacter(*combat.currentCharacter, *combat.selectedCharacter);
+                FaceCharacter(*combat.selectedCharacter, *combat.currentCharacter);
+                Animation attackAnim{};
+                if(IsPlayerCharacter(combat, *combat.currentCharacter)) {
+                    SetupAttackAnimation(attackAnim, combat.currentCharacter, 0.5f, attackerY, defenderY, attackerX, defenderX);
+                } else {
+                    SetupAttackAnimation(attackAnim, combat.currentCharacter, 0.5f, attackerY, defenderY, attackerX, defenderX);
+                }
+                combat.animations.push_back(attackAnim);
+            }
+            combat.waitTime = 1.0f;
+            combat.nextState = TurnState::EndTurn;
+            combat.turnState = TurnState::Waiting;
 
             combat.log.push_back(result.message);
             combat.animations.push_back(damageNumberAnim);
@@ -504,19 +508,26 @@ void UpdateCombatScreen(CombatState &combat, CombatUIState &uiState, GridState& 
             }
 
             combat.animations.push_back(attackAnim);
-            combat.waitTime = 0.75f;
+            combat.waitTime = 0.5f;
             combat.nextState = TurnState::AttackDone;
             combat.turnState = TurnState::Waiting;
             break;
         }
         case TurnState::AttackDone: {
-            Attack(combat, *combat.currentCharacter, *combat.selectedCharacter);
+            int damage = Attack(combat, *combat.currentCharacter, *combat.selectedCharacter);
+            float attackerX = combat.currentCharacter->sprite.player.position.x;
+            float defenderX = combat.selectedCharacter->sprite.player.position.x;
+            float attackerY = combat.currentCharacter->sprite.player.position.y;
+            float defenderY = combat.selectedCharacter->sprite.player.position.y;
+            if(damage > 0) {
+                // clamp damage between 10 and 50
+                float intensity = Clamp((float) damage, 10, 50);
+                TraceLog(LOG_INFO, "Damage: %d, intensity: %f", damage, intensity);
+                CreateBloodSplatter(*gridState.particleManager, {defenderX + (float) RandomInRange(-4,4), defenderY - 8 + (float) RandomInRange(-4,4)}, 10, intensity);
+            }
+
             if(combat.selectedCharacter->health <= 0) {
 
-                float attackerX = combat.currentCharacter->sprite.player.position.x;
-                float defenderX = combat.selectedCharacter->sprite.player.position.x;
-                float attackerY = combat.currentCharacter->sprite.player.position.y;
-                float defenderY = combat.selectedCharacter->sprite.player.position.y;
                 Animation speechBubble{};
                 SetupSpeechBubbleAnimation(speechBubble, "Haha!", attackerX, attackerY - 25, 1.5f, 0.0f);
                 combat.animations.push_back(speechBubble);
@@ -533,7 +544,9 @@ void UpdateCombatScreen(CombatState &combat, CombatUIState &uiState, GridState& 
                 SetupBloodPoolAnimation(bloodAnim, combat.selectedCharacter->sprite.player.position, 5.0f);
                 combat.animations.push_back(bloodAnim);
             } else {
-                combat.turnState = TurnState::EndTurn;
+                combat.waitTime = 0.25f;
+                combat.nextState = TurnState::EndTurn;
+                combat.turnState = TurnState::Waiting;
             }
             break;
         }

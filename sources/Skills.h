@@ -6,6 +6,8 @@
 #define SANDBOX_SKILLS_H
 
 #include "Character.h"
+#include "CombatState.h"
+#include "Grid.h"
 
 struct SkillResult {
     bool success;
@@ -15,7 +17,6 @@ struct SkillResult {
     bool giveAggro;
 };
 
-SkillResult UseSkill(Skill* skill, Character &user, Character &target);
-void DecreaseSkillCooldown(Character &character);
+SkillResult UseSkill(CombatState& combat, GridState& gridState);
 
 #endif //SANDBOX_SKILLS_H

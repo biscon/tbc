@@ -132,3 +132,10 @@ void CreateCharacter(Character &character, std::string name, int maxHealth, int 
     character.movePoints = speed;
 }
 
+void DecreaseSkillCooldown(Character &character) {
+    for (Skill &skill : character.skills) {
+        if (skill.cooldown > 0) {
+            skill.cooldown--;
+        }
+    }
+}
