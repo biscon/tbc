@@ -18,16 +18,18 @@
 #include "raymath.h"
 #include "util/Random.h"
 #include "combat/StatusEffectRunner.h"
+#include "combat/CombatAnimation.h"
+#include "audio/SoundEffect.h"
 
 const Color BACKGROUND_GREY = Color{50, 50, 50, 255};
 
 void InitCombatUIState(CombatUIState &uiState) {
     uiState.actionIconScrollIndex = 0;
     uiState.showActionBarTitle = true;
-    uiState.combatMusic = LoadMusicStream(ASSETS_PATH"music/combat_music.ogg");
+    uiState.combatMusic = LoadMusicStream(ASSETS_PATH"music/ambience_cave.ogg");
     uiState.combatVictoryMusic = LoadMusicStream(ASSETS_PATH"music/victory_music.ogg");
     uiState.combatDefeatMusic = LoadMusicStream(ASSETS_PATH"music/defeat_music.ogg");
-    PlayMusicStream(uiState.combatMusic);
+    //PlayMusicStream(uiState.combatMusic);
 }
 
 void DestroyCombatUIState(CombatUIState &uiState) {
@@ -152,6 +154,7 @@ static void DisplayActionUI(CombatState &combat, CombatUIState &uiState, GridSta
         float iconX = 16 + i * iconWidth;
         float iconY = 236;
         if (DrawActionIcon(iconX, iconY, actionIcons[uiState.actionIconScrollIndex + i], uiState)) {
+            PlaySoundEffect(SoundEffectType::Select);
             // action icon clicked
             TraceLog(LOG_INFO, "Action icon clicked: %s", actionIcons[uiState.actionIconScrollIndex + i].text);
             if (i + uiState.actionIconScrollIndex == 0) {
@@ -375,12 +378,6 @@ static void UpdateAnimations(CombatState &combat, float dt) {
     );
 }
 
-static void SetSpriteAnimPaused(CharacterSprite& sprite, SpriteAnimationType type) {
-    PlaySpriteAnimation(sprite.player, GetCharacterAnimation(sprite, type), true);
-    SetFrame(sprite.player, 0);
-    sprite.player.playing = false;
-}
-
 static void FaceCharacter(Character &attacker, Character &defender) {
     // Determine the direction of movement and set the appropriate animation
     Vector2 start = attacker.sprite.player.position;
@@ -389,15 +386,19 @@ static void FaceCharacter(Character &attacker, Character &defender) {
         // Horizontal movement
         if (end.x > start.x) {
             SetSpriteAnimPaused(attacker.sprite, SpriteAnimationType::WalkRight);
+            attacker.orientation = Orientation::Right;
         } else {
             SetSpriteAnimPaused(attacker.sprite, SpriteAnimationType::WalkLeft);
+            attacker.orientation = Orientation::Left;
         }
     } else {
         // Vertical movement
         if (end.y > start.y) {
             SetSpriteAnimPaused(attacker.sprite, SpriteAnimationType::WalkDown);
+            attacker.orientation = Orientation::Down;
         } else {
             SetSpriteAnimPaused(attacker.sprite, SpriteAnimationType::WalkUp);
+            attacker.orientation = Orientation::Up;
         }
     }
 }
@@ -409,10 +410,9 @@ void UpdateCombatScreen(CombatState &combat, CombatUIState &uiState, GridState& 
     switch(combat.turnState) {
         case TurnState::StartRound: {
             TraceLog(LOG_INFO, "Start round");
-            combat.waitTime = 1.0f;
-            combat.nextState = TurnState::StartTurn;
-            combat.turnState = TurnState::Waiting;
+            WaitTurnState(combat, TurnState::StartTurn, 1.0f);
             ApplyStatusEffects(combat, gridState);
+            PlaySoundEffect(SoundEffectType::StartRound);
             break;
         }
         case TurnState::StartTurn: {
@@ -474,28 +474,21 @@ void UpdateCombatScreen(CombatState &combat, CombatUIState &uiState, GridState& 
                     SetupDamageNumberAnimation(damageNumberAnim, "FAILED", attackerX, attackerY-25, WHITE, 10);
                 }
             }
-
-            if(!combat.selectedSkill->noTarget && result.attack) {
-                float defenderX = combat.selectedCharacter->sprite.player.position.x;
-                float defenderY = combat.selectedCharacter->sprite.player.position.y;
-                FaceCharacter(*combat.currentCharacter, *combat.selectedCharacter);
-                FaceCharacter(*combat.selectedCharacter, *combat.currentCharacter);
-                Animation attackAnim{};
-                if(IsPlayerCharacter(combat, *combat.currentCharacter)) {
-                    SetupAttackAnimation(attackAnim, combat.currentCharacter, 0.5f, attackerY, defenderY, attackerX, defenderX);
-                } else {
-                    SetupAttackAnimation(attackAnim, combat.currentCharacter, 0.5f, attackerY, defenderY, attackerX, defenderX);
-                }
-                combat.animations.push_back(attackAnim);
-            }
-            combat.waitTime = 1.0f;
-            combat.nextState = TurnState::EndTurn;
-            combat.turnState = TurnState::Waiting;
-
             combat.log.push_back(result.message);
             combat.animations.push_back(damageNumberAnim);
+
+            /*
+            if(!combat.selectedSkill->noTarget && result.attack) {
+                FaceCharacter(*combat.currentCharacter, *combat.selectedCharacter);
+                FaceCharacter(*combat.selectedCharacter, *combat.currentCharacter);
+                PlayAttackDefendAnimation(combat, *combat.currentCharacter, *combat.selectedCharacter);
+            }
+            */
+            WaitTurnState(combat, TurnState::EndTurn, 1.0f);
+
+
             if(result.attack) {
-                combat.nextState = TurnState::AttackDone;
+                combat.nextState = TurnState::Attack;
             } else if(!result.consumeAction) {
                 combat.nextState = TurnState::SelectAction;
             } else {
@@ -509,62 +502,65 @@ void UpdateCombatScreen(CombatState &combat, CombatUIState &uiState, GridState& 
         }
         case TurnState::Attack: {
             TraceLog(LOG_INFO, "Attack");
+            combat.attackResult = Attack(combat, *combat.currentCharacter, *combat.selectedCharacter);
             FaceCharacter(*combat.currentCharacter, *combat.selectedCharacter);
             FaceCharacter(*combat.selectedCharacter, *combat.currentCharacter);
-            Animation attackAnim{};
 
-            float attackerX = combat.currentCharacter->sprite.player.position.x;
-            float defenderX = combat.selectedCharacter->sprite.player.position.x;
-            float attackerY = combat.currentCharacter->sprite.player.position.y;
-            float defenderY = combat.selectedCharacter->sprite.player.position.y;
-            if(IsPlayerCharacter(combat, *combat.currentCharacter)) {
-                SetupAttackAnimation(attackAnim, combat.currentCharacter, 0.5f, attackerY, defenderY, attackerX, defenderX);
-            } else {
-                SetupAttackAnimation(attackAnim, combat.currentCharacter, 0.5f, attackerY, defenderY, attackerX, defenderX);
-            }
+            PlayAttackDefendAnimation(combat, *combat.currentCharacter, *combat.selectedCharacter);
 
-            combat.animations.push_back(attackAnim);
-            combat.waitTime = 0.5f;
+            combat.waitTime = 0.25f;
             combat.nextState = TurnState::AttackDone;
             combat.turnState = TurnState::Waiting;
             break;
         }
         case TurnState::AttackDone: {
-            int damage = Attack(combat, *combat.currentCharacter, *combat.selectedCharacter);
             float attackerX = combat.currentCharacter->sprite.player.position.x;
             float defenderX = combat.selectedCharacter->sprite.player.position.x;
             float attackerY = combat.currentCharacter->sprite.player.position.y;
             float defenderY = combat.selectedCharacter->sprite.player.position.y;
+            int damage = combat.attackResult.damage;
             if(damage > 0) {
                 // clamp damage between 10 and 50
                 float intensity = Clamp((float) damage, 10, 50);
                 TraceLog(LOG_INFO, "Damage: %d, intensity: %f", damage, intensity);
                 CreateBloodSplatter(*gridState.particleManager, {defenderX + (float) RandomInRange(-4,4), defenderY - 8 + (float) RandomInRange(-4,4)}, 10, intensity);
+                Animation damageNumberAnim{};
+                Color dmgColor = GetDamageColor(damage);
+                SetupDamageNumberAnimation(damageNumberAnim, TextFormat("%d", damage), defenderX, defenderY-25, dmgColor, combat.attackResult.crit ? 20 : 10);
+                combat.animations.push_back(damageNumberAnim);
+                PlaySoundEffect(SoundEffectType::HumanPain, 0.25f);
+            } else {
+                Animation damageNumberAnim{};
+                SetupDamageNumberAnimation(damageNumberAnim, "MISS", attackerX, attackerY-25, WHITE, 10);
+                combat.animations.push_back(damageNumberAnim);
+                PlaySoundEffect(SoundEffectType::MeleeMiss);
             }
 
-            if(combat.selectedCharacter->health <= 0) {
+            if(combat.attackResult.crit) {
+                Animation damageNumberAnim{};
+                SetupDamageNumberAnimation(damageNumberAnim, "CRITICAL!!!", attackerX, attackerY, WHITE, 10);
+                combat.animations.push_back(damageNumberAnim);
+                PlaySoundEffect(SoundEffectType::MeleeCrit);
+            } else {
+                if(damage > 0)
+                    PlaySoundEffect(SoundEffectType::MeleeHit);
+            }
+
+            combat.attackResult.defender->health -= damage;
+            if(combat.attackResult.defender->health <= 0) {
                 Animation speechBubble{};
                 SetupSpeechBubbleAnimation(speechBubble, "Haha!", attackerX, attackerY - 25, 1.5f, 0.0f);
                 combat.animations.push_back(speechBubble);
-                KillCharacter(combat, *combat.selectedCharacter);
-                combat.waitTime = 0.6f;
-                combat.nextState = TurnState::EndTurn;
-                combat.turnState = TurnState::Waiting;
+                RemoveAttackAnimations(combat);
+                KillCharacter(combat, *combat.attackResult.defender);
+                WaitTurnState(combat, TurnState::EndTurn, 0.95f);
             } else {
-                combat.waitTime = 0.25f;
-                combat.nextState = TurnState::EndTurn;
-                combat.turnState = TurnState::Waiting;
+                WaitTurnState(combat, TurnState::EndTurn, 0.60f);
             }
             break;
         }
         case TurnState::EnemyTurn: {
-            //TraceLog(LOG_INFO, "Enemy turn");
-            // Select a random alive player character to attack
-            /*
-            while(combat.selectedCharacter == nullptr || combat.selectedCharacter->health <= 0) {
-                combat.selectedCharacter = combat.playerCharacters[RandomInRange(0, combat.playerCharacters.size() - 1)];
-            }
-            */
+            TraceLog(LOG_INFO, "Enemy turn");
 
             // obtain AiInterface
             AiInterface* ai = GetAiInterface(combat.currentCharacter->ai);
@@ -588,9 +584,7 @@ void UpdateCombatScreen(CombatState &combat, CombatUIState &uiState, GridState& 
             Animation textAnim{};
             SetupTextAnimation(textAnim, "Next round!", 125, 1.0f, 1.0f);
             combat.animations.push_back(textAnim);
-            combat.waitTime = 2.0f;
-            combat.nextState = TurnState::StartRound;
-            combat.turnState = TurnState::Waiting;
+            WaitTurnState(combat, TurnState::StartRound, 2.0f);
             UpdateStatusEffects(combat);
             DecayThreat(combat, 10);
             UpdateSkillCooldown(combat);
@@ -608,8 +602,9 @@ void UpdateCombatScreen(CombatState &combat, CombatUIState &uiState, GridState& 
     }
     if(allEnemiesDefeated && combat.turnState != TurnState::Victory) {
         combat.turnState = TurnState::Victory;
-        StopMusicStream(uiState.combatMusic);
-        PlayMusicStream(uiState.combatVictoryMusic);
+        StopSoundEffect(SoundEffectType::Ambience);
+        PlaySoundEffect(SoundEffectType::Victory, 0.5f);
+        PlayPlayerVictoryAnimation(combat);
         //combat.animations.clear();
     }
     // check defeat condition, all players have zero health
@@ -622,8 +617,9 @@ void UpdateCombatScreen(CombatState &combat, CombatUIState &uiState, GridState& 
     }
     if(allPlayersDefeated && combat.turnState != TurnState::Defeat) {
         combat.turnState = TurnState::Defeat;
-        StopMusicStream(uiState.combatMusic);
-        PlayMusicStream(uiState.combatDefeatMusic);
+        StopSoundEffect(SoundEffectType::Ambience);
+        PlaySoundEffect(SoundEffectType::Defeat, 0.5f);
+        PlayEnemyVictoryAnimation(combat);
         //combat.animations.clear();
     }
     // Check if the music has finished playing

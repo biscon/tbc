@@ -61,3 +61,17 @@ void CreateCharacter(Character &character, std::string name, int maxHealth, int 
     character.thirst = 0;
     character.movePoints = speed;
 }
+
+Vector2 GetOrientationVector(Orientation orientation) {
+    switch (orientation) {
+        case Orientation::Up:
+            return {0, -1};
+        case Orientation::Down:
+            return {0, 1};
+        case Orientation::Left:
+            return {-1, 0};
+        case Orientation::Right:
+            return {1, 0};
+    }
+    return {0, 0};
+}

@@ -12,6 +12,13 @@
 #include "Skill.h"
 #include "StatusEffect.h"
 
+enum class Orientation {
+    Up,
+    Down,
+    Left,
+    Right
+};
+
 struct Character {
     std::string name;
     std::string ai;
@@ -26,11 +33,13 @@ struct Character {
     CharacterSprite sprite;
     std::vector<Skill> skills;  // List of skills the character possesses
     std::vector<StatusEffect> statusEffects;
+    Orientation orientation;
 };
 
 void CreateCharacter(Character &character, std::string name, int maxHealth, int attack, int defense, int speed);
 void DisplayCharacterInfo(const Character &character);
 Character GenerateRandomCharacter(std::string name, bool isEnemy = false);
 bool IsAlive(const Character &character);
+Vector2 GetOrientationVector(Orientation orientation);
 
 #endif //SANDBOX_CHARACTER_H

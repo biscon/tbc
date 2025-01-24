@@ -67,6 +67,10 @@ add_executable(${PROJECT_NAME}
         sources/character/Skill.h
         sources/combat/StatusEffectRunner.cpp
         sources/combat/StatusEffectRunner.h
+        sources/combat/CombatAnimation.cpp
+        sources/combat/CombatAnimation.h
+        sources/audio/SoundEffect.cpp
+        sources/audio/SoundEffect.h
 )
 target_sources(${PROJECT_NAME} PRIVATE ${PROJECT_SOURCES})
 target_include_directories(${PROJECT_NAME} PRIVATE ${PROJECT_INCLUDE})

@@ -10,8 +10,7 @@
 #include "graphics/Animation.h"
 #include "CombatState.h"
 
-//int CalculateDamage(const Character &attacker, const Character &defender);
-int Attack(CombatState &combat, Character &attacker, Character &defender);
+AttackResult Attack(CombatState &combat, Character &attacker, Character &defender);
 int DealDamage(CombatState& combat, Character &attacker, Character &defender, int damage);
 int DealDamageStatusEffect(CombatState& combat, Character &target, int damage);
 void KillCharacter(CombatState &combat, Character &character);

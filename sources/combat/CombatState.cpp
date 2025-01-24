@@ -3,3 +3,9 @@
 //
 
 #include "CombatState.h"
+
+void WaitTurnState(CombatState &combat, TurnState state, float waitTime) {
+    combat.nextState = state;
+    combat.waitTime = waitTime;
+    combat.turnState = TurnState::Waiting;
+}

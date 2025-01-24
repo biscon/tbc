@@ -19,7 +19,7 @@ void SetupBlinkAnimation(Animation &animation, Character *character, float durat
     //TraceLog(LOG_INFO, "hej per %i", character->health);
 }
 
-void SetupAttackAnimation(Animation &animation, Character *attacker, float duration, float startY, float endY, float startX, float endX) {
+void SetupAttackAnimation(Animation &animation, Character *attacker, float duration, float startY, float endY, float startX, float endX, float initialDelay) {
     animation.type = AnimationType::Attack;
     animation.duration = duration;
     animation.time = 0;
@@ -32,7 +32,7 @@ void SetupAttackAnimation(Animation &animation, Character *attacker, float durat
     animation.state.attack.startX = startX;
     animation.state.attack.endX = endX;
     animation.state.attack.currentX = 0;
-
+    animation.state.attack.initialDelay = initialDelay;
     TraceLog(LOG_INFO, "SetupAttackAnimation: %s", attacker->name.c_str());
 }
 
@@ -113,6 +113,21 @@ void SetupSpeechBubbleAnimation(Animation &animation, const char *text, float x,
     TraceLog(LOG_INFO, "SetupSpeechBubbleAnimation: %s", text);
 }
 
+void SetupVictoryAnimation(Animation &animation, Character *character, float duration, float jumpHeight, float jumpSpeed) {
+    animation.type = AnimationType::Victory;
+    animation.duration = duration;
+    animation.time = 0.0f;
+    animation.stay = false;
+
+    VictoryAnimationState &state = animation.state.victory;
+    state.character = character;
+    state.baseY = character->sprite.player.position.y; // Assuming `position.y` is the character's initial vertical position
+    state.jumpHeight = jumpHeight;
+    state.jumpSpeed = jumpSpeed;
+    state.currentY = state.baseY;
+    state.movingUp = true;
+}
+
 void UpdateAnimation(Animation &animation, float dt) {
     animation.time += dt;
     switch(animation.type) {
@@ -126,6 +141,15 @@ void UpdateAnimation(Animation &animation, float dt) {
             break;
         }
         case AnimationType::Attack: {
+            // Check and decrement initial delay
+            animation.state.attack.initialDelay -= dt;
+            if (animation.state.attack.initialDelay > 0) {
+                animation.time = 0.0f; // Reset animation time while waiting
+                animation.state.attack.currentX = animation.state.attack.startX; // Keep at start position
+                animation.state.attack.currentY = animation.state.attack.startY;
+                break;
+            }
+
             // Calculate current position
             if (animation.state.attack.movingUp) {
                 animation.state.attack.currentX = EaseQuadOut(animation.time, animation.state.attack.startX, animation.state.attack.endX - animation.state.attack.startX, animation.duration);
@@ -227,6 +251,28 @@ void UpdateAnimation(Animation &animation, float dt) {
                 float progress = (animation.time - fadeOutStartTime) / fadeDuration;
                 animation.state.speechBubble.alpha = 1.0f - progress;          // Text fades out
             }
+            break;
+        }
+        case AnimationType::Victory: {
+            VictoryAnimationState &state = animation.state.victory;
+
+            // Update jump logic
+            if (state.movingUp) {
+                state.currentY -= state.jumpSpeed * dt;
+                if (state.currentY <= state.baseY - state.jumpHeight) {
+                    state.currentY = state.baseY - state.jumpHeight;
+                    state.movingUp = false;
+                }
+            } else {
+                state.currentY += state.jumpSpeed * dt;
+                if (state.currentY >= state.baseY) {
+                    state.currentY = state.baseY;
+                    state.movingUp = true;
+                }
+            }
+
+            // Update character's position
+            state.character->sprite.player.position.y = state.currentY;
             break;
         }
     }

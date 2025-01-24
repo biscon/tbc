@@ -7,6 +7,7 @@
 #include "combat/CombatState.h"
 #include "ui/Grid.h"
 #include "Ai.h"
+#include "audio/SoundEffect.h"
 
 static bool AttackIfPossible(CombatState &combat) {
     auto playersWithinRange = GetAdjacentPlayers(combat, *combat.currentCharacter);
@@ -92,9 +93,11 @@ static void HandleTurn(CombatState &combat, GridState &gridState) {
                         TraceLog(LOG_INFO, "Partial move not possible, end turn");
                     } else {
                         TraceLog(LOG_INFO, "Partial move possible, moving");
+                        PlaySoundEffect(SoundEffectType::Footstep);
                     }
                 } else {
                     TraceLog(LOG_INFO, "Move possible, moving");
+                    PlaySoundEffect(SoundEffectType::Footstep);
                 }
             } else {
                 TraceLog(LOG_INFO, "Attack possible, attacking");

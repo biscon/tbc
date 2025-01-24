@@ -11,6 +11,7 @@
 #include "raylib.h"
 #include "ui/UI.h"
 #include "ui/CombatScreen.h"
+#include "audio/SoundEffect.h"
 
 
 static void InitializeThreatTable(CombatState& combat) {
@@ -159,9 +160,7 @@ static int CalculateDamageReduction(Character &defender, int baseDamage) {
 }
 
 // Function to calculate damage dealt in combat, with chance to miss and critical hit
-static int CalculateDamage(CombatState& combat, Character &attacker, Character &defender) {
-    float defenderX = defender.sprite.player.position.x;
-    float defenderY = defender.sprite.player.position.y;
+static void CalculateDamage(CombatState& combat, Character &attacker, Character &defender, AttackResult &result) {
     float attackerX = attacker.sprite.player.position.x;
     float attackerY = attacker.sprite.player.position.y;
 
@@ -171,13 +170,14 @@ static int CalculateDamage(CombatState& combat, Character &attacker, Character &
 
     // If roll is less than missChance, the attack misses
     if (missRoll <= missChance) {
+        result.hit = false;
         //std::cout << attacker.name << " misses the attack!\n";
         std::string logMessage = attacker.name + " misses the attack!";
         combat.log.push_back(logMessage);
-        Animation damageNumberAnim{};
-        SetupDamageNumberAnimation(damageNumberAnim, "MISS", attackerX, attackerY-25, WHITE, 10);
-        combat.animations.push_back(damageNumberAnim);
-        return 0;  // No damage if the attack misses
+        result.damage = 0;
+        return;  // No damage if the attack misses
+    } else {
+        result.hit = true;
     }
 
     // Base damage calculation
@@ -195,46 +195,38 @@ static int CalculateDamage(CombatState& combat, Character &attacker, Character &
 
     // Apply critical multiplier
     if (isCritical) {
+        result.crit = true;
         baseDamage *= 2;  // Double the damage for critical hit
-        //std::cout << "**Critical Hit!** ";
         std::string logMessage = "**Critical Hit!** ";
         combat.log.push_back(logMessage);
-        Animation damageNumberAnim{};
-        SetupDamageNumberAnimation(damageNumberAnim, "CRITICAL!!!", attackerX, attackerY, WHITE, 10);
-        combat.animations.push_back(damageNumberAnim);
-        Animation speechBubble{};
-        SetupSpeechBubbleAnimation(speechBubble, "Ouch!!", defenderX, defenderY - 25, 1.5f, 0.0f);
-        combat.animations.push_back(speechBubble);
     }
-    Animation damageNumberAnim{};
-    Color dmgColor = GetDamageColor(baseDamage);
-    SetupDamageNumberAnimation(damageNumberAnim, TextFormat("%d", baseDamage), defenderX, defenderY-25, dmgColor, isCritical ? 20 : 10);
-    combat.animations.push_back(damageNumberAnim);
 
-    return baseDamage;
+    result.damage = baseDamage;
 }
 
 // Function for a character to attack another
-int Attack(CombatState& combat, Character &attacker, Character &defender) {
-    int damage = CalculateDamage(combat, attacker, defender);
-    if (damage > 0) {
-        defender.health -= damage;
+AttackResult Attack(CombatState& combat, Character &attacker, Character &defender) {
+    AttackResult result{};
+    result.attacker = &attacker;
+    result.defender = &defender;
+    result.hit = false;
+    result.crit = false;
+    result.damage = 0;
+    CalculateDamage(combat, attacker, defender, result);
+    if (result.damage > 0) {
         if(IsPlayerCharacter(combat, attacker)) {
             // If the attacker is a player character, increase their threat
-            IncreaseThreat(combat, &attacker, damage);
+            IncreaseThreat(combat, &attacker, result.damage);
         }
 
-        // Ensure health does not drop below 0
-        if (defender.health < 0) defender.health = 0;
-
         // Log the attack and damage dealt
-        std::string logMessage = attacker.name + " attacks " + defender.name + " for " + std::to_string(damage) + " damage!";
+        std::string logMessage = attacker.name + " attacks " + defender.name + " for " + std::to_string(result.damage) + " damage!";
         combat.log.push_back(logMessage);
 
         std::string logMessage2 = defender.name + " has " + std::to_string(defender.health) + " health left.";
         combat.log.push_back(logMessage2);
     }
-    return damage;
+    return result;
 }
 
 int DealDamage(CombatState& combat, Character &attacker, Character &defender, int damage) {
@@ -288,6 +280,7 @@ int DealDamage(CombatState& combat, Character &attacker, Character &defender, in
 
     std::string logMessage2 = defender.name + " has " + std::to_string(defender.health) + " health left.";
     combat.log.push_back(logMessage2);
+    PlaySoundEffect(SoundEffectType::HumanPain, 0.25f);
     return baseDamage;
 }
 
@@ -333,6 +326,7 @@ void KillCharacter(CombatState &combat, Character &character) {
     Animation bloodAnim{};
     SetupBloodPoolAnimation(bloodAnim, character.sprite.player.position, 5.0f);
     combat.animations.push_back(bloodAnim);
+    PlaySoundEffect(SoundEffectType::HumanDeath, 0.5f);
 }
 
 bool IsPlayerCharacter(CombatState &combat, Character &character) {

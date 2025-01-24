@@ -5,6 +5,8 @@
 #include "SkillRunner.h"
 #include "util/Random.h"
 #include "raymath.h"
+#include "CombatAnimation.h"
+#include "audio/SoundEffect.h"
 
 SkillResult ExecuteSkill(CombatState& combat, GridState& gridState) {
     SkillResult result;
@@ -69,8 +71,9 @@ SkillResult ExecuteSkill(CombatState& combat, GridState& gridState) {
                 Vector2i startPos = PixelToGridPositionI(user.sprite.player.position.x, user.sprite.player.position.y);
                 Vector2i endPos = PixelToGridPositionI(target.sprite.player.position.x, target.sprite.player.position.y);
                 Vector2 gridDir = CalculateDirection(startPos, endPos);
+                PlaySoundEffect(SoundEffectType::Burning);
 
-                std::vector<Character*> targets = GetTargetsInLine(combat, startPos, gridDir, skill->range, &user);
+                std::vector<Character*> targets = GetTargetsInLine(combat, startPos, gridDir, skill->range+1, &user);
                 for(auto &t : targets) {
                     AssignStatusEffect(t->statusEffects, StatusEffectType::Burning, skill->rank + 2, 5.0f);
                     // calculate damage
@@ -80,6 +83,8 @@ SkillResult ExecuteSkill(CombatState& combat, GridState& gridState) {
                     // check if dead
                     if(t->health <= 0) {
                         KillCharacter(combat, *t);
+                    } else {
+                        PlayDefendAnimation(combat, user, *t);
                     }
                 }
             } else {

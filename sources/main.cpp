@@ -24,6 +24,7 @@
 #include "ui/UI.h"
 #include "graphics/BloodPool.h"
 #include "graphics/ParticleSystem.h"
+#include "audio/SoundEffect.h"
 
 #define MAX(a, b) ((a)>(b)? (a) : (b))
 #define MIN(a, b) ((a)<(b)? (a) : (b))
@@ -42,6 +43,39 @@ int main(void) {
     SetWindowMinSize(320, 240);
 
     InitAudioDevice();      // Initialize audio device
+
+    InitSoundEffectManager();
+    LoadSoundEffect(SoundEffectType::Ambience, ASSETS_PATH"music/ambience_cave.ogg", true);
+    SetVolumeSoundEffect(SoundEffectType::Ambience, 0.75f);
+    LoadSoundEffect(SoundEffectType::Footstep, ASSETS_PATH"sound/footstep_dirt_03.wav", true, 0.075f);
+    SetVolumeSoundEffect(SoundEffectType::Footstep, 0.75f);
+    LoadSoundEffect(SoundEffectType::Select, ASSETS_PATH"sound/select_01.wav", false);
+    LoadSoundEffect(SoundEffectType::MeleeHit, ASSETS_PATH"sound/melee_hit_01.ogg", false);
+    LoadSoundEffect(SoundEffectType::MeleeHit, ASSETS_PATH"sound/melee_hit_02.ogg", false);
+    LoadSoundEffect(SoundEffectType::MeleeHit, ASSETS_PATH"sound/melee_hit_03.ogg", false);
+    LoadSoundEffect(SoundEffectType::MeleeHit, ASSETS_PATH"sound/melee_hit_04.ogg", false);
+    LoadSoundEffect(SoundEffectType::MeleeCrit, ASSETS_PATH"sound/melee_crit_01.ogg", false);
+    LoadSoundEffect(SoundEffectType::MeleeCrit, ASSETS_PATH"sound/melee_crit_02.ogg", false);
+    LoadSoundEffect(SoundEffectType::MeleeMiss, ASSETS_PATH"sound/melee_miss_01.wav", false);
+    LoadSoundEffect(SoundEffectType::MeleeMiss, ASSETS_PATH"sound/melee_miss_02.wav", false);
+    LoadSoundEffect(SoundEffectType::MeleeMiss, ASSETS_PATH"sound/melee_miss_03.wav", false);
+    SetVolumeSoundEffect(SoundEffectType::MeleeMiss, 0.65f);
+    LoadSoundEffect(SoundEffectType::HumanDeath, ASSETS_PATH"sound/human_die_01.wav", false);
+    LoadSoundEffect(SoundEffectType::HumanDeath, ASSETS_PATH"sound/human_die_02.wav", false);
+    LoadSoundEffect(SoundEffectType::HumanPain, ASSETS_PATH"sound/human_pain_01.wav", false);
+    LoadSoundEffect(SoundEffectType::HumanPain, ASSETS_PATH"sound/human_pain_02.wav", false);
+    LoadSoundEffect(SoundEffectType::HumanPain, ASSETS_PATH"sound/human_pain_03.wav", false);
+    LoadSoundEffect(SoundEffectType::HumanPain, ASSETS_PATH"sound/human_pain_04.wav", false);
+    LoadSoundEffect(SoundEffectType::HumanPain, ASSETS_PATH"sound/human_pain_05.wav", false);
+    LoadSoundEffect(SoundEffectType::HumanPain, ASSETS_PATH"sound/human_pain_06.wav", false);
+    SetVolumeSoundEffect(SoundEffectType::HumanPain, 0.50f);
+    LoadSoundEffect(SoundEffectType::Victory, ASSETS_PATH"sound/jingle_victory.wav", false);
+    LoadSoundEffect(SoundEffectType::Defeat, ASSETS_PATH"sound/jingle_defeat.wav", false);
+    LoadSoundEffect(SoundEffectType::StartRound, ASSETS_PATH"sound/start_round.wav", false);
+
+    LoadSoundEffect(SoundEffectType::Burning, ASSETS_PATH"sound/burning_01.ogg", false);
+
+    PlaySoundEffect(SoundEffectType::Ambience);
 
     int gameScreenWidth = 480;
     int gameScreenHeight = 270;
@@ -182,6 +216,7 @@ int main(void) {
         }
 
         // Update
+        UpdateSoundEffects(GetFrameTime());
         UpdateCombatScreen(combat, combatUIState, gridState, GetFrameTime());
         UpdateGrid(gridState, combat, GetFrameTime());
 
@@ -264,6 +299,8 @@ int main(void) {
 
     UnloadTileMap(combat.tileMap);     // Unload tile map (free memory
     UnloadSpriteSheet(tileSet);     // Unload sprite sheet
+
+    DestroySoundEffectManager();
 
     CloseAudioDevice();     // Close audio device
 

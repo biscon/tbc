@@ -10,6 +10,7 @@
 #include "raymath.h"
 #include "graphics/BloodPool.h"
 #include "graphics/ParticleSystem.h"
+#include "audio/SoundEffect.h"
 
 static bool IsCharacterVisible(CombatState &combat, Character *character) {
     // Check if the character is visible (not blinking)
@@ -79,6 +80,7 @@ void SetInitialGridPositions(GridState &gridState, CombatState &combat) {
                 GetCharacterAnimation(combat.playerCharacters[i]->sprite, SpriteAnimationType::WalkRight),
                 true
         );
+        combat.playerCharacters[i]->orientation = Orientation::Right;
         combat.playerCharacters[i]->sprite.player.playing = false;
     }
 
@@ -95,6 +97,7 @@ void SetInitialGridPositions(GridState &gridState, CombatState &combat) {
                 GetCharacterAnimation(combat.enemyCharacters[i]->sprite, SpriteAnimationType::WalkLeft),
                 true
         );
+        combat.enemyCharacters[i]->orientation = Orientation::Left;
         combat.enemyCharacters[i]->sprite.player.playing = false;
     }
 }
@@ -152,6 +155,8 @@ void DrawPathSelection(GridState &gridState, CombatState &combat) {
                     combat.currentCharacter->movePoints = 0;
                 }
                 combat.turnState = TurnState::Move;
+                PlaySoundEffect(SoundEffectType::Select);
+                PlaySoundEffect(SoundEffectType::Footstep);
             }
         }
     } else {
@@ -218,6 +223,7 @@ void DrawSelectCharacter(GridState &gridState, CombatState &combat, bool onlyEne
                 DrawLineEx(start, end, 1, Fade(RED, gridState.highlightAlpha));
                 // Check for a mouse click
                 if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
+                    PlaySoundEffect(SoundEffectType::Select);
                     combat.turnState = TurnState::Waiting;
                     combat.waitTime = 0.25f;
                     combat.selectedCharacter = gridState.selectedCharacter;
@@ -240,6 +246,7 @@ void DrawSelectCharacter(GridState &gridState, CombatState &combat, bool onlyEne
                     DrawLineEx(start, end, 1, Fade(RED, gridState.highlightAlpha));
                     // Check for a mouse click
                     if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
+                        PlaySoundEffect(SoundEffectType::Select);
                         combat.turnState = TurnState::Waiting;
                         combat.waitTime = 0.25f;
                         combat.selectedCharacter = gridState.selectedCharacter;
@@ -313,8 +320,8 @@ void DrawGridCharacters(GridState &state, CombatState &combat) {
     for (auto &character: sortedCharacters) {
         Vector2 charPos = GetAnimatedCharPos(combat, character);
         // Draw oval shadow underneath
-        if(character->health > 0)
-            DrawEllipse((int) charPos.x, (int) charPos.y, 6, 4, Fade(BLACK, 0.5f));
+        if(character->health > 0 && combat.turnState != TurnState::Victory && combat.turnState != TurnState::Defeat)
+            DrawEllipse((int) charPos.x, (int) charPos.y, 6, 4, Fade(BLACK, 0.25f));
 
         if (IsCharacterVisible(combat, character)) {
             DrawSpriteAnimation(character->sprite.player, charPos.x, charPos.y);
@@ -325,7 +332,7 @@ void DrawGridCharacters(GridState &state, CombatState &combat) {
         }
 
         // Draw health bar
-        if(character->health > 0)
+        if(character->health > 0 && combat.turnState != TurnState::Victory && combat.turnState != TurnState::Defeat)
             DrawHealthBar(charPos.x - 8, charPos.y - 21, 15, character->health, character->maxHealth);
     }
 }
@@ -390,11 +397,13 @@ void UpdateGrid(GridState &gridState, CombatState &combat, float dt) {
                             combat.currentCharacter->sprite.player,
                             GetCharacterAnimation(combat.currentCharacter->sprite, SpriteAnimationType::WalkRight),
                             true);
+                    combat.currentCharacter->orientation = Orientation::Right;
                 } else {
                     PlaySpriteAnimation(
                             combat.currentCharacter->sprite.player,
                             GetCharacterAnimation(combat.currentCharacter->sprite, SpriteAnimationType::WalkLeft),
                             true);
+                    combat.currentCharacter->orientation = Orientation::Left;
                 }
             } else {
                 // Vertical movement
@@ -403,11 +412,13 @@ void UpdateGrid(GridState &gridState, CombatState &combat, float dt) {
                             combat.currentCharacter->sprite.player,
                             GetCharacterAnimation(combat.currentCharacter->sprite, SpriteAnimationType::WalkDown),
                             true);
+                    combat.currentCharacter->orientation = Orientation::Down;
                 } else {
                     PlaySpriteAnimation(
                             combat.currentCharacter->sprite.player,
                             GetCharacterAnimation(combat.currentCharacter->sprite, SpriteAnimationType::WalkUp),
                             true);
+                    combat.currentCharacter->orientation = Orientation::Up;
                 }
             }
 
@@ -418,6 +429,7 @@ void UpdateGrid(GridState &gridState, CombatState &combat, float dt) {
 
                 // If the last step is reached, stop moving
                 if (gridState.path.currentStep >= gridState.path.path.size() - 1) {
+                    StopSoundEffect(SoundEffectType::Footstep);
                     gridState.moving = false;
                     combat.currentCharacter->sprite.player.playing = false;
                     SetFrame(combat.currentCharacter->sprite.player, 0);

@@ -28,6 +28,14 @@ enum class TurnState {
     EndRound,
 };
 
+struct AttackResult {
+    bool hit;
+    bool crit;
+    int damage;
+    Character *attacker;
+    Character *defender;
+};
+
 struct CombatState {
     std::vector<std::string> log;
     std::vector<Character*> playerCharacters;
@@ -43,6 +51,9 @@ struct CombatState {
     TurnState nextState;
     std::map<Character*, int> threatTable;
     TileMap tileMap;
+    AttackResult attackResult;
 };
+
+void WaitTurnState(CombatState &combat, TurnState state, float waitTime);
 
 #endif //SANDBOX_COMBATSTATE_H

@@ -71,5 +71,6 @@ struct CharacterSprite {
 
 void InitCharacterSprite(CharacterSprite& sprite, SpriteAnimationManager& animationManager, const char* walkUp, const char* walkDown, const char* walkLeft, const char* walkRight);
 SpriteAnimation* GetCharacterAnimation(CharacterSprite& sprite, SpriteAnimationType type);
+void SetSpriteAnimPaused(CharacterSprite& sprite, SpriteAnimationType type);
 
 #endif //SANDBOX_SPRITE_H

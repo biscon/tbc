@@ -15,7 +15,8 @@ enum class AnimationType {
     Text,
     Death,
     BloodPool,
-    SpeechBubble
+    SpeechBubble,
+    Victory,
 };
 
 struct BlinkAnimationState {
@@ -32,6 +33,7 @@ struct AttackAnimationState {
     float endX;
     float currentX;
     bool movingUp;
+    float initialDelay;
 };
 
 struct DamageNumberAnimationState {
@@ -83,6 +85,15 @@ struct SpeechBubbleAnimationState {
     float initialDelay;
 };
 
+struct VictoryAnimationState {
+    struct Character* character;
+    float baseY;
+    float jumpHeight;
+    float jumpSpeed;
+    float currentY;
+    bool movingUp;
+};
+
 struct Animation {
     AnimationType type;
     float duration;
@@ -97,6 +108,7 @@ struct Animation {
         DeathAnimationState death;
         BloodPoolAnimationState bloodPool;
         SpeechBubbleAnimationState speechBubble;
+        VictoryAnimationState victory;
     } state;
 
     bool IsDone() const {
@@ -107,12 +119,13 @@ struct Animation {
 };
 
 void SetupBlinkAnimation(Animation &animation, Character *character, float duration);
-void SetupAttackAnimation(Animation &animation, Character *attacker, float duration, float startY, float endY, float startX, float endX);
+void SetupAttackAnimation(Animation &animation, Character *attacker, float duration, float startY, float endY, float startX, float endX, float initialDelay = 0.0f);
 void SetupDamageNumberAnimation(Animation &animation, const char *text, float x, float y, Color color, int fontSize);
 void SetupTextAnimation(Animation &animation, const char *text, float y, float duration, float initialDelay = 0.0f);
 void SetupDeathAnimation(Animation &animation, Character *character, float duration);
 void SetupBloodPoolAnimation(Animation &animation, Vector2 position, float duration);
 void SetupSpeechBubbleAnimation(Animation &animation, const char *text, float x, float y, float duration, float initialDelay = 0.0f);
+void SetupVictoryAnimation(Animation &animation, Character *character, float duration, float jumpHeight, float jumpSpeed);
 void UpdateAnimation(Animation &animation, float dt);
 
 #endif //SANDBOX_ANIMATION_H

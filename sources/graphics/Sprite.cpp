@@ -210,5 +210,11 @@ void SetFrame(SpriteAnimationPlayer &player, int frame) {
     }
 }
 
+void SetSpriteAnimPaused(CharacterSprite& sprite, SpriteAnimationType type) {
+    PlaySpriteAnimation(sprite.player, GetCharacterAnimation(sprite, type), true);
+    SetFrame(sprite.player, 0);
+    sprite.player.playing = false;
+}
+
 
 
