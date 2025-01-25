@@ -477,13 +477,6 @@ void UpdateCombatScreen(CombatState &combat, CombatUIState &uiState, GridState& 
             combat.log.push_back(result.message);
             combat.animations.push_back(damageNumberAnim);
 
-            /*
-            if(!combat.selectedSkill->noTarget && result.attack) {
-                FaceCharacter(*combat.currentCharacter, *combat.selectedCharacter);
-                FaceCharacter(*combat.selectedCharacter, *combat.currentCharacter);
-                PlayAttackDefendAnimation(combat, *combat.currentCharacter, *combat.selectedCharacter);
-            }
-            */
             WaitTurnState(combat, TurnState::EndTurn, 1.0f);
 
 
@@ -525,7 +518,7 @@ void UpdateCombatScreen(CombatState &combat, CombatUIState &uiState, GridState& 
                 TraceLog(LOG_INFO, "Damage: %d, intensity: %f", damage, intensity);
                 CreateBloodSplatter(*gridState.particleManager, {defenderX + (float) RandomInRange(-4,4), defenderY - 8 + (float) RandomInRange(-4,4)}, 10, intensity);
                 Animation damageNumberAnim{};
-                Color dmgColor = GetDamageColor(damage);
+                Color dmgColor = GetDamageColor(damage, combat.currentCharacter->attack);
                 SetupDamageNumberAnimation(damageNumberAnim, TextFormat("%d", damage), defenderX, defenderY-25, dmgColor, combat.attackResult.crit ? 20 : 10);
                 combat.animations.push_back(damageNumberAnim);
                 PlaySoundEffect(SoundEffectType::HumanPain, 0.25f);

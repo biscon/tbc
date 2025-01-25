@@ -75,3 +75,111 @@ Vector2 GetOrientationVector(Orientation orientation) {
     }
     return {0, 0};
 }
+
+// This could be in your Character struct or class
+void LevelUp(Character &character, bool autoDistributePoints) {
+    character.level++;
+    int healthIncrease = 0;
+    int attackIncrease = 0;
+    int defenseIncrease = 0;
+    int speedIncrease = 0;
+
+    // Automatic stat increases per level
+    switch(character.characterClass) {
+        case CharacterClass::Warrior:
+            healthIncrease = 4;
+            attackIncrease = 1;
+            defenseIncrease = 1;
+            break;
+        case CharacterClass::Mage:
+            healthIncrease = 2;
+            speedIncrease = 1;
+            break;
+        case CharacterClass::Rogue:
+            healthIncrease = 2;
+            defenseIncrease = 1;
+            speedIncrease = 1;
+            break;
+    }
+
+
+    // Apply automatic increases
+    character.maxHealth += healthIncrease;
+    character.attack += attackIncrease;
+    character.defense += defenseIncrease;
+    character.speed += speedIncrease;
+
+    if (character.level % 2 == 0 && autoDistributePoints) {
+        int pointsToDistribute = 5;
+        int pointsPerStat = pointsToDistribute / 3;  // Divide points evenly
+        int remainder = pointsToDistribute % 3;      // The leftover points
+
+        // Distribute the evenly divided points
+        switch(character.characterClass) {
+            case CharacterClass::Warrior: {
+                character.maxHealth += pointsPerStat;
+                character.attack += pointsPerStat;
+                character.defense += pointsPerStat;
+
+                // Now distribute the remaining points
+                if (remainder > 0) {
+                    character.maxHealth++;  // Extra point goes to health (for example)
+                    remainder--;
+                }
+                if (remainder > 0) {
+                    character.attack++;  // Next point goes to attack
+                    remainder--;
+                }
+                if (remainder > 0) {
+                    character.defense++;  // Remaining point goes to defense
+                    remainder--;
+                }
+                break;
+            }
+            case CharacterClass::Mage: {
+                character.maxHealth += pointsPerStat;
+                character.attack += pointsPerStat;
+                character.defense += pointsPerStat;
+
+                // Distribute the remaining points
+                if (remainder > 0) {
+                    character.attack++;  // Extra point goes to attack
+                    remainder--;
+                }
+                if (remainder > 0) {
+                    character.maxHealth++;  // Next point goes to health
+                    remainder--;
+                }
+                if (remainder > 0) {
+                    character.defense++;  // Last point goes to defense
+                    remainder--;
+                }
+                break;
+            }
+            case CharacterClass::Rogue: {
+                character.maxHealth += pointsPerStat;
+                character.attack += pointsPerStat;
+                character.defense += pointsPerStat;
+
+                // Distribute the remaining points
+                if (remainder > 0) {
+                    character.attack++;  // Extra point goes to attack (for example)
+                    remainder--;
+                }
+                if (remainder > 0) {
+                    character.defense++;  // Next point goes to defense
+                    remainder--;
+                }
+                if (remainder > 0) {
+                    character.maxHealth++;  // Last point goes to health
+                    remainder--;
+                }
+                break;
+            }
+        }
+    }
+
+    // Recalculate max health if you have a max health stat
+    // Optionally, you could add max health directly as a function of level or health
+    character.health = character.maxHealth;
+}

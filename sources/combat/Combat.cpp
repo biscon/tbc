@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <cmath>
 #include <climits>
+#include <cstring>
 #include "Combat.h"
 #include "util/Random.h"
 #include "graphics/Animation.h"
@@ -126,8 +127,9 @@ Character* GetFirstLivingEnemy(CombatState &combat) {
 }
 
 static int CalculateMissChance(Character &attacker, Character &defender) {
-    int baseMissChance = 50; // Base miss chance starts at 50%
+    int baseMissChance = 40; // Base miss chance starts at 25%
     int missChance = baseMissChance - (attacker.speed * 3); // Higher speed reduces miss chance
+    TraceLog(LOG_INFO, "Base miss chance: %i", missChance);
 
     // Use helper function to get the rank of the Dodge skill
     int dodgeRank = GetSkillRank(defender.skills, SkillType::Dodge);
@@ -136,6 +138,7 @@ static int CalculateMissChance(Character &attacker, Character &defender) {
     if (dodgeRank == 1) missChance += 5;  // +5% miss chance for Dodge Rank 1
     else if (dodgeRank == 2) missChance += 10;  // +10% miss chance for Dodge Rank 2
     else if (dodgeRank == 3) missChance += 15;  // +15% miss chance for Dodge Rank 3
+    TraceLog(LOG_INFO, "Dodge rank: %i, missChance: %i", dodgeRank, missChance);
 
     // defender is stunned, miss chance is zero
     if (IsIncapacitated(&defender)) {
@@ -154,6 +157,7 @@ static int CalculateDamageReduction(Character &defender, int baseDamage) {
     float damageReductionPct = 0;
     auto effects = GetStatusEffectsByType(defender.statusEffects, StatusEffectType::DamageReduction);
     for (auto &effect : effects) {
+        TraceLog(LOG_INFO, "Damage reduction effect: %f", effect->value);
         damageReductionPct += effect->value;
     }
     return static_cast<int>((float) baseDamage * damageReductionPct);
@@ -167,6 +171,7 @@ static void CalculateDamage(CombatState& combat, Character &attacker, Character 
     // Calculate miss chance based on defender's dodge skill and speed
     int missChance = CalculateMissChance(attacker, defender);
     int missRoll = RandomInRange(1, 100);  // Random roll between 1 and 100
+    TraceLog(LOG_INFO, "Miss chance: %i, roll: %i", missChance, missRoll);
 
     // If roll is less than missChance, the attack misses
     if (missRoll <= missChance) {
@@ -177,11 +182,16 @@ static void CalculateDamage(CombatState& combat, Character &attacker, Character 
         result.damage = 0;
         return;  // No damage if the attack misses
     } else {
+        TraceLog(LOG_INFO, "Attack hits!");
         result.hit = true;
     }
 
     // Base damage calculation
-    int baseDamage = attacker.attack - defender.defense;
+    //int baseDamage = attacker.attack - defender.defense;
+    //int baseDamage = std::max(1, (attacker.attack * attacker.attack) / (attacker.attack + defender.defense));
+    int randomVariance = GetRandomValue(-2, 2); // Small random range
+    int baseDamage = std::max(1, ((attacker.attack * attacker.attack) / (attacker.attack + defender.defense)) + randomVariance);
+    TraceLog(LOG_INFO, "Base damage: %i", baseDamage);
     int damageReduction = CalculateDamageReduction(defender, baseDamage);
     TraceLog(LOG_INFO, "Damage reduction: %i", damageReduction);
     baseDamage -= damageReduction;
@@ -261,7 +271,7 @@ int DealDamage(CombatState& combat, Character &attacker, Character &defender, in
          */
     }
     Animation damageNumberAnim{};
-    Color dmgColor = GetDamageColor(baseDamage);
+    Color dmgColor = GetDamageColor(baseDamage, attacker.attack);
     SetupDamageNumberAnimation(damageNumberAnim, TextFormat("%d", baseDamage), defenderX, defenderY-25, dmgColor, isCritical ? 20 : 10);
     combat.animations.push_back(damageNumberAnim);
 
@@ -296,7 +306,7 @@ int DealDamageStatusEffect(CombatState& combat, Character &target, int damage) {
     if (baseDamage < 0) baseDamage = 0;  // No negative damage
 
     Animation damageNumberAnim{};
-    Color dmgColor = GetDamageColor(baseDamage);
+    Color dmgColor = GetDamageColor(baseDamage, combat.currentCharacter->attack);
     SetupDamageNumberAnimation(damageNumberAnim, TextFormat("%d", baseDamage), targetX, targetY-25, dmgColor, 10);
     combat.animations.push_back(damageNumberAnim);
 
@@ -336,6 +346,7 @@ bool IsPlayerCharacter(CombatState &combat, Character &character) {
 
 
 void InitCombat(CombatState &combat, std::vector<Character> &playerCharacters, std::vector<Character> &enemyCharacters) {
+    memset(&combat, 0, sizeof(CombatState));
     std::vector<std::pair<int, Character*>> allCharacters;
     for (auto & playerCharacter : playerCharacters) {
         allCharacters.emplace_back(playerCharacter.speed, &playerCharacter);
@@ -349,7 +360,7 @@ void InitCombat(CombatState &combat, std::vector<Character> &playerCharacters, s
     // Sort by speed, then randomize in case of tie
     std::sort(allCharacters.begin(), allCharacters.end(), [](std::pair<int, Character*> &left, std::pair<int, Character*> &right) {
         if (left.first != right.first) return left.first > right.first;
-        return rand() % 2 == 0;  // Randomize tie-breaking
+        return left.second < right.second;  // Compare by pointer address
     });
 
     // Now set the current order

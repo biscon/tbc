@@ -1,18 +1,3 @@
-/*******************************************************************************************
-*
-*   raylib [core] example - window scale letterbox (and virtual mouse)
-*
-*   Example originally created with raylib 2.5, last time updated with raylib 4.0
-*
-*   Example contributed by Anata (@anatagawa) and reviewed by Ramon Santamaria (@raysan5)
-*
-*   Example licensed under an unmodified zlib/libpng license, which is an OSI-certified,
-*   BSD-like license that allows static linking with closed source software
-*
-*   Copyright (c) 2019-2024 Anata (@anatagawa) and Ramon Santamaria (@raysan5)
-*
-********************************************************************************************/
-
 #include "raylib.h"
 
 #include "raymath.h"        // Required for: Vector2Clamp()
@@ -135,6 +120,7 @@ int main(void) {
                           {6, 7, 8}, {0.15f, 0.15f, 0.15f}, {16, 30});
 
     // Sample player and enemy data
+    /*
     std::vector<Character> playerCharacters = {
             {"Player1", "Fighter", 120, 120, 20, 10, 10, 0, 0, 0, {}, {
                 {SkillType::Taunt, "Howling Scream", 1, false, true, 0, 3, 0},
@@ -144,13 +130,11 @@ int main(void) {
                 {SkillType::Dodge, "Dodge", 3, true, true, 0, 0, 0},
                 {SkillType::Stun, "Stunning Blow", 1, false, false, 0, 3, 1},
             }, {{StatusEffectType::ThreatModifier, -1, 0.75f}}},
-            /*
             {"Player3", "Fighter", 100,  100,  15, 15,  5, 0, 0, 0, {}, {
                         {SkillType::Taunt, "Howling Scream", 1, false, true, 0, 3},
                         {SkillType::Stun, "Stunning Blow", 1, false, false, 0, 3},
                 }, {
             }}
-                */
     };
     std::vector<Character> enemyCharacters = {
             {"Enemy1", "Fighter", 50,  50,  15, 2, 5, 0, 0, {}},
@@ -160,11 +144,26 @@ int main(void) {
             {"Enemy5", "Fighter", 50, 50, 25, 7, 5, 0, 0, {}},
             {"Enemy6", "Fighter", 60, 60, 25, 7, 5, 0, 0, {}},
     };
+    */
+
+    std::vector<Character> playerCharacters = {
+            {CharacterClass::Warrior, "Player1", "Fighter", 20, 20, 5, 3, 4, 0, 0, 0, 1, {}, {
+                                                                      {SkillType::Taunt, "Howling Scream", 1, false, true, 0, 3, 0},
+                                                                      {SkillType::Stun, "Stunning Blow", 1, false, false, 0, 3, 1},
+                                                              }},
+    };
+
+    LevelUp(playerCharacters[0], true);
+
+    std::vector<Character> enemyCharacters = {
+            {CharacterClass::Warrior, "Enemy1", "Fighter", 20,  20,  5, 3, 4, 0, 0, 0, 1, {}},
+            {CharacterClass::Warrior, "Enemy2", "Fighter", 20,  20,  5, 3, 4, 0, 0, 0, 1, {}},
+    };
 
     for(auto &character : playerCharacters) {
         InitCharacterSprite(character.sprite, spriteAnimationManager, "WarriorWalkUp", "WarriorWalkDown", "WarriorWalkLeft", "WarriorWalkRight");
     }
-    InitCharacterSprite(playerCharacters[0].sprite, spriteAnimationManager, "BaseWalkUp", "BaseWalkDown", "BaseWalkLeft", "BaseWalkRight");
+    //InitCharacterSprite(playerCharacters[0].sprite, spriteAnimationManager, "BaseWalkUp", "BaseWalkDown", "BaseWalkLeft", "BaseWalkRight");
     for(auto &character : enemyCharacters) {
         //InitCharacterSprite(character.sprite, spriteAnimationManager, "BaseWalkUp", "BaseWalkDown", "BaseWalkLeft", "BaseWalkRight");
         InitCharacterSprite(character.sprite, spriteAnimationManager, "NinjaWalkUp", "NinjaWalkDown", "NinjaWalkLeft", "NinjaWalkRight");

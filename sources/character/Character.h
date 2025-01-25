@@ -19,7 +19,14 @@ enum class Orientation {
     Right
 };
 
+enum class CharacterClass {
+    Warrior,
+    Mage,
+    Rogue,
+};
+
 struct Character {
+    CharacterClass characterClass;
     std::string name;
     std::string ai;
     int health;
@@ -30,6 +37,7 @@ struct Character {
     int hunger;
     int thirst;
     int movePoints;
+    int level;
     CharacterSprite sprite;
     std::vector<Skill> skills;  // List of skills the character possesses
     std::vector<StatusEffect> statusEffects;
@@ -41,5 +49,6 @@ void DisplayCharacterInfo(const Character &character);
 Character GenerateRandomCharacter(std::string name, bool isEnemy = false);
 bool IsAlive(const Character &character);
 Vector2 GetOrientationVector(Orientation orientation);
+void LevelUp(Character &character, bool autoDistributePoints);
 
 #endif //SANDBOX_CHARACTER_H
