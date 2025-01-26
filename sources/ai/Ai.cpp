@@ -45,7 +45,8 @@ void SortCharactersByThreat(CombatState& combat, std::vector<std::pair<Character
 
 static std::vector<Character*> GetCharactersWithinAttackRange(CombatState &combat, Character &character, int range, std::vector<Character*> &characters) {
     // loop through all characters in combat
-    Vector2i charGridPos = PixelToGridPositionI(character.sprite.player.position.x, character.sprite.player.position.y);
+    Vector2 charPos = GetCharacterSpritePos(character.sprite);
+    Vector2i charGridPos = PixelToGridPositionI(charPos.x, charPos.y);
     std::vector<Character*> charactersInRange;
     for(auto &c : characters) {
         // skip same and death characters
@@ -53,7 +54,8 @@ static std::vector<Character*> GetCharactersWithinAttackRange(CombatState &comba
             continue;
         }
         Path path;
-        Vector2i cGridPos = PixelToGridPositionI(c->sprite.player.position.x, c->sprite.player.position.y);
+        Vector2i cCharPos = GetCharacterSpritePosI(c->sprite);
+        Vector2i cGridPos = PixelToGridPositionI(cCharPos.x, cCharPos.y);
         if(InitPathWithRange(combat, path, charGridPos, cGridPos, range, &character)) {
             if(path.cost <= range) {
                 charactersInRange.push_back(c);
@@ -73,7 +75,8 @@ std::vector<Character*> GetEnemiesWithinAttackRange(CombatState &combat, Charact
 
 static std::vector<std::pair<Character*, Path>> GetCharactersWithinMoveRange(CombatState &combat, Character &character, int attackRange, std::vector<Character*> &characters, bool checkPoints) {
     // loop through all characters in combat
-    Vector2i charGridPos = PixelToGridPositionI(character.sprite.player.position.x, character.sprite.player.position.y);
+    Vector2i charPos = GetCharacterSpritePosI(character.sprite);
+    Vector2i charGridPos = PixelToGridPositionI(charPos.x, charPos.y);
     std::vector<std::pair<Character*, Path>> charactersInRange;
     for(auto &c : characters) {
         // skip same and death characters
@@ -81,7 +84,8 @@ static std::vector<std::pair<Character*, Path>> GetCharactersWithinMoveRange(Com
             continue;
         }
         Path path;
-        Vector2i cGridPos = PixelToGridPositionI(c->sprite.player.position.x, c->sprite.player.position.y);
+        Vector2i cCharPos = GetCharacterSpritePosI(c->sprite);
+        Vector2i cGridPos = PixelToGridPositionI(cCharPos.x, cCharPos.y);
         if(InitPathWithRange(combat, path, charGridPos, cGridPos, attackRange, &character)) {
             if(checkPoints) {
                 if (path.cost <= character.movePoints) {
@@ -106,7 +110,8 @@ std::vector<std::pair<Character*, Path>> GetEnemiesWithinMoveRange(CombatState &
 
 static std::vector<std::pair<Character*, Path>> GetCharactersWithinMoveRangePartial(CombatState &combat, Character &character, int attackRange, std::vector<Character*> &characters, bool checkPoints) {
     // loop through all characters in combat
-    Vector2i charGridPos = PixelToGridPositionI(character.sprite.player.position.x, character.sprite.player.position.y);
+    Vector2i charPos = GetCharacterSpritePosI(character.sprite);
+    Vector2i charGridPos = PixelToGridPositionI(charPos.x, charPos.y);
     std::vector<std::pair<Character*, Path>> charactersInRange;
     for(auto &c : characters) {
         // skip same and death characters
@@ -114,7 +119,8 @@ static std::vector<std::pair<Character*, Path>> GetCharactersWithinMoveRangePart
             continue;
         }
         Path path;
-        Vector2i cGridPos = PixelToGridPositionI(c->sprite.player.position.x, c->sprite.player.position.y);
+        Vector2i cCharPos = GetCharacterSpritePosI(c->sprite);
+        Vector2i cGridPos = PixelToGridPositionI(cCharPos.x, cCharPos.y);
         InitPathWithRangePartial(combat, path, charGridPos, cGridPos, attackRange, &character);
         if(!path.path.empty()) {
             if(checkPoints) {
@@ -140,14 +146,16 @@ std::vector<std::pair<Character*, Path>> GetEnemiesWithinMoveRangePartial(Combat
 
 
 std::vector<Character *> GetAdjacentEnemies(CombatState &combat, Character &character) {
-    Vector2i charGridPos = PixelToGridPositionI(character.sprite.player.position.x, character.sprite.player.position.y);
+    Vector2i charPos = GetCharacterSpritePosI(character.sprite);
+    Vector2i charGridPos = PixelToGridPositionI(charPos.x, charPos.y);
     std::vector<Character*> charactersInRange;
     for(auto &c : combat.enemyCharacters) {
         // skip same and death characters
         if(c == &character || c->health <= 0) {
             continue;
         }
-        Vector2i cGridPos = PixelToGridPositionI(c->sprite.player.position.x, c->sprite.player.position.y);
+        Vector2i cCharPos = GetCharacterSpritePosI(c->sprite);
+        Vector2i cGridPos = PixelToGridPositionI(cCharPos.x, cCharPos.y);
         if(abs(cGridPos.x - charGridPos.x) <= 1 && abs(cGridPos.y - charGridPos.y) <= 1) {
             charactersInRange.push_back(c);
         }
@@ -156,14 +164,16 @@ std::vector<Character *> GetAdjacentEnemies(CombatState &combat, Character &char
 }
 
 std::vector<Character *> GetAdjacentPlayers(CombatState &combat, Character &character) {
-    Vector2i charGridPos = PixelToGridPositionI(character.sprite.player.position.x, character.sprite.player.position.y);
+    Vector2i charPos = GetCharacterSpritePosI(character.sprite);
+    Vector2i charGridPos = PixelToGridPositionI(charPos.x, charPos.y);
     std::vector<Character*> charactersInRange;
     for(auto &c : combat.playerCharacters) {
         // skip same and death characters
         if(c == &character || c->health <= 0) {
             continue;
         }
-        Vector2i cGridPos = PixelToGridPositionI(c->sprite.player.position.x, c->sprite.player.position.y);
+        Vector2i cCharPos = GetCharacterSpritePosI(c->sprite);
+        Vector2i cGridPos = PixelToGridPositionI(cCharPos.x, cCharPos.y);
         if(abs(cGridPos.x - charGridPos.x) <= 1 && abs(cGridPos.y - charGridPos.y) <= 1) {
             charactersInRange.push_back(c);
         }

@@ -48,7 +48,6 @@ struct SpriteAnimationManager {
 
 void CreateSpriteAnimation(SpriteAnimationManager& manager, const char* name, SpriteAnimationType type, SpriteSheet* spriteSheet, std::vector<int> frames, std::vector<float> frameDelays, Vector2 origin);
 SpriteAnimation* GetSpriteAnimation(SpriteAnimationManager& manager, const char* name, SpriteAnimationType type);
-void UpdateSpriteAnimations(SpriteAnimationManager &manager, float dt);
 
 struct SpriteAnimationPlayer {
     SpriteAnimation* animation;
@@ -67,16 +66,7 @@ void UpdateSpriteAnimation(SpriteAnimationPlayer& player, float dt);
 void DrawSpriteAnimation(SpriteAnimationPlayer& player);
 void DrawSpriteAnimation(SpriteAnimationPlayer& player, float x, float y);
 void PlaySpriteAnimation(SpriteAnimationPlayer& player, SpriteAnimation* animation, bool loop = true);
+void PlaySpriteAnimationRestart(SpriteAnimationPlayer &player, SpriteAnimation *animation, bool loop);
 void SetFrame(SpriteAnimationPlayer& player, int frame);
-
-struct CharacterSprite {
-    std::map<SpriteAnimationType, SpriteAnimation*> animations;
-    SpriteAnimationPlayer player;
-};
-
-void InitCharacterSprite(CharacterSprite& sprite, SpriteAnimationManager& animationManager, const char* walkUp, const char* walkDown, const char* walkLeft, const char* walkRight);
-void InitCharacterSprite(CharacterSprite &sprite, SpriteAnimationManager &animationManager, const std::string& animType);
-SpriteAnimation* GetCharacterAnimation(CharacterSprite& sprite, SpriteAnimationType type);
-void SetSpriteAnimPaused(CharacterSprite& sprite, SpriteAnimationType type);
 
 #endif //SANDBOX_SPRITE_H

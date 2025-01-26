@@ -30,8 +30,8 @@ SkillResult ExecuteSkill(CombatState& combat, GridState& gridState) {
                 result.attack = true;
                 result.consumeAction = true;
                 Animation damageNumberAnim{};
-                float userX = user.sprite.player.position.x;
-                float userY = user.sprite.player.position.y;
+                float userX = GetCharacterSpritePosX(user.sprite);
+                float userY = GetCharacterSpritePosY(user.sprite);
                 SetupDamageNumberAnimation(damageNumberAnim, combat.selectedSkill->name, userX, userY - 25, YELLOW, 10);
                 combat.animations.push_back(damageNumberAnim);
             } else {
@@ -64,12 +64,14 @@ SkillResult ExecuteSkill(CombatState& combat, GridState& gridState) {
                 //user.statusEffects.push_back({StatusEffectType::ThreatModifier, skill->rank + 1, 2.0f});
                 result.success = true;
                 result.message = user.name + " used " + skill->name;
-                Vector2 dir = CalculateDirection(user.sprite.player.position, target.sprite.player.position);
+                Vector2 userPos = GetCharacterSpritePos(user.sprite);
+                Vector2 targetPos = GetCharacterSpritePos(target.sprite);
+                Vector2 dir = CalculateDirection(userPos, targetPos);
                 dir.x *= 100;
                 dir.y *= 100;
-                CreateFireEffect(*gridState.particleManager, user.sprite.player.position, dir, 0.2f, 5);
-                Vector2i startPos = PixelToGridPositionI(user.sprite.player.position.x, user.sprite.player.position.y);
-                Vector2i endPos = PixelToGridPositionI(target.sprite.player.position.x, target.sprite.player.position.y);
+                CreateFireEffect(*gridState.particleManager, userPos, dir, 0.2f, 5);
+                Vector2i startPos = PixelToGridPositionI((int) userPos.x, (int) userPos.y);
+                Vector2i endPos = PixelToGridPositionI((int) targetPos.x, (int) targetPos.y);
                 Vector2 gridDir = CalculateDirection(startPos, endPos);
                 PlaySoundEffect(SoundEffectType::Burning);
 
@@ -79,7 +81,8 @@ SkillResult ExecuteSkill(CombatState& combat, GridState& gridState) {
                     // calculate damage
                     int damage = RandomInRange(10, 20);
                     DealDamage(combat, user, *t, damage);
-                    CreateExplosionEffect(*gridState.particleManager, {t->sprite.player.position.x, t->sprite.player.position.y}, 10, 16.0f, 0.2f);
+                    Vector2 tPos = GetCharacterSpritePos(t->sprite);
+                    CreateExplosionEffect(*gridState.particleManager, tPos, 10, 16.0f, 0.2f);
                     // check if dead
                     if(t->health <= 0) {
                         KillCharacter(combat, *t);

@@ -6,8 +6,8 @@
 #include "StatusEffectRunner.h"
 
 static void ApplyStatusEffect(CombatState &combat, GridState &gridState, Character& character, StatusEffect& effect) {
-    float charX = character.sprite.player.position.x;
-    float charY = character.sprite.player.position.y;
+    Vector2 charPos = GetCharacterSpritePos(character.sprite);
+
     switch(effect.type) {
         case StatusEffectType::DamageReduction:
             break;
@@ -29,7 +29,7 @@ static void ApplyStatusEffect(CombatState &combat, GridState &gridState, Charact
             // Burning effect
             int damage = DealDamageStatusEffect(combat, character, (int) effect.value);
             if(damage > 0) {
-                CreateExplosionEffect(*gridState.particleManager, {charX, charY}, 5, 10.0f, 0.2f);
+                CreateExplosionEffect(*gridState.particleManager, {charPos.x, charPos.y}, 5, 10.0f, 0.2f);
             }
             break;
         }

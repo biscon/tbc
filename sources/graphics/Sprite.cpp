@@ -177,22 +177,6 @@ void InitSpriteAnimationPlayer(SpriteAnimationPlayer &player) {
 }
 
 
-void InitCharacterSprite(CharacterSprite &sprite, SpriteAnimationManager &animationManager, const char *walkUp,
-                         const char *walkDown, const char *walkLeft, const char *walkRight) {
-    InitSpriteAnimationPlayer(sprite.player);
-    sprite.animations[SpriteAnimationType::WalkUp] = GetSpriteAnimation(animationManager, walkUp, SpriteAnimationType::WalkUp);
-    sprite.animations[SpriteAnimationType::WalkDown] = GetSpriteAnimation(animationManager, walkDown, SpriteAnimationType::WalkDown);
-    sprite.animations[SpriteAnimationType::WalkLeft] = GetSpriteAnimation(animationManager, walkLeft, SpriteAnimationType::WalkLeft);
-    sprite.animations[SpriteAnimationType::WalkRight] = GetSpriteAnimation(animationManager, walkRight, SpriteAnimationType::WalkRight);
-}
-
-void InitCharacterSprite(CharacterSprite &sprite, SpriteAnimationManager &animationManager, const std::string& animType) {
-    InitSpriteAnimationPlayer(sprite.player);
-    sprite.animations[SpriteAnimationType::WalkUp] = GetSpriteAnimation(animationManager, (animType + "WalkUp").c_str(), SpriteAnimationType::WalkUp);
-    sprite.animations[SpriteAnimationType::WalkDown] = GetSpriteAnimation(animationManager, (animType + "WalkDown").c_str(), SpriteAnimationType::WalkDown);
-    sprite.animations[SpriteAnimationType::WalkLeft] = GetSpriteAnimation(animationManager, (animType + "WalkLeft").c_str(), SpriteAnimationType::WalkLeft);
-    sprite.animations[SpriteAnimationType::WalkRight] = GetSpriteAnimation(animationManager, (animType + "WalkRight").c_str(), SpriteAnimationType::WalkRight);
-}
 
 void PlaySpriteAnimation(SpriteAnimationPlayer &player, SpriteAnimation *animation, bool loop) {
     // do nothing if the animation is already playing
@@ -207,8 +191,12 @@ void PlaySpriteAnimation(SpriteAnimationPlayer &player, SpriteAnimation *animati
     player.playing = true;
 }
 
-SpriteAnimation *GetCharacterAnimation(CharacterSprite &sprite, SpriteAnimationType type) {
-    return sprite.animations[type];
+void PlaySpriteAnimationRestart(SpriteAnimationPlayer &player, SpriteAnimation *animation, bool loop) {
+    player.animation = animation;
+    player.currentFrame = 0;
+    player.frameTime = 0;
+    player.loop = loop;
+    player.playing = true;
 }
 
 void SetFrame(SpriteAnimationPlayer &player, int frame) {
@@ -218,11 +206,7 @@ void SetFrame(SpriteAnimationPlayer &player, int frame) {
     }
 }
 
-void SetSpriteAnimPaused(CharacterSprite& sprite, SpriteAnimationType type) {
-    PlaySpriteAnimation(sprite.player, GetCharacterAnimation(sprite, type), true);
-    SetFrame(sprite.player, 0);
-    sprite.player.playing = false;
-}
+
 
 
 

@@ -8,7 +8,7 @@
 #include <iostream>
 #include <utility>
 #include <vector>
-#include "graphics/Sprite.h"
+#include "graphics/CharacterSprite.h"
 #include "Skill.h"
 #include "StatusEffect.h"
 

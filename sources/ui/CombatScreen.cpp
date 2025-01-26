@@ -124,6 +124,7 @@ static void DisplayActionUI(CombatState &combat, CombatUIState &uiState, GridSta
             ActionIcon{"MOV", "Move", combat.currentCharacter->movePoints <= 0, nullptr},
             ActionIcon{"ATK", "Attack", false, nullptr},
             ActionIcon{"DEF", "Defend (50% damage reduction, cannot attack)", false, nullptr},
+            ActionIcon{"END", "End turn (Do nothing)", false, nullptr},
     };
 
     // add active character skills
@@ -177,14 +178,19 @@ static void DisplayActionUI(CombatState &combat, CombatUIState &uiState, GridSta
                 // Defend button pressed
                 combat.turnState = TurnState::EndTurn;
                 AssignStatusEffectAllowStacking(combat.currentCharacter->statusEffects, StatusEffectType::DamageReduction, 1, 0.5f);
-                float charX = combat.currentCharacter->sprite.player.position.x;
-                float charY = combat.currentCharacter->sprite.player.position.y;
+                float charX = GetCharacterSpritePosX(combat.currentCharacter->sprite);
+                float charY = GetCharacterSpritePosY(combat.currentCharacter->sprite);
                 Animation anim{};
                 SetupDamageNumberAnimation(anim, "DEFENDING", charX, charY - 25, WHITE, 10);
                 combat.animations.push_back(anim);
                 break;
             }
-            if (i + uiState.actionIconScrollIndex > 2) {
+            if (i + uiState.actionIconScrollIndex == 3) {
+                // End button pressed
+                combat.turnState = TurnState::EndTurn;
+                break;
+            }
+            if (i + uiState.actionIconScrollIndex > 3) {
                 // Skill button pressed
                 combat.turnState = TurnState::Waiting;
                 combat.waitTime = 0.25f;
@@ -357,8 +363,8 @@ void DisplayCombatScreen(CombatState &combat, CombatUIState &uiState, GridState 
 
     if (gridState.floatingStatsCharacter != nullptr && (combat.turnState == TurnState::SelectAction ||
         combat.turnState == TurnState::SelectEnemy || combat.turnState == TurnState::SelectDestination)) {
-        float x = gridState.floatingStatsCharacter->sprite.player.position.x;
-        float y = gridState.floatingStatsCharacter->sprite.player.position.y;
+        float x = GetCharacterSpritePosX(gridState.floatingStatsCharacter->sprite);
+        float y = GetCharacterSpritePosY(gridState.floatingStatsCharacter->sprite);
         DisplayCharacterStatsFloating(*gridState.floatingStatsCharacter, (int) x - 10, (int) y + 12,
                                       IsPlayerCharacter(combat, *gridState.floatingStatsCharacter));
     }
@@ -380,24 +386,24 @@ static void UpdateAnimations(CombatState &combat, float dt) {
 
 static void FaceCharacter(Character &attacker, Character &defender) {
     // Determine the direction of movement and set the appropriate animation
-    Vector2 start = attacker.sprite.player.position;
-    Vector2 end = defender.sprite.player.position;
+    Vector2 start = GetCharacterSpritePos(attacker.sprite);
+    Vector2 end = GetCharacterSpritePos(defender.sprite);
     if (fabs(end.x - start.x) > fabs(end.y - start.y)) {
         // Horizontal movement
         if (end.x > start.x) {
-            SetSpriteAnimPaused(attacker.sprite, SpriteAnimationType::WalkRight);
+            StartPausedCharacterSpriteAnim(attacker.sprite, SpriteAnimationType::WalkRight, true);
             attacker.orientation = Orientation::Right;
         } else {
-            SetSpriteAnimPaused(attacker.sprite, SpriteAnimationType::WalkLeft);
+            StartPausedCharacterSpriteAnim(attacker.sprite, SpriteAnimationType::WalkLeft, true);
             attacker.orientation = Orientation::Left;
         }
     } else {
         // Vertical movement
         if (end.y > start.y) {
-            SetSpriteAnimPaused(attacker.sprite, SpriteAnimationType::WalkDown);
+            StartPausedCharacterSpriteAnim(attacker.sprite, SpriteAnimationType::WalkDown, true);
             attacker.orientation = Orientation::Down;
         } else {
-            SetSpriteAnimPaused(attacker.sprite, SpriteAnimationType::WalkUp);
+            StartPausedCharacterSpriteAnim(attacker.sprite, SpriteAnimationType::WalkUp, true);
             attacker.orientation = Orientation::Up;
         }
     }
@@ -436,8 +442,8 @@ void UpdateCombatScreen(CombatState &combat, CombatUIState &uiState, GridState& 
                 combat.nextState = TurnState::EndTurn;
                 std::string logMessage = combat.currentCharacter->name + " is skipping the turn!";
                 combat.log.push_back(logMessage);
-                float charX = combat.currentCharacter->sprite.player.position.x;
-                float charY = combat.currentCharacter->sprite.player.position.y;
+                float charX = GetCharacterSpritePosX(combat.currentCharacter->sprite);
+                float charY = GetCharacterSpritePosY(combat.currentCharacter->sprite);
                 Animation anim{};
                 SetupDamageNumberAnimation(anim, "STUNNED", charX, charY-25, WHITE, 10);
                 combat.animations.push_back(anim);
@@ -458,8 +464,8 @@ void UpdateCombatScreen(CombatState &combat, CombatUIState &uiState, GridState& 
         }
         case TurnState::UseSkill: {
             TraceLog(LOG_INFO, "Use skill");
-            float attackerX = combat.currentCharacter->sprite.player.position.x;
-            float attackerY = combat.currentCharacter->sprite.player.position.y;
+            float attackerX = GetCharacterSpritePosX(combat.currentCharacter->sprite);
+            float attackerY = GetCharacterSpritePosY(combat.currentCharacter->sprite);
 
             SkillResult result = ExecuteSkill(combat, gridState);
             Animation damageNumberAnim{};
@@ -507,11 +513,10 @@ void UpdateCombatScreen(CombatState &combat, CombatUIState &uiState, GridState& 
             break;
         }
         case TurnState::AttackDone: {
-            combat.currentCharacter->sprite.player.playing = false;
-            float attackerX = combat.currentCharacter->sprite.player.position.x;
-            float defenderX = combat.selectedCharacter->sprite.player.position.x;
-            float attackerY = combat.currentCharacter->sprite.player.position.y;
-            float defenderY = combat.selectedCharacter->sprite.player.position.y;
+            float attackerX = GetCharacterSpritePosX(combat.currentCharacter->sprite);
+            float attackerY = GetCharacterSpritePosY(combat.currentCharacter->sprite);
+            float defenderX = GetCharacterSpritePosX(combat.selectedCharacter->sprite);
+            float defenderY = GetCharacterSpritePosY(combat.selectedCharacter->sprite);
             int damage = combat.attackResult.damage;
             if(damage > 0) {
                 float intensity = (float) GetBloodIntensity(damage, combat.currentCharacter->attack);

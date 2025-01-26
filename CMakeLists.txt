@@ -78,6 +78,8 @@ add_executable(${PROJECT_NAME}
         sources/combat/CombatAnimation.h
         sources/audio/SoundEffect.cpp
         sources/audio/SoundEffect.h
+        sources/graphics/CharacterSprite.cpp
+        sources/graphics/CharacterSprite.h
 )
 target_sources(${PROJECT_NAME} PRIVATE ${PROJECT_SOURCES})
 target_include_directories(${PROJECT_NAME} PRIVATE ${PROJECT_INCLUDE})

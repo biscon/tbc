@@ -30,8 +30,9 @@ int main(void) {
     InitAudioDevice();      // Initialize audio device
 
     InitSoundEffectManager();
-    LoadSoundEffect(SoundEffectType::Ambience, ASSETS_PATH"music/ambience_cave.ogg", true);
-    SetVolumeSoundEffect(SoundEffectType::Ambience, 0.75f);
+    //LoadSoundEffect(SoundEffectType::Ambience, ASSETS_PATH"music/ambience_cave.ogg", true);
+    LoadSoundEffect(SoundEffectType::Ambience, ASSETS_PATH"sound/ambient_forest_01.ogg", true);
+    //SetVolumeSoundEffect(SoundEffectType::Ambience, 0.75f);
     LoadSoundEffect(SoundEffectType::Footstep, ASSETS_PATH"sound/footstep_dirt_03.wav", true, 0.075f);
     SetVolumeSoundEffect(SoundEffectType::Footstep, 0.75f);
     LoadSoundEffect(SoundEffectType::Select, ASSETS_PATH"sound/select_01.wav", false);
@@ -92,7 +93,58 @@ int main(void) {
     SpriteSheet ninjaSpriteSheet;
     LoadSpriteSheet(ninjaSpriteSheet, ASSETS_PATH"ninja_male_32x32.png", 32, 32);
 
+    SpriteSheet swordSpriteSheet;
+    LoadSpriteSheet(swordSpriteSheet, ASSETS_PATH"weapon_sword_32x32.png", 32, 32);
+
+    SpriteSheet staffSpriteSheet;
+    LoadSpriteSheet(staffSpriteSheet, ASSETS_PATH"weapon_staff_32x32.png", 32, 32);
+
+    float attackSpeed = 0.25f;
+
     SpriteAnimationManager spriteAnimationManager;
+    // weapon walk
+    CreateSpriteAnimation(spriteAnimationManager, "SwordWalkRight", SpriteAnimationType::WalkRight, &swordSpriteSheet,
+                          {3, 4, 5}, {0.15f, 0.15f, 0.15f}, {16, 30});
+    CreateSpriteAnimation(spriteAnimationManager, "SwordWalkLeft", SpriteAnimationType::WalkLeft, &swordSpriteSheet,
+                          {9, 10, 11}, {0.15f, 0.15f, 0.15f}, {16, 30});
+    CreateSpriteAnimation(spriteAnimationManager, "SwordWalkUp", SpriteAnimationType::WalkUp, &swordSpriteSheet,
+                          {0, 1, 2}, {0.15f, 0.15f, 0.15f}, {16, 30});
+    CreateSpriteAnimation(spriteAnimationManager, "SwordWalkDown", SpriteAnimationType::WalkDown, &swordSpriteSheet,
+                          {6, 7, 8}, {0.15f, 0.15f, 0.15f}, {16, 30});
+
+    // weapon attack
+    CreateSpriteAnimation(spriteAnimationManager, "SwordAttackUp", SpriteAnimationType::AttackUp, &swordSpriteSheet,
+                          {12, 13, 14}, {attackSpeed, attackSpeed, attackSpeed}, {16, 30});
+    CreateSpriteAnimation(spriteAnimationManager, "SwordAttackRight", SpriteAnimationType::AttackRight, &swordSpriteSheet,
+                          {15, 16, 17}, {attackSpeed, attackSpeed, attackSpeed}, {16, 30});
+    CreateSpriteAnimation(spriteAnimationManager, "SwordAttackDown", SpriteAnimationType::AttackDown, &swordSpriteSheet,
+                          {18, 19, 20}, {attackSpeed, attackSpeed, attackSpeed}, {16, 30});
+    CreateSpriteAnimation(spriteAnimationManager, "SwordAttackLeft", SpriteAnimationType::AttackLeft, &swordSpriteSheet,
+                          {21, 22, 23}, {attackSpeed, attackSpeed, attackSpeed}, {16, 30});
+
+
+    // weapon walk
+    CreateSpriteAnimation(spriteAnimationManager, "StaffWalkRight", SpriteAnimationType::WalkRight, &staffSpriteSheet,
+                          {3, 4, 5}, {0.15f, 0.15f, 0.15f}, {16, 30});
+    CreateSpriteAnimation(spriteAnimationManager, "StaffWalkLeft", SpriteAnimationType::WalkLeft, &staffSpriteSheet,
+                          {9, 10, 11}, {0.15f, 0.15f, 0.15f}, {16, 30});
+    CreateSpriteAnimation(spriteAnimationManager, "StaffWalkUp", SpriteAnimationType::WalkUp, &staffSpriteSheet,
+                          {0, 1, 2}, {0.15f, 0.15f, 0.15f}, {16, 30});
+    CreateSpriteAnimation(spriteAnimationManager, "StaffWalkDown", SpriteAnimationType::WalkDown, &staffSpriteSheet,
+                          {6, 7, 8}, {0.15f, 0.15f, 0.15f}, {16, 30});
+
+    // weapon attack
+    CreateSpriteAnimation(spriteAnimationManager, "StaffAttackUp", SpriteAnimationType::AttackUp, &staffSpriteSheet,
+                          {12, 13, 14}, {attackSpeed, attackSpeed, attackSpeed}, {16, 30});
+    CreateSpriteAnimation(spriteAnimationManager, "StaffAttackRight", SpriteAnimationType::AttackRight, &staffSpriteSheet,
+                          {15, 16, 17}, {attackSpeed, attackSpeed, attackSpeed}, {16, 30});
+    CreateSpriteAnimation(spriteAnimationManager, "StaffAttackDown", SpriteAnimationType::AttackDown, &staffSpriteSheet,
+                          {18, 19, 20}, {attackSpeed, attackSpeed, attackSpeed}, {16, 30});
+    CreateSpriteAnimation(spriteAnimationManager, "StaffAttackLeft", SpriteAnimationType::AttackLeft, &staffSpriteSheet,
+                          {21, 22, 23}, {attackSpeed, attackSpeed, attackSpeed}, {16, 30});
+    
+
+    // base
     CreateSpriteAnimation(spriteAnimationManager, "BaseWalkRight", SpriteAnimationType::WalkRight, &baseCharSpriteSheet,
                           {3, 4, 5}, {0.15f, 0.15f, 0.15f}, {16, 30});
     CreateSpriteAnimation(spriteAnimationManager, "BaseWalkLeft", SpriteAnimationType::WalkLeft, &baseCharSpriteSheet,
@@ -102,7 +154,6 @@ int main(void) {
     CreateSpriteAnimation(spriteAnimationManager, "BaseWalkDown", SpriteAnimationType::WalkDown, &baseCharSpriteSheet,
                           {6, 7, 8}, {0.15f, 0.15f, 0.15f}, {16, 30});
 
-    float attackSpeed = 0.25f;
     CreateSpriteAnimation(spriteAnimationManager, "BaseAttackUp", SpriteAnimationType::AttackUp, &baseCharSpriteSheet,
                           {12, 13, 14}, {attackSpeed, attackSpeed, attackSpeed}, {16, 30});
     CreateSpriteAnimation(spriteAnimationManager, "BaseAttackRight", SpriteAnimationType::AttackRight, &baseCharSpriteSheet,
@@ -112,6 +163,7 @@ int main(void) {
     CreateSpriteAnimation(spriteAnimationManager, "BaseAttackLeft", SpriteAnimationType::AttackLeft, &baseCharSpriteSheet,
                           {21, 22, 23}, {attackSpeed, attackSpeed, attackSpeed}, {16, 30});
 
+    // warrior
     CreateSpriteAnimation(spriteAnimationManager, "WarriorWalkRight", SpriteAnimationType::WalkRight, &warriorSpriteSheet,
                           {3, 4, 5}, {0.15f, 0.15f, 0.15f}, {16, 30});
     CreateSpriteAnimation(spriteAnimationManager, "WarriorWalkLeft", SpriteAnimationType::WalkLeft, &warriorSpriteSheet,
@@ -120,6 +172,15 @@ int main(void) {
                           {0, 1, 2}, {0.15f, 0.15f, 0.15f}, {16, 30});
     CreateSpriteAnimation(spriteAnimationManager, "WarriorWalkDown", SpriteAnimationType::WalkDown, &warriorSpriteSheet,
                           {6, 7, 8}, {0.15f, 0.15f, 0.15f}, {16, 30});
+    CreateSpriteAnimation(spriteAnimationManager, "WarriorAttackUp", SpriteAnimationType::AttackUp, &warriorSpriteSheet,
+                          {12, 13, 14}, {attackSpeed, attackSpeed, attackSpeed}, {16, 30});
+    CreateSpriteAnimation(spriteAnimationManager, "WarriorAttackRight", SpriteAnimationType::AttackRight, &warriorSpriteSheet,
+                          {15, 16, 17}, {attackSpeed, attackSpeed, attackSpeed}, {16, 30});
+    CreateSpriteAnimation(spriteAnimationManager, "WarriorAttackDown", SpriteAnimationType::AttackDown, &warriorSpriteSheet,
+                          {18, 19, 20}, {attackSpeed, attackSpeed, attackSpeed}, {16, 30});
+    CreateSpriteAnimation(spriteAnimationManager, "WarriorAttackLeft", SpriteAnimationType::AttackLeft, &warriorSpriteSheet,
+                          {21, 22, 23}, {attackSpeed, attackSpeed, attackSpeed}, {16, 30});
+
 
     CreateSpriteAnimation(spriteAnimationManager, "NinjaWalkRight", SpriteAnimationType::WalkRight, &ninjaSpriteSheet,
                           {3, 4, 5}, {0.15f, 0.15f, 0.15f}, {16, 30});
@@ -129,6 +190,14 @@ int main(void) {
                           {0, 1, 2}, {0.15f, 0.15f, 0.15f}, {16, 30});
     CreateSpriteAnimation(spriteAnimationManager, "NinjaWalkDown", SpriteAnimationType::WalkDown, &ninjaSpriteSheet,
                           {6, 7, 8}, {0.15f, 0.15f, 0.15f}, {16, 30});
+    CreateSpriteAnimation(spriteAnimationManager, "NinjaAttackUp", SpriteAnimationType::AttackUp, &ninjaSpriteSheet,
+                          {12, 13, 14}, {attackSpeed, attackSpeed, attackSpeed}, {16, 30});
+    CreateSpriteAnimation(spriteAnimationManager, "NinjaAttackRight", SpriteAnimationType::AttackRight, &ninjaSpriteSheet,
+                          {15, 16, 17}, {attackSpeed, attackSpeed, attackSpeed}, {16, 30});
+    CreateSpriteAnimation(spriteAnimationManager, "NinjaAttackDown", SpriteAnimationType::AttackDown, &ninjaSpriteSheet,
+                          {18, 19, 20}, {attackSpeed, attackSpeed, attackSpeed}, {16, 30});
+    CreateSpriteAnimation(spriteAnimationManager, "NinjaAttackLeft", SpriteAnimationType::AttackLeft, &ninjaSpriteSheet,
+                          {21, 22, 23}, {attackSpeed, attackSpeed, attackSpeed}, {16, 30});
 
     // Sample player and enemy data
     /*
@@ -161,14 +230,14 @@ int main(void) {
     CreateCharacter(warrior, CharacterClass::Warrior, "Player1", "Fighter");
     AssignSkill(warrior.skills, SkillType::Taunt, "Howling Scream", 1, false, true, 0, 3, 0);
     AssignSkill(warrior.skills, SkillType::Stun, "Stunning Blow", 1, false, false, 0, 3, 1);
-    InitCharacterSprite(warrior.sprite, spriteAnimationManager, "Warrior");
+    InitCharacterSprite(warrior.sprite, spriteAnimationManager, "Warrior", "Sword", true);
     LevelUp(warrior, true);
 
     Character mage;
     CreateCharacter(mage, CharacterClass::Mage, "Player2", "Fighter");
     AssignSkill(mage.skills, SkillType::Dodge, "Dodge", 1, true, true, 0, 0, 0);
     AssignSkill(mage.skills, SkillType::FlameJet, "Burning Hands", 1, false, false, 0, 3, 5);
-    InitCharacterSprite(mage.sprite, spriteAnimationManager, "Ninja");
+    InitCharacterSprite(mage.sprite, spriteAnimationManager, "Base", "Staff", true);
     LevelUp(mage, true);
 
     std::vector<Character> playerCharacters = {warrior, mage};
@@ -178,13 +247,13 @@ int main(void) {
     std::vector<Character> enemyCharacters = {
             {CharacterClass::Warrior, "Enemy1", "Fighter", 20,  20,  5, 3, 4, 0, 0, 0, 1, {}},
             {CharacterClass::Warrior, "Enemy2", "Fighter", 20,  20,  5, 3, 4, 0, 0, 0, 1, {}},
-            {CharacterClass::Warrior, "Enemy3", "Fighter", 20,  20,  5, 3, 4, 0, 0, 0, 1, {}},
-            {CharacterClass::Warrior, "Enemy4", "Fighter", 20,  20,  5, 3, 4, 0, 0, 0, 1, {}},
+            //{CharacterClass::Warrior, "Enemy3", "Fighter", 20,  20,  5, 3, 4, 0, 0, 0, 1, {}},
+            //{CharacterClass::Warrior, "Enemy4", "Fighter", 20,  20,  5, 3, 4, 0, 0, 0, 1, {}},
     };
 
     //InitCharacterSprite(playerCharacters[0].sprite, spriteAnimationManager, "BaseWalkUp", "BaseWalkDown", "BaseWalkLeft", "BaseWalkRight");
     for(auto &character : enemyCharacters) {
-        InitCharacterSprite(character.sprite, spriteAnimationManager, "Base");
+        InitCharacterSprite(character.sprite, spriteAnimationManager, "Ninja", "Staff", true);
         //InitCharacterSprite(character.sprite, spriteAnimationManager, "NinjaWalkUp", "NinjaWalkDown", "NinjaWalkLeft", "NinjaWalkRight");
     }
 
@@ -196,11 +265,11 @@ int main(void) {
     SpriteSheet tileSet;
     //LoadSpriteSheet(tileSet, ASSETS_PATH"town_tiles.png", 16, 16);
     //LoadTileMap(combat.tileMap, ASSETS_PATH"test_map_01.json", &tileSet);
-    LoadSpriteSheet(tileSet, ASSETS_PATH"sewer_tiles.png", 16, 16);
-    LoadTileMap(combat.tileMap, ASSETS_PATH"test_map_02.json", &tileSet);
+    //LoadSpriteSheet(tileSet, ASSETS_PATH"sewer_tiles.png", 16, 16);
+    //LoadTileMap(combat.tileMap, ASSETS_PATH"test_map_02.json", &tileSet);
 
-    //LoadSpriteSheet(tileSet, ASSETS_PATH"forest_tiles.png", 16, 16);
-    //LoadTileMap(combat.tileMap, ASSETS_PATH"test_map_03.json", &tileSet);
+    LoadSpriteSheet(tileSet, ASSETS_PATH"forest_tiles.png", 16, 16);
+    LoadTileMap(combat.tileMap, ASSETS_PATH"test_map_03.json", &tileSet);
 
     ParticleManager particleManager;
     CreateParticleManager(particleManager, {0, 0}, 480, 270);

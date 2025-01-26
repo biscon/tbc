@@ -44,7 +44,7 @@ bool IsTileOccupied(CombatState &combat, int x, int y, Character *exceptCharacte
     for (auto &character: combat.playerCharacters) {
         // skip dead
         if (character->health <= 0) continue;
-        Vector2 gridPos = PixelToGridPosition(character->sprite.player.position.x, character->sprite.player.position.y);
+        Vector2 gridPos = PixelToGridPosition(GetCharacterSpritePosX(character->sprite), GetCharacterSpritePosY(character->sprite));
         if ((int) gridPos.x == x && (int) gridPos.y == y && character != exceptCharacter) {
             //TraceLog(LOG_WARNING, "Player character in the way, x: %d, y: %d", x, y);
             return false;
@@ -53,7 +53,7 @@ bool IsTileOccupied(CombatState &combat, int x, int y, Character *exceptCharacte
     for (auto &character: combat.enemyCharacters) {
         // skip dead
         if (character->health <= 0) continue;
-        Vector2 gridPos = PixelToGridPosition(character->sprite.player.position.x, character->sprite.player.position.y);
+        Vector2 gridPos = PixelToGridPosition(GetCharacterSpritePosX(character->sprite), GetCharacterSpritePosY(character->sprite));
         if ((int) gridPos.x == x && (int) gridPos.y == y && character != exceptCharacter) {
             //TraceLog(LOG_WARNING, "Enemy character in the way, x: %d, y: %d", x, y);
             return false;
@@ -376,8 +376,11 @@ bool InitPathWithRangePartial(CombatState &combat, Path &path, Vector2i start, V
 }
 
 bool IsCharacterAdjacentToPlayer(Character &player, Character &character) {
-    Vector2i charGridPos = PixelToGridPositionI(character.sprite.player.position.x, character.sprite.player.position.y);
-    Vector2i playerGridPos = PixelToGridPositionI(player.sprite.player.position.x, player.sprite.player.position.y);
+    Vector2i charPos = GetCharacterSpritePosI(character.sprite);
+    Vector2i playerPos = GetCharacterSpritePosI(player.sprite);
+
+    Vector2i charGridPos = PixelToGridPositionI(charPos.x, charPos.y);
+    Vector2i playerGridPos = PixelToGridPositionI(playerPos.x, playerPos.y);
     return abs(playerGridPos.x - charGridPos.x) <= 1 && abs(playerGridPos.y - charGridPos.y) <= 1;
 }
 
@@ -475,7 +478,8 @@ std::vector<Character*> GetTargetsInLine(CombatState &combat, Vector2i start, Ve
             if(character == exceptCharacter) continue;
             // skip dead
             if (character->health <= 0) continue;
-            Vector2i gridPos = PixelToGridPositionI(character->sprite.player.position.x, character->sprite.player.position.y);
+            Vector2i charPos = GetCharacterSpritePosI(character->sprite);
+            Vector2i gridPos = PixelToGridPositionI(charPos.x, charPos.y);
             if (gridPos == tilePos) {
                 affectedCharacters.push_back(character);
             }
@@ -485,7 +489,8 @@ std::vector<Character*> GetTargetsInLine(CombatState &combat, Vector2i start, Ve
             if(character == exceptCharacter) continue;
             // skip dead
             if (character->health <= 0) continue;
-            Vector2i gridPos = PixelToGridPositionI(character->sprite.player.position.x, character->sprite.player.position.y);
+            Vector2i charPos = GetCharacterSpritePosI(character->sprite);
+            Vector2i gridPos = PixelToGridPositionI(charPos.x, charPos.y);
             if (gridPos == tilePos) {
                 affectedCharacters.push_back(character);
             }

@@ -35,7 +35,7 @@ static Vector2 GetAnimatedCharPos(CombatState &combat, Character *character) {
             }
         }
     }
-    return character->sprite.player.position;
+    return GetCharacterSpritePos(character->sprite);
 }
 
 void InitGrid(GridState &gridState, SpriteAnimationManager &animationManager, ParticleManager* particleManager) {
@@ -73,15 +73,10 @@ void SetInitialGridPositions(GridState &gridState, CombatState &combat) {
         // take a position from the list
         auto pos = positions.back();
         positions.pop_back();
-        combat.playerCharacters[i]->sprite.player.position = GridToPixelPosition(pos.x, pos.y);
+        SetCharacterSpritePos(combat.playerCharacters[i]->sprite, GridToPixelPosition(pos.x, pos.y));
         // Set initial animation to paused
-        PlaySpriteAnimation(
-                combat.playerCharacters[i]->sprite.player,
-                GetCharacterAnimation(combat.playerCharacters[i]->sprite, SpriteAnimationType::WalkRight),
-                true
-        );
+        StartPausedCharacterSpriteAnim(combat.playerCharacters[i]->sprite, SpriteAnimationType::WalkRight, true);;
         combat.playerCharacters[i]->orientation = Orientation::Right;
-        combat.playerCharacters[i]->sprite.player.playing = false;
     }
 
     positions = FindFreePositionsCircular(combat, 23, 7, 5);
@@ -90,15 +85,10 @@ void SetInitialGridPositions(GridState &gridState, CombatState &combat) {
         // take a position from the list
         auto pos = positions.back();
         positions.pop_back();
-        combat.enemyCharacters[i]->sprite.player.position = GridToPixelPosition(pos.x, pos.y);
+        SetCharacterSpritePos(combat.enemyCharacters[i]->sprite, GridToPixelPosition(pos.x, pos.y));
         // Set initial animation to paused
-        PlaySpriteAnimation(
-                combat.enemyCharacters[i]->sprite.player,
-                GetCharacterAnimation(combat.enemyCharacters[i]->sprite, SpriteAnimationType::WalkLeft),
-                true
-        );
+        StartPausedCharacterSpriteAnim(combat.enemyCharacters[i]->sprite, SpriteAnimationType::WalkLeft, true);
         combat.enemyCharacters[i]->orientation = Orientation::Left;
-        combat.enemyCharacters[i]->sprite.player.playing = false;
     }
 }
 
@@ -111,8 +101,8 @@ void DrawPathSelection(GridState &gridState, CombatState &combat) {
         // calculate a path and draw it as lines
         Path path;
         Vector2i target = PixelToGridPositionI(static_cast<int>(mousePos.x), static_cast<int>(mousePos.y));
-        if (InitPath(combat, path, PixelToGridPositionI((int) combat.currentCharacter->sprite.player.position.x,
-                                                        (int) combat.currentCharacter->sprite.player.position.y),
+        if (InitPath(combat, path, PixelToGridPositionI((int) GetCharacterSpritePosX(combat.currentCharacter->sprite),
+                                                        (int) GetCharacterSpritePosY(combat.currentCharacter->sprite)),
                      target, combat.currentCharacter)) {
             Color pathColor = Fade(WHITE, gridState.highlightAlpha);
             if (path.cost > combat.currentCharacter->movePoints) {
@@ -188,10 +178,10 @@ void DrawSelectCharacters(GridState &gridState, std::vector<Character *> &charac
         if (character->health <= 0) {
             continue;
         }
-        Vector2 gridPosCharacter = PixelToGridPosition(character->sprite.player.position.x,
-                                                       character->sprite.player.position.y);
+        Vector2 charPos = GetCharacterSpritePos(character->sprite);
+        Vector2 gridPosCharacter = PixelToGridPosition(charPos.x, charPos.y);
         if ((int) gridPosCharacter.x == (int) gridPos.x && (int) gridPosCharacter.y == (int) gridPos.y) {
-            DrawCircleLines(character->sprite.player.position.x, character->sprite.player.position.y, 10,
+            DrawCircleLines(charPos.x, charPos.y, 10,
                             Fade(color, gridState.highlightAlpha));
             // Draw plus
             DrawLine(gridPos.x * 16 + 8, gridPos.y * 16 - 1, gridPos.x * 16 + 8, gridPos.y * 16 + 17,
@@ -218,8 +208,8 @@ void DrawSelectCharacter(GridState &gridState, CombatState &combat, bool onlyEne
         if(range == 1) {
             if (IsCharacterAdjacentToPlayer(*combat.currentCharacter, *gridState.selectedCharacter)) {
                 // draw last line from player to selected character
-                Vector2 start = combat.currentCharacter->sprite.player.position;
-                Vector2 end = gridState.selectedCharacter->sprite.player.position;
+                Vector2 start = GetCharacterSpritePos(combat.currentCharacter->sprite);
+                Vector2 end = GetCharacterSpritePos(gridState.selectedCharacter->sprite);
                 DrawLineEx(start, end, 1, Fade(RED, gridState.highlightAlpha));
                 // Check for a mouse click
                 if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
@@ -238,8 +228,8 @@ void DrawSelectCharacter(GridState &gridState, CombatState &combat, bool onlyEne
             }
         } else {
             // draw last line from player to selected character
-            Vector2 start = combat.currentCharacter->sprite.player.position;
-            Vector2 end = gridState.selectedCharacter->sprite.player.position;
+            Vector2 start = GetCharacterSpritePos(combat.currentCharacter->sprite);
+            Vector2 end = GetCharacterSpritePos(gridState.selectedCharacter->sprite);
             if(HasLineOfSight(combat, PixelToGridPositionI((int) start.x, (int) start.y), PixelToGridPositionI((int) end.x, (int) end.y))) {
                 int distance = (int) Vector2Distance(start, end);
                 if(distance <= range * 16) {
@@ -324,11 +314,11 @@ void DrawGridCharacters(GridState &state, CombatState &combat) {
             DrawEllipse((int) charPos.x, (int) charPos.y, 6, 4, Fade(BLACK, 0.25f));
 
         if (IsCharacterVisible(combat, character)) {
-            DrawSpriteAnimation(character->sprite.player, charPos.x, charPos.y);
+            DrawCharacterSprite(character->sprite, charPos.x, charPos.y);
         } else {
-            character->sprite.player.tint = {255, 255, 255, 64}; // Semi-transparent tint
-            DrawSpriteAnimation(character->sprite.player, charPos.x, charPos.y);
-            character->sprite.player.tint = WHITE; // Reset tint
+            SetCharacterSpriteTint(character->sprite, {255, 255, 255, 64});
+            DrawCharacterSprite(character->sprite, charPos.x, charPos.y);
+            SetCharacterSpriteTint(character->sprite, WHITE); // Reset tint
         }
 
         // Draw health bar
@@ -386,38 +376,26 @@ void UpdateGrid(GridState &gridState, CombatState &combat, float dt) {
                     gridState.path.path[gridState.path.currentStep + 1].y);
 
             // Lerp the x and y components separately
-            combat.currentCharacter->sprite.player.position.x = Lerp(start.x, end.x, t);
-            combat.currentCharacter->sprite.player.position.y = Lerp(start.y, end.y, t);
+            SetCharacterSpritePosX(combat.currentCharacter->sprite, Lerp(start.x, end.x, t));
+            SetCharacterSpritePosY(combat.currentCharacter->sprite, Lerp(start.y, end.y, t));
 
             // Determine the direction of movement and set the appropriate animation
             if (fabs(end.x - start.x) > fabs(end.y - start.y)) {
                 // Horizontal movement
                 if (end.x > start.x) {
-                    PlaySpriteAnimation(
-                            combat.currentCharacter->sprite.player,
-                            GetCharacterAnimation(combat.currentCharacter->sprite, SpriteAnimationType::WalkRight),
-                            true);
+                    PlayCharacterSpriteAnim(combat.currentCharacter->sprite, SpriteAnimationType::WalkRight, true);
                     combat.currentCharacter->orientation = Orientation::Right;
                 } else {
-                    PlaySpriteAnimation(
-                            combat.currentCharacter->sprite.player,
-                            GetCharacterAnimation(combat.currentCharacter->sprite, SpriteAnimationType::WalkLeft),
-                            true);
+                    PlayCharacterSpriteAnim(combat.currentCharacter->sprite, SpriteAnimationType::WalkLeft, true);
                     combat.currentCharacter->orientation = Orientation::Left;
                 }
             } else {
                 // Vertical movement
                 if (end.y > start.y) {
-                    PlaySpriteAnimation(
-                            combat.currentCharacter->sprite.player,
-                            GetCharacterAnimation(combat.currentCharacter->sprite, SpriteAnimationType::WalkDown),
-                            true);
+                    PlayCharacterSpriteAnim(combat.currentCharacter->sprite, SpriteAnimationType::WalkDown, true);
                     combat.currentCharacter->orientation = Orientation::Down;
                 } else {
-                    PlaySpriteAnimation(
-                            combat.currentCharacter->sprite.player,
-                            GetCharacterAnimation(combat.currentCharacter->sprite, SpriteAnimationType::WalkUp),
-                            true);
+                    PlayCharacterSpriteAnim(combat.currentCharacter->sprite, SpriteAnimationType::WalkUp, true);
                     combat.currentCharacter->orientation = Orientation::Up;
                 }
             }
@@ -431,11 +409,13 @@ void UpdateGrid(GridState &gridState, CombatState &combat, float dt) {
                 if (gridState.path.currentStep >= gridState.path.path.size() - 1) {
                     StopSoundEffect(SoundEffectType::Footstep);
                     gridState.moving = false;
-                    combat.currentCharacter->sprite.player.playing = false;
-                    SetFrame(combat.currentCharacter->sprite.player, 0);
+                    PauseCharacterSpriteAnim(combat.currentCharacter->sprite);
+
+                    SetCharacterSpriteFrame(combat.currentCharacter->sprite, 0);
                     // set final position
                     auto finalPos = gridState.path.path[gridState.path.path.size() - 1];
-                    combat.currentCharacter->sprite.player.position = GridToPixelPosition(finalPos.x, finalPos.y);
+                    SetCharacterSpritePos(combat.currentCharacter->sprite, GridToPixelPosition(finalPos.x, finalPos.y));
+
                     if (IsPlayerCharacter(combat, *combat.currentCharacter)) {
                         combat.turnState = TurnState::SelectAction;
                     } else {
@@ -448,10 +428,10 @@ void UpdateGrid(GridState &gridState, CombatState &combat, float dt) {
 
     // Update animations for all characters
     for (auto &character: combat.playerCharacters) {
-        UpdateSpriteAnimation(character->sprite.player, dt);
+        UpdateCharacterSprite(character->sprite, dt);
     }
     for (auto &character: combat.enemyCharacters) {
-        UpdateSpriteAnimation(character->sprite.player, dt);
+        UpdateCharacterSprite(character->sprite, dt);
     }
 }
 
@@ -477,8 +457,8 @@ void DrawGrid(GridState &gridState, CombatState &combat) {
         if (character->health <= 0) {
             continue;
         }
-        Vector2 gridPosCharacter = PixelToGridPosition(character->sprite.player.position.x,
-                                                       character->sprite.player.position.y);
+        Vector2 gridPosCharacter = PixelToGridPosition(GetCharacterSpritePosX(character->sprite),
+                                                       GetCharacterSpritePosY(character->sprite));
         if ((int) gridPosCharacter.x == (int) gridPos.x && (int) gridPosCharacter.y == (int) gridPos.y) {
             gridState.floatingStatsCharacter = character;
         }

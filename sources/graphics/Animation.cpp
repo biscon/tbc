@@ -63,18 +63,19 @@ void SetupTextAnimation(Animation &animation, const char *text, float y, float d
 }
 
 void SetupDeathAnimation(Animation &animation, Character *character, float duration) {
+    Vector2 charPos = GetCharacterSpritePos(character->sprite);
     animation.type = AnimationType::Death;
     animation.duration = duration;
     animation.time = 0;
     animation.stay = false;
     animation.state.death.character = character;
-    animation.state.death.startY = character->sprite.player.position.y;
+    animation.state.death.startY = charPos.y;
     int bounceY = RandomInRange(10, 15);
-    animation.state.death.bounceY = character->sprite.player.position.y - (float) bounceY; // Bounce up
+    animation.state.death.bounceY = charPos.y - (float) bounceY; // Bounce up
     int fallY = RandomInRange(-3,3);
-    animation.state.death.endY = character->sprite.player.position.y + (float) fallY;    // Fall slightly lower
-    animation.state.death.startX = character->sprite.player.position.x;
-    animation.state.death.endX = character->sprite.player.position.x + (float) RandomInRange(-5, 3); // Random horizontal position
+    animation.state.death.endY = charPos.y + (float) fallY;    // Fall slightly lower
+    animation.state.death.startX = charPos.x;
+    animation.state.death.endX = charPos.x + (float) RandomInRange(-5, 3); // Random horizontal position
     animation.state.death.rotation = 0; // Start with no rotation
     TraceLog(LOG_INFO, "SetupDeathAnimation: %s", character->name.c_str());
 }
@@ -121,7 +122,7 @@ void SetupVictoryAnimation(Animation &animation, Character *character, float dur
 
     VictoryAnimationState &state = animation.state.victory;
     state.character = character;
-    state.baseY = character->sprite.player.position.y; // Assuming `position.y` is the character's initial vertical position
+    state.baseY = GetCharacterSpritePosY(character->sprite); // Assuming `position.y` is the character's initial vertical position
     state.jumpHeight = jumpHeight;
     state.jumpSpeed = jumpSpeed;
     state.currentY = state.baseY;
@@ -204,17 +205,21 @@ void UpdateAnimation(Animation &animation, float dt) {
             // Duration is split into two phases: bounce and fall
             float bounceDuration = animation.duration * 0.3f; // 30% of duration for bounce
             float fallDuration = animation.duration * 0.7f;   // 70% of duration for fall
+            Vector2 charPos = GetCharacterSpritePos(animation.state.death.character->sprite);
             if (animation.time <= bounceDuration) {
                 // Bounce phase (upwards motion)
-                animation.state.death.character->sprite.player.position.y = EaseQuadOut(animation.time, animation.state.death.startY, animation.state.death.bounceY - animation.state.death.startY, bounceDuration);
+                SetCharacterSpritePosY(animation.state.death.character->sprite, EaseQuadOut(animation.time, animation.state.death.startY, animation.state.death.bounceY - animation.state.death.startY, bounceDuration));
             } else {
                 // Fall phase (downwards motion)
                 float fallTime = animation.time - bounceDuration;
-                animation.state.death.character->sprite.player.position.y = EaseQuadIn(fallTime, animation.state.death.bounceY, animation.state.death.endY - animation.state.death.bounceY, fallDuration);
-                animation.state.death.character->sprite.player.position.x = EaseQuadIn(fallTime, animation.state.death.startX, animation.state.death.endX - animation.state.death.startX, fallDuration);
+                Vector2 newPos = {
+                    EaseQuadIn(fallTime, animation.state.death.startX, animation.state.death.endX - animation.state.death.startX, fallDuration),
+                    EaseQuadIn(fallTime, animation.state.death.bounceY, animation.state.death.endY - animation.state.death.bounceY, fallDuration)
+                };
+                SetCharacterSpritePos(animation.state.death.character->sprite, newPos);
             }
             // Rotate the character
-            animation.state.death.character->sprite.player.rotation = EaseQuadOut(animation.time, 0, 90, animation.duration); // Rotate up to 90 degrees
+            SetCharacterSpriteRotation(animation.state.death.character->sprite, EaseQuadOut(animation.time, 0, 90, animation.duration));
             break;
         }
         case AnimationType::BloodPool: {
@@ -272,7 +277,7 @@ void UpdateAnimation(Animation &animation, float dt) {
             }
 
             // Update character's position
-            state.character->sprite.player.position.y = state.currentY;
+            SetCharacterSpritePosY(state.character->sprite, state.currentY);
             break;
         }
     }

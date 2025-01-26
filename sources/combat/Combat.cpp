@@ -165,9 +165,6 @@ static int CalculateDamageReduction(Character &defender, int baseDamage) {
 
 // Function to calculate damage dealt in combat, with chance to miss and critical hit
 static void CalculateDamage(CombatState& combat, Character &attacker, Character &defender, AttackResult &result) {
-    float attackerX = attacker.sprite.player.position.x;
-    float attackerY = attacker.sprite.player.position.y;
-
     // Calculate miss chance based on defender's dodge skill and speed
     int missChance = CalculateMissChance(attacker, defender);
     int missRoll = RandomInRange(1, 100);  // Random roll between 1 and 100
@@ -240,10 +237,10 @@ AttackResult Attack(CombatState& combat, Character &attacker, Character &defende
 }
 
 int DealDamage(CombatState& combat, Character &attacker, Character &defender, int damage) {
-    float defenderX = defender.sprite.player.position.x;
-    float defenderY = defender.sprite.player.position.y;
-    float attackerX = attacker.sprite.player.position.x;
-    float attackerY = attacker.sprite.player.position.y;
+    float defenderX = GetCharacterSpritePosX(defender.sprite);
+    float defenderY = GetCharacterSpritePosY(defender.sprite);
+    float attackerX = GetCharacterSpritePosX(attacker.sprite);
+    float attackerY = GetCharacterSpritePosY(attacker.sprite);
 
     // Base damage calculation
     int baseDamage = damage;
@@ -295,8 +292,8 @@ int DealDamage(CombatState& combat, Character &attacker, Character &defender, in
 }
 
 int DealDamageStatusEffect(CombatState& combat, Character &target, int damage) {
-    float targetX = target.sprite.player.position.x;
-    float targetY = target.sprite.player.position.y;
+    float targetX = GetCharacterSpritePosX(target.sprite);
+    float targetY = GetCharacterSpritePosY(target.sprite);
 
     // Base damage calculation
     int baseDamage = damage;
@@ -334,7 +331,7 @@ void KillCharacter(CombatState &combat, Character &character) {
     // Remove character from turn order
     //combat.turnOrder.erase(std::remove(combat.turnOrder.begin(), combat.turnOrder.end(), &character), combat.turnOrder.end());
     Animation bloodAnim{};
-    SetupBloodPoolAnimation(bloodAnim, character.sprite.player.position, 5.0f);
+    SetupBloodPoolAnimation(bloodAnim, GetCharacterSpritePos(character.sprite), 5.0f);
     combat.animations.push_back(bloodAnim);
     PlaySoundEffect(SoundEffectType::HumanDeath, 0.5f);
 }

@@ -6,26 +6,40 @@
 #include "raymath.h"
 
 void PlayAttackAnimation(CombatState &combat, Character &attacker, Character &defender) {
-    float attackerX = attacker.sprite.player.position.x;
-    float defenderX = defender.sprite.player.position.x;
-    float attackerY = attacker.sprite.player.position.y;
-    float defenderY = defender.sprite.player.position.y;
+    float attackerX = GetCharacterSpritePosX(attacker.sprite);
+    float defenderX = GetCharacterSpritePosX(defender.sprite);
+    float attackerY = GetCharacterSpritePosY(attacker.sprite);
+    float defenderY = GetCharacterSpritePosY(defender.sprite);
     Animation attackerAnim{};
     SetupAttackAnimation(attackerAnim, &attacker, 0.4f, attackerY, defenderY, attackerX, defenderX);
     combat.animations.push_back(attackerAnim);
-    attacker.sprite.player.playing = true;
+    switch(attacker.orientation) {
+        case Orientation::Up:
+            PlayCharacterSpriteAnimRestart(attacker.sprite, SpriteAnimationType::AttackUp, false);
+            break;
+        case Orientation::Down:
+            PlayCharacterSpriteAnimRestart(attacker.sprite, SpriteAnimationType::AttackDown, false);
+            break;
+        case Orientation::Left:
+            PlayCharacterSpriteAnimRestart(attacker.sprite, SpriteAnimationType::AttackLeft, false);
+            break;
+        case Orientation::Right:
+            PlayCharacterSpriteAnimRestart(attacker.sprite, SpriteAnimationType::AttackRight, false);
+            break;
+    }
 }
 
 void PlayDefendAnimation(CombatState &combat, Character &attacker, Character &defender) {
     if(defender.health <= 0) {
         return;
     }
-    float defenderX = defender.sprite.player.position.x;
-    float defenderY = defender.sprite.player.position.y;
-    Vector2 orientationVector = Vector2Normalize(Vector2Subtract(defender.sprite.player.position, attacker.sprite.player.position));
+    float defenderX = GetCharacterSpritePosX(defender.sprite);
+    float defenderY = GetCharacterSpritePosY(defender.sprite);
+
+    Vector2 orientationVector = Vector2Normalize(Vector2Subtract(GetCharacterSpritePos(defender.sprite), GetCharacterSpritePos(attacker.sprite)));
     // invert vector
     orientationVector = Vector2Scale(orientationVector, 5);
-    Vector2 point = Vector2Add(defender.sprite.player.position, orientationVector);
+    Vector2 point = Vector2Add(GetCharacterSpritePos(defender.sprite), orientationVector);
 
     Animation defenderAnim{};
     SetupAttackAnimation(defenderAnim, &defender, 0.30f, defenderY, point.y, defenderX, point.x, 0.20f);
@@ -43,7 +57,7 @@ void PlayEnemyVictoryAnimation(CombatState &combat) {
         if(c->health <= 0) {
             continue;
         }
-        PlaySpriteAnimation(c->sprite.player, GetCharacterAnimation(c->sprite, SpriteAnimationType::WalkDown), true);
+        PlayCharacterSpriteAnim(c->sprite, SpriteAnimationType::WalkDown, true);
         Animation anim{};
         SetupVictoryAnimation(anim, c, 10.0f, 12, 80.0f);
         combat.animations.push_back(anim);
@@ -56,7 +70,7 @@ void PlayPlayerVictoryAnimation(CombatState &combat) {
         if(c->health <= 0) {
             continue;
         }
-        PlaySpriteAnimation(c->sprite.player, GetCharacterAnimation(c->sprite, SpriteAnimationType::WalkDown), true);
+        PlayCharacterSpriteAnim(c->sprite, SpriteAnimationType::WalkDown, true);
         Animation anim{};
         SetupVictoryAnimation(anim, c, 10.0f, 16, 80.0f);
         combat.animations.push_back(anim);
