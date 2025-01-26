@@ -507,16 +507,16 @@ void UpdateCombatScreen(CombatState &combat, CombatUIState &uiState, GridState& 
             break;
         }
         case TurnState::AttackDone: {
+            combat.currentCharacter->sprite.player.playing = false;
             float attackerX = combat.currentCharacter->sprite.player.position.x;
             float defenderX = combat.selectedCharacter->sprite.player.position.x;
             float attackerY = combat.currentCharacter->sprite.player.position.y;
             float defenderY = combat.selectedCharacter->sprite.player.position.y;
             int damage = combat.attackResult.damage;
             if(damage > 0) {
-                // clamp damage between 10 and 50
-                float intensity = Clamp((float) damage, 10, 50);
+                float intensity = (float) GetBloodIntensity(damage, combat.currentCharacter->attack);
                 TraceLog(LOG_INFO, "Damage: %d, intensity: %f", damage, intensity);
-                CreateBloodSplatter(*gridState.particleManager, {defenderX + (float) RandomInRange(-4,4), defenderY - 8 + (float) RandomInRange(-4,4)}, 10, intensity);
+                CreateBloodSplatter(*gridState.particleManager, {defenderX + (float) RandomInRange(-2,2), defenderY - 8 + (float) RandomInRange(-2,2)}, 10, intensity);
                 Animation damageNumberAnim{};
                 Color dmgColor = GetDamageColor(damage, combat.currentCharacter->attack);
                 SetupDamageNumberAnimation(damageNumberAnim, TextFormat("%d", damage), defenderX, defenderY-25, dmgColor, combat.attackResult.crit ? 20 : 10);
@@ -577,7 +577,7 @@ void UpdateCombatScreen(CombatState &combat, CombatUIState &uiState, GridState& 
             Animation textAnim{};
             SetupTextAnimation(textAnim, "Next round!", 125, 1.0f, 1.0f);
             combat.animations.push_back(textAnim);
-            WaitTurnState(combat, TurnState::StartRound, 2.0f);
+            WaitTurnState(combat, TurnState::StartRound, 0.2f);
             UpdateStatusEffects(combat);
             DecayThreat(combat, 10);
             UpdateSkillCooldown(combat);

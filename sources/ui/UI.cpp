@@ -10,10 +10,10 @@ void DrawStatusText(const char* text, Color color, int y, int size) {
 }
 
 void DisplayCharacterStatsFloating(Character &character, int x, int y, bool isPlayer) {
-    int statusEffectsHeight = (int) character.statusEffects.size() * 12;
+    int statusEffectsHeight = (int)character.statusEffects.size() * 12;
 
     // Calculate the initial rectangle
-    auto backgroundRect = (Rectangle) {(float)x, (float)y, 82, 64 + (float) statusEffectsHeight + 4};
+    auto backgroundRect = (Rectangle){(float)x, (float)y, 82, 76 + (float)statusEffectsHeight + 4}; // Adjusted height for level
 
     // Adjust the rectangle position to fit within the screen boundaries
     if (backgroundRect.x + backgroundRect.width > 480) {
@@ -37,20 +37,22 @@ void DisplayCharacterStatsFloating(Character &character, int x, int y, bool isPl
     DrawRectangleRounded(backgroundRect, 0.1f, 16, DARKGRAY);
     DrawRectangleRoundedLinesEx(backgroundRect, 0.1f, 16, 1.0f, LIGHTGRAY);
     DrawText(TextFormat("%s", character.name.c_str()), offsetX, offsetY, 10, YELLOW);
-    DrawText(TextFormat("Health: %d/%d", character.health, character.maxHealth), offsetX, offsetY + 12, 10, WHITE);
-    DrawText(TextFormat("Attack: %d", character.attack), offsetX, offsetY + 24, 10, WHITE);
-    DrawText(TextFormat("Defense: %d", character.defense), offsetX, offsetY + 36, 10, WHITE);
-    DrawText(TextFormat("Speed: %d", character.speed), offsetX, offsetY + 48, 10, WHITE);
+    DrawText(TextFormat("Level: %d", character.level), offsetX, offsetY + 12, 10, WHITE); // Added level
+    DrawText(TextFormat("Health: %d/%d", character.health, character.maxHealth), offsetX, offsetY + 24, 10, WHITE);
+    DrawText(TextFormat("Attack: %d", character.attack), offsetX, offsetY + 36, 10, WHITE);
+    DrawText(TextFormat("Defense: %d", character.defense), offsetX, offsetY + 48, 10, WHITE);
+    DrawText(TextFormat("Speed: %d", character.speed), offsetX, offsetY + 60, 10, WHITE); // Adjusted offsets
 
     if (statusEffectsHeight > 0) {
-        DrawLine(backgroundRect.x, backgroundRect.y + 64, backgroundRect.x + 82, backgroundRect.y + 64, LIGHTGRAY);
-        offsetY += 64;
+        DrawLine(backgroundRect.x, backgroundRect.y + 76, backgroundRect.x + 82, backgroundRect.y + 76, LIGHTGRAY); // Adjusted separator position
+        offsetY += 76;
         // Show status effects
         for (size_t i = 0; i < character.statusEffects.size(); ++i) {
             DrawText(TextFormat("%s", GetStatusEffectName(character.statusEffects[i].type).c_str()), offsetX, offsetY + i * 12, 10, YELLOW);
         }
     }
 }
+
 
 void DrawSpeechBubble(float x, float y, const char *text, float alpha) {
     // Measure the width of the text

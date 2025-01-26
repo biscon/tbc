@@ -8,6 +8,7 @@
 #include <vector>
 #include <map>
 #include "raylib.h"
+#include <string>
 
 enum class SpriteAnimationType {
     Idle,
@@ -15,6 +16,10 @@ enum class SpriteAnimationType {
     WalkDown,
     WalkLeft,
     WalkRight,
+    AttackUp,
+    AttackDown,
+    AttackLeft,
+    AttackRight,
 };
 
 struct SpriteSheet {
@@ -70,6 +75,7 @@ struct CharacterSprite {
 };
 
 void InitCharacterSprite(CharacterSprite& sprite, SpriteAnimationManager& animationManager, const char* walkUp, const char* walkDown, const char* walkLeft, const char* walkRight);
+void InitCharacterSprite(CharacterSprite &sprite, SpriteAnimationManager &animationManager, const std::string& animType);
 SpriteAnimation* GetCharacterAnimation(CharacterSprite& sprite, SpriteAnimationType type);
 void SetSpriteAnimPaused(CharacterSprite& sprite, SpriteAnimationType type);
 

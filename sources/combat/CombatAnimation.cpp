@@ -13,6 +13,7 @@ void PlayAttackAnimation(CombatState &combat, Character &attacker, Character &de
     Animation attackerAnim{};
     SetupAttackAnimation(attackerAnim, &attacker, 0.4f, attackerY, defenderY, attackerX, defenderX);
     combat.animations.push_back(attackerAnim);
+    attacker.sprite.player.playing = true;
 }
 
 void PlayDefendAnimation(CombatState &combat, Character &attacker, Character &defender) {
@@ -69,5 +70,25 @@ void RemoveAttackAnimations(CombatState &combat) {
         } else {
             ++it;
         }
+    }
+}
+
+int GetBloodIntensity(int dmg, int attackerAttack) {
+    // Define dynamic thresholds based on attacker's attack stat
+    int lowThreshold = attackerAttack / 2;     // Low damage threshold (e.g., half of attack)
+    int highThreshold = attackerAttack * 3 / 2; // High damage threshold (e.g., 1.5x attack)
+
+    // Clamp damage within the calculated range
+    dmg = Clamp(dmg, lowThreshold, highThreshold);
+
+    // Scale blood intensity between 10 and 50
+    if (dmg <= attackerAttack) {
+        // Interpolate from 10 to 30 (low to medium damage)
+        float t = (float)(dmg - lowThreshold) / (attackerAttack - lowThreshold);
+        return (int)Lerp(10, 30, t);
+    } else {
+        // Interpolate from 30 to 50 (medium to high damage)
+        float t = (float)(dmg - attackerAttack) / (highThreshold - attackerAttack);
+        return (int)Lerp(30, 50, t);
     }
 }

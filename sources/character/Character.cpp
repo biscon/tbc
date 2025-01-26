@@ -48,18 +48,20 @@ bool IsAlive(const Character &character) {
     return character.health > 0;
 }
 
-
-
-void CreateCharacter(Character &character, std::string name, int maxHealth, int attack, int defense, int speed) {
+void CreateCharacter(Character &character, CharacterClass characterClass, std::string name, std::string ai) {
     character.name = std::move(name);
-    character.maxHealth = maxHealth;
-    character.health = maxHealth;
-    character.attack = attack;
-    character.defense = defense;
-    character.speed = speed;
+    character.ai = std::move(ai);
+    character.maxHealth = 20;
+    character.health = 20;
+    character.attack = 5;
+    character.defense = 3;
+    character.speed = 4;
     character.hunger = 0;
     character.thirst = 0;
-    character.movePoints = speed;
+    character.movePoints = 0;
+    character.level = 1;
+    character.characterClass = characterClass;
+    character.orientation = Orientation::Right;
 }
 
 Vector2 GetOrientationVector(Orientation orientation) {
@@ -93,6 +95,7 @@ void LevelUp(Character &character, bool autoDistributePoints) {
             break;
         case CharacterClass::Mage:
             healthIncrease = 2;
+            defenseIncrease = 1;
             speedIncrease = 1;
             break;
         case CharacterClass::Rogue:
@@ -101,7 +104,6 @@ void LevelUp(Character &character, bool autoDistributePoints) {
             speedIncrease = 1;
             break;
     }
-
 
     // Apply automatic increases
     character.maxHealth += healthIncrease;
@@ -123,11 +125,11 @@ void LevelUp(Character &character, bool autoDistributePoints) {
 
                 // Now distribute the remaining points
                 if (remainder > 0) {
-                    character.maxHealth++;  // Extra point goes to health (for example)
+                    character.attack++;  // Next point goes to attack
                     remainder--;
                 }
                 if (remainder > 0) {
-                    character.attack++;  // Next point goes to attack
+                    character.speed++;  // Extra point goes to health (for example)
                     remainder--;
                 }
                 if (remainder > 0) {
@@ -159,7 +161,7 @@ void LevelUp(Character &character, bool autoDistributePoints) {
             case CharacterClass::Rogue: {
                 character.maxHealth += pointsPerStat;
                 character.attack += pointsPerStat;
-                character.defense += pointsPerStat;
+                character.speed += pointsPerStat;
 
                 // Distribute the remaining points
                 if (remainder > 0) {

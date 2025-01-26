@@ -186,6 +186,14 @@ void InitCharacterSprite(CharacterSprite &sprite, SpriteAnimationManager &animat
     sprite.animations[SpriteAnimationType::WalkRight] = GetSpriteAnimation(animationManager, walkRight, SpriteAnimationType::WalkRight);
 }
 
+void InitCharacterSprite(CharacterSprite &sprite, SpriteAnimationManager &animationManager, const std::string& animType) {
+    InitSpriteAnimationPlayer(sprite.player);
+    sprite.animations[SpriteAnimationType::WalkUp] = GetSpriteAnimation(animationManager, (animType + "WalkUp").c_str(), SpriteAnimationType::WalkUp);
+    sprite.animations[SpriteAnimationType::WalkDown] = GetSpriteAnimation(animationManager, (animType + "WalkDown").c_str(), SpriteAnimationType::WalkDown);
+    sprite.animations[SpriteAnimationType::WalkLeft] = GetSpriteAnimation(animationManager, (animType + "WalkLeft").c_str(), SpriteAnimationType::WalkLeft);
+    sprite.animations[SpriteAnimationType::WalkRight] = GetSpriteAnimation(animationManager, (animType + "WalkRight").c_str(), SpriteAnimationType::WalkRight);
+}
+
 void PlaySpriteAnimation(SpriteAnimationPlayer &player, SpriteAnimation *animation, bool loop) {
     // do nothing if the animation is already playing
     if (player.animation == animation) {

@@ -57,6 +57,7 @@ int main(void) {
     LoadSoundEffect(SoundEffectType::Victory, ASSETS_PATH"sound/jingle_victory.wav", false);
     LoadSoundEffect(SoundEffectType::Defeat, ASSETS_PATH"sound/jingle_defeat.wav", false);
     LoadSoundEffect(SoundEffectType::StartRound, ASSETS_PATH"sound/start_round.wav", false);
+    SetVolumeSoundEffect(SoundEffectType::StartRound, 0.75f);
 
     LoadSoundEffect(SoundEffectType::Burning, ASSETS_PATH"sound/burning_01.ogg", false);
 
@@ -100,6 +101,16 @@ int main(void) {
                           {0, 1, 2}, {0.15f, 0.15f, 0.15f}, {16, 30});
     CreateSpriteAnimation(spriteAnimationManager, "BaseWalkDown", SpriteAnimationType::WalkDown, &baseCharSpriteSheet,
                           {6, 7, 8}, {0.15f, 0.15f, 0.15f}, {16, 30});
+
+    float attackSpeed = 0.25f;
+    CreateSpriteAnimation(spriteAnimationManager, "BaseAttackUp", SpriteAnimationType::AttackUp, &baseCharSpriteSheet,
+                          {12, 13, 14}, {attackSpeed, attackSpeed, attackSpeed}, {16, 30});
+    CreateSpriteAnimation(spriteAnimationManager, "BaseAttackRight", SpriteAnimationType::AttackRight, &baseCharSpriteSheet,
+                          {15, 16, 17}, {attackSpeed, attackSpeed, attackSpeed}, {16, 30});
+    CreateSpriteAnimation(spriteAnimationManager, "BaseAttackDown", SpriteAnimationType::AttackDown, &baseCharSpriteSheet,
+                          {18, 19, 20}, {attackSpeed, attackSpeed, attackSpeed}, {16, 30});
+    CreateSpriteAnimation(spriteAnimationManager, "BaseAttackLeft", SpriteAnimationType::AttackLeft, &baseCharSpriteSheet,
+                          {21, 22, 23}, {attackSpeed, attackSpeed, attackSpeed}, {16, 30});
 
     CreateSpriteAnimation(spriteAnimationManager, "WarriorWalkRight", SpriteAnimationType::WalkRight, &warriorSpriteSheet,
                           {3, 4, 5}, {0.15f, 0.15f, 0.15f}, {16, 30});
@@ -146,27 +157,35 @@ int main(void) {
     };
     */
 
-    std::vector<Character> playerCharacters = {
-            {CharacterClass::Warrior, "Player1", "Fighter", 20, 20, 5, 3, 4, 0, 0, 0, 1, {}, {
-                                                                      {SkillType::Taunt, "Howling Scream", 1, false, true, 0, 3, 0},
-                                                                      {SkillType::Stun, "Stunning Blow", 1, false, false, 0, 3, 1},
-                                                              }},
-    };
+    Character warrior;
+    CreateCharacter(warrior, CharacterClass::Warrior, "Player1", "Fighter");
+    AssignSkill(warrior.skills, SkillType::Taunt, "Howling Scream", 1, false, true, 0, 3, 0);
+    AssignSkill(warrior.skills, SkillType::Stun, "Stunning Blow", 1, false, false, 0, 3, 1);
+    InitCharacterSprite(warrior.sprite, spriteAnimationManager, "Warrior");
+    LevelUp(warrior, true);
 
-    LevelUp(playerCharacters[0], true);
+    Character mage;
+    CreateCharacter(mage, CharacterClass::Mage, "Player2", "Fighter");
+    AssignSkill(mage.skills, SkillType::Dodge, "Dodge", 1, true, true, 0, 0, 0);
+    AssignSkill(mage.skills, SkillType::FlameJet, "Burning Hands", 1, false, false, 0, 3, 5);
+    InitCharacterSprite(mage.sprite, spriteAnimationManager, "Ninja");
+    LevelUp(mage, true);
+
+    std::vector<Character> playerCharacters = {warrior, mage};
+    
+    //LevelUp(playerCharacters[0], true);
 
     std::vector<Character> enemyCharacters = {
             {CharacterClass::Warrior, "Enemy1", "Fighter", 20,  20,  5, 3, 4, 0, 0, 0, 1, {}},
             {CharacterClass::Warrior, "Enemy2", "Fighter", 20,  20,  5, 3, 4, 0, 0, 0, 1, {}},
+            {CharacterClass::Warrior, "Enemy3", "Fighter", 20,  20,  5, 3, 4, 0, 0, 0, 1, {}},
+            {CharacterClass::Warrior, "Enemy4", "Fighter", 20,  20,  5, 3, 4, 0, 0, 0, 1, {}},
     };
 
-    for(auto &character : playerCharacters) {
-        InitCharacterSprite(character.sprite, spriteAnimationManager, "WarriorWalkUp", "WarriorWalkDown", "WarriorWalkLeft", "WarriorWalkRight");
-    }
     //InitCharacterSprite(playerCharacters[0].sprite, spriteAnimationManager, "BaseWalkUp", "BaseWalkDown", "BaseWalkLeft", "BaseWalkRight");
     for(auto &character : enemyCharacters) {
-        //InitCharacterSprite(character.sprite, spriteAnimationManager, "BaseWalkUp", "BaseWalkDown", "BaseWalkLeft", "BaseWalkRight");
-        InitCharacterSprite(character.sprite, spriteAnimationManager, "NinjaWalkUp", "NinjaWalkDown", "NinjaWalkLeft", "NinjaWalkRight");
+        InitCharacterSprite(character.sprite, spriteAnimationManager, "Base");
+        //InitCharacterSprite(character.sprite, spriteAnimationManager, "NinjaWalkUp", "NinjaWalkDown", "NinjaWalkLeft", "NinjaWalkRight");
     }
 
     CombatState combat;

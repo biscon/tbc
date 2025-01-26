@@ -44,7 +44,7 @@ struct Character {
     Orientation orientation;
 };
 
-void CreateCharacter(Character &character, std::string name, int maxHealth, int attack, int defense, int speed);
+void CreateCharacter(Character &character, CharacterClass characterClass, std::string name, std::string ai);
 void DisplayCharacterInfo(const Character &character);
 Character GenerateRandomCharacter(std::string name, bool isEnemy = false);
 bool IsAlive(const Character &character);

@@ -14,5 +14,6 @@ void PlayAttackDefendAnimation(CombatState& combat, Character& attacker, Charact
 void PlayEnemyVictoryAnimation(CombatState& combat);
 void PlayPlayerVictoryAnimation(CombatState& combat);
 void RemoveAttackAnimations(CombatState &combat);
+int GetBloodIntensity(int dmg, int attackerAttack);
 
 #endif //SANDBOX_COMBATANIMATION_H
