@@ -30,9 +30,9 @@ int main(void) {
     InitAudioDevice();      // Initialize audio device
 
     InitSoundEffectManager();
-    //LoadSoundEffect(SoundEffectType::Ambience, ASSETS_PATH"music/ambience_cave.ogg", true);
-    LoadSoundEffect(SoundEffectType::Ambience, ASSETS_PATH"sound/ambient_forest_01.ogg", true);
-    //SetVolumeSoundEffect(SoundEffectType::Ambience, 0.75f);
+    LoadSoundEffect(SoundEffectType::Ambience, ASSETS_PATH"music/ambience_cave.ogg", true);
+    //LoadSoundEffect(SoundEffectType::Ambience, ASSETS_PATH"sound/ambient_forest_01.ogg", true);
+    SetVolumeSoundEffect(SoundEffectType::Ambience, 0.75f);
     LoadSoundEffect(SoundEffectType::Footstep, ASSETS_PATH"sound/footstep_dirt_03.wav", true, 0.075f);
     SetVolumeSoundEffect(SoundEffectType::Footstep, 0.75f);
     LoadSoundEffect(SoundEffectType::Select, ASSETS_PATH"sound/select_01.wav", false);
@@ -231,22 +231,32 @@ int main(void) {
     AssignSkill(warrior.skills, SkillType::Taunt, "Howling Scream", 1, false, true, 0, 3, 0);
     AssignSkill(warrior.skills, SkillType::Stun, "Stunning Blow", 1, false, false, 0, 3, 1);
     InitCharacterSprite(warrior.sprite, spriteAnimationManager, "Warrior", "Sword", true);
+
     LevelUp(warrior, true);
+    LevelUp(warrior, true);
+    LevelUp(warrior, true);
+    LevelUp(warrior, true);
+
 
     Character mage;
     CreateCharacter(mage, CharacterClass::Mage, "Player2", "Fighter");
     AssignSkill(mage.skills, SkillType::Dodge, "Dodge", 1, true, true, 0, 0, 0);
     AssignSkill(mage.skills, SkillType::FlameJet, "Burning Hands", 1, false, false, 0, 3, 5);
     InitCharacterSprite(mage.sprite, spriteAnimationManager, "Base", "Staff", true);
+
     LevelUp(mage, true);
+    LevelUp(mage, true);
+    LevelUp(mage, true);
+    LevelUp(mage, true);
+
 
     std::vector<Character> playerCharacters = {warrior, mage};
     
     //LevelUp(playerCharacters[0], true);
 
     std::vector<Character> enemyCharacters = {
-            {CharacterClass::Warrior, "Enemy1", "Fighter", 20,  20,  5, 3, 4, 0, 0, 0, 1, {}},
-            {CharacterClass::Warrior, "Enemy2", "Fighter", 20,  20,  5, 3, 4, 0, 0, 0, 1, {}},
+            {CharacterClass::Warrior, "Enemy1", "Fighter", 16,  16,  5, 3, 4, 0, 0, 0, 1, {}},
+            {CharacterClass::Warrior, "Enemy2", "Fighter", 16,  16,  5, 3, 4, 0, 0, 0, 1, {}},
             //{CharacterClass::Warrior, "Enemy3", "Fighter", 20,  20,  5, 3, 4, 0, 0, 0, 1, {}},
             //{CharacterClass::Warrior, "Enemy4", "Fighter", 20,  20,  5, 3, 4, 0, 0, 0, 1, {}},
     };
@@ -254,6 +264,12 @@ int main(void) {
     //InitCharacterSprite(playerCharacters[0].sprite, spriteAnimationManager, "BaseWalkUp", "BaseWalkDown", "BaseWalkLeft", "BaseWalkRight");
     for(auto &character : enemyCharacters) {
         InitCharacterSprite(character.sprite, spriteAnimationManager, "Ninja", "Staff", true);
+
+        LevelUp(character, true);
+        LevelUp(character, true);
+        LevelUp(character, true);
+        LevelUp(character, true);
+
         //InitCharacterSprite(character.sprite, spriteAnimationManager, "NinjaWalkUp", "NinjaWalkDown", "NinjaWalkLeft", "NinjaWalkRight");
     }
 
@@ -265,11 +281,10 @@ int main(void) {
     SpriteSheet tileSet;
     //LoadSpriteSheet(tileSet, ASSETS_PATH"town_tiles.png", 16, 16);
     //LoadTileMap(combat.tileMap, ASSETS_PATH"test_map_01.json", &tileSet);
-    //LoadSpriteSheet(tileSet, ASSETS_PATH"sewer_tiles.png", 16, 16);
-    //LoadTileMap(combat.tileMap, ASSETS_PATH"test_map_02.json", &tileSet);
-
-    LoadSpriteSheet(tileSet, ASSETS_PATH"forest_tiles.png", 16, 16);
-    LoadTileMap(combat.tileMap, ASSETS_PATH"test_map_03.json", &tileSet);
+    LoadSpriteSheet(tileSet, ASSETS_PATH"sewer_tiles.png", 16, 16);
+    LoadTileMap(combat.tileMap, ASSETS_PATH"test_map_02.json", &tileSet);
+    //LoadSpriteSheet(tileSet, ASSETS_PATH"forest_tiles.png", 16, 16);
+    //LoadTileMap(combat.tileMap, ASSETS_PATH"test_map_03.json", &tileSet);
 
     ParticleManager particleManager;
     CreateParticleManager(particleManager, {0, 0}, 480, 270);

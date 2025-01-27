@@ -126,8 +126,8 @@ Character* GetFirstLivingEnemy(CombatState &combat) {
     return nullptr;
 }
 
-static int CalculateMissChance(Character &attacker, Character &defender) {
-    int baseMissChance = 40; // Base miss chance starts at 25%
+static int CalculateMissChanceOLD(Character &attacker, Character &defender) {
+    int baseMissChance = 35; // Base miss chance starts at 25%
     int missChance = baseMissChance - (attacker.speed * 3); // Higher speed reduces miss chance
     TraceLog(LOG_INFO, "Base miss chance: %i", missChance);
 
@@ -151,6 +151,44 @@ static int CalculateMissChance(Character &attacker, Character &defender) {
 
     return missChance;
 }
+
+static int CalculateMissChance(Character &attacker, Character &defender) {
+    // Base miss chance starts at 15% at speed = 3 and should scale to 1% at speed = 30
+    int baseMissChance = 15;
+
+    // Calculate miss chance adjustment based on speed (higher speed reduces miss chance)
+    // For speed = 3 -> miss chance = 15%, for speed = 30 -> miss chance = 1%
+    float missChanceReduction = ((float) attacker.speed - 3.0f) * 0.467f; // Adjust this multiplier for the desired scaling
+
+    // Subtract the reduction from the base miss chance
+    int missChance = baseMissChance - static_cast<int>(missChanceReduction);
+
+    // Log for debugging
+    TraceLog(LOG_INFO, "Base miss chance: %i, Speed: %i, Reduction: %.2f, missChance: %i", baseMissChance, attacker.speed, missChanceReduction, missChance);
+
+    // Use helper function to get the rank of the Dodge skill
+    int dodgeRank = GetSkillRank(defender.skills, SkillType::Dodge);
+
+    // Apply dodge bonus if the character has the Dodge skill
+    if (dodgeRank == 1) missChance += 5;  // +5% miss chance for Dodge Rank 1
+    else if (dodgeRank == 2) missChance += 10;  // +10% miss chance for Dodge Rank 2
+    else if (dodgeRank == 3) missChance += 15;  // +15% miss chance for Dodge Rank 3
+    if(dodgeRank > 0) {
+        TraceLog(LOG_INFO, "Dodge rank: %i, adjusted missChance: %i", dodgeRank, missChance);
+    }
+
+    // Defender is stunned, miss chance is zero
+    if (IsIncapacitated(&defender)) {
+        missChance = 0;
+    }
+
+    // Ensure miss chance doesn't go below 0% or above 100%
+    if (missChance < 0) missChance = 0;
+    if (missChance > 100) missChance = 100;
+
+    return missChance;
+}
+
 
 static int CalculateDamageReduction(Character &defender, int baseDamage) {
     // loop through all status effects and calculate damage reduction

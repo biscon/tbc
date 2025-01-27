@@ -51,8 +51,17 @@ bool IsAlive(const Character &character) {
 void CreateCharacter(Character &character, CharacterClass characterClass, std::string name, std::string ai) {
     character.name = std::move(name);
     character.ai = std::move(ai);
-    character.maxHealth = 20;
-    character.health = 20;
+
+    switch(characterClass) {
+        case CharacterClass::Warrior: character.maxHealth = 16; break;
+        case CharacterClass::Mage: character.maxHealth = 12; break;
+        case CharacterClass::Rogue: character.maxHealth = 14; break;
+        default: character.maxHealth = 16; break;
+    }
+
+    //character.maxHealth = 16;
+    character.health = character.maxHealth;
+
     character.attack = 5;
     character.defense = 3;
     character.speed = 4;
@@ -89,7 +98,7 @@ void LevelUp(Character &character, bool autoDistributePoints) {
     // Automatic stat increases per level
     switch(character.characterClass) {
         case CharacterClass::Warrior:
-            healthIncrease = 4;
+            healthIncrease = 3;
             attackIncrease = 1;
             defenseIncrease = 1;
             break;
