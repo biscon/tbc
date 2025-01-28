@@ -2,52 +2,23 @@
 // Created by bison on 15-01-25.
 //
 
-#ifndef SANDBOX_SPRITE_H
-#define SANDBOX_SPRITE_H
+#ifndef SANDBOX_SPRITEANIMATION_H
+#define SANDBOX_SPRITEANIMATION_H
 
 #include <vector>
 #include <map>
 #include "raylib.h"
+#include "SpriteSheet.h"
 #include <string>
-
-enum class SpriteAnimationType {
-    Idle,
-    WalkUp,
-    WalkDown,
-    WalkLeft,
-    WalkRight,
-    AttackUp,
-    AttackDown,
-    AttackLeft,
-    AttackRight,
-};
-
-struct SpriteSheet {
-    Texture2D texture;
-    int frameWidth;
-    int frameHeight;
-    std::vector<Rectangle> frameRects;
-};
-
-// Load a sprite sheet from a file and split it into frames
-void LoadSpriteSheet(SpriteSheet& spriteSheet, const char* filename, int frameWidth, int frameHeight);
-void UnloadSpriteSheet(SpriteSheet& spriteSheet);
+#include <unordered_map>
 
 struct SpriteAnimation {
-    char name[64];
-    SpriteAnimationType type;
-    SpriteSheet* spriteSheet;
+    std::string name;
+    int spriteSheetIndex;
     std::vector<int> frames; // indexes into the sprite sheet
     std::vector<float> frameDelays; // time to display each frame
     Vector2 origin; // origin of the sprite in the frame
 };
-
-struct SpriteAnimationManager {
-    std::vector<SpriteAnimation> animations;
-};
-
-void CreateSpriteAnimation(SpriteAnimationManager& manager, const char* name, SpriteAnimationType type, SpriteSheet* spriteSheet, std::vector<int> frames, std::vector<float> frameDelays, Vector2 origin);
-SpriteAnimation* GetSpriteAnimation(SpriteAnimationManager& manager, const char* name, SpriteAnimationType type);
 
 struct SpriteAnimationPlayer {
     SpriteAnimation* animation;
@@ -69,4 +40,15 @@ void PlaySpriteAnimation(SpriteAnimationPlayer& player, SpriteAnimation* animati
 void PlaySpriteAnimationRestart(SpriteAnimationPlayer &player, SpriteAnimation *animation, bool loop);
 void SetFrame(SpriteAnimationPlayer& player, int frame);
 
-#endif //SANDBOX_SPRITE_H
+struct SpriteAnimationManager {
+    std::vector<SpriteSheet> spriteSheets;
+    std::unordered_map<std::string, SpriteAnimation> animations;
+};
+
+void InitSpriteAnimationManager(const std::string& filename);
+void DestroySpriteAnimationManager();
+//void CreateSpriteAnimation(const std::string& name, int spriteSheetIndex, std::vector<int> frames, std::vector<float> frameDelays, Vector2 origin);
+SpriteAnimation* GetSpriteAnimation(const std::string& name);
+SpriteSheet* GetSpriteSheet(int index);
+
+#endif //SANDBOX_SPRITEANIMATION_H

@@ -5,8 +5,20 @@
 #ifndef SANDBOX_CHARACTERSPRITE_H
 #define SANDBOX_CHARACTERSPRITE_H
 
-#include "Sprite.h"
+#include "SpriteAnimation.h"
 #include "util/MathUtil.h"
+
+enum class SpriteAnimationType {
+    Idle,
+    WalkUp,
+    WalkDown,
+    WalkLeft,
+    WalkRight,
+    AttackUp,
+    AttackDown,
+    AttackLeft,
+    AttackRight,
+};
 
 struct CharacterSprite {
     std::map<SpriteAnimationType, SpriteAnimation*> bodyAnimations;
@@ -16,7 +28,8 @@ struct CharacterSprite {
     bool displayWeapon;
 };
 
-void InitCharacterSprite(CharacterSprite &sprite, SpriteAnimationManager &animationManager, const std::string& bodyType, const std::string& weaponType, bool hasAttacks);
+void InitCharacterSprite(CharacterSprite &sprite, const std::string& bodyType, bool hasAttacks);
+void SetCharacterSpriteWeaponAnimation(CharacterSprite &sprite, const std::string &weaponType);
 SpriteAnimation* GetCharacterAnimationBody(CharacterSprite& sprite, SpriteAnimationType type);
 SpriteAnimation* GetCharacterAnimationWeapon(CharacterSprite& sprite, SpriteAnimationType type);
 Vector2 GetCharacterSpritePos(CharacterSprite& sprite);

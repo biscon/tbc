@@ -4,24 +4,16 @@
 
 #include "CharacterSprite.h"
 
-static void LoadAnimType(SpriteAnimationManager &animationManager, std::map<SpriteAnimationType, SpriteAnimation*>& animations, const std::string& animType, bool hasAttacks) {
-    animations[SpriteAnimationType::WalkUp] = GetSpriteAnimation(animationManager, (animType + "WalkUp").c_str(), SpriteAnimationType::WalkUp);
-    animations[SpriteAnimationType::WalkDown] = GetSpriteAnimation(animationManager, (animType + "WalkDown").c_str(), SpriteAnimationType::WalkDown);
-    animations[SpriteAnimationType::WalkLeft] = GetSpriteAnimation(animationManager, (animType + "WalkLeft").c_str(), SpriteAnimationType::WalkLeft);
-    animations[SpriteAnimationType::WalkRight] = GetSpriteAnimation(animationManager, (animType + "WalkRight").c_str(), SpriteAnimationType::WalkRight);
+static void LoadAnimType(std::map<SpriteAnimationType, SpriteAnimation*>& animations, const std::string& animType, bool hasAttacks) {
+    animations[SpriteAnimationType::WalkUp] = GetSpriteAnimation(animType + "WalkUp");
+    animations[SpriteAnimationType::WalkDown] = GetSpriteAnimation(animType + "WalkDown");
+    animations[SpriteAnimationType::WalkLeft] = GetSpriteAnimation(animType + "WalkLeft");
+    animations[SpriteAnimationType::WalkRight] = GetSpriteAnimation(animType + "WalkRight");
     if(hasAttacks) {
-        animations[SpriteAnimationType::AttackUp] = GetSpriteAnimation(animationManager,
-                                                                                  (animType + "AttackUp").c_str(),
-                                                                                  SpriteAnimationType::AttackUp);
-        animations[SpriteAnimationType::AttackDown] = GetSpriteAnimation(animationManager,
-                                                                                    (animType + "AttackDown").c_str(),
-                                                                                    SpriteAnimationType::AttackDown);
-        animations[SpriteAnimationType::AttackLeft] = GetSpriteAnimation(animationManager,
-                                                                                    (animType + "AttackLeft").c_str(),
-                                                                                    SpriteAnimationType::AttackLeft);
-        animations[SpriteAnimationType::AttackRight] = GetSpriteAnimation(animationManager,
-                                                                                     (animType + "AttackRight").c_str(),
-                                                                                     SpriteAnimationType::AttackRight);
+        animations[SpriteAnimationType::AttackUp] = GetSpriteAnimation(animType + "AttackUp");
+        animations[SpriteAnimationType::AttackDown] = GetSpriteAnimation(animType + "AttackDown");
+        animations[SpriteAnimationType::AttackLeft] = GetSpriteAnimation(animType + "AttackLeft");
+        animations[SpriteAnimationType::AttackRight] = GetSpriteAnimation(animType + "AttackRight");
     } else {
         animations[SpriteAnimationType::AttackUp] = animations[SpriteAnimationType::WalkUp];
         animations[SpriteAnimationType::AttackDown] = animations[SpriteAnimationType::WalkDown];
@@ -30,17 +22,21 @@ static void LoadAnimType(SpriteAnimationManager &animationManager, std::map<Spri
     }
 }
 
-void InitCharacterSprite(CharacterSprite &sprite, SpriteAnimationManager &animationManager, const std::string& bodyType, const std::string& weaponType, bool hasAttacks) {
-    sprite.displayWeapon = true;
-    if(weaponType.empty()) {
-        sprite.displayWeapon = false;
-    }
-    LoadAnimType(animationManager, sprite.bodyAnimations, bodyType, hasAttacks);
+void InitCharacterSprite(CharacterSprite &sprite, const std::string& bodyType, bool hasAttacks) {
+    sprite.displayWeapon = false;
+    LoadAnimType(sprite.bodyAnimations, bodyType, hasAttacks);
+    /*
     if(sprite.displayWeapon) {
-        LoadAnimType(animationManager, sprite.weaponAnimations, weaponType, hasAttacks);
-
+        LoadAnimType(sprite.weaponAnimations, weaponType, hasAttacks);
     }
+     */
     InitSpriteAnimationPlayer(sprite.bodyPlayer);
+    InitSpriteAnimationPlayer(sprite.weaponPlayer);
+}
+
+void SetCharacterSpriteWeaponAnimation(CharacterSprite &sprite, const std::string &weaponType) {
+    sprite.displayWeapon = true;
+    LoadAnimType(sprite.weaponAnimations, weaponType, true);
     InitSpriteAnimationPlayer(sprite.weaponPlayer);
 }
 

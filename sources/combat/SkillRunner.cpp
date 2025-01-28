@@ -78,7 +78,7 @@ SkillResult ExecuteSkill(CombatState& combat, GridState& gridState) {
                 std::vector<Character*> targets = GetTargetsInLine(combat, startPos, gridDir, skill->range+1, &user);
                 for(auto &t : targets) {
                     AssignStatusEffect(t->statusEffects, StatusEffectType::Burning, skill->rank + 2, 5.0f);
-                    // calculate damage
+                    // calculate baseAttack
                     int damage = RandomInRange(10, 20);
                     DealDamage(combat, user, *t, damage);
                     Vector2 tPos = GetCharacterSpritePos(t->sprite);

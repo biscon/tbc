@@ -126,32 +126,6 @@ Character* GetFirstLivingEnemy(CombatState &combat) {
     return nullptr;
 }
 
-static int CalculateMissChanceOLD(Character &attacker, Character &defender) {
-    int baseMissChance = 35; // Base miss chance starts at 25%
-    int missChance = baseMissChance - (attacker.speed * 3); // Higher speed reduces miss chance
-    TraceLog(LOG_INFO, "Base miss chance: %i", missChance);
-
-    // Use helper function to get the rank of the Dodge skill
-    int dodgeRank = GetSkillRank(defender.skills, SkillType::Dodge);
-
-    // Apply dodge bonus if the character has the Dodge skill
-    if (dodgeRank == 1) missChance += 5;  // +5% miss chance for Dodge Rank 1
-    else if (dodgeRank == 2) missChance += 10;  // +10% miss chance for Dodge Rank 2
-    else if (dodgeRank == 3) missChance += 15;  // +15% miss chance for Dodge Rank 3
-    TraceLog(LOG_INFO, "Dodge rank: %i, missChance: %i", dodgeRank, missChance);
-
-    // defender is stunned, miss chance is zero
-    if (IsIncapacitated(&defender)) {
-        missChance = 0;
-    }
-
-    // Ensure miss chance doesn't go below 0% or above 100%
-    if (missChance < 0) missChance = 0;
-    if (missChance > 100) missChance = 100;
-
-    return missChance;
-}
-
 static int CalculateMissChance(Character &attacker, Character &defender) {
     // Base miss chance starts at 15% at speed = 3 and should scale to 1% at speed = 30
     int baseMissChance = 15;
@@ -191,7 +165,7 @@ static int CalculateMissChance(Character &attacker, Character &defender) {
 
 
 static int CalculateDamageReduction(Character &defender, int baseDamage) {
-    // loop through all status effects and calculate damage reduction
+    // loop through all status effects and calculate baseAttack reduction
     float damageReductionPct = 0;
     auto effects = GetStatusEffectsByType(defender.statusEffects, StatusEffectType::DamageReduction);
     for (auto &effect : effects) {
@@ -201,7 +175,7 @@ static int CalculateDamageReduction(Character &defender, int baseDamage) {
     return static_cast<int>((float) baseDamage * damageReductionPct);
 }
 
-// Function to calculate damage dealt in combat, with chance to miss and critical hit
+// Function to calculate baseAttack dealt in combat, with chance to miss and critical hit
 static void CalculateDamage(CombatState& combat, Character &attacker, Character &defender, AttackResult &result) {
     // Calculate miss chance based on defender's dodge skill and speed
     int missChance = CalculateMissChance(attacker, defender);
@@ -215,25 +189,41 @@ static void CalculateDamage(CombatState& combat, Character &attacker, Character 
         std::string logMessage = attacker.name + " misses the attack!";
         combat.log.push_back(logMessage);
         result.damage = 0;
-        return;  // No damage if the attack misses
+        return;  // No baseAttack if the attack misses
     } else {
         TraceLog(LOG_INFO, "Attack hits!");
         result.hit = true;
     }
 
-    // Base damage calculation
-    //int baseDamage = attacker.attack - defender.defense;
-    //int baseDamage = std::max(1, (attacker.attack * attacker.attack) / (attacker.attack + defender.defense));
+    // Base baseAttack calculation
+    float totalAttack = (float) attacker.attack;
+    int effectiveDefense = defender.defense;
+    if (attacker.equippedWeapon != nullptr) {
+        int scalingStatValue = 0;
+        switch(attacker.equippedWeapon->weaponTemplate->scalingStat) {
+            case ScalingStat::Attack: scalingStatValue = attacker.attack; break;
+            case ScalingStat::Speed: scalingStatValue = attacker.speed; break;
+            default: break;
+        }
+        totalAttack = (float) scalingStatValue * attacker.equippedWeapon->weaponTemplate->attackMultiplier + (float) attacker.equippedWeapon->weaponTemplate->baseAttack;
+
+        effectiveDefense = (int) ((float) defender.defense * (1.0f - attacker.equippedWeapon->weaponTemplate->armorPenetration));
+    }
+    TraceLog(LOG_INFO, "Total attack: %f", totalAttack);
+    TraceLog(LOG_INFO, "Effective defense: %i", effectiveDefense);
+    int attackerAttack = (int) totalAttack;
+
     int randomVariance = GetRandomValue(-2, 2); // Small random range
-    int baseDamage = std::max(1, ((attacker.attack * attacker.attack) / (attacker.attack + defender.defense)) + randomVariance);
-    TraceLog(LOG_INFO, "Base damage: %i", baseDamage);
+    int baseDamage = std::max(1, ((attackerAttack * attackerAttack) / (attackerAttack + effectiveDefense)) + randomVariance);
+    TraceLog(LOG_INFO, "baseDamage: %i", baseDamage);
     int damageReduction = CalculateDamageReduction(defender, baseDamage);
     TraceLog(LOG_INFO, "Damage reduction: %i", damageReduction);
     baseDamage -= damageReduction;
-    if (baseDamage < 0) baseDamage = 0;  // No negative damage
-    //int critChance = 1 + (attacker.speed * 1);  // 1% base + 1% per speed point
+    if (baseDamage < 0) baseDamage = 0;  // No negative baseAttack
+    int critChance = static_cast<int>((2.0f + ((float) attacker.speed / 2.0f)));  // 2% base + 0.5% per speed point
     // Base critical hit chance (1%), diminishing returns
-    int critChance = 1 + static_cast<int>(sqrt(attacker.speed) * 5);  // Scales slower
+    //int critChance = static_cast<int>(sqrt(attacker.speed) * 3);  // Scales slower
+    TraceLog(LOG_INFO, "Crit chance: %i", critChance);
     if (critChance > 25) critChance = 25;  // Max 25% crit chance
     int roll = RandomInRange(1, 100);  // Random roll between 1 and 100
     bool isCritical = roll <= critChance;
@@ -241,7 +231,7 @@ static void CalculateDamage(CombatState& combat, Character &attacker, Character 
     // Apply critical multiplier
     if (isCritical) {
         result.crit = true;
-        baseDamage *= 2;  // Double the damage for critical hit
+        baseDamage *= 2;  // Double the baseAttack for critical hit
         std::string logMessage = "**Critical Hit!** ";
         combat.log.push_back(logMessage);
     }
@@ -264,8 +254,8 @@ AttackResult Attack(CombatState& combat, Character &attacker, Character &defende
             IncreaseThreat(combat, &attacker, result.damage);
         }
 
-        // Log the attack and damage dealt
-        std::string logMessage = attacker.name + " attacks " + defender.name + " for " + std::to_string(result.damage) + " damage!";
+        // Log the attack and baseAttack dealt
+        std::string logMessage = attacker.name + " attacks " + defender.name + " for " + std::to_string(result.damage) + " baseAttack!";
         combat.log.push_back(logMessage);
 
         std::string logMessage2 = defender.name + " has " + std::to_string(defender.health) + " health left.";
@@ -280,12 +270,12 @@ int DealDamage(CombatState& combat, Character &attacker, Character &defender, in
     float attackerX = GetCharacterSpritePosX(attacker.sprite);
     float attackerY = GetCharacterSpritePosY(attacker.sprite);
 
-    // Base damage calculation
+    // Base baseAttack calculation
     int baseDamage = damage;
     int damageReduction = CalculateDamageReduction(defender, baseDamage);
     TraceLog(LOG_INFO, "Damage reduction: %i", damageReduction);
     baseDamage -= damageReduction;
-    if (baseDamage < 0) baseDamage = 0;  // No negative damage
+    if (baseDamage < 0) baseDamage = 0;  // No negative baseAttack
     //int critChance = 1 + (attacker.speed * 1);  // 1% base + 1% per speed point
     // Base critical hit chance (1%), diminishing returns
     int critChance = 1 + static_cast<int>(sqrt(attacker.speed) * 5);  // Scales slower
@@ -295,7 +285,7 @@ int DealDamage(CombatState& combat, Character &attacker, Character &defender, in
 
     // Apply critical multiplier
     if (isCritical) {
-        baseDamage *= 2;  // Double the damage for critical hit
+        baseDamage *= 2;  // Double the baseAttack for critical hit
         //std::cout << "**Critical Hit!** ";
         std::string logMessage = "**Critical Hit!** ";
         combat.log.push_back(logMessage);
@@ -306,7 +296,7 @@ int DealDamage(CombatState& combat, Character &attacker, Character &defender, in
          */
     }
     Animation damageNumberAnim{};
-    Color dmgColor = GetDamageColor(baseDamage, attacker.attack);
+    Color dmgColor = GetDamageColor(baseDamage, GetAttack(attacker));
     SetupDamageNumberAnimation(damageNumberAnim, TextFormat("%d", baseDamage), defenderX, defenderY-25, dmgColor, isCritical ? 20 : 10);
     combat.animations.push_back(damageNumberAnim);
 
@@ -319,8 +309,8 @@ int DealDamage(CombatState& combat, Character &attacker, Character &defender, in
     // Ensure health does not drop below 0
     if (defender.health < 0) defender.health = 0;
 
-    // Log the attack and damage dealt
-    std::string logMessage = attacker.name + " hits " + defender.name + " for " + std::to_string(damage) + " damage!";
+    // Log the attack and baseAttack dealt
+    std::string logMessage = attacker.name + " hits " + defender.name + " for " + std::to_string(damage) + " baseAttack!";
     combat.log.push_back(logMessage);
 
     std::string logMessage2 = defender.name + " has " + std::to_string(defender.health) + " health left.";
@@ -333,15 +323,15 @@ int DealDamageStatusEffect(CombatState& combat, Character &target, int damage) {
     float targetX = GetCharacterSpritePosX(target.sprite);
     float targetY = GetCharacterSpritePosY(target.sprite);
 
-    // Base damage calculation
+    // Base baseAttack calculation
     int baseDamage = damage;
     int damageReduction = CalculateDamageReduction(target, baseDamage);
     TraceLog(LOG_INFO, "Damage reduction: %i", damageReduction);
     baseDamage -= damageReduction;
-    if (baseDamage < 0) baseDamage = 0;  // No negative damage
+    if (baseDamage < 0) baseDamage = 0;  // No negative baseAttack
 
     Animation damageNumberAnim{};
-    Color dmgColor = GetDamageColor(baseDamage, combat.currentCharacter->attack);
+    Color dmgColor = GetDamageColor(baseDamage, GetAttack(*combat.currentCharacter));
     SetupDamageNumberAnimation(damageNumberAnim, TextFormat("%d", baseDamage), targetX, targetY-25, dmgColor, 10);
     combat.animations.push_back(damageNumberAnim);
 
@@ -350,8 +340,8 @@ int DealDamageStatusEffect(CombatState& combat, Character &target, int damage) {
     // Ensure health does not drop below 0
     if (target.health < 0) target.health = 0;
 
-    // Log the attack and damage dealt
-    std::string logMessage = target.name + " takes " + std::to_string(damage) + " damage! (status effect)";
+    // Log the attack and baseAttack dealt
+    std::string logMessage = target.name + " takes " + std::to_string(damage) + " baseAttack! (status effect)";
     combat.log.push_back(logMessage);
 
     std::string logMessage2 = target.name + " has " + std::to_string(target.health) + " health left.";

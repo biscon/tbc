@@ -123,7 +123,7 @@ static void DisplayActionUI(CombatState &combat, CombatUIState &uiState, GridSta
     std::vector<ActionIcon> actionIcons = {
             ActionIcon{"MOV", "Move", combat.currentCharacter->movePoints <= 0, nullptr},
             ActionIcon{"ATK", "Attack", false, nullptr},
-            ActionIcon{"DEF", "Defend (50% damage reduction, cannot attack)", false, nullptr},
+            ActionIcon{"DEF", "Defend (50% baseAttack reduction, cannot attack)", false, nullptr},
             ActionIcon{"END", "End turn (Do nothing)", false, nullptr},
     };
 
@@ -270,7 +270,7 @@ static void DisplayDamageNumbers(CombatState &combat) {
     for (auto &animation: combat.animations) {
         if (animation.type == AnimationType::DamageNumber) {
             float alpha = 1.0f - animation.time / animation.duration;
-            // Draw the damage number
+            // Draw the baseAttack number
             int w = MeasureText(animation.state.damageNumber.text, animation.state.damageNumber.fontSize);
             // Calculate the initial rectangle
             auto backgroundRect = (Rectangle) {(float) animation.state.damageNumber.x, (float) animation.state.damageNumber.y, (float) w+2, 12};
@@ -519,11 +519,11 @@ void UpdateCombatScreen(CombatState &combat, CombatUIState &uiState, GridState& 
             float defenderY = GetCharacterSpritePosY(combat.selectedCharacter->sprite);
             int damage = combat.attackResult.damage;
             if(damage > 0) {
-                float intensity = (float) GetBloodIntensity(damage, combat.currentCharacter->attack);
+                float intensity = (float) GetBloodIntensity(damage, GetAttack(*combat.currentCharacter));
                 TraceLog(LOG_INFO, "Damage: %d, intensity: %f", damage, intensity);
                 CreateBloodSplatter(*gridState.particleManager, {defenderX + (float) RandomInRange(-2,2), defenderY - 8 + (float) RandomInRange(-2,2)}, 10, intensity);
                 Animation damageNumberAnim{};
-                Color dmgColor = GetDamageColor(damage, combat.currentCharacter->attack);
+                Color dmgColor = GetDamageColor(damage, GetAttack(*combat.currentCharacter));
                 SetupDamageNumberAnimation(damageNumberAnim, TextFormat("%d", damage), defenderX, defenderY-25, dmgColor, combat.attackResult.crit ? 20 : 10);
                 combat.animations.push_back(damageNumberAnim);
                 PlaySoundEffect(SoundEffectType::HumanPain, 0.25f);

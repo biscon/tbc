@@ -4,57 +4,13 @@
 
 #include <cstring>
 #include <utility>
-#include "Sprite.h"
+#include "SpriteAnimation.h"
+#include "SpriteSheet.h"
+#include <fstream>
+#include "../util/json.hpp"
+using json = nlohmann::json;
 
-// Load a sprite sheet from a file and split it into frames
-void LoadSpriteSheet(SpriteSheet& spriteSheet, const char* filename, int frameWidth, int frameHeight) {
-    // Load the texture
-    spriteSheet.texture = LoadTexture(filename);
-    spriteSheet.frameWidth = frameWidth;
-    spriteSheet.frameHeight = frameHeight;
-
-    // Calculate the number of frames in the sprite sheet
-    int columns = spriteSheet.texture.width / frameWidth;
-    int rows = spriteSheet.texture.height / frameHeight;
-
-    // Populate the frameRects vector
-    for (int y = 0; y < rows; ++y) {
-        for (int x = 0; x < columns; ++x) {
-            Rectangle frame = {
-                    static_cast<float>(x * frameWidth), // x position
-                    static_cast<float>(y * frameHeight), // y position
-                    static_cast<float>(frameWidth), // frame width
-                    static_cast<float>(frameHeight)  // frame height
-            };
-            spriteSheet.frameRects.push_back(frame);
-        }
-    }
-}
-
-void UnloadSpriteSheet(SpriteSheet &spriteSheet) {
-    UnloadTexture(spriteSheet.texture);
-}
-
-void CreateSpriteAnimation(SpriteAnimationManager& manager, const char* name, SpriteAnimationType type, SpriteSheet *spriteSheet,
-                           std::vector<int> frames, std::vector<float> frameDelays, Vector2 origin) {
-    SpriteAnimation animation;
-    strncpy(animation.name, name, 64);
-    animation.type = type;
-    animation.spriteSheet = spriteSheet;
-    animation.frames = std::move(frames);
-    animation.frameDelays = std::move(frameDelays);
-    animation.origin = origin;
-    manager.animations.push_back(animation);
-}
-
-SpriteAnimation *GetSpriteAnimation(SpriteAnimationManager &manager, const char *name, SpriteAnimationType type) {
-    for(auto &anim : manager.animations) {
-        if(strcmp(anim.name, name) == 0 && anim.type == type) {
-            return &anim;
-        }
-    }
-    return nullptr;
-}
+static SpriteAnimationManager manager;
 
 void UpdateSpriteAnimation(SpriteAnimationPlayer& player, float dt) {
     if (!player.playing || !player.animation || player.animation->frames.empty()) {
@@ -85,7 +41,7 @@ void UpdateSpriteAnimation(SpriteAnimationPlayer& player, float dt) {
 }
 
 void DrawSpriteAnimation(SpriteAnimationPlayer& player) {
-    if (!player.animation || !player.animation->spriteSheet || player.animation->frames.empty()) {
+    if (!player.animation || player.animation->frames.empty()) {
         return;
     }
 
@@ -93,7 +49,7 @@ void DrawSpriteAnimation(SpriteAnimationPlayer& player) {
     int frameIndex = player.animation->frames[player.currentFrame];
 
     // Get the source rectangle from the sprite sheet
-    const SpriteSheet* spriteSheet = player.animation->spriteSheet;
+    const SpriteSheet* spriteSheet = GetSpriteSheet(player.animation->spriteSheetIndex);
     if (frameIndex < 0 || frameIndex >= spriteSheet->frameRects.size()) {
         return; // Invalid frame index, skip drawing
     }
@@ -125,7 +81,7 @@ void DrawSpriteAnimation(SpriteAnimationPlayer& player) {
 }
 
 void DrawSpriteAnimation(SpriteAnimationPlayer& player, float x, float y) {
-    if (!player.animation || !player.animation->spriteSheet || player.animation->frames.empty()) {
+    if (!player.animation || player.animation->frames.empty()) {
         return;
     }
 
@@ -133,7 +89,7 @@ void DrawSpriteAnimation(SpriteAnimationPlayer& player, float x, float y) {
     int frameIndex = player.animation->frames[player.currentFrame];
 
     // Get the source rectangle from the sprite sheet
-    const SpriteSheet* spriteSheet = player.animation->spriteSheet;
+    const SpriteSheet* spriteSheet = GetSpriteSheet(player.animation->spriteSheetIndex);
     if (frameIndex < 0 || frameIndex >= spriteSheet->frameRects.size()) {
         return; // Invalid frame index, skip drawing
     }
@@ -177,7 +133,6 @@ void InitSpriteAnimationPlayer(SpriteAnimationPlayer &player) {
 }
 
 
-
 void PlaySpriteAnimation(SpriteAnimationPlayer &player, SpriteAnimation *animation, bool loop) {
     // do nothing if the animation is already playing
     if (player.animation == animation) {
@@ -205,6 +160,72 @@ void SetFrame(SpriteAnimationPlayer &player, int frame) {
         player.frameTime = 0;
     }
 }
+
+static void CreateSpriteAnimation(const std::string& name, int spriteSheetIndex,
+                                  std::vector<int> frames, std::vector<float> frameDelays, Vector2 origin) {
+    SpriteAnimation animation;
+    animation.name = name;
+    animation.spriteSheetIndex = spriteSheetIndex;
+    animation.frames = std::move(frames);
+    animation.frameDelays = std::move(frameDelays);
+    animation.origin = origin;
+    manager.animations[name] = animation;
+}
+
+SpriteAnimation *GetSpriteAnimation(const std::string& name) {
+    if(manager.animations.find(name) != manager.animations.end()) {
+        return &manager.animations[name];
+    } else {
+        TraceLog(LOG_ERROR, "GetSpriteAnimation: Animation not found: %s", name.c_str());
+    }
+    return nullptr;
+}
+
+void InitSpriteAnimationManager(const std::string &filename) {
+    std::ifstream file(filename);
+    json j;
+    file >> j;
+    for(auto& e : j) {
+        std::string group = e["group"].get<std::string>();
+        std::string sheetFilename = ASSETS_PATH"" + e["sheet"].get<std::string>();
+        TraceLog(LOG_INFO, "SpriteAnimationManager: Loading sprite sheet: %s", sheetFilename.c_str());
+        SpriteSheet sheet;
+        LoadSpriteSheet(sheet, sheetFilename.c_str(), e["frameWidth"].get<int>(), e["frameHeight"].get<int>());
+        for(auto& jAnim : e["animations"]) {
+            std::string name = group + jAnim["name"].get<std::string>();
+            //SpriteAnimationType type = static_cast<SpriteAnimationType>(jAnim["type"].get<int>());
+            std::vector<int> frames;
+            std::vector<float> frameDelays;
+            for(auto& jFrame : jAnim["frames"]) {
+                frames.push_back(jFrame.get<int>());
+            }
+            for(auto& jDelay : jAnim["delays"]) {
+                frameDelays.push_back(jDelay.get<float>());
+            }
+            Vector2 origin = {jAnim["origin"][0].get<float>(), jAnim["origin"][1].get<float>()};
+            TraceLog(LOG_INFO, "SpriteAnimationManager: Creating animation: %s", name.c_str());
+            int sheetIndex = (int) manager.spriteSheets.size();
+            CreateSpriteAnimation(name, sheetIndex, frames, frameDelays, origin);
+        }
+        manager.spriteSheets.push_back(sheet);
+    }
+}
+
+void DestroySpriteAnimationManager() {
+    for(auto& sheet : manager.spriteSheets) {
+        UnloadSpriteSheet(sheet);
+    }
+    manager.spriteSheets.clear();
+    manager.animations.clear();
+}
+
+SpriteSheet *GetSpriteSheet(int index) {
+    if(index >= 0 && index < manager.spriteSheets.size()) {
+        return &manager.spriteSheets[index];
+    }
+    return nullptr;
+}
+
 
 
 

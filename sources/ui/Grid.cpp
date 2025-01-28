@@ -38,8 +38,7 @@ static Vector2 GetAnimatedCharPos(CombatState &combat, Character *character) {
     return GetCharacterSpritePos(character->sprite);
 }
 
-void InitGrid(GridState &gridState, SpriteAnimationManager &animationManager, ParticleManager* particleManager) {
-    gridState.animationManager = &animationManager;
+void InitGrid(GridState &gridState, ParticleManager* particleManager) {
     gridState.particleManager = particleManager;
     gridState.moving = false;
     gridState.mode = GridMode::Normal;
@@ -272,7 +271,7 @@ void DrawTargetSelection(GridState &gridState, CombatState &combat, bool onlyEne
 void DrawHealthBar(float x, float y, float width, float health, float maxHealth) {
     // Draw the health bar background (gray)
     DrawRectangle(x, y, width, 2, GRAY);
-    // Draw the health bar foreground (green for positive health, red for damage)
+    // Draw the health bar foreground (green for positive health, red for baseAttack)
     DrawRectangle(x, y, width * (health / maxHealth), 2, GREEN);
 }
 

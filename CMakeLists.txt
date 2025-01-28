@@ -45,8 +45,8 @@ add_executable(${PROJECT_NAME}
         sources/reasings.h
         sources/combat/SkillRunner.cpp
         sources/combat/SkillRunner.h
-        sources/graphics/Sprite.cpp
-        sources/graphics/Sprite.h
+        sources/graphics/SpriteAnimation.cpp
+        sources/graphics/SpriteAnimation.h
         sources/ui/Grid.cpp
         sources/ui/Grid.h
         sources/ui/UI.cpp
@@ -80,6 +80,10 @@ add_executable(${PROJECT_NAME}
         sources/audio/SoundEffect.h
         sources/graphics/CharacterSprite.cpp
         sources/graphics/CharacterSprite.h
+        sources/graphics/SpriteSheet.cpp
+        sources/graphics/SpriteSheet.h
+        sources/character/Weapon.cpp
+        sources/character/Weapon.h
 )
 target_sources(${PROJECT_NAME} PRIVATE ${PROJECT_SOURCES})
 target_include_directories(${PROJECT_NAME} PRIVATE ${PROJECT_INCLUDE})

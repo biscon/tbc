@@ -19,7 +19,6 @@ enum class GridMode {
 };
 
 struct GridState {
-    SpriteAnimationManager* animationManager;
     bool moving;
     GridMode mode;
     Vector2 selectedTile;
@@ -34,7 +33,7 @@ struct GridState {
     ParticleManager* particleManager;
 };
 
-void InitGrid(GridState &gridState, SpriteAnimationManager &animationManager, ParticleManager* particleManager);
+void InitGrid(GridState &gridState, ParticleManager* particleManager);
 void UpdateGrid(GridState &gridState, CombatState &combat, float dt);
 void DrawGrid(GridState &gridState, CombatState &combat);
 void SetInitialGridPositions(GridState &gridState, CombatState &combat);

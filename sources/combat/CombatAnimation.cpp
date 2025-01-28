@@ -89,19 +89,19 @@ void RemoveAttackAnimations(CombatState &combat) {
 
 int GetBloodIntensity(int dmg, int attackerAttack) {
     // Define dynamic thresholds based on attacker's attack stat
-    int lowThreshold = attackerAttack / 2;     // Low damage threshold (e.g., half of attack)
-    int highThreshold = attackerAttack * 3 / 2; // High damage threshold (e.g., 1.5x attack)
+    int lowThreshold = attackerAttack / 2;     // Low baseAttack threshold (e.g., half of attack)
+    int highThreshold = attackerAttack * 3 / 2; // High baseAttack threshold (e.g., 1.5x attack)
 
-    // Clamp damage within the calculated range
+    // Clamp baseAttack within the calculated range
     dmg = Clamp(dmg, lowThreshold, highThreshold);
 
     // Scale blood intensity between 10 and 50
     if (dmg <= attackerAttack) {
-        // Interpolate from 10 to 30 (low to medium damage)
+        // Interpolate from 10 to 30 (low to medium baseAttack)
         float t = (float)(dmg - lowThreshold) / (attackerAttack - lowThreshold);
         return (int)Lerp(10, 30, t);
     } else {
-        // Interpolate from 30 to 50 (medium to high damage)
+        // Interpolate from 30 to 50 (medium to high baseAttack)
         float t = (float)(dmg - attackerAttack) / (highThreshold - attackerAttack);
         return (int)Lerp(30, 50, t);
     }

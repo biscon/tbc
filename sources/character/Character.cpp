@@ -71,6 +71,20 @@ void CreateCharacter(Character &character, CharacterClass characterClass, std::s
     character.level = 1;
     character.characterClass = characterClass;
     character.orientation = Orientation::Right;
+    character.weapon = Weapon{};
+    character.equippedWeapon = nullptr;
+}
+
+void GiveWeapon(Character &character, Weapon &weapon) {
+    character.weapon = weapon;
+    character.equippedWeapon = &character.weapon;
+    SetCharacterSpriteWeaponAnimation(character.sprite, weapon.weaponTemplate->animationTemplate);
+}
+
+void GiveWeapon(Character &character, const std::string& weaponTemplate) {
+    CreateWeapon(character.weapon, weaponTemplate);
+    character.equippedWeapon = &character.weapon;
+    SetCharacterSpriteWeaponAnimation(character.sprite, character.weapon.weaponTemplate->animationTemplate);
 }
 
 Vector2 GetOrientationVector(Orientation orientation) {
@@ -193,4 +207,11 @@ void LevelUp(Character &character, bool autoDistributePoints) {
     // Recalculate max health if you have a max health stat
     // Optionally, you could add max health directly as a function of level or health
     character.health = character.maxHealth;
+}
+
+int GetAttack(const Character &character) {
+    if(character.equippedWeapon != nullptr) {
+        return character.attack + character.equippedWeapon->baseAttack;
+    }
+    return character.attack;
 }

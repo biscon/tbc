@@ -80,20 +80,20 @@ void DrawSpeechBubble(float x, float y, const char *text, float alpha) {
 
 Color GetDamageColor(int dmg, int attackerAttack) {
     // Define key gradient colors
-    Color white = WHITE;   // Low damage
-    Color yellow = YELLOW; // Medium damage
-    Color red = RED;       // High damage
+    Color white = WHITE;   // Low baseAttack
+    Color yellow = YELLOW; // Medium baseAttack
+    Color red = RED;       // High baseAttack
 
     // Define dynamic thresholds based on attacker's attack stat
-    int lowThreshold = attackerAttack / 2;     // Low damage threshold (e.g., half of attack)
-    int highThreshold = attackerAttack * 3 / 2; // High damage threshold (e.g., 1.5x attack)
+    int lowThreshold = attackerAttack / 2;     // Low baseAttack threshold (e.g., half of attack)
+    int highThreshold = attackerAttack * 3 / 2; // High baseAttack threshold (e.g., 1.5x attack)
 
-    // Clamp damage within the calculated range
+    // Clamp baseAttack within the calculated range
     dmg = Clamp(dmg, lowThreshold, highThreshold);
 
     // Calculate interpolation factor based on thresholds
     if (dmg <= attackerAttack) {
-        // Interpolate from white to yellow (low to medium damage)
+        // Interpolate from white to yellow (low to medium baseAttack)
         float t = (float)(dmg - lowThreshold) / (attackerAttack - lowThreshold);
         return Color{
                 (unsigned char)Lerp(white.r, yellow.r, t),
@@ -102,7 +102,7 @@ Color GetDamageColor(int dmg, int attackerAttack) {
                 255
         };
     } else {
-        // Interpolate from yellow to red (medium to high damage)
+        // Interpolate from yellow to red (medium to high baseAttack)
         float t = (float)(dmg - attackerAttack) / (highThreshold - attackerAttack);
         return Color{
                 (unsigned char)Lerp(yellow.r, red.r, t),

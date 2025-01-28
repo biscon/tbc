@@ -6,7 +6,7 @@
 #define SANDBOX_TILEMAP_H
 
 #include <vector>
-#include "Sprite.h"
+#include "SpriteAnimation.h"
 
 const int BOTTOM_LAYER = 0;
 const int MIDDLE_LAYER = 1;
