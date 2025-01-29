@@ -133,7 +133,7 @@ int main(void) {
     AssignSkill(mage.skills, SkillType::Dodge, "Dodge", 1, true, true, 0, 0, 0);
     AssignSkill(mage.skills, SkillType::FlameJet, "Burning Hands", 1, false, false, 0, 3, 5);
     InitCharacterSprite(mage.sprite, "MaleBase", true);
-    GiveWeapon(mage, "Staff");
+    GiveWeapon(mage, "Bow");
 
     LevelUp(mage, true);
     LevelUp(mage, true);
@@ -154,7 +154,7 @@ int main(void) {
 
     for(auto &character : enemyCharacters) {
         InitCharacterSprite(character.sprite, "MaleNinja", true);
-
+        GiveWeapon(character, "Bow");
         LevelUp(character, true);
         LevelUp(character, true);
         LevelUp(character, true);

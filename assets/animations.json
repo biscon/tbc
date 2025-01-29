@@ -718,5 +718,149 @@
                 ]
             }
         ]
+    },
+    {
+        "group": "Bow",
+        "sheet": "weapon_bow_32x32.png",
+        "frameWidth": 32,
+        "frameHeight": 32,
+        "animations": [
+            {
+                "name": "WalkUp",
+                "origin": [
+                    16,
+                    30
+                ],
+                "frames": [
+                    0,
+                    1,
+                    2
+                ],
+                "delays": [
+                    0.15,
+                    0.15,
+                    0.15
+                ]
+            },
+            {
+                "name": "WalkRight",
+                "origin": [
+                    16,
+                    30
+                ],
+                "frames": [
+                    3,
+                    4,
+                    5
+                ],
+                "delays": [
+                    0.15,
+                    0.15,
+                    0.15
+                ]
+            },
+            {
+                "name": "WalkDown",
+                "origin": [
+                    16,
+                    30
+                ],
+                "frames": [
+                    6,
+                    7,
+                    8
+                ],
+                "delays": [
+                    0.15,
+                    0.15,
+                    0.15
+                ]
+            },
+            {
+                "name": "WalkLeft",
+                "origin": [
+                    16,
+                    30
+                ],
+                "frames": [
+                    9,
+                    10,
+                    11
+                ],
+                "delays": [
+                    0.15,
+                    0.15,
+                    0.15
+                ]
+            },
+            {
+                "name": "AttackUp",
+                "origin": [
+                    16,
+                    30
+                ],
+                "frames": [
+                    12,
+                    13,
+                    14
+                ],
+                "delays": [
+                    0.25,
+                    0.25,
+                    0.25
+                ]
+            },
+            {
+                "name": "AttackRight",
+                "origin": [
+                    16,
+                    30
+                ],
+                "frames": [
+                    15,
+                    16,
+                    17
+                ],
+                "delays": [
+                    0.25,
+                    0.25,
+                    0.25
+                ]
+            },
+            {
+                "name": "AttackDown",
+                "origin": [
+                    16,
+                    30
+                ],
+                "frames": [
+                    18,
+                    19,
+                    20
+                ],
+                "delays": [
+                    0.25,
+                    0.25,
+                    0.25
+                ]
+            },
+            {
+                "name": "AttackLeft",
+                "origin": [
+                    16,
+                    30
+                ],
+                "frames": [
+                    21,
+                    22,
+                    23
+                ],
+                "delays": [
+                    0.25,
+                    0.25,
+                    0.25
+                ]
+            }
+        ]
     }
 ]
