@@ -84,6 +84,12 @@ add_executable(${PROJECT_NAME}
         sources/graphics/SpriteSheet.h
         sources/character/Weapon.cpp
         sources/character/Weapon.h
+        sources/GameMode.cpp
+        sources/GameMode.h
+        sources/CombatGameMode.cpp
+        sources/CombatGameMode.h
+        sources/DungeonGameMode.cpp
+        sources/DungeonGameMode.h
 )
 target_sources(${PROJECT_NAME} PRIVATE ${PROJECT_SOURCES})
 target_include_directories(${PROJECT_NAME} PRIVATE ${PROJECT_INCLUDE})
