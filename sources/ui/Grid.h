@@ -35,7 +35,7 @@ struct GridState {
 
 void InitGrid(GridState &gridState, ParticleManager* particleManager);
 void UpdateGrid(GridState &gridState, CombatState &combat, float dt);
-void DrawGrid(GridState &gridState, CombatState &combat);
+void DrawGrid(GridState &gridState, CombatState &combat, Camera2D &camera);
 void SetInitialGridPositions(GridState &gridState, CombatState &combat);
 
 #endif //SANDBOX_GRID_H

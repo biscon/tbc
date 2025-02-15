@@ -91,9 +91,9 @@ void SetInitialGridPositions(GridState &gridState, CombatState &combat) {
     }
 }
 
-void DrawPathSelection(GridState &gridState, CombatState &combat) {
+void DrawPathSelection(GridState &gridState, CombatState &combat, Camera2D &camera) {
     // check if mouse is over tile
-    Vector2 mousePos = GetMousePosition();
+    Vector2 mousePos = GetScreenToWorld2D(GetMousePosition(), camera);
     Vector2 gridPos = PixelToGridPosition(mousePos.x, mousePos.y);
     if (IsTileOccupied(combat, static_cast<int>(gridPos.x), static_cast<int>(gridPos.y), nullptr)) {
         gridState.selectedTile = gridPos;
@@ -169,8 +169,8 @@ void DrawPathSelection(GridState &gridState, CombatState &combat) {
     }
 }
 
-void DrawSelectCharacters(GridState &gridState, std::vector<Character *> &characters, Color color) {
-    Vector2 mousePos = GetMousePosition();
+void DrawSelectCharacters(GridState &gridState, std::vector<Character *> &characters, Color color, Camera2D &camera) {
+    Vector2 mousePos = GetScreenToWorld2D(GetMousePosition(), camera);
     Vector2 gridPos = PixelToGridPosition(mousePos.x, mousePos.y);
     for (auto &character: characters) {
         // skip death characters
@@ -192,12 +192,12 @@ void DrawSelectCharacters(GridState &gridState, std::vector<Character *> &charac
     }
 }
 
-void DrawSelectCharacter(GridState &gridState, CombatState &combat, bool onlyEnemies) {
+void DrawSelectCharacter(GridState &gridState, CombatState &combat, bool onlyEnemies, Camera2D &camera) {
     gridState.selectedCharacter = nullptr;
     if (!onlyEnemies) {
-        DrawSelectCharacters(gridState, combat.playerCharacters, YELLOW);
+        DrawSelectCharacters(gridState, combat.playerCharacters, YELLOW, camera);
     }
-    DrawSelectCharacters(gridState, combat.enemyCharacters, RED);
+    DrawSelectCharacters(gridState, combat.enemyCharacters, RED, camera);
     if (gridState.selectedCharacter != nullptr) {
         DrawStatusText(TextFormat("Selected: %s", gridState.selectedCharacter->name.c_str()), YELLOW, 220, 10);
         int range = 1;
@@ -257,8 +257,8 @@ void DrawSelectCharacter(GridState &gridState, CombatState &combat, bool onlyEne
     }
 }
 
-void DrawTargetSelection(GridState &gridState, CombatState &combat, bool onlyEnemies) {
-    DrawSelectCharacter(gridState, combat, onlyEnemies);
+void DrawTargetSelection(GridState &gridState, CombatState &combat, bool onlyEnemies, Camera2D &camera) {
+    DrawSelectCharacter(gridState, combat, onlyEnemies, camera);
     if (IsMouseButtonReleased(MOUSE_BUTTON_RIGHT)) {
         combat.selectedSkill = nullptr;
         combat.selectedCharacter = nullptr;
@@ -337,12 +337,12 @@ static void DrawGridLines() {
     }
 }
 
-static void DrawPathAndSelection(GridState &gridState, CombatState &combat) {
+static void DrawPathAndSelection(GridState &gridState, CombatState &combat, Camera2D &camera) {
     if (gridState.mode == GridMode::SelectingTile) {
-        DrawPathSelection(gridState, combat);
+        DrawPathSelection(gridState, combat, camera);
     }
     if (gridState.mode == GridMode::SelectingEnemyTarget) {
-        DrawTargetSelection(gridState, combat, true);
+        DrawTargetSelection(gridState, combat, true, camera);
     }
 }
 
@@ -435,20 +435,20 @@ void UpdateGrid(GridState &gridState, CombatState &combat, float dt) {
 }
 
 
-void DrawGrid(GridState &gridState, CombatState &combat) {
+void DrawGrid(GridState &gridState, CombatState &combat, Camera2D &camera) {
     DrawGridLines();
     // Draw tilemap layer 0
     DrawTileLayer(combat.tileMap, BOTTOM_LAYER, 0, 0);
     DrawBloodPools();
     DrawTileLayer(combat.tileMap, MIDDLE_LAYER, 0, 0);
-    DrawPathAndSelection(gridState, combat);
+    DrawPathAndSelection(gridState, combat, camera);
     DrawGridCharacters(gridState, combat);
     DrawParticleManager(*gridState.particleManager);
     DrawTileLayer(combat.tileMap, TOP_LAYER, 0, 0);
 
     // get mouse position
     gridState.floatingStatsCharacter = nullptr;
-    Vector2 mousePos = GetMousePosition();
+    Vector2 mousePos = GetScreenToWorld2D(GetMousePosition(), camera);
     Vector2 gridPos = PixelToGridPosition(mousePos.x, mousePos.y);
     // check if mouse is over character
     for (auto &character: combat.turnOrder) {

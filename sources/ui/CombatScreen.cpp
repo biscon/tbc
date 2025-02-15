@@ -29,6 +29,15 @@ void InitCombatUIState(CombatUIState &uiState) {
     uiState.combatMusic = LoadMusicStream(ASSETS_PATH"music/ambience_cave.ogg");
     uiState.combatVictoryMusic = LoadMusicStream(ASSETS_PATH"music/victory_music.ogg");
     uiState.combatDefeatMusic = LoadMusicStream(ASSETS_PATH"music/defeat_music.ogg");
+    uiState.camera = {0};
+    uiState.camera.target = {100-240, 100-135};
+    uiState.camera.offset = {0, 0};
+    uiState.camera.rotation = 0.0f;
+    uiState.camera.zoom = 1.0f;
+    uiState.cameraVelocity = {0, 0};
+    uiState.cameraTarget = {0, 0};
+    uiState.cameraFollowing = false;
+
     //PlayMusicStream(uiState.combatMusic);
 }
 
@@ -333,7 +342,11 @@ void DisplayCombatScreen(CombatState &combat, CombatUIState &uiState, GridState 
      */
 
     // Draw the grid
-    DrawGrid(gridState, combat);
+    BeginMode2D(uiState.camera);
+    DrawGrid(gridState, combat, uiState.camera);
+    DisplaySpeechBubbleAnimations(combat);
+    DisplayDamageNumbers(combat);
+    EndMode2D();
 
 
     if (combat.turnState == TurnState::SelectAction) {
@@ -356,17 +369,20 @@ void DisplayCombatScreen(CombatState &combat, CombatUIState &uiState, GridState 
         }
     }
 
-    DisplaySpeechBubbleAnimations(combat);
-
-    DisplayDamageNumbers(combat);
     DisplayTextAnimations(combat);
 
     if (gridState.floatingStatsCharacter != nullptr && (combat.turnState == TurnState::SelectAction ||
         combat.turnState == TurnState::SelectEnemy || combat.turnState == TurnState::SelectDestination)) {
         float x = GetCharacterSpritePosX(gridState.floatingStatsCharacter->sprite);
         float y = GetCharacterSpritePosY(gridState.floatingStatsCharacter->sprite);
+        // to screen space
+        Vector2 screenPos = GetWorldToScreen2D(Vector2{x, y}, uiState.camera);
+        DisplayCharacterStatsFloating(*gridState.floatingStatsCharacter, (int) screenPos.x - 10, (int) screenPos.y + 12,
+                                      IsPlayerCharacter(combat, *gridState.floatingStatsCharacter));
+        /*
         DisplayCharacterStatsFloating(*gridState.floatingStatsCharacter, (int) x - 10, (int) y + 12,
                                       IsPlayerCharacter(combat, *gridState.floatingStatsCharacter));
+        */
     }
 }
 
@@ -423,6 +439,9 @@ void UpdateCombatScreen(CombatState &combat, CombatUIState &uiState, GridState& 
         }
         case TurnState::StartTurn: {
             TraceLog(LOG_INFO, "Start turn");
+            auto pos = GetCharacterSpritePos(combat.currentCharacter->sprite);
+            uiState.cameraTarget = pos;
+            uiState.cameraFollowing = true;
             Animation blinkAnim{};
 
             // restore movepoints

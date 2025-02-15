@@ -23,6 +23,10 @@ struct CombatUIState {
     Music combatMusic;
     Music combatVictoryMusic;
     Music combatDefeatMusic;
+    Camera2D camera;
+    Vector2 cameraVelocity;
+    Vector2 cameraTarget;
+    bool cameraFollowing;
 };
 
 void InitCombatUIState(CombatUIState &uiState);

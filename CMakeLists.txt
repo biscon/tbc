@@ -88,18 +88,6 @@ add_executable(${PROJECT_NAME}
         sources/GameMode.h
         sources/CombatGameMode.cpp
         sources/CombatGameMode.h
-        sources/DungeonGameMode.cpp
-        sources/DungeonGameMode.h
-        sources/graphics/DungeonRenderer.cpp
-        sources/graphics/DungeonRenderer.h
-        sources/dungeon/DungeonMap.cpp
-        sources/dungeon/DungeonMap.h
-        sources/dungeon/Lighting.cpp
-        sources/dungeon/Lighting.h
-        sources/ui/MiniMap.cpp
-        sources/ui/MiniMap.h
-        sources/dungeon/DungeonState.cpp
-        sources/dungeon/DungeonState.h
         sources/game/GameState.cpp
         sources/game/GameState.h
         sources/MenuGameMode.cpp

@@ -6,7 +6,6 @@
 #include "audio/SoundEffect.h"
 #include "character/Weapon.h"
 #include "CombatGameMode.h"
-#include "DungeonGameMode.h"
 #include "MenuGameMode.h"
 
 #define MAX(a, b) ((a)>(b)? (a) : (b))
@@ -19,7 +18,6 @@
 int main() {
 
     SetupMenuGameMode();
-    SetupDungeonGameMode();
     SetupCombatGameMode();
     int windowWidth = 1920;
     int windowHeight = 1080;

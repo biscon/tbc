@@ -8,7 +8,6 @@
 enum class GameModes {
     Menu,
     Combat,
-    Dungeon,
 };
 
 struct GameMode {

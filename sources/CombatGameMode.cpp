@@ -8,6 +8,8 @@
 #include "combat/CombatState.h"
 #include "ui/CombatScreen.h"
 #include "graphics/BloodPool.h"
+#include "rcamera.h"
+#include "raymath.h"
 
 static Character warrior;
 static Character mage;
@@ -133,19 +135,101 @@ void CombatDestroy() {
 }
 
 void CombatUpdate(float dt) {
+    float snappiness = 5.0f; // Higher values make the camera react more quickly
+    float threshold = 0.5f;   // Minimum distance to consider "arrived" at target
+
+    if (combatUIState.cameraFollowing) {
+        Vector2 targetPos = {
+                combatUIState.cameraTarget.x - 240.0f, // Offset by half width
+                combatUIState.cameraTarget.y - 135.0f  // Offset by half height
+        };
+
+        // Smoothly move towards the adjusted target position
+        combatUIState.camera.target.x += (targetPos.x - combatUIState.camera.target.x) * snappiness * dt;
+        combatUIState.camera.target.y += (targetPos.y - combatUIState.camera.target.y) * snappiness * dt;
+
+        // Check if the camera is close enough to stop following
+        if (fabs(combatUIState.camera.target.x - targetPos.x) < threshold &&
+            fabs(combatUIState.camera.target.y - targetPos.y) < threshold) {
+            combatUIState.camera.target = targetPos; // Snap to exact target
+            combatUIState.cameraFollowing = false;
+            TraceLog(LOG_INFO, "Camera arrived at target");
+        }
+    } else {
+        // Regular movement if not following a target
+        combatUIState.camera.target = Vector2Add(combatUIState.camera.target, combatUIState.cameraVelocity);
+    }
+
+    // Ceil camera target to prevent jittering
+    combatUIState.camera.target.x = ceil(combatUIState.camera.target.x);
+    combatUIState.camera.target.y = ceil(combatUIState.camera.target.y);
+
     UpdateParticleManager(particleManager, dt);
     UpdateCombatScreen(combat, combatUIState, gridState, dt);
     UpdateGrid(gridState, combat, dt);
 }
 
 void CombatHandleInput() {
+    float dt = GetFrameTime();
+    float speed = 6.5f;
+    float accelerationTime = 0.5f; // Time to reach full speed
+    float decelerationTime = 0.5f; // Time to stop when no input
 
+    float acceleration = speed / accelerationTime;
+    float deceleration = speed / decelerationTime;
+
+    // Handle horizontal movement
+    if (IsKeyDown(KEY_A)) {
+        combatUIState.cameraVelocity.x -= acceleration * dt;
+        if (combatUIState.cameraVelocity.x < -speed) {
+            combatUIState.cameraVelocity.x = -speed;
+        }
+    } else if (IsKeyDown(KEY_D)) {
+        combatUIState.cameraVelocity.x += acceleration * dt;
+        if (combatUIState.cameraVelocity.x > speed) {
+            combatUIState.cameraVelocity.x = speed;
+        }
+    } else {
+        // Decelerate smoothly
+        if (combatUIState.cameraVelocity.x > 0) {
+            combatUIState.cameraVelocity.x -= deceleration * dt;
+            if (combatUIState.cameraVelocity.x < 0) combatUIState.cameraVelocity.x = 0;
+        } else if (combatUIState.cameraVelocity.x < 0) {
+            combatUIState.cameraVelocity.x += deceleration * dt;
+            if (combatUIState.cameraVelocity.x > 0) combatUIState.cameraVelocity.x = 0;
+        }
+    }
+
+    // Handle vertical movement
+    if (IsKeyDown(KEY_W)) {
+        combatUIState.cameraVelocity.y -= acceleration * dt;
+        if (combatUIState.cameraVelocity.y < -speed) {
+            combatUIState.cameraVelocity.y = -speed;
+        }
+    } else if (IsKeyDown(KEY_S)) {
+        combatUIState.cameraVelocity.y += acceleration * dt;
+        if (combatUIState.cameraVelocity.y > speed) {
+            combatUIState.cameraVelocity.y = speed;
+        }
+    } else {
+        // Decelerate smoothly
+        if (combatUIState.cameraVelocity.y > 0) {
+            combatUIState.cameraVelocity.y -= deceleration * dt;
+            if (combatUIState.cameraVelocity.y < 0) combatUIState.cameraVelocity.y = 0;
+        } else if (combatUIState.cameraVelocity.y < 0) {
+            combatUIState.cameraVelocity.y += deceleration * dt;
+            if (combatUIState.cameraVelocity.y > 0) combatUIState.cameraVelocity.y = 0;
+        }
+    }
 }
+
 
 void CombatRender() {
     // Draw combat screen
     DisplayCombatScreen(combat, combatUIState, gridState);
+    BeginMode2D(combatUIState.camera);
     DrawParticleManager(particleManager);
+    EndMode2D();
 }
 
 void CombatPreRender() {
