@@ -32,10 +32,16 @@ struct SpriteAnimationPlayer {
     bool playing; // if false, the animation is paused
 };
 
+struct FrameInfo {
+    Texture2D* texture;
+    Rectangle srcRect;
+};
+
 void InitSpriteAnimationPlayer(SpriteAnimationPlayer& player);
 void UpdateSpriteAnimation(SpriteAnimationPlayer& player, float dt);
 void DrawSpriteAnimation(SpriteAnimationPlayer& player);
 void DrawSpriteAnimation(SpriteAnimationPlayer& player, float x, float y);
+FrameInfo GetFrameInfo(SpriteAnimationPlayer& player);
 void PlaySpriteAnimation(SpriteAnimationPlayer& player, SpriteAnimation* animation, bool loop = true);
 void PlaySpriteAnimationRestart(SpriteAnimationPlayer &player, SpriteAnimation *animation, bool loop);
 void SetFrame(SpriteAnimationPlayer& player, int frame);

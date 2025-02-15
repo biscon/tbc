@@ -226,6 +226,27 @@ SpriteSheet *GetSpriteSheet(int index) {
     return nullptr;
 }
 
+FrameInfo GetFrameInfo(SpriteAnimationPlayer &player) {
+    FrameInfo info{};
+    if (!player.animation || player.animation->frames.empty()) {
+        TraceLog(LOG_ERROR, "GetFrameInfo: No animation or frames");
+        return info;
+    }
+
+    // Get the current frame index
+    int frameIndex = player.animation->frames[player.currentFrame];
+
+    // Get the source rectangle from the sprite sheet
+    SpriteSheet* spriteSheet = GetSpriteSheet(player.animation->spriteSheetIndex);
+    if (frameIndex < 0 || frameIndex >= spriteSheet->frameRects.size()) {
+        TraceLog(LOG_ERROR, "GetFrameInfo: Invalid frame index: %d", frameIndex);
+        return info; // Invalid frame index, skip drawing
+    }
+    info.texture = &spriteSheet->texture;
+    info.srcRect = spriteSheet->frameRects[frameIndex];
+    return info;
+}
+
 
 
 

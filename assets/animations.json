@@ -862,5 +862,101 @@
                 ]
             }
         ]
+    },
+    {
+        "group": "WallTorchFront",
+        "sheet": "wall_torch_front.png",
+        "frameWidth": 32,
+        "frameHeight": 32,
+        "animations": [
+            {
+                "name": "Burn",
+                "origin": [
+                    16,
+                    16
+                ],
+                "frames": [
+                    0,
+                    1,
+                    2,
+                    3
+                ],
+                "delays": [
+                    0.13,
+                    0.13,
+                    0.13,
+                    0.13
+                ]
+            }
+        ]
+    },
+    {
+        "group": "WallTorchSide",
+        "sheet": "wall_torch_side.png",
+        "frameWidth": 32,
+        "frameHeight": 32,
+        "animations": [
+            {
+                "name": "Burn",
+                "origin": [
+                    16,
+                    16
+                ],
+                "frames": [
+                    0,
+                    1,
+                    2,
+                    3
+                ],
+                "delays": [
+                    0.13,
+                    0.13,
+                    0.13,
+                    0.13
+                ]
+            }
+        ]
+    },
+    {
+        "group": "Door",
+        "sheet": "simple_door.png",
+        "frameWidth": 96,
+        "frameHeight": 96,
+        "animations": [
+            {
+                "name": "Open",
+                "origin": [
+                    16,
+                    16
+                ],
+                "frames": [
+                    0
+                ],
+                "delays": [
+                    0.13
+                ]
+            }
+        ]
+    },
+    {
+        "group": "RedCarpet",
+        "sheet": "red_carpet.png",
+        "frameWidth": 80,
+        "frameHeight": 56,
+        "animations": [
+            {
+                "name": "Idle",
+                "origin": [
+                    16,
+                    16
+                ],
+                "frames": [
+                    0
+                ],
+                "delays": [
+                    0.13
+                ]
+            }
+        ]
     }
 ]

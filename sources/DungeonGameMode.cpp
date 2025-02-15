@@ -6,166 +6,98 @@
 
 #include "raylib.h"
 #include "rlgl.h"
+#include "raymath.h"
+#include "graphics/DungeonRenderer.h"
+#include "dungeon/DungeonMap.h"
+#include "ui/MiniMap.h"
 #include <cmath>
 #include <iostream>
+#include <vector>
 
-const int screenWidth = 480;
-const int screenHeight = 270;
-
-// Dungeon map (1 = wall, 0 = empty space)
-const int mapWidth = 8;
-const int mapHeight = 8;
-int dungeonMap[mapHeight][mapWidth] = {
-        {1, 1, 1, 1, 1, 1, 1, 1},
-        {1, 0, 0, 0, 0, 0, 0, 1},
-        {1, 0, 1, 0, 1, 1, 0, 1},
-        {1, 0, 1, 0, 0, 1, 0, 1},
-        {1, 0, 0, 0, 0, 1, 0, 1},
-        {1, 1, 1, 1, 0, 1, 0, 1},
-        {1, 0, 0, 0, 0, 0, 0, 1},
-        {1, 1, 1, 1, 1, 1, 1, 1}
-};
-
-// Player structure
-struct Player {
-    Vector3 position;
-    int direction; // 0 = North, 1 = East, 2 = South, 3 = West
-} player = {{0.0f, 0.0f, 3.0f}, 0};
-
-// Movement directions (North, East, South, West)
-Vector3 forwardDirs[4] = {{0, 0, -1}, {1, 0, 0}, {0, 0, 1}, {-1, 0, 0}};
-
-// Load wall texture
-Texture2D wallTexture;
-Camera3D camera = {0};
-
-void LoadTextures() {
-    wallTexture = LoadTexture(ASSETS_PATH"eye_wall.png");
-
-    SetTextureFilter(wallTexture, TEXTURE_FILTER_POINT);  // Nearest neighbor filtering
-    SetTextureWrap(wallTexture, TEXTURE_WRAP_REPEAT);  // Allow tiling
-    GenTextureMipmaps(&wallTexture);  // Ensure mipmaps are generated
-}
-
-void DrawCubeTexture(Texture2D texture, Vector3 position, float width, float height, float length, Color color)
-{
-    float x = position.x;
-    float y = position.y;
-    float z = position.z;
-
-    // Set desired texture to be enabled while drawing following vertex data
-    rlSetTexture(texture.id);
-
-    rlBegin(RL_QUADS);
-    rlColor4ub(color.r, color.g, color.b, color.a);
-
-    // Front Face
-    rlNormal3f(0.0f, 0.0f, 1.0f);       // Normal Pointing Towards Viewer
-    rlTexCoord2f(0.0f, 1.0f); rlVertex3f(x - width/2, y - height/2, z + length/2);  // Bottom Left Of The Texture and Quad
-    rlTexCoord2f(1.0f, 1.0f); rlVertex3f(x + width/2, y - height/2, z + length/2);  // Bottom Right Of The Texture and Quad
-    rlTexCoord2f(1.0f, 0.0f); rlVertex3f(x + width/2, y + height/2, z + length/2);  // Top Right Of The Texture and Quad
-    rlTexCoord2f(0.0f, 0.0f); rlVertex3f(x - width/2, y + height/2, z + length/2);  // Top Left Of The Texture and Quad
-
-    // Back Face
-    rlNormal3f(0.0f, 0.0f, -1.0f);      // Normal Pointing Away From Viewer
-    rlTexCoord2f(1.0f, 1.0f); rlVertex3f(x - width/2, y - height/2, z - length/2);  // Bottom Right Of The Texture and Quad
-    rlTexCoord2f(1.0f, 0.0f); rlVertex3f(x - width/2, y + height/2, z - length/2);  // Top Right Of The Texture and Quad
-    rlTexCoord2f(0.0f, 0.0f); rlVertex3f(x + width/2, y + height/2, z - length/2);  // Top Left Of The Texture and Quad
-    rlTexCoord2f(0.0f, 1.0f); rlVertex3f(x + width/2, y - height/2, z - length/2);  // Bottom Left Of The Texture and Quad
-
-    // Top Face
-    rlNormal3f(0.0f, 1.0f, 0.0f);       // Normal Pointing Up
-    rlTexCoord2f(0.0f, 0.0f); rlVertex3f(x - width/2, y + height/2, z - length/2);  // Top Left Of The Texture and Quad
-    rlTexCoord2f(0.0f, 1.0f); rlVertex3f(x - width/2, y + height/2, z + length/2);  // Bottom Left Of The Texture and Quad
-    rlTexCoord2f(1.0f, 1.0f); rlVertex3f(x + width/2, y + height/2, z + length/2);  // Bottom Right Of The Texture and Quad
-    rlTexCoord2f(1.0f, 0.0f); rlVertex3f(x + width/2, y + height/2, z - length/2);  // Top Right Of The Texture and Quad
-
-    // Bottom Face
-    rlNormal3f(0.0f, -1.0f, 0.0f);      // Normal Pointing Down
-    rlTexCoord2f(1.0f, 0.0f); rlVertex3f(x - width/2, y - height/2, z - length/2);  // Top Right Of The Texture and Quad
-    rlTexCoord2f(0.0f, 0.0f); rlVertex3f(x + width/2, y - height/2, z - length/2);  // Top Left Of The Texture and Quad
-    rlTexCoord2f(0.0f, 1.0f); rlVertex3f(x + width/2, y - height/2, z + length/2);  // Bottom Left Of The Texture and Quad
-    rlTexCoord2f(1.0f, 1.0f); rlVertex3f(x - width/2, y - height/2, z + length/2);  // Bottom Right Of The Texture and Quad
-
-    // Right Face
-    rlNormal3f(1.0f, 0.0f, 0.0f);       // Normal Pointing Right
-    rlTexCoord2f(0.0f, 1.0f); rlVertex3f(x + width/2, y - height/2, z - length/2);  // Bottom Right Of The Texture and Quad
-    rlTexCoord2f(0.0f, 0.0f); rlVertex3f(x + width/2, y + height/2, z - length/2);  // Top Right Of The Texture and Quad
-    rlTexCoord2f(1.0f, 0.0f); rlVertex3f(x + width/2, y + height/2, z + length/2);  // Top Left Of The Texture and Quad
-    rlTexCoord2f(1.0f, 1.0f); rlVertex3f(x + width/2, y - height/2, z + length/2);  // Bottom Left Of The Texture and Quad
-
-    // Left Face
-    rlNormal3f(-1.0f, 0.0f, 0.0f);      // Normal Pointing Left
-    rlTexCoord2f(1.0f, 1.0f); rlVertex3f(x - width/2, y - height/2, z - length/2);  // Bottom Left Of The Texture and Quad
-    rlTexCoord2f(0.0f, 1.0f); rlVertex3f(x - width/2, y - height/2, z + length/2);  // Bottom Right Of The Texture and Quad
-    rlTexCoord2f(0.0f, 0.0f); rlVertex3f(x - width/2, y + height/2, z + length/2);  // Top Right Of The Texture and Quad
-    rlTexCoord2f(1.0f, 0.0f); rlVertex3f(x - width/2, y + height/2, z - length/2);  // Top Left Of The Texture and Quad
-
-    rlEnd();
-
-    rlSetTexture(0);
-}
-
+static DungeonState dungeonState;
+static DungeonMap dungeonMap;
+static MiniMap miniMap;
 
 void DungeonInit() {
     TraceLog(LOG_INFO, "DungeonInit");
-    LoadTextures();
+    LoadDungeonMap(dungeonMap, ASSETS_PATH"dungeon_map_01.json");
+    InitDungeonRenderer(dungeonState, &dungeonMap);
+    LoadDungeonTexture(dungeonState, TILE_WALL1, ASSETS_PATH"brick_wall_grey.png");
+    LoadDungeonTexture(dungeonState, TILE_WALL2, ASSETS_PATH"plank_wall.png");
+    LoadDungeonTexture(dungeonState, TILE_SHOP1, ASSETS_PATH"shop_front.png");
+    LoadDungeonTexture(dungeonState, TILE_FLOOR, ASSETS_PATH"dark_planks_uneven.png");
+    //LoadDungeonTexture(dungeonState, TILE_FLOOR, ASSETS_PATH"simple_floor_128x128.png");
+    LoadDungeonTexture(dungeonState, TILE_CEILING, ASSETS_PATH"dark_planks_uneven.png");
+    LoadDungeonTexture(dungeonState, TILE_DOOR_Z, ASSETS_PATH"simple_door.png");
 
-    camera.position = (Vector3){0, 4.0f, 9.0f};
-    camera.target = (Vector3){0, 1.0f, 0};
-    camera.up = (Vector3){0.0f, 1.0f, 0.0f};
-    camera.fovy = 60.0f;
-    camera.projection = CAMERA_PERSPECTIVE;
+    LoadDungeonTexture(dungeonState, TILE_PILLAR, ASSETS_PATH"pillar.png");
+
+    CreateMiniMap(miniMap, dungeonMap, 80, 80, {0, 0});
+
 }
 
 void DungeonUpdate(float dt) {
-
+    DungeonRendererUpdate(dungeonState, dt);
+    //UpdateCamera(&camera, CAMERA_ORBITAL);
 }
-
 
 void DungeonRender() {
     ClearBackground(BLACK);
-    //DrawTexture(wallTexture, 10, 10, WHITE);
-    BeginMode3D(camera);
 
-    //DrawCube({0,0}, 2.0f, 2.0f, 2.0f, RED);
-    DrawGrid(10, 1.0f);
-    //RenderDungeon();
-
-    DrawCubeTexture(wallTexture, {0, 1.0f, 0}, 2.0f, 2.0f, 2.0f, WHITE);
-
-
-    EndMode3D();
-
-
-    //DrawText("Use Arrow Keys to Move", 10, 10, 20, WHITE);
-    DrawFPS(4, 4);
+    RenderDungeon(dungeonState);
+    DrawMiniMap(miniMap, dungeonState);
+    //DrawText(TextFormat("Player x,y = %f,%f facing = %d", dungeonState.player.position.x, dungeonState.player.position.y, dungeonState.playerFacing), 10, 10, 10, WHITE);
+    //DrawText(TextFormat("Camera x,y,z = %f,%f,%f", dungeonState.camera.position.x, dungeonState.camera.position.y, dungeonState.camera.position.z), 10, 20, 10, WHITE);
 }
 
 void DungeonHandleInput() {
-    // Player movement
-    if (IsKeyPressed(KEY_RIGHT)) player.direction = (player.direction + 1) % 4;  // Turn right
-    if (IsKeyPressed(KEY_LEFT))  player.direction = (player.direction + 3) % 4;  // Turn left
+    Vector2 newPosition = dungeonState.player.position;
+    int playerMapX = (int)(dungeonState.player.position.x / CUBE_SIZE);
+    int playerMapY = (int)(dungeonState.player.position.y / CUBE_SIZE);
+    int newX = playerMapX, newY = playerMapY;
+    if (IsKeyDown(KEY_W) && !dungeonState.isTurning && !dungeonState.isMoving) {
 
-    // Move forward
-    if (IsKeyPressed(KEY_UP)) {
-        Vector3 nextPos = {
-                player.position.x + forwardDirs[player.direction].x,
-                player.position.y,
-                player.position.z + forwardDirs[player.direction].z
-        };
+        if (dungeonState.playerFacing == 0) newY -= 1; // North
+        else if (dungeonState.playerFacing == 1) newX += 1; // East
+        else if (dungeonState.playerFacing == 2) newY += 1; // South
+        else if (dungeonState.playerFacing == 3) newX -= 1; // West
 
-        int newX = (int)nextPos.x;
-        int newZ = (int)nextPos.z;
+        if (newX >= 0 && newX < dungeonMap.width && newY >= 0 && newY < dungeonMap.height &&
+                GetDungeonTile(dungeonMap, NAV_LAYER, newX, newY) == 0) {
+            newPosition.x = (float) newX * CUBE_SIZE;
+            newPosition.y = (float) newY * CUBE_SIZE;
+        } else {
+            TraceLog(LOG_INFO, "Can't move to %d, %d, mapValue: %d", newX, newY, GetDungeonTile(dungeonMap, NAV_LAYER, newX, newY));
+        }
+    }
+    if (IsKeyDown(KEY_S) && !dungeonState.isTurning && !dungeonState.isMoving) {
+        newX = playerMapX, newY = playerMapY;
+        if (dungeonState.playerFacing == 0) newY += 1; // South (backwards)
+        else if (dungeonState.playerFacing == 1) newX -= 1; // West (backwards)
+        else if (dungeonState.playerFacing == 2) newY -= 1; // North (backwards)
+        else if (dungeonState.playerFacing == 3) newX += 1; // East (backwards)
 
-        if (dungeonMap[newZ][newX] == 0) {
-            player.position = nextPos;
+        if (newX >= 0 && newX < dungeonMap.width && newY >= 0 && newY < dungeonMap.height && GetDungeonTile(dungeonMap, NAV_LAYER, newX, newY) == 0) {
+            newPosition.x = (float) newX * CUBE_SIZE;
+            newPosition.y = (float) newY * CUBE_SIZE;
+        } else {
+            TraceLog(LOG_INFO, "Can't move to %d, %d, mapValue: %d", newX, newY, GetDungeonTile(dungeonMap, NAV_LAYER, newX, newY));
         }
     }
 
-    // Update camera position
-    //camera.position = (Vector3){player.position.x, 2.0f, player.position.z + 2.0f};
-    //camera.target = (Vector3){player.position.x, 1.0f, player.position.z};
+    if (IsKeyDown(KEY_A) && !dungeonState.isTurning && !dungeonState.isMoving) {
+        dungeonState.playerFacing = (dungeonState.playerFacing + 3) % 4; // Rotate left
+        StartTurn(dungeonState, -1);
+    }
+    if (IsKeyDown(KEY_D) && !dungeonState.isTurning && !dungeonState.isMoving) {
+        dungeonState.playerFacing = (dungeonState.playerFacing + 1) % 4; // Rotate right
+        StartTurn(dungeonState, 1);
+    }
+    if(dungeonState.player.position != newPosition) {
+        // start move
+        StartMove(dungeonState, newPosition);
+        TraceLog(LOG_INFO, "Player moving to %d, %d, mapValue: %d", newX, newY, GetDungeonTile(dungeonMap, NAV_LAYER, newX, newY));
+    }
 }
 
 
@@ -174,9 +106,19 @@ void DungeonPreRender() {
 }
 
 void DungeonDestroy() {
-    UnloadTexture(wallTexture);
+    DestroyDungeonRenderer(dungeonState);
+    UnloadDungeonMap(dungeonMap);
+    DestroyMiniMap(miniMap);
+}
+
+void DungeonPause() {
+    TraceLog(LOG_INFO, "DungeonPause");
+}
+
+void DungeonResume() {
+    TraceLog(LOG_INFO, "DungeonResume");
 }
 
 void SetupDungeonGameMode() {
-    CreateGameMode(GameModes::Dungeon, DungeonInit, DungeonUpdate, DungeonHandleInput, DungeonRender, DungeonPreRender, DungeonDestroy);
+    CreateGameMode(GameModes::Dungeon, DungeonInit, DungeonUpdate, DungeonHandleInput, DungeonRender, DungeonPreRender, DungeonDestroy, DungeonPause, DungeonResume);
 }

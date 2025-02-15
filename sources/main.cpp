@@ -7,6 +7,7 @@
 #include "character/Weapon.h"
 #include "CombatGameMode.h"
 #include "DungeonGameMode.h"
+#include "MenuGameMode.h"
 
 #define MAX(a, b) ((a)>(b)? (a) : (b))
 #define MIN(a, b) ((a)<(b)? (a) : (b))
@@ -15,7 +16,9 @@
 //------------------------------------------------------------------------------------
 // Program main entry point
 //------------------------------------------------------------------------------------
-int main(void) {
+int main() {
+
+    SetupMenuGameMode();
     SetupDungeonGameMode();
     SetupCombatGameMode();
     int windowWidth = 1920;
@@ -25,6 +28,7 @@ int main(void) {
     SetConfigFlags(FLAG_WINDOW_RESIZABLE | FLAG_VSYNC_HINT);
     InitWindow(windowWidth, windowHeight, "RPG");
     SetWindowMinSize(320, 240);
+    SetExitKey(0);
 
     InitAudioDevice();      // Initialize audio device
 
@@ -53,23 +57,20 @@ int main(void) {
     InitSpriteAnimationManager(ASSETS_PATH"animations.json");
     InitWeaponManager(ASSETS_PATH"weapons.json");
 
-    SetGameMode(GameModes::Dungeon);
+    //SetGameMode(GameModes::Combat);
+    //SetGameMode(GameModes::Dungeon);
+    InitGameMode();
+    PushGameMode(GameModes::Menu);
 
     // Main game loop
     while (!WindowShouldClose())        // Detect window close button or ESC key
     {
-        // handle input
-        HandleInputGameMode();
-        if (IsKeyPressed(KEY_F)) {
-            fullScreenToggled = true;
+        GameModeFlags flags = GetGameModeFlags();
+        if (flags.quitGame) {
+            break;
         }
-        float dt = GetFrameTime();
 
-        // Update
-        UpdateSoundEffects(dt);
-        UpdateGameMode(dt);
-
-        //----------------------------------------------------------------------------------
+        // Setup Mouse scaling and offset
         // Compute required framebuffer scaling
         float scale = MIN((float) GetScreenWidth() / gameScreenWidth, (float) GetScreenHeight() / gameScreenHeight);
 
@@ -87,15 +88,26 @@ int main(void) {
         SetMouseScale(1 / scale, 1 / scale);
 
 
-        PreRenderGameMode();
+        // handle input
+        HandleInputGameMode();
+        if (IsKeyPressed(KEY_F)) {
+            fullScreenToggled = true;
+        }
+        float dt = GetFrameTime();
 
+        // Update
+        UpdateSoundEffects(dt);
+        UpdateGameMode(dt);
+
+
+        PreRenderGameMode();
 
         BeginTextureMode(target);
         RenderGameMode();
         EndTextureMode();
 
-
         BeginDrawing();
+
         ClearBackground(BLACK);     // Clear screen background
         // Draw render texture to screen, properly scaled
         DrawTexturePro(target.texture,

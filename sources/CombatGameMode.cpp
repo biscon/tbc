@@ -153,7 +153,14 @@ void CombatPreRender() {
     PreRenderParticleManager(particleManager);
 }
 
+void CombatPause() {
+
+}
+
+void CombatResume() {
+
+}
 
 void SetupCombatGameMode() {
-    CreateGameMode(GameModes::Combat, CombatInit, CombatUpdate, CombatHandleInput, CombatRender, CombatPreRender, CombatDestroy);
+    CreateGameMode(GameModes::Combat, CombatInit, CombatUpdate, CombatHandleInput, CombatRender, CombatPreRender, CombatDestroy, CombatPause, CombatResume);
 }
