@@ -33,8 +33,8 @@ set(PROJECT_INCLUDE "${CMAKE_CURRENT_LIST_DIR}/sources/") # Define PROJECT_INCLU
 # Declaring our executable
 add_executable(${PROJECT_NAME}
         sources/character/Character.h
-        sources/combat/Combat.cpp
-        sources/combat/Combat.h
+        sources/level/Combat.cpp
+        sources/level/Combat.h
         sources/util/Random.cpp
         sources/util/Random.h
         sources/ui/CombatScreen.cpp
@@ -43,8 +43,8 @@ add_executable(${PROJECT_NAME}
         sources/graphics/Animation.cpp
         sources/graphics/Animation.h
         sources/reasings.h
-        sources/combat/SkillRunner.cpp
-        sources/combat/SkillRunner.h
+        sources/level/SkillRunner.cpp
+        sources/level/SkillRunner.h
         sources/graphics/SpriteAnimation.cpp
         sources/graphics/SpriteAnimation.h
         sources/ui/Grid.cpp
@@ -53,8 +53,8 @@ add_executable(${PROJECT_NAME}
         sources/ui/UI.h
         sources/util/MathUtil.cpp
         sources/util/MathUtil.h
-        sources/combat/CombatState.cpp
-        sources/combat/CombatState.h
+        sources/level/LevelState.cpp
+        sources/level/LevelState.h
         sources/ai/Ai.cpp
         sources/ai/Ai.h
         sources/ai/FighterAi.cpp
@@ -72,10 +72,10 @@ add_executable(${PROJECT_NAME}
         sources/character/StatusEffect.h
         sources/character/Skill.cpp
         sources/character/Skill.h
-        sources/combat/StatusEffectRunner.cpp
-        sources/combat/StatusEffectRunner.h
-        sources/combat/CombatAnimation.cpp
-        sources/combat/CombatAnimation.h
+        sources/level/StatusEffectRunner.cpp
+        sources/level/StatusEffectRunner.h
+        sources/level/CombatAnimation.cpp
+        sources/level/CombatAnimation.h
         sources/audio/SoundEffect.cpp
         sources/audio/SoundEffect.h
         sources/graphics/CharacterSprite.cpp
@@ -86,12 +86,12 @@ add_executable(${PROJECT_NAME}
         sources/character/Weapon.h
         sources/GameMode.cpp
         sources/GameMode.h
-        sources/CombatGameMode.cpp
-        sources/CombatGameMode.h
-        sources/game/GameState.cpp
-        sources/game/GameState.h
+        sources/LevelGameMode.cpp
+        sources/LevelGameMode.h
         sources/MenuGameMode.cpp
         sources/MenuGameMode.h
+        sources/level/LevelCamera.cpp
+        sources/level/LevelCamera.h
 )
 target_sources(${PROJECT_NAME} PRIVATE ${PROJECT_SOURCES})
 target_include_directories(${PROJECT_NAME} PRIVATE ${PROJECT_INCLUDE})

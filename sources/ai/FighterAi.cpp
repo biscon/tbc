@@ -4,12 +4,11 @@
 
 #include <algorithm>
 #include "FighterAi.h"
-#include "combat/CombatState.h"
 #include "ui/Grid.h"
 #include "Ai.h"
 #include "audio/SoundEffect.h"
 
-static bool AttackIfPossible(CombatState &combat) {
+static bool AttackIfPossible(LevelState &combat) {
     auto playersWithinRange = GetAdjacentPlayers(combat, *combat.currentCharacter);
     combat.selectedSkill = nullptr;
     if((int) playersWithinRange.size() > 0) {
@@ -28,7 +27,7 @@ static bool AttackIfPossible(CombatState &combat) {
     }
 }
 
-static bool MoveIfPossible(CombatState& combat, GridState& gridState) {
+static bool MoveIfPossible(LevelState& combat, GridState& gridState) {
     auto playersWithinRange = GetPlayersWithinMoveRange(combat, *combat.currentCharacter, 1, true);
     SortCharactersByThreat(combat, playersWithinRange);
 
@@ -48,7 +47,7 @@ static bool MoveIfPossible(CombatState& combat, GridState& gridState) {
     return false;
 }
 
-static bool PartialMoveIfPossible(CombatState& combat, GridState& gridState) {
+static bool PartialMoveIfPossible(LevelState& combat, GridState& gridState) {
     auto playersWithinRange = GetPlayersWithinMoveRangePartial(combat, *combat.currentCharacter, 1, false);
     SortCharactersByThreat(combat, playersWithinRange);
 
@@ -80,7 +79,7 @@ static bool PartialMoveIfPossible(CombatState& combat, GridState& gridState) {
     return false;
 }
 
-static void HandleTurn(CombatState &combat, GridState &gridState) {
+static void HandleTurn(LevelState &combat, GridState &gridState) {
     // do something
     TraceLog(LOG_INFO, "FighterAi::HandleTurn");
     switch(combat.turnState) {

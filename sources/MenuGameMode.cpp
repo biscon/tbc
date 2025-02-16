@@ -20,10 +20,9 @@ void MenuRender() {
     ClearBackground(DARKGRAY);
     DrawStatusText("Rule 34", WHITE, 10, 30);
     if (GuiButton((Rectangle) {240 - 50, 50, 100, 20}, "Start New Game")) {
-        PushGameMode(GameModes::Combat);
+        PushGameMode(GameModes::Level);
     }
     if (GuiButton((Rectangle) {240 - 50, 80, 100, 20}, "Load Game")) {
-        PushGameMode(GameModes::Combat);
     }
     if (GuiButton((Rectangle) {240 - 50, 110, 100, 20}, "Options")) {
         //SetGameMode(GameModes::Dungeon);

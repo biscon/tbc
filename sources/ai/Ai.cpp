@@ -7,7 +7,7 @@
 
 static std::map<std::string, AiInterface> aiInterfaces;
 
-void CreateAiInterface(const std::string& name, void (*HandleTurn)(CombatState &, GridState &)) {
+void CreateAiInterface(const std::string& name, void (*HandleTurn)(LevelState &, GridState &)) {
     AiInterface ai{};
     ai.HandleTurn = HandleTurn;
     aiInterfaces[name] = ai;
@@ -21,11 +21,11 @@ AiInterface* GetAiInterface(const std::string& name) {
     return nullptr; // Key not found, return nullptr
 }
 
-void HandleTurn(AiInterface &ai, CombatState &combat, GridState &gridState) {
+void HandleTurn(AiInterface &ai, LevelState &combat, GridState &gridState) {
     ai.HandleTurn(combat, gridState);
 }
 
-void SortCharactersByThreat(CombatState& combat, std::vector<Character*>& characters) {
+void SortCharactersByThreat(LevelState& combat, std::vector<Character*>& characters) {
     // Sort the characters vector using a custom comparator based on the threatTable in CombatState
     std::sort(characters.begin(), characters.end(), [&combat](Character* a, Character* b) {
         int threatA = combat.threatTable.count(a) ? combat.threatTable[a] : 0;
@@ -34,7 +34,7 @@ void SortCharactersByThreat(CombatState& combat, std::vector<Character*>& charac
     });
 }
 
-void SortCharactersByThreat(CombatState& combat, std::vector<std::pair<Character*, Path>>& characters) {
+void SortCharactersByThreat(LevelState& combat, std::vector<std::pair<Character*, Path>>& characters) {
     // Sort the characters vector using a custom comparator based on the threatTable in CombatState
     std::sort(characters.begin(), characters.end(), [&combat](const std::pair<Character*, Path>& a, const std::pair<Character*, Path>& b) {
         int threatA = combat.threatTable.count(a.first) ? combat.threatTable[a.first] : 0;
@@ -43,7 +43,7 @@ void SortCharactersByThreat(CombatState& combat, std::vector<std::pair<Character
     });
 }
 
-static std::vector<Character*> GetCharactersWithinAttackRange(CombatState &combat, Character &character, int range, std::vector<Character*> &characters) {
+static std::vector<Character*> GetCharactersWithinAttackRange(LevelState &combat, Character &character, int range, std::vector<Character*> &characters) {
     // loop through all characters in combat
     Vector2 charPos = GetCharacterSpritePos(character.sprite);
     Vector2i charGridPos = PixelToGridPositionI(charPos.x, charPos.y);
@@ -65,15 +65,15 @@ static std::vector<Character*> GetCharactersWithinAttackRange(CombatState &comba
     return charactersInRange;
 }
 
-std::vector<Character*> GetPlayersWithinAttackRange(CombatState &combat, Character &character, int range) {
+std::vector<Character*> GetPlayersWithinAttackRange(LevelState &combat, Character &character, int range) {
     return GetCharactersWithinAttackRange(combat, character, range, combat.playerCharacters);
 }
 
-std::vector<Character*> GetEnemiesWithinAttackRange(CombatState &combat, Character &character, int range) {
+std::vector<Character*> GetEnemiesWithinAttackRange(LevelState &combat, Character &character, int range) {
     return GetCharactersWithinAttackRange(combat, character, range, combat.enemyCharacters);
 }
 
-static std::vector<std::pair<Character*, Path>> GetCharactersWithinMoveRange(CombatState &combat, Character &character, int attackRange, std::vector<Character*> &characters, bool checkPoints) {
+static std::vector<std::pair<Character*, Path>> GetCharactersWithinMoveRange(LevelState &combat, Character &character, int attackRange, std::vector<Character*> &characters, bool checkPoints) {
     // loop through all characters in combat
     Vector2i charPos = GetCharacterSpritePosI(character.sprite);
     Vector2i charGridPos = PixelToGridPositionI(charPos.x, charPos.y);
@@ -99,16 +99,16 @@ static std::vector<std::pair<Character*, Path>> GetCharactersWithinMoveRange(Com
     return charactersInRange;
 }
 
-std::vector<std::pair<Character*, Path>> GetPlayersWithinMoveRange(CombatState &combat, Character &character, int attackRange, bool checkPoints) {
+std::vector<std::pair<Character*, Path>> GetPlayersWithinMoveRange(LevelState &combat, Character &character, int attackRange, bool checkPoints) {
     return GetCharactersWithinMoveRange(combat, character, attackRange, combat.playerCharacters, checkPoints);
 }
 
-std::vector<std::pair<Character*, Path>> GetEnemiesWithinMoveRange(CombatState &combat, Character &character, int attackRange, bool checkPoints) {
+std::vector<std::pair<Character*, Path>> GetEnemiesWithinMoveRange(LevelState &combat, Character &character, int attackRange, bool checkPoints) {
     return GetCharactersWithinMoveRange(combat, character, attackRange, combat.enemyCharacters, checkPoints);
 }
 
 
-static std::vector<std::pair<Character*, Path>> GetCharactersWithinMoveRangePartial(CombatState &combat, Character &character, int attackRange, std::vector<Character*> &characters, bool checkPoints) {
+static std::vector<std::pair<Character*, Path>> GetCharactersWithinMoveRangePartial(LevelState &combat, Character &character, int attackRange, std::vector<Character*> &characters, bool checkPoints) {
     // loop through all characters in combat
     Vector2i charPos = GetCharacterSpritePosI(character.sprite);
     Vector2i charGridPos = PixelToGridPositionI(charPos.x, charPos.y);
@@ -135,17 +135,17 @@ static std::vector<std::pair<Character*, Path>> GetCharactersWithinMoveRangePart
     return charactersInRange;
 }
 
-std::vector<std::pair<Character*, Path>> GetPlayersWithinMoveRangePartial(CombatState &combat, Character &character, int attackRange, bool checkPoints) {
+std::vector<std::pair<Character*, Path>> GetPlayersWithinMoveRangePartial(LevelState &combat, Character &character, int attackRange, bool checkPoints) {
     return GetCharactersWithinMoveRangePartial(combat, character, attackRange, combat.playerCharacters, checkPoints);
 }
 
-std::vector<std::pair<Character*, Path>> GetEnemiesWithinMoveRangePartial(CombatState &combat, Character &character, int attackRange, bool checkPoints) {
+std::vector<std::pair<Character*, Path>> GetEnemiesWithinMoveRangePartial(LevelState &combat, Character &character, int attackRange, bool checkPoints) {
     return GetCharactersWithinMoveRangePartial(combat, character, attackRange, combat.enemyCharacters, checkPoints);
 }
 
 
 
-std::vector<Character *> GetAdjacentEnemies(CombatState &combat, Character &character) {
+std::vector<Character *> GetAdjacentEnemies(LevelState &combat, Character &character) {
     Vector2i charPos = GetCharacterSpritePosI(character.sprite);
     Vector2i charGridPos = PixelToGridPositionI(charPos.x, charPos.y);
     std::vector<Character*> charactersInRange;
@@ -163,7 +163,7 @@ std::vector<Character *> GetAdjacentEnemies(CombatState &combat, Character &char
     return charactersInRange;
 }
 
-std::vector<Character *> GetAdjacentPlayers(CombatState &combat, Character &character) {
+std::vector<Character *> GetAdjacentPlayers(LevelState &combat, Character &character) {
     Vector2i charPos = GetCharacterSpritePosI(character.sprite);
     Vector2i charGridPos = PixelToGridPositionI(charPos.x, charPos.y);
     std::vector<Character*> charactersInRange;

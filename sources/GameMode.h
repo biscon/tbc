@@ -7,7 +7,7 @@
 
 enum class GameModes {
     Menu,
-    Combat,
+    Level,
 };
 
 struct GameMode {

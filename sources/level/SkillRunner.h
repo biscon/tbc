@@ -6,7 +6,6 @@
 #define SANDBOX_SKILLRUNNER_H
 
 #include "character/Character.h"
-#include "combat/CombatState.h"
 #include "ui/Grid.h"
 
 struct SkillResult {
@@ -17,7 +16,7 @@ struct SkillResult {
     bool giveAggro;
 };
 
-SkillResult ExecuteSkill(CombatState& combat, GridState& gridState);
-void UpdateSkillCooldown(CombatState &combat);
+SkillResult ExecuteSkill(LevelState& combat, GridState& gridState);
+void UpdateSkillCooldown(LevelState &combat);
 
 #endif //SANDBOX_SKILLRUNNER_H

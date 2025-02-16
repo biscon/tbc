@@ -11,8 +11,9 @@
 #include "graphics/BloodPool.h"
 #include "graphics/ParticleSystem.h"
 #include "audio/SoundEffect.h"
+#include "level/Combat.h"
 
-static bool IsCharacterVisible(CombatState &combat, Character *character) {
+static bool IsCharacterVisible(LevelState &combat, Character *character) {
     // Check if the character is visible (not blinking)
     for (auto &animation: combat.animations) {
         if (animation.type == AnimationType::Blink) {
@@ -26,7 +27,7 @@ static bool IsCharacterVisible(CombatState &combat, Character *character) {
     return true;
 }
 
-static Vector2 GetAnimatedCharPos(CombatState &combat, Character *character) {
+static Vector2 GetAnimatedCharPos(LevelState &combat, Character *character) {
     // Check if the character is visible (not blinking)
     for (auto &animation: combat.animations) {
         if (animation.type == AnimationType::Attack) {
@@ -65,7 +66,7 @@ int CalculateVerticalCenterOffset(int gridHeight, int numCharacters) {
     return emptySpaceInTiles / 2; // Center the characters
 }
 
-void SetInitialGridPositions(GridState &gridState, CombatState &combat) {
+void SetInitialGridPositions(GridState &gridState, LevelState &combat) {
     auto positions = FindFreePositionsCircular(combat, 6, 7, 5);
     // Set initial grid positions for player characters
     for (int i = 0; i < combat.playerCharacters.size(); i++) {
@@ -91,9 +92,9 @@ void SetInitialGridPositions(GridState &gridState, CombatState &combat) {
     }
 }
 
-void DrawPathSelection(GridState &gridState, CombatState &combat, Camera2D &camera) {
+void DrawPathSelection(GridState &gridState, LevelState &combat) {
     // check if mouse is over tile
-    Vector2 mousePos = GetScreenToWorld2D(GetMousePosition(), camera);
+    Vector2 mousePos = GetScreenToWorld2D(GetMousePosition(), combat.camera.camera);
     Vector2 gridPos = PixelToGridPosition(mousePos.x, mousePos.y);
     if (IsTileOccupied(combat, static_cast<int>(gridPos.x), static_cast<int>(gridPos.y), nullptr)) {
         gridState.selectedTile = gridPos;
@@ -192,7 +193,7 @@ void DrawSelectCharacters(GridState &gridState, std::vector<Character *> &charac
     }
 }
 
-void DrawSelectCharacter(GridState &gridState, CombatState &combat, bool onlyEnemies, Camera2D &camera) {
+void DrawSelectCharacter(GridState &gridState, LevelState &combat, bool onlyEnemies, Camera2D &camera) {
     gridState.selectedCharacter = nullptr;
     if (!onlyEnemies) {
         DrawSelectCharacters(gridState, combat.playerCharacters, YELLOW, camera);
@@ -257,8 +258,8 @@ void DrawSelectCharacter(GridState &gridState, CombatState &combat, bool onlyEne
     }
 }
 
-void DrawTargetSelection(GridState &gridState, CombatState &combat, bool onlyEnemies, Camera2D &camera) {
-    DrawSelectCharacter(gridState, combat, onlyEnemies, camera);
+void DrawTargetSelection(GridState &gridState, LevelState &combat, bool onlyEnemies) {
+    DrawSelectCharacter(gridState, combat, onlyEnemies, combat.camera.camera);
     if (IsMouseButtonReleased(MOUSE_BUTTON_RIGHT)) {
         combat.selectedSkill = nullptr;
         combat.selectedCharacter = nullptr;
@@ -276,7 +277,7 @@ void DrawHealthBar(float x, float y, float width, float health, float maxHealth)
 }
 
 
-void DrawGridCharacters(GridState &state, CombatState &combat) {
+void DrawGridCharacters(GridState &state, LevelState &combat) {
     // Sort characters by y position
     std::vector<Character *> sortedCharacters;
     for (auto &character: combat.playerCharacters) {
@@ -337,16 +338,16 @@ static void DrawGridLines() {
     }
 }
 
-static void DrawPathAndSelection(GridState &gridState, CombatState &combat, Camera2D &camera) {
+static void DrawPathAndSelection(GridState &gridState, LevelState &combat) {
     if (gridState.mode == GridMode::SelectingTile) {
-        DrawPathSelection(gridState, combat, camera);
+        DrawPathSelection(gridState, combat);
     }
     if (gridState.mode == GridMode::SelectingEnemyTarget) {
-        DrawTargetSelection(gridState, combat, true, camera);
+        DrawTargetSelection(gridState, combat, true);
     }
 }
 
-void UpdateGrid(GridState &gridState, CombatState &combat, float dt) {
+void UpdateGrid(GridState &gridState, LevelState &combat, float dt) {
     // Update the pulsing alpha
     if (gridState.increasing) {
         gridState.highlightAlpha = Lerp(gridState.highlightAlpha, 1.0f, dt * gridState.pulseSpeed);
@@ -434,21 +435,20 @@ void UpdateGrid(GridState &gridState, CombatState &combat, float dt) {
     }
 }
 
-
-void DrawGrid(GridState &gridState, CombatState &combat, Camera2D &camera) {
+void DrawGrid(GridState &gridState, LevelState &combat) {
     DrawGridLines();
     // Draw tilemap layer 0
     DrawTileLayer(combat.tileMap, BOTTOM_LAYER, 0, 0);
     DrawBloodPools();
     DrawTileLayer(combat.tileMap, MIDDLE_LAYER, 0, 0);
-    DrawPathAndSelection(gridState, combat, camera);
+    DrawPathAndSelection(gridState, combat);
     DrawGridCharacters(gridState, combat);
     DrawParticleManager(*gridState.particleManager);
     DrawTileLayer(combat.tileMap, TOP_LAYER, 0, 0);
 
     // get mouse position
     gridState.floatingStatsCharacter = nullptr;
-    Vector2 mousePos = GetScreenToWorld2D(GetMousePosition(), camera);
+    Vector2 mousePos = GetScreenToWorld2D(GetMousePosition(), combat.camera.camera);
     Vector2 gridPos = PixelToGridPosition(mousePos.x, mousePos.y);
     // check if mouse is over character
     for (auto &character: combat.turnOrder) {

@@ -4,8 +4,9 @@
 
 #include <algorithm>
 #include "StatusEffectRunner.h"
+#include "Combat.h"
 
-static void ApplyStatusEffect(CombatState &combat, GridState &gridState, Character& character, StatusEffect& effect) {
+static void ApplyStatusEffect(LevelState &combat, GridState &gridState, Character& character, StatusEffect& effect) {
     Vector2 charPos = GetCharacterSpritePos(character.sprite);
 
     switch(effect.type) {
@@ -43,7 +44,7 @@ static void ApplyStatusEffect(CombatState &combat, GridState &gridState, Charact
 }
 
 // runs when a round is started
-void ApplyStatusEffects(CombatState &combat, GridState &gridState) {
+void ApplyStatusEffects(LevelState &combat, GridState &gridState) {
     for(auto& character : combat.turnOrder) {
         // skip dead characters
         if(character->health <= 0) {
@@ -56,7 +57,7 @@ void ApplyStatusEffects(CombatState &combat, GridState &gridState) {
 }
 
 // runs when a round is over
-void UpdateStatusEffects(CombatState &combat) {
+void UpdateStatusEffects(LevelState &combat) {
     for(auto &character : combat.turnOrder) {
         for(auto &effect : character->statusEffects) {
             if(effect.roundsLeft > 0) {

@@ -22,7 +22,7 @@ void DestroyBloodRendering() {
 }
 
 // Render all blood pools to the precomposition texture
-void PreRenderBloodPools(CombatState &combat) {
+void PreRenderBloodPools(LevelState &combat) {
     // Start rendering to the blood texture
     BeginTextureMode(bloodTexture);
     ClearBackground(BLANK); // Clear to transparent

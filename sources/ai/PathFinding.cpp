@@ -36,7 +36,7 @@ Vector2 GridToPixelPosition(int gridX, int gridY) {
     return {gridX * 16.0f + 8.0f, gridY * 16.0f + 8.0f};
 }
 
-bool IsTileOccupied(CombatState &combat, int x, int y, Character *exceptCharacter) {
+bool IsTileOccupied(LevelState &combat, int x, int y, Character *exceptCharacter) {
     // Check if the tile is walkable, returning false if out of bounds
     if (x < 0 || x >= GRID_WIDTH || y < 0 || y >= GRID_HEIGHT) return false;
     if(GetTileAt(combat.tileMap, NAV_LAYER, x, y) != 0) return false;
@@ -62,21 +62,21 @@ bool IsTileOccupied(CombatState &combat, int x, int y, Character *exceptCharacte
     return true;
 }
 
-bool IsTileWalkable(CombatState &combat, int x, int y) {
+bool IsTileWalkable(LevelState &combat, int x, int y) {
     // Check if the tile is walkable, returning false if out of bounds
     if (x < 0 || x >= GRID_WIDTH || y < 0 || y >= GRID_HEIGHT) return false;
     if(GetTileAt(combat.tileMap, NAV_LAYER, x, y) != 0) return false;
     return true;
 }
 
-bool IsTileBlocking(CombatState &combat, int x, int y) {
+bool IsTileBlocking(LevelState &combat, int x, int y) {
     // Check if the tile is walkable, returning false if out of bounds
     if (x < 0 || x >= GRID_WIDTH || y < 0 || y >= GRID_HEIGHT) return true;
     if(GetTileAt(combat.tileMap, NAV_LAYER, x, y) != 0) return true;
     return false;
 }
 
-bool InitPath(CombatState &combat, Path &path, Vector2i start, Vector2i end, Character *exceptCharacter) {
+bool InitPath(LevelState &combat, Path &path, Vector2i start, Vector2i end, Character *exceptCharacter) {
     if (!IsTileOccupied(combat, start.x, start.y, exceptCharacter) || !IsTileOccupied(combat, end.x, end.y,
                                                                                       exceptCharacter)) {
         TraceLog(LOG_WARNING, "Start or end position is blocked, startX: %d, startY: %d, endX: %d, endY: %d", start.x,
@@ -145,7 +145,7 @@ bool InitPath(CombatState &combat, Path &path, Vector2i start, Vector2i end, Cha
     return false;  // Path not found
 }
 
-bool InitPathIgnoreOccupied(CombatState &combat, Path &path, Vector2i start, Vector2i end) {
+bool InitPathIgnoreOccupied(LevelState &combat, Path &path, Vector2i start, Vector2i end) {
     if (!IsTileWalkable(combat, start.x, start.y) || !IsTileWalkable(combat, end.x, end.y)) {
         TraceLog(LOG_WARNING, "Start or end position is blocked, startX: %d, startY: %d, endX: %d, endY: %d", start.x,
                  start.y, end.x, end.y);
@@ -213,7 +213,7 @@ bool InitPathIgnoreOccupied(CombatState &combat, Path &path, Vector2i start, Vec
     return false;  // Path not found
 }
 
-bool InitPathWithRange(CombatState &combat, Path &path, Vector2i start, Vector2i end, int range,
+bool InitPathWithRange(LevelState &combat, Path &path, Vector2i start, Vector2i end, int range,
                        Character *exceptCharacter) {
     if (!IsTileOccupied(combat, start.x, start.y, exceptCharacter)) {
         TraceLog(LOG_WARNING, "Start position is blocked, startX: %d, startY: %d, endX: %d, endY: %d", start.x, start.y,
@@ -285,7 +285,7 @@ bool InitPathWithRange(CombatState &combat, Path &path, Vector2i start, Vector2i
     return false;  // Path not found
 }
 
-bool InitPathWithRangePartial(CombatState &combat, Path &path, Vector2i start, Vector2i end, int range,
+bool InitPathWithRangePartial(LevelState &combat, Path &path, Vector2i start, Vector2i end, int range,
                               Character *exceptCharacter) {
     if (!IsTileOccupied(combat, start.x, start.y, exceptCharacter)) {
         TraceLog(LOG_WARNING, "Start position is blocked, startX: %d, startY: %d, endX: %d, endY: %d",
@@ -384,7 +384,7 @@ bool IsCharacterAdjacentToPlayer(Character &player, Character &character) {
     return abs(playerGridPos.x - charGridPos.x) <= 1 && abs(playerGridPos.y - charGridPos.y) <= 1;
 }
 
-bool HasLineOfSight(CombatState &combat, Vector2i start, Vector2i end) {
+bool HasLineOfSight(LevelState &combat, Vector2i start, Vector2i end) {
     int x0 = start.x;
     int y0 = start.y;
     int x1 = end.x;
@@ -421,7 +421,7 @@ bool HasLineOfSight(CombatState &combat, Vector2i start, Vector2i end) {
     }
 }
 
-std::vector<Vector2i> FindFreePositionsCircular(CombatState& combat, int x, int y, int radius) {
+std::vector<Vector2i> FindFreePositionsCircular(LevelState& combat, int x, int y, int radius) {
     std::vector<Vector2i> freePositions;
 
     // Iterate over the bounding box of the circle
@@ -453,7 +453,7 @@ std::vector<Vector2i> FindFreePositionsCircular(CombatState& combat, int x, int 
     return freePositions;
 }
 
-std::vector<Character*> GetTargetsInLine(CombatState &combat, Vector2i start, Vector2 direction, int range, Character* exceptCharacter) {
+std::vector<Character*> GetTargetsInLine(LevelState &combat, Vector2i start, Vector2 direction, int range, Character* exceptCharacter) {
     std::vector<Character*> affectedCharacters;
 
     // Normalize the direction vector to ensure consistent movement

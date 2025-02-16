@@ -6,7 +6,7 @@
 #define SANDBOX_COMBATSCREEN_H
 
 #include "character/Character.h"
-#include "combat/Combat.h"
+#include "level/Combat.h"
 #include "Grid.h"
 #include "graphics/ParticleSystem.h"
 
@@ -23,16 +23,13 @@ struct CombatUIState {
     Music combatMusic;
     Music combatVictoryMusic;
     Music combatDefeatMusic;
-    Camera2D camera;
-    Vector2 cameraVelocity;
-    Vector2 cameraTarget;
-    bool cameraFollowing;
 };
 
 void InitCombatUIState(CombatUIState &uiState);
 void DestroyCombatUIState(CombatUIState &uiState);
-void DisplayCombatScreen(CombatState &combat, CombatUIState &uiState, GridState &gridState);
-void UpdateCombatScreen(CombatState &combat, CombatUIState &uiState, GridState& gridState, float dt);
-Character* SelectTargetBasedOnThreat(CombatState& combat);
+void DisplayCombatScreen(LevelState &combat, CombatUIState &uiState, GridState &gridState);
+void UpdateCombatScreen(LevelState &combat, CombatUIState &uiState, GridState& gridState, float dt);
+Character* SelectTargetBasedOnThreat(LevelState& combat);
+
 
 #endif //SANDBOX_COMBATSCREEN_H

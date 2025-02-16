@@ -2,13 +2,14 @@
 // Created by bison on 20-01-25.
 //
 
-#ifndef SANDBOX_COMBATSTATE_H
-#define SANDBOX_COMBATSTATE_H
+#ifndef SANDBOX_LEVELSTATE_H
+#define SANDBOX_LEVELSTATE_H
 
 #include <map>
 #include "character/Character.h"
 #include "graphics/Animation.h"
 #include "graphics/TileMap.h"
+#include "LevelCamera.h"
 
 enum class TurnState {
     StartTurn,
@@ -36,7 +37,7 @@ struct AttackResult {
     Character *defender;
 };
 
-struct CombatState {
+struct LevelState {
     std::vector<std::string> log;
     std::vector<Character*> playerCharacters;
     std::vector<Character*> enemyCharacters;
@@ -52,8 +53,9 @@ struct CombatState {
     std::map<Character*, int> threatTable;
     TileMap tileMap;
     AttackResult attackResult;
+    LevelCamera camera;
 };
 
-void WaitTurnState(CombatState &combat, TurnState state, float waitTime);
+void WaitTurnState(LevelState &combat, TurnState state, float waitTime);
 
-#endif //SANDBOX_COMBATSTATE_H
+#endif //SANDBOX_LEVELSTATE_H

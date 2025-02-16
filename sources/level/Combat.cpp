@@ -15,14 +15,14 @@
 #include "audio/SoundEffect.h"
 
 
-static void InitializeThreatTable(CombatState& combat) {
+static void InitializeThreatTable(LevelState& combat) {
     combat.threatTable.clear();
     for (const auto& player : combat.playerCharacters) {
         combat.threatTable[player] = 0;
     }
 }
 
-void DecayThreat(CombatState& combat, int amount) {
+void DecayThreat(LevelState& combat, int amount) {
     for (auto& entry : combat.threatTable) {
         if (entry.first->health > 0) {
             entry.second = std::max(0, entry.second - amount); // Reduce threat but not below 0
@@ -30,7 +30,7 @@ void DecayThreat(CombatState& combat, int amount) {
     }
 }
 
-Character* SelectTargetBasedOnThreat(CombatState& combat) {
+Character* SelectTargetBasedOnThreat(LevelState& combat) {
     // Find the highest threat value among alive characters
     auto highestThreat = std::max_element(
             combat.threatTable.begin(), combat.threatTable.end(),
@@ -64,7 +64,7 @@ Character* SelectTargetBasedOnThreat(CombatState& combat) {
     return highestThreat->first;
 }
 
-void IncreaseThreat(CombatState& combat, Character* target, int amount) {
+void IncreaseThreat(LevelState& combat, Character* target, int amount) {
     if (target->health <= 0) return; // Skip dead characters
 
     // Separate additive and multiplicative modifiers
@@ -92,7 +92,7 @@ void IncreaseThreat(CombatState& combat, Character* target, int amount) {
     }
 }
 
-void SetTaunt(CombatState& combat, Character* target) {
+void SetTaunt(LevelState& combat, Character* target) {
     if (combat.threatTable.find(target) != combat.threatTable.end() && target->health > 0) { // Skip dead characters
         int highestThreat = 0;
         for (const auto& entry : combat.threatTable) {
@@ -117,7 +117,7 @@ bool IsIncapacitated(Character* character) {
 }
 
 
-Character* GetFirstLivingEnemy(CombatState &combat) {
+Character* GetFirstLivingEnemy(LevelState &combat) {
     for (auto &enemy : combat.enemyCharacters) {
         if (enemy->health > 0) {
             return enemy;
@@ -176,7 +176,7 @@ static int CalculateDamageReduction(Character &defender, int baseDamage) {
 }
 
 // Function to calculate baseAttack dealt in combat, with chance to miss and critical hit
-static void CalculateDamage(CombatState& combat, Character &attacker, Character &defender, AttackResult &result) {
+static void CalculateDamage(LevelState& combat, Character &attacker, Character &defender, AttackResult &result) {
     // Calculate miss chance based on defender's dodge skill and speed
     int missChance = CalculateMissChance(attacker, defender);
     int missRoll = RandomInRange(1, 100);  // Random roll between 1 and 100
@@ -240,7 +240,7 @@ static void CalculateDamage(CombatState& combat, Character &attacker, Character 
 }
 
 // Function for a character to attack another
-AttackResult Attack(CombatState& combat, Character &attacker, Character &defender) {
+AttackResult Attack(LevelState& combat, Character &attacker, Character &defender) {
     AttackResult result{};
     result.attacker = &attacker;
     result.defender = &defender;
@@ -264,7 +264,7 @@ AttackResult Attack(CombatState& combat, Character &attacker, Character &defende
     return result;
 }
 
-int DealDamage(CombatState& combat, Character &attacker, Character &defender, int damage) {
+int DealDamage(LevelState& combat, Character &attacker, Character &defender, int damage) {
     float defenderX = GetCharacterSpritePosX(defender.sprite);
     float defenderY = GetCharacterSpritePosY(defender.sprite);
     float attackerX = GetCharacterSpritePosX(attacker.sprite);
@@ -319,7 +319,7 @@ int DealDamage(CombatState& combat, Character &attacker, Character &defender, in
     return baseDamage;
 }
 
-int DealDamageStatusEffect(CombatState& combat, Character &target, int damage) {
+int DealDamageStatusEffect(LevelState& combat, Character &target, int damage) {
     float targetX = GetCharacterSpritePosX(target.sprite);
     float targetY = GetCharacterSpritePosY(target.sprite);
 
@@ -349,7 +349,7 @@ int DealDamageStatusEffect(CombatState& combat, Character &target, int damage) {
     return baseDamage;
 }
 
-void KillCharacter(CombatState &combat, Character &character) {
+void KillCharacter(LevelState &combat, Character &character) {
     std::string logMessage = character.name + " is defeated!";
     combat.log.push_back(logMessage);
     Animation deathAnim{};
@@ -364,14 +364,14 @@ void KillCharacter(CombatState &combat, Character &character) {
     PlaySoundEffect(SoundEffectType::HumanDeath, 0.5f);
 }
 
-bool IsPlayerCharacter(CombatState &combat, Character &character) {
+bool IsPlayerCharacter(LevelState &combat, Character &character) {
     return (std::find(combat.playerCharacters.begin(), combat.playerCharacters.end(), &character) != combat.playerCharacters.end());
 }
 
 
 
-void InitCombat(CombatState &combat, std::vector<Character> &playerCharacters, std::vector<Character> &enemyCharacters) {
-    memset(&combat, 0, sizeof(CombatState));
+void InitCombat(LevelState &combat, std::vector<Character> &playerCharacters, std::vector<Character> &enemyCharacters) {
+    memset(&combat, 0, sizeof(LevelState));
     std::vector<std::pair<int, Character*>> allCharacters;
     for (auto & playerCharacter : playerCharacters) {
         allCharacters.emplace_back(playerCharacter.speed, &playerCharacter);
@@ -403,9 +403,11 @@ void InitCombat(CombatState &combat, std::vector<Character> &playerCharacters, s
     Animation textAnim{};
     SetupTextAnimation(textAnim, "First round!", 125, 2.0f, 0.0f);
     combat.animations.push_back(textAnim);
+
+    InitLevelCamera(combat.camera);
 }
 
-void NextCharacter(CombatState &combat) {
+void NextCharacter(LevelState &combat) {
     combat.currentCharacterIdx++;
     // skip dead characters
     while (combat.currentCharacterIdx < combat.turnOrder.size() && combat.turnOrder[combat.currentCharacterIdx]->health <= 0) {

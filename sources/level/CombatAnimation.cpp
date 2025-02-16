@@ -5,7 +5,7 @@
 #include "CombatAnimation.h"
 #include "raymath.h"
 
-void PlayAttackAnimation(CombatState &combat, Character &attacker, Character &defender) {
+void PlayAttackAnimation(LevelState &combat, Character &attacker, Character &defender) {
     float attackerX = GetCharacterSpritePosX(attacker.sprite);
     float defenderX = GetCharacterSpritePosX(defender.sprite);
     float attackerY = GetCharacterSpritePosY(attacker.sprite);
@@ -29,7 +29,7 @@ void PlayAttackAnimation(CombatState &combat, Character &attacker, Character &de
     }
 }
 
-void PlayDefendAnimation(CombatState &combat, Character &attacker, Character &defender) {
+void PlayDefendAnimation(LevelState &combat, Character &attacker, Character &defender) {
     if(defender.health <= 0) {
         return;
     }
@@ -46,12 +46,12 @@ void PlayDefendAnimation(CombatState &combat, Character &attacker, Character &de
     combat.animations.push_back(defenderAnim);
 }
 
-void PlayAttackDefendAnimation(CombatState &combat, Character &attacker, Character &defender) {
+void PlayAttackDefendAnimation(LevelState &combat, Character &attacker, Character &defender) {
     PlayAttackAnimation(combat, attacker, defender);
     PlayDefendAnimation(combat, attacker, defender);
 }
 
-void PlayEnemyVictoryAnimation(CombatState &combat) {
+void PlayEnemyVictoryAnimation(LevelState &combat) {
     for(auto &c : combat.enemyCharacters) {
         // skip dead
         if(c->health <= 0) {
@@ -64,7 +64,7 @@ void PlayEnemyVictoryAnimation(CombatState &combat) {
     }
 }
 
-void PlayPlayerVictoryAnimation(CombatState &combat) {
+void PlayPlayerVictoryAnimation(LevelState &combat) {
     for(auto &c : combat.playerCharacters) {
         // skip dead
         if(c->health <= 0) {
@@ -77,7 +77,7 @@ void PlayPlayerVictoryAnimation(CombatState &combat) {
     }
 }
 
-void RemoveAttackAnimations(CombatState &combat) {
+void RemoveAttackAnimations(LevelState &combat) {
     for(auto it = combat.animations.begin(); it != combat.animations.end(); ) {
         if(it->type == AnimationType::Attack) {
             it = combat.animations.erase(it);

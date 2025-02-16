@@ -13,12 +13,12 @@
 #include "character/Character.h"
 #include "Grid.h"
 #include "UI.h"
-#include "combat/SkillRunner.h"
+#include "level/SkillRunner.h"
 #include "ai/Ai.h"
 #include "raymath.h"
 #include "util/Random.h"
-#include "combat/StatusEffectRunner.h"
-#include "combat/CombatAnimation.h"
+#include "level/StatusEffectRunner.h"
+#include "level/CombatAnimation.h"
 #include "audio/SoundEffect.h"
 
 const Color BACKGROUND_GREY = Color{50, 50, 50, 255};
@@ -29,15 +29,6 @@ void InitCombatUIState(CombatUIState &uiState) {
     uiState.combatMusic = LoadMusicStream(ASSETS_PATH"music/ambience_cave.ogg");
     uiState.combatVictoryMusic = LoadMusicStream(ASSETS_PATH"music/victory_music.ogg");
     uiState.combatDefeatMusic = LoadMusicStream(ASSETS_PATH"music/defeat_music.ogg");
-    uiState.camera = {0};
-    uiState.camera.target = {100-240, 100-135};
-    uiState.camera.offset = {0, 0};
-    uiState.camera.rotation = 0.0f;
-    uiState.camera.zoom = 1.0f;
-    uiState.cameraVelocity = {0, 0};
-    uiState.cameraTarget = {0, 0};
-    uiState.cameraFollowing = false;
-
     //PlayMusicStream(uiState.combatMusic);
 }
 
@@ -47,7 +38,9 @@ void DestroyCombatUIState(CombatUIState &uiState) {
     UnloadMusicStream(uiState.combatDefeatMusic);
 }
 
-static bool IsCharacterVisible(CombatState &combat, Character *character) {
+
+
+static bool IsCharacterVisible(LevelState &combat, Character *character) {
     // Check if the character is visible (not blinking)
     for (auto &animation: combat.animations) {
         if (animation.type == AnimationType::Blink) {
@@ -103,7 +96,7 @@ static bool DrawActionIcon(float x, float y, ActionIcon &actionIcon, CombatUISta
     return false;
 }
 
-static void DisplayActionUI(CombatState &combat, CombatUIState &uiState, GridState &gridState) {
+static void DisplayActionUI(LevelState &combat, CombatUIState &uiState, GridState &gridState) {
     //DrawRectangleRec((Rectangle) {0, 209, 480, 65}, Fade(BLACK, 0.75f));
 
     float iconWidth = 32;
@@ -242,7 +235,7 @@ static void DisplayActionUI(CombatState &combat, CombatUIState &uiState, GridSta
     }
 }
 
-void DisplayCombatLog(CombatState &combat) {
+void DisplayCombatLog(LevelState &combat) {
     // Display Combat Log (at the bottom of the screen)
     int logStartY = 220;
     int logHeight = 40;
@@ -275,7 +268,7 @@ void DisplayCombatLog(CombatState &combat) {
     */
 }
 
-static void DisplayDamageNumbers(CombatState &combat) {
+static void DisplayDamageNumbers(LevelState &combat) {
     for (auto &animation: combat.animations) {
         if (animation.type == AnimationType::DamageNumber) {
             float alpha = 1.0f - animation.time / animation.duration;
@@ -304,7 +297,7 @@ static void DisplayDamageNumbers(CombatState &combat) {
     }
 }
 
-static void DisplayTextAnimations(CombatState &combat) {
+static void DisplayTextAnimations(LevelState &combat) {
     for (auto &animation: combat.animations) {
         if (animation.type == AnimationType::Text) {
             // Draw veil
@@ -315,7 +308,7 @@ static void DisplayTextAnimations(CombatState &combat) {
     }
 }
 
-static void DisplaySpeechBubbleAnimations(CombatState &combat) {
+static void DisplaySpeechBubbleAnimations(LevelState &combat) {
     for (auto &animation: combat.animations) {
         if (animation.type == AnimationType::SpeechBubble) {
             // Draw the speech bubble
@@ -326,7 +319,7 @@ static void DisplaySpeechBubbleAnimations(CombatState &combat) {
 
 
 // Function to display combat screen
-void DisplayCombatScreen(CombatState &combat, CombatUIState &uiState, GridState &gridState) {
+void DisplayCombatScreen(LevelState &combat, CombatUIState &uiState, GridState &gridState) {
     // Clear screen with a background color (dark gray)
     ClearBackground(BACKGROUND_GREY);
 
@@ -342,8 +335,8 @@ void DisplayCombatScreen(CombatState &combat, CombatUIState &uiState, GridState 
      */
 
     // Draw the grid
-    BeginMode2D(uiState.camera);
-    DrawGrid(gridState, combat, uiState.camera);
+    BeginMode2D(combat.camera.camera);
+    DrawGrid(gridState, combat);
     DisplaySpeechBubbleAnimations(combat);
     DisplayDamageNumbers(combat);
     EndMode2D();
@@ -376,7 +369,7 @@ void DisplayCombatScreen(CombatState &combat, CombatUIState &uiState, GridState 
         float x = GetCharacterSpritePosX(gridState.floatingStatsCharacter->sprite);
         float y = GetCharacterSpritePosY(gridState.floatingStatsCharacter->sprite);
         // to screen space
-        Vector2 screenPos = GetWorldToScreen2D(Vector2{x, y}, uiState.camera);
+        Vector2 screenPos = GetWorldToScreen2D(Vector2{x, y}, combat.camera.camera);
         DisplayCharacterStatsFloating(*gridState.floatingStatsCharacter, (int) screenPos.x - 10, (int) screenPos.y + 12,
                                       IsPlayerCharacter(combat, *gridState.floatingStatsCharacter));
         /*
@@ -386,7 +379,7 @@ void DisplayCombatScreen(CombatState &combat, CombatUIState &uiState, GridState 
     }
 }
 
-static void UpdateAnimations(CombatState &combat, float dt) {
+static void UpdateAnimations(LevelState &combat, float dt) {
     for (auto &anim : combat.animations) {
         UpdateAnimation(anim, dt);
     }
@@ -425,7 +418,8 @@ static void FaceCharacter(Character &attacker, Character &defender) {
     }
 }
 
-void UpdateCombatScreen(CombatState &combat, CombatUIState &uiState, GridState& gridState, float dt) {
+void UpdateCombatScreen(LevelState &combat, CombatUIState &uiState, GridState& gridState, float dt) {
+    UpdateCamera(combat.camera, dt);
     UpdateMusicStream(uiState.combatMusic);
     UpdateMusicStream(uiState.combatVictoryMusic);
     UpdateMusicStream(uiState.combatDefeatMusic);
@@ -439,9 +433,8 @@ void UpdateCombatScreen(CombatState &combat, CombatUIState &uiState, GridState& 
         }
         case TurnState::StartTurn: {
             TraceLog(LOG_INFO, "Start turn");
-            auto pos = GetCharacterSpritePos(combat.currentCharacter->sprite);
-            uiState.cameraTarget = pos;
-            uiState.cameraFollowing = true;
+            StartCameraPanToTarget(combat.camera, combat.currentCharacter, 250.0f);
+
             Animation blinkAnim{};
 
             // restore movepoints

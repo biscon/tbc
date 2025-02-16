@@ -7,8 +7,9 @@
 #include "raymath.h"
 #include "CombatAnimation.h"
 #include "audio/SoundEffect.h"
+#include "Combat.h"
 
-SkillResult ExecuteSkill(CombatState& combat, GridState& gridState) {
+SkillResult ExecuteSkill(LevelState& combat, GridState& gridState) {
     SkillResult result;
     result.success = false;
     result.attack = false;
@@ -104,7 +105,7 @@ SkillResult ExecuteSkill(CombatState& combat, GridState& gridState) {
     return result;
 }
 
-void UpdateSkillCooldown(CombatState &combat) {
+void UpdateSkillCooldown(LevelState &combat) {
     for(auto &character : combat.turnOrder) {
         DecreaseSkillCooldown(character->skills);
     }

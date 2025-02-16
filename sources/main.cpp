@@ -5,7 +5,7 @@
 #include "ai/FighterAi.h"
 #include "audio/SoundEffect.h"
 #include "character/Weapon.h"
-#include "CombatGameMode.h"
+#include "LevelGameMode.h"
 #include "MenuGameMode.h"
 
 #define MAX(a, b) ((a)>(b)? (a) : (b))
@@ -18,7 +18,7 @@
 int main() {
 
     SetupMenuGameMode();
-    SetupCombatGameMode();
+    SetupLevelGameMode();
     int windowWidth = 1920;
     int windowHeight = 1080;
 
@@ -102,6 +102,7 @@ int main() {
 
         BeginTextureMode(target);
         RenderGameMode();
+        DrawTextEx(font2, TextFormat("FPS: %i", GetFPS()), (Vector2) {1, 1}, 5, 1, GREEN);
         EndTextureMode();
 
         BeginDrawing();
