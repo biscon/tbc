@@ -433,7 +433,7 @@ void UpdateCombatScreen(LevelState &combat, CombatUIState &uiState, GridState& g
         }
         case TurnState::StartTurn: {
             TraceLog(LOG_INFO, "Start turn");
-            StartCameraPanToTarget(combat.camera, combat.currentCharacter, 250.0f);
+            StartCameraPanToTargetChar(combat.camera, combat.currentCharacter, 250.0f);
 
             Animation blinkAnim{};
 

@@ -19,8 +19,9 @@ struct LevelCamera {
 };
 
 void InitLevelCamera(LevelCamera& cam);
-void StartCameraPanToTarget(LevelCamera& cam, Character* target, float speed);
-void StartCameraPanToTargetTime(LevelCamera& cam, Character* target, float duration);
+void StartCameraPanToTargetPos(LevelCamera& cam, Vector2 target, float speed);
+void StartCameraPanToTargetChar(LevelCamera& cam, Character* target, float speed);
+void StartCameraPanToTargetCharTime(LevelCamera& cam, Character* target, float duration);
 void UpdateCamera(LevelCamera& cam, float dt);
 
 #endif //SANDBOX_LEVELCAMERA_H

@@ -199,7 +199,6 @@ void LevelHandleInput() {
     }
 }
 
-
 void LevelRender() {
     // Draw combat screen
     DisplayCombatScreen(combat, combatUIState, gridState);

@@ -5,7 +5,29 @@
 #include "LevelCamera.h"
 #include "raymath.h"
 
-void StartCameraPanToTarget(LevelCamera& cam, Character* target, float speed) {
+void StartCameraPanToTargetPos(LevelCamera& cam, Vector2 target, float speed) {
+    // if distance is less than 20 abort
+    if (Vector2Distance(Vector2Add(cam.camera.target, {240, 135}), target) < 32) {
+        TraceLog(LOG_INFO, "Camera distance less than threshold, aborting camera pan");
+        return;
+    }
+    // ceil target
+    target.x = ceilf(target.x);
+    target.y = ceilf(target.y);
+    cam.cameraVelocity = Vector2{0, 0};
+    cam.cameraPanning = true;
+    cam.cameraPanTarget = target;
+    cam.cameraPanTarget.x -= 240;
+    cam.cameraPanTarget.y -= 135;
+    cam.cameraStartPos = cam.camera.target;
+
+    // Calculate duration based on speed
+    float distance = Vector2Distance(cam.cameraStartPos, cam.cameraPanTarget);
+    cam.cameraPanDuration = (speed > 0.0f) ? distance / speed : 0.0f; // Avoid division by zero
+    cam.cameraPanElapsed = 0.0f;
+}
+
+void StartCameraPanToTargetChar(LevelCamera& cam, Character* target, float speed) {
     // if distance is less than 20 abort
     if (Vector2Distance(Vector2Add(cam.camera.target, {240, 135}), GetCharacterSpritePos(target->sprite)) < 32) {
         TraceLog(LOG_INFO, "Camera distance less than threshold, aborting camera pan");
@@ -24,7 +46,7 @@ void StartCameraPanToTarget(LevelCamera& cam, Character* target, float speed) {
     cam.cameraPanElapsed = 0.0f;
 }
 
-void StartCameraPanToTargetTime(LevelCamera& cam, Character* target, float duration) {
+void StartCameraPanToTargetCharTime(LevelCamera& cam, Character* target, float duration) {
     cam.cameraVelocity = Vector2{0, 0};
     cam.cameraPanning = true;
     cam.cameraPanTarget = GetCharacterSpritePos(target->sprite);

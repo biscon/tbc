@@ -41,6 +41,7 @@ static bool MoveIfPossible(LevelState& combat, GridState& gridState) {
             combat.currentCharacter->movePoints = 0;
         }
         combat.turnState = TurnState::Move;
+        StartCameraPanToTargetChar(combat.camera, playersWithinRange[0].first, 250.0f);
         return true;
     }
     combat.turnState = TurnState::EndTurn;
@@ -73,6 +74,9 @@ static bool PartialMoveIfPossible(LevelState& combat, GridState& gridState) {
             combat.currentCharacter->movePoints = 0;
         }
         combat.turnState = TurnState::Move;
+        auto lastStep = path.path.back();
+        Vector2 lastStepPos = {(float) lastStep.x * 16, (float) lastStep.y * 16};
+        StartCameraPanToTargetPos(combat.camera, lastStepPos, 250.0f);
         return true;
     }
     combat.turnState = TurnState::EndTurn;

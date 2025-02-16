@@ -147,6 +147,7 @@ void DrawPathSelection(GridState &gridState, LevelState &combat) {
                 combat.turnState = TurnState::Move;
                 PlaySoundEffect(SoundEffectType::Select);
                 PlaySoundEffect(SoundEffectType::Footstep);
+                StartCameraPanToTargetPos(combat.camera, mousePos, 250.0f);
             }
         }
     } else {
