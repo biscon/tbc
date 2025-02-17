@@ -65,10 +65,12 @@ void DrawSpeechBubble(float x, float y, const char *text, float alpha) {
     float bubbleY = y - bubbleHeight - 2; // Position above the target point
 
     // Ensure the bubble stays inside the screen bounds (480x270)
+    /*
     if (bubbleX + bubbleWidth > 480) bubbleX = 480 - bubbleWidth; // Prevent overflow on the right
     if (bubbleX < 0) bubbleX = 0; // Prevent overflow on the left
     if (bubbleY < 0) bubbleY = 0; // Prevent overflow at the top
     if (bubbleY + bubbleHeight > 270) bubbleY = 270 - bubbleHeight; // Prevent overflow at the bottom
+     */
 
     // Draw the bubble (rounded rectangle)
     Color bubbleColor = {255, 255, 255, 200}; // Light white color with transparency

@@ -52,7 +52,7 @@ void DestroyParticleEmitter(ParticleEmitter* emitter);
 void EmitParticles(ParticleEmitter &emitter, int count, Vector2 velocity, float spread, Color color, float size, float lifeTime, EmissionType emissionType = EMIT_DIRECTIONAL);
 
 void UpdateParticleManager(ParticleManager &manager, float deltaTime);
-void PreRenderParticleManager(ParticleManager &manager);
+void PreRenderParticleManager(ParticleManager &manager, Camera2D& camera);
 void DrawParticleManager(ParticleManager &manager);
 
 // Effect-specific functions

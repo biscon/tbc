@@ -104,7 +104,7 @@ void UpdateParticleManager(ParticleManager &manager, float deltaTime) {
 }
 
 
-void PreRenderParticleManager(ParticleManager &manager) {
+void PreRenderParticleManager(ParticleManager &manager, Camera2D& camera) {
     BeginTextureMode(manager.renderTexture);
     ClearBackground(BLANK);
     for (const auto &emitter : manager.emitters) {
@@ -114,7 +114,8 @@ void PreRenderParticleManager(ParticleManager &manager) {
                 float lifeRatio = particle.lifeTime / particle.maxLifeTime;
                 Color fadeColor = { particle.color.r, particle.color.g, particle.color.b,
                                     static_cast<unsigned char>(particle.color.a * lifeRatio) };
-                DrawCircleV(particle.position, particle.size * lifeRatio, fadeColor);
+                Vector2 screenPos = GetWorldToScreen2D(particle.position, camera);
+                DrawCircleV(screenPos, particle.size * lifeRatio, fadeColor);
             }
         }
         if(emitter->blendAdditive) EndBlendMode();

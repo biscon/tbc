@@ -32,15 +32,21 @@ void PreRenderBloodPools(LevelState &combat) {
         if (animation.type == AnimationType::BloodPool) {
             int posX = (int)animation.state.bloodPool.position.x + (int)animation.state.bloodPool.offset1.x;
             int posY = (int)animation.state.bloodPool.position.y + (int)animation.state.bloodPool.offset1.y;
-            DrawEllipse(posX, posY, animation.state.bloodPool.radius1, 0.65f * animation.state.bloodPool.radius1, Fade(DARK_BLOOD_RED, 0.85f));
+            Vector2 screenPos = GetWorldToScreen2D({(float)posX, (float)posY}, combat.camera.camera);
+            screenPos = ceilv(screenPos); // Round to nearest pixel
+            DrawEllipse((int) screenPos.x, (int) screenPos.y, animation.state.bloodPool.radius1, 0.65f * animation.state.bloodPool.radius1, Fade(DARK_BLOOD_RED, 0.85f));
 
             posX = (int)animation.state.bloodPool.position.x + (int)animation.state.bloodPool.offset2.x;
             posY = (int)animation.state.bloodPool.position.y + (int)animation.state.bloodPool.offset2.y;
-            DrawEllipse(posX, posY, animation.state.bloodPool.radius2, 0.70f * animation.state.bloodPool.radius2, Fade(DARK_BLOOD_RED, 0.75f));
+            screenPos = GetWorldToScreen2D({(float)posX, (float)posY}, combat.camera.camera);
+            screenPos = ceilv(screenPos); // Round to nearest pixel
+            DrawEllipse((int) screenPos.x, (int) screenPos.y, animation.state.bloodPool.radius2, 0.70f * animation.state.bloodPool.radius2, Fade(DARK_BLOOD_RED, 0.75f));
 
             posX = (int)animation.state.bloodPool.position.x + (int)animation.state.bloodPool.offset3.x;
             posY = (int)animation.state.bloodPool.position.y + (int)animation.state.bloodPool.offset3.y;
-            DrawCircle(posX, posY, animation.state.bloodPool.radius3, Fade(DARK_BLOOD_RED, 0.65f));
+            screenPos = GetWorldToScreen2D({(float)posX, (float)posY}, combat.camera.camera);
+            screenPos = ceilv(screenPos); // Round to nearest pixel
+            DrawCircle((int) screenPos.x, (int) screenPos.y, animation.state.bloodPool.radius3, Fade(DARK_BLOOD_RED, 0.65f));
         }
     }
     EndBlendMode();

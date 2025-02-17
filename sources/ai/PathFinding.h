@@ -9,10 +9,6 @@
 #include "util/MathUtil.h"
 #include "level/LevelState.h"
 
-const int GRID_WIDTH = 30;
-const int GRID_HEIGHT = 13;
-const float GRID_CENTER_OFFSET = 8.0f; // Offset for sprite alignment
-
 struct Path {
     std::vector<Vector2i> path;
     int cost; // cost of the path in distance travelled

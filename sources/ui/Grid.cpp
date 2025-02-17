@@ -67,7 +67,7 @@ int CalculateVerticalCenterOffset(int gridHeight, int numCharacters) {
 }
 
 void SetInitialGridPositions(GridState &gridState, LevelState &combat) {
-    auto positions = FindFreePositionsCircular(combat, 6, 7, 5);
+    auto positions = FindFreePositionsCircular(combat, 44, 7, 5);
     // Set initial grid positions for player characters
     for (int i = 0; i < combat.playerCharacters.size(); i++) {
         // take a position from the list
@@ -75,11 +75,14 @@ void SetInitialGridPositions(GridState &gridState, LevelState &combat) {
         positions.pop_back();
         SetCharacterSpritePos(combat.playerCharacters[i]->sprite, GridToPixelPosition(pos.x, pos.y));
         // Set initial animation to paused
-        StartPausedCharacterSpriteAnim(combat.playerCharacters[i]->sprite, SpriteAnimationType::WalkRight, true);;
+        StartPausedCharacterSpriteAnim(combat.playerCharacters[i]->sprite, SpriteAnimationType::WalkRight, true);
         combat.playerCharacters[i]->orientation = Orientation::Right;
     }
 
-    positions = FindFreePositionsCircular(combat, 23, 7, 5);
+    positions = FindFreePositionsCircular(combat, 55, 7, 5);
+    if(combat.enemyCharacters.size() > positions.size()) {
+        TraceLog(LOG_WARNING, "Not enough positions for all enemy characters");
+    }
     // Set initial grid positions for enemy characters
     for (int i = 0; i < combat.enemyCharacters.size(); i++) {
         // take a position from the list
@@ -124,7 +127,7 @@ void DrawPathSelection(GridState &gridState, LevelState &combat) {
             }
             int gridX = static_cast<int>(gridPos.x);
             int gridY = static_cast<int>(gridPos.y);
-            if (gridX >= 0 && gridX < GRID_WIDTH && gridY >= 0 && gridY < GRID_HEIGHT) {
+            if (gridX >= 0 && gridX < combat.tileMap.width && gridY >= 0 && gridY < combat.tileMap.height) {
                 DrawRectangleLinesEx(
                         Rectangle{
                                 (gridPos.x * 16),
@@ -328,6 +331,7 @@ void DrawGridCharacters(GridState &state, LevelState &combat) {
     }
 }
 
+/*
 static void DrawGridLines() {
     // draw a line grid of 30x13 16x16 tiles taking up a rectangle of 480x208
     for (int i = 0; i < GRID_WIDTH + 1; i++) {
@@ -338,6 +342,7 @@ static void DrawGridLines() {
         DrawLine(0, 16 * i, 480, 16 * i, Fade(BLACK, 0.15));
     }
 }
+*/
 
 static void DrawPathAndSelection(GridState &gridState, LevelState &combat) {
     if (gridState.mode == GridMode::SelectingTile) {
@@ -437,10 +442,11 @@ void UpdateGrid(GridState &gridState, LevelState &combat, float dt) {
 }
 
 void DrawGrid(GridState &gridState, LevelState &combat) {
-    DrawGridLines();
     // Draw tilemap layer 0
     DrawTileLayer(combat.tileMap, BOTTOM_LAYER, 0, 0);
+    EndMode2D();
     DrawBloodPools();
+    BeginMode2D(combat.camera.camera);
     DrawTileLayer(combat.tileMap, MIDDLE_LAYER, 0, 0);
     DrawPathAndSelection(gridState, combat);
     DrawGridCharacters(gridState, combat);

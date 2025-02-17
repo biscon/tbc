@@ -278,6 +278,7 @@ static void DisplayDamageNumbers(LevelState &combat) {
             auto backgroundRect = (Rectangle) {(float) animation.state.damageNumber.x, (float) animation.state.damageNumber.y, (float) w+2, 12};
 
             // Adjust the rectangle position to fit within the screen boundaries
+            /*
             if (backgroundRect.x + backgroundRect.width > 480) {
                 backgroundRect.x = 480 - backgroundRect.width - 2; // Push left
             }
@@ -290,6 +291,7 @@ static void DisplayDamageNumbers(LevelState &combat) {
             if (backgroundRect.y < 0) {
                 backgroundRect.y = 0; // Push down
             }
+             */
 
             DrawText(animation.state.damageNumber.text, (int) backgroundRect.x, (int) backgroundRect.y, animation.state.damageNumber.fontSize,
                      Fade(animation.state.damageNumber.color, alpha));
@@ -433,7 +435,7 @@ void UpdateCombatScreen(LevelState &combat, CombatUIState &uiState, GridState& g
         }
         case TurnState::StartTurn: {
             TraceLog(LOG_INFO, "Start turn");
-            StartCameraPanToTargetChar(combat.camera, combat.currentCharacter, 250.0f);
+            StartCameraPanToTargetChar(combat.camera, combat.currentCharacter, 500.0f);
 
             Animation blinkAnim{};
 
@@ -532,8 +534,9 @@ void UpdateCombatScreen(LevelState &combat, CombatUIState &uiState, GridState& g
             int damage = combat.attackResult.damage;
             if(damage > 0) {
                 float intensity = (float) GetBloodIntensity(damage, GetAttack(*combat.currentCharacter));
-                TraceLog(LOG_INFO, "Damage: %d, intensity: %f", damage, intensity);
-                CreateBloodSplatter(*gridState.particleManager, {defenderX + (float) RandomInRange(-2,2), defenderY - 8 + (float) RandomInRange(-2,2)}, 10, intensity);
+                //TraceLog(LOG_INFO, "Damage: %d, intensity: %f", damage, intensity);
+                Vector2 bloodPos = {defenderX + (float) RandomInRange(-2,2), defenderY - 8 + (float) RandomInRange(-2,2)};
+                CreateBloodSplatter(*gridState.particleManager, bloodPos, 10, intensity);
                 Animation damageNumberAnim{};
                 Color dmgColor = GetDamageColor(damage, GetAttack(*combat.currentCharacter));
                 SetupDamageNumberAnimation(damageNumberAnim, TextFormat("%d", damage), defenderX, defenderY-25, dmgColor, combat.attackResult.crit ? 20 : 10);

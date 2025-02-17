@@ -28,8 +28,8 @@ static GridState gridState{};
 
 
 void LevelInit() {
-    LoadSoundEffect(SoundEffectType::Ambience, ASSETS_PATH"music/ambience_cave.ogg", true);
-    //LoadSoundEffect(SoundEffectType::Ambience, ASSETS_PATH"sound/ambient_forest_01.ogg", true);
+    //LoadSoundEffect(SoundEffectType::Ambience, ASSETS_PATH"music/ambience_cave.ogg", true);
+    LoadSoundEffect(SoundEffectType::Ambience, ASSETS_PATH"sound/ambient_forest_01.ogg", true);
     SetVolumeSoundEffect(SoundEffectType::Ambience, 0.75f);
     LoadSoundEffect(SoundEffectType::Footstep, ASSETS_PATH"sound/footstep_dirt_03.wav", true, 0.075f);
     SetVolumeSoundEffect(SoundEffectType::Footstep, 0.75f);
@@ -99,10 +99,10 @@ void LevelInit() {
     InitCombat(combat, playerCharacters, enemyCharacters);
     InitCombatUIState(combatUIState);
 
-    //LoadSpriteSheet(tileSet, ASSETS_PATH"town_tiles.png", 16, 16);
-    //LoadTileMap(combat.tileMap, ASSETS_PATH"test_map_01.json", &tileSet);
-    LoadSpriteSheet(tileSet, ASSETS_PATH"sewer_tiles.png", 16, 16);
-    LoadTileMap(combat.tileMap, ASSETS_PATH"test_map_02.json", &tileSet);
+    LoadSpriteSheet(tileSet, ASSETS_PATH"town_tiles.png", 16, 16);
+    LoadTileMap(combat.tileMap, ASSETS_PATH"test_map_01.json", &tileSet);
+    //LoadSpriteSheet(tileSet, ASSETS_PATH"sewer_tiles.png", 16, 16);
+    //LoadTileMap(combat.tileMap, ASSETS_PATH"test_map_02.json", &tileSet);
     //LoadSpriteSheet(tileSet, ASSETS_PATH"forest_tiles.png", 16, 16);
     //LoadTileMap(combat.tileMap, ASSETS_PATH"test_map_03.json", &tileSet);
     CreateParticleManager(particleManager, {0, 0}, 480, 270);
@@ -203,13 +203,13 @@ void LevelRender() {
     // Draw combat screen
     DisplayCombatScreen(combat, combatUIState, gridState);
     BeginMode2D(combat.camera.camera);
-    DrawParticleManager(particleManager);
     EndMode2D();
+    DrawParticleManager(particleManager);
 }
 
 void LevelPreRender() {
     PreRenderBloodPools(combat);
-    PreRenderParticleManager(particleManager);
+    PreRenderParticleManager(particleManager, combat.camera.camera);
 }
 
 void LevelPause() {

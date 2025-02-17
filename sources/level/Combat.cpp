@@ -359,7 +359,9 @@ void KillCharacter(LevelState &combat, Character &character) {
     // Remove character from turn order
     //combat.turnOrder.erase(std::remove(combat.turnOrder.begin(), combat.turnOrder.end(), &character), combat.turnOrder.end());
     Animation bloodAnim{};
-    SetupBloodPoolAnimation(bloodAnim, GetCharacterSpritePos(character.sprite), 5.0f);
+    Vector2 bloodPos = GetCharacterSpritePos(character.sprite);
+    //bloodPos = GetWorldToScreen2D(bloodPos, combat.camera.camera);
+    SetupBloodPoolAnimation(bloodAnim, bloodPos, 5.0f);
     combat.animations.push_back(bloodAnim);
     PlaySoundEffect(SoundEffectType::HumanDeath, 0.5f);
 }

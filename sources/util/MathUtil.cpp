@@ -27,3 +27,7 @@ Vector2 CalculateDirection(Vector2i start, Vector2i end) {
     Vector2 e = { static_cast<float>(end.x), static_cast<float>(end.y) };
     return Vector2Normalize(Vector2Subtract(e, s));
 }
+
+Vector2 ceilv(Vector2 v) {
+    return { ceilf(v.x), ceilf(v.y) };
+}

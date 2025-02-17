@@ -37,8 +37,6 @@ Vector2 GridToPixelPosition(int gridX, int gridY) {
 }
 
 bool IsTileOccupied(LevelState &combat, int x, int y, Character *exceptCharacter) {
-    // Check if the tile is walkable, returning false if out of bounds
-    if (x < 0 || x >= GRID_WIDTH || y < 0 || y >= GRID_HEIGHT) return false;
     if(GetTileAt(combat.tileMap, NAV_LAYER, x, y) != 0) return false;
     // check if any characters are in the way
     for (auto &character: combat.playerCharacters) {
@@ -63,15 +61,11 @@ bool IsTileOccupied(LevelState &combat, int x, int y, Character *exceptCharacter
 }
 
 bool IsTileWalkable(LevelState &combat, int x, int y) {
-    // Check if the tile is walkable, returning false if out of bounds
-    if (x < 0 || x >= GRID_WIDTH || y < 0 || y >= GRID_HEIGHT) return false;
     if(GetTileAt(combat.tileMap, NAV_LAYER, x, y) != 0) return false;
     return true;
 }
 
 bool IsTileBlocking(LevelState &combat, int x, int y) {
-    // Check if the tile is walkable, returning false if out of bounds
-    if (x < 0 || x >= GRID_WIDTH || y < 0 || y >= GRID_HEIGHT) return true;
     if(GetTileAt(combat.tileMap, NAV_LAYER, x, y) != 0) return true;
     return false;
 }
@@ -84,8 +78,8 @@ bool InitPath(LevelState &combat, Path &path, Vector2i start, Vector2i end, Char
         return false;  // If the start or end is blocked, return false
     }
 
-    std::vector<std::vector<bool>> closedSet(GRID_WIDTH, std::vector<bool>(GRID_HEIGHT, false));
-    std::vector<std::vector<Node *>> allNodes(GRID_WIDTH, std::vector<Node *>(GRID_HEIGHT, nullptr));
+    std::vector<std::vector<bool>> closedSet(combat.tileMap.width, std::vector<bool>(combat.tileMap.height, false));
+    std::vector<std::vector<Node *>> allNodes(combat.tileMap.width, std::vector<Node *>(combat.tileMap.height, nullptr));
     std::priority_queue<Node *, std::vector<Node *>, std::function<bool(Node *, Node *)>> openSet(
             [](Node *a, Node *b) { return a->fCost() > b->fCost(); });
 
@@ -126,7 +120,6 @@ bool InitPath(LevelState &combat, Path &path, Vector2i start, Vector2i end, Char
             int neighborX = currentNode->position.x + dir.x;
             int neighborY = currentNode->position.y + dir.y;
 
-            if (neighborX < 0 || neighborX >= GRID_WIDTH || neighborY < 0 || neighborY >= GRID_HEIGHT) continue;
             if (!IsTileOccupied(combat, neighborX, neighborY, exceptCharacter)) continue;
             if (closedSet[neighborX][neighborY]) continue;
 
@@ -152,8 +145,8 @@ bool InitPathIgnoreOccupied(LevelState &combat, Path &path, Vector2i start, Vect
         return false;  // If the start or end is blocked, return false
     }
 
-    std::vector<std::vector<bool>> closedSet(GRID_WIDTH, std::vector<bool>(GRID_HEIGHT, false));
-    std::vector<std::vector<Node *>> allNodes(GRID_WIDTH, std::vector<Node *>(GRID_HEIGHT, nullptr));
+    std::vector<std::vector<bool>> closedSet(combat.tileMap.width, std::vector<bool>(combat.tileMap.height, false));
+    std::vector<std::vector<Node *>> allNodes(combat.tileMap.width, std::vector<Node *>(combat.tileMap.height, nullptr));
     std::priority_queue<Node *, std::vector<Node *>, std::function<bool(Node *, Node *)>> openSet(
             [](Node *a, Node *b) { return a->fCost() > b->fCost(); });
 
@@ -194,7 +187,6 @@ bool InitPathIgnoreOccupied(LevelState &combat, Path &path, Vector2i start, Vect
             int neighborX = currentNode->position.x + dir.x;
             int neighborY = currentNode->position.y + dir.y;
 
-            if (neighborX < 0 || neighborX >= GRID_WIDTH || neighborY < 0 || neighborY >= GRID_HEIGHT) continue;
             if (!IsTileWalkable(combat, neighborX, neighborY)) continue;
             if (closedSet[neighborX][neighborY]) continue;
 
@@ -221,8 +213,8 @@ bool InitPathWithRange(LevelState &combat, Path &path, Vector2i start, Vector2i 
         return false;  // If the start position is blocked, return false
     }
 
-    std::vector<std::vector<bool>> closedSet(GRID_WIDTH, std::vector<bool>(GRID_HEIGHT, false));
-    std::vector<std::vector<Node *>> allNodes(GRID_WIDTH, std::vector<Node *>(GRID_HEIGHT, nullptr));
+    std::vector<std::vector<bool>> closedSet(combat.tileMap.width, std::vector<bool>(combat.tileMap.height, false));
+    std::vector<std::vector<Node *>> allNodes(combat.tileMap.width, std::vector<Node *>(combat.tileMap.height, nullptr));
     std::priority_queue<Node *, std::vector<Node *>, std::function<bool(Node *, Node *)>> openSet(
             [](Node *a, Node *b) { return a->fCost() > b->fCost(); });
 
@@ -265,7 +257,6 @@ bool InitPathWithRange(LevelState &combat, Path &path, Vector2i start, Vector2i 
             int neighborX = currentNode->position.x + dir.x;
             int neighborY = currentNode->position.y + dir.y;
 
-            if (neighborX < 0 || neighborX >= GRID_WIDTH || neighborY < 0 || neighborY >= GRID_HEIGHT) continue;
             if (!IsTileOccupied(combat, neighborX, neighborY, exceptCharacter)) continue;
             if (closedSet[neighborX][neighborY]) continue;
 
@@ -293,8 +284,8 @@ bool InitPathWithRangePartial(LevelState &combat, Path &path, Vector2i start, Ve
         return false;  // If the start position is blocked, return false
     }
 
-    std::vector<std::vector<bool>> closedSet(GRID_WIDTH, std::vector<bool>(GRID_HEIGHT, false));
-    std::vector<std::vector<Node *>> allNodes(GRID_WIDTH, std::vector<Node *>(GRID_HEIGHT, nullptr));
+    std::vector<std::vector<bool>> closedSet(combat.tileMap.width, std::vector<bool>(combat.tileMap.height, false));
+    std::vector<std::vector<Node *>> allNodes(combat.tileMap.width, std::vector<Node *>(combat.tileMap.height, nullptr));
     std::priority_queue<Node *, std::vector<Node *>, std::function<bool(Node *, Node *)>> openSet(
             [](Node *a, Node *b) { return a->fCost() > b->fCost(); });
 
@@ -342,7 +333,6 @@ bool InitPathWithRangePartial(LevelState &combat, Path &path, Vector2i start, Ve
             int neighborX = currentNode->position.x + dir.x;
             int neighborY = currentNode->position.y + dir.y;
 
-            if (neighborX < 0 || neighborX >= GRID_WIDTH || neighborY < 0 || neighborY >= GRID_HEIGHT) continue;
             if (!IsTileOccupied(combat, neighborX, neighborY, exceptCharacter)) continue;
             if (closedSet[neighborX][neighborY]) continue;
 
@@ -431,7 +421,7 @@ std::vector<Vector2i> FindFreePositionsCircular(LevelState& combat, int x, int y
             int checkY = y + offsetY;
 
             // Check if the position is within the playfield bounds
-            if (checkX < 0 || checkX >= 30 || checkY < 0 || checkY >= 13) continue;
+            if (checkX < 0 || checkX >= combat.tileMap.width || checkY < 0 || checkY >= combat.tileMap.height) continue;
 
             // Check if the position is within the circle's radius
             if (offsetX * offsetX + offsetY * offsetY <= radius * radius) {
@@ -469,7 +459,7 @@ std::vector<Character*> GetTargetsInLine(LevelState &combat, Vector2i start, Vec
         Vector2i tilePos = { (int)roundf(currentPos.x), (int)roundf(currentPos.y) };
 
         // Check if the tile is within bounds
-        if (tilePos.x < 0 || tilePos.x >= 30 || tilePos.y < 0 || tilePos.y >= 13) {
+        if (tilePos.x < 0 || tilePos.x >= combat.tileMap.width || tilePos.y < 0 || tilePos.y >= combat.tileMap.height) {
             break; // Out of bounds
         }
 

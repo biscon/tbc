@@ -18,5 +18,6 @@ int DistanceSquared(Vector2i a, Vector2i b);
 float Distance(Vector2i start, Vector2i end);
 Vector2 CalculateDirection(Vector2 start, Vector2 end);
 Vector2 CalculateDirection(Vector2i start, Vector2i end);
+Vector2 ceilv(Vector2 v);
 
 #endif //SANDBOX_MATHUTIL_H
