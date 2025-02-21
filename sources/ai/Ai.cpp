@@ -56,7 +56,7 @@ static std::vector<Character*> GetCharactersWithinAttackRange(Level &combat, Cha
         Path path;
         Vector2i cCharPos = GetCharacterSpritePosI(c->sprite);
         Vector2i cGridPos = PixelToGridPositionI(cCharPos.x, cCharPos.y);
-        if(InitPathWithRange(combat, path, charGridPos, cGridPos, range, &character)) {
+        if(CalcPathWithRange(combat, path, charGridPos, cGridPos, range, &character)) {
             if(path.cost <= range) {
                 charactersInRange.push_back(c);
             }
@@ -86,7 +86,7 @@ static std::vector<std::pair<Character*, Path>> GetCharactersWithinMoveRange(Lev
         Path path;
         Vector2i cCharPos = GetCharacterSpritePosI(c->sprite);
         Vector2i cGridPos = PixelToGridPositionI(cCharPos.x, cCharPos.y);
-        if(InitPathWithRange(combat, path, charGridPos, cGridPos, attackRange, &character)) {
+        if(CalcPathWithRange(combat, path, charGridPos, cGridPos, attackRange, &character)) {
             if(checkPoints) {
                 if (path.cost <= character.movePoints) {
                     charactersInRange.push_back(std::make_pair(c, path));
@@ -121,7 +121,7 @@ static std::vector<std::pair<Character*, Path>> GetCharactersWithinMoveRangePart
         Path path;
         Vector2i cCharPos = GetCharacterSpritePosI(c->sprite);
         Vector2i cGridPos = PixelToGridPositionI(cCharPos.x, cCharPos.y);
-        InitPathWithRangePartial(combat, path, charGridPos, cGridPos, attackRange, &character);
+        CalcPathWithRangePartial(combat, path, charGridPos, cGridPos, attackRange, &character);
         if(!path.path.empty()) {
             if(checkPoints) {
                 if (path.cost <= character.movePoints) {

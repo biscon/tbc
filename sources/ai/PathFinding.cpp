@@ -70,7 +70,7 @@ bool IsTileBlocking(Level &combat, int x, int y) {
     return false;
 }
 
-bool InitPath(Level &level, Path &path, Vector2i start, Vector2i end, Character *exceptCharacter) {
+bool CalcPath(Level &level, Path &path, Vector2i start, Vector2i end, Character *exceptCharacter) {
     if (!IsTileOccupied(level, start.x, start.y, exceptCharacter) || !IsTileOccupied(level, end.x, end.y,
                                                                                      exceptCharacter)) {
         TraceLog(LOG_WARNING, "Start or end position is blocked, startX: %d, startY: %d, endX: %d, endY: %d", start.x,
@@ -138,7 +138,7 @@ bool InitPath(Level &level, Path &path, Vector2i start, Vector2i end, Character 
     return false;  // Path not found
 }
 
-bool InitPathIgnoreOccupied(Level &level, Path &path, Vector2i start, Vector2i end) {
+bool CalcPathIgnoreOccupied(Level &level, Path &path, Vector2i start, Vector2i end) {
     if (!IsTileWalkable(level, start.x, start.y) || !IsTileWalkable(level, end.x, end.y)) {
         TraceLog(LOG_WARNING, "Start or end position is blocked, startX: %d, startY: %d, endX: %d, endY: %d", start.x,
                  start.y, end.x, end.y);
@@ -205,7 +205,7 @@ bool InitPathIgnoreOccupied(Level &level, Path &path, Vector2i start, Vector2i e
     return false;  // Path not found
 }
 
-bool InitPathWithRange(Level &level, Path &path, Vector2i start, Vector2i end, int range,
+bool CalcPathWithRange(Level &level, Path &path, Vector2i start, Vector2i end, int range,
                        Character *exceptCharacter) {
     if (!IsTileOccupied(level, start.x, start.y, exceptCharacter)) {
         TraceLog(LOG_WARNING, "Start position is blocked, startX: %d, startY: %d, endX: %d, endY: %d", start.x, start.y,
@@ -276,7 +276,7 @@ bool InitPathWithRange(Level &level, Path &path, Vector2i start, Vector2i end, i
     return false;  // Path not found
 }
 
-bool InitPathWithRangePartial(Level &level, Path &path, Vector2i start, Vector2i end, int range,
+bool CalcPathWithRangePartial(Level &level, Path &path, Vector2i start, Vector2i end, int range,
                               Character *exceptCharacter) {
     if (!IsTileOccupied(level, start.x, start.y, exceptCharacter)) {
         TraceLog(LOG_WARNING, "Start position is blocked, startX: %d, startY: %d, endX: %d, endY: %d",

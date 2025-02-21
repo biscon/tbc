@@ -67,7 +67,7 @@ void DrawPathSelection(PlayField &playField, Level &level) {
         // calculate a path and draw it as lines
         Path path;
         Vector2i target = PixelToGridPositionI(static_cast<int>(mousePos.x), static_cast<int>(mousePos.y));
-        if (InitPath(level, path, PixelToGridPositionI((int) GetCharacterSpritePosX(level.currentCharacter->sprite),
+        if (CalcPath(level, path, PixelToGridPositionI((int) GetCharacterSpritePosX(level.currentCharacter->sprite),
                                                        (int) GetCharacterSpritePosY(level.currentCharacter->sprite)),
                      target, level.currentCharacter)) {
             Color pathColor = Fade(WHITE, playField.highlightAlpha);
@@ -540,7 +540,7 @@ static void handleInputPlayFieldShowMove(PlayField &playField, Level &level) {
         Path path;
         Vector2i target = PixelToGridPositionI(static_cast<int>(mousePos.x), static_cast<int>(mousePos.y));
         auto& playerChar = level.playerCharacters.front();
-        if (InitPath(level, path, PixelToGridPositionI((int) GetCharacterSpritePosX(playerChar->sprite),
+        if (CalcPath(level, path, PixelToGridPositionI((int) GetCharacterSpritePosX(playerChar->sprite),
                                                        (int) GetCharacterSpritePosY(playerChar->sprite)),
                      target, playerChar)) {
             playField.selectedTilePos = gridPos;
@@ -603,7 +603,7 @@ void MoveCharacter(PlayField &playField, Level &level, Character *character, Vec
     Path path;
     Vector2i cCharPos = GetCharacterSpritePosI(character->sprite);
     Vector2i cGridPos = PixelToGridPositionI(cCharPos.x, cCharPos.y);
-    if (InitPath(level, path, cGridPos, target, character)) {
+    if (CalcPath(level, path, cGridPos, target, character)) {
         CharacterMove move;
         move.character = character;
         move.path = path;
@@ -619,7 +619,7 @@ void MoveCharacterPartial(PlayField &playField, Level &level, Character *charact
     Path path;
     Vector2i cCharPos = GetCharacterSpritePosI(character->sprite);
     Vector2i cGridPos = PixelToGridPositionI(cCharPos.x, cCharPos.y);
-    InitPathWithRangePartial(level, path, cGridPos, target, 1, character);
+    CalcPathWithRangePartial(level, path, cGridPos, target, 1, character);
     if(!path.path.empty()) {
         CharacterMove move;
         move.character = character;
