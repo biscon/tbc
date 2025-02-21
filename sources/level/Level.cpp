@@ -98,6 +98,8 @@ void LoadLevel(Level &level, const std::string &filename) {
     }
     level.inCombat = false;
     level.turnState = TurnState::Explore;
+    level.camera.worldWidth = level.tileMap.width * level.tileMap.tileWidth;
+    level.camera.worldHeight = level.tileMap.height * level.tileMap.tileHeight;
 }
 
 void DestroyLevel(Level &level) {

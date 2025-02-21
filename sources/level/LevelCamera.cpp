@@ -71,14 +71,13 @@ static float EaseOutExpo(float t) {
     return 1 - powf(2, -10 * t);
 }
 
-void UpdateCamera(LevelCamera& cam, float dt) {
+void UpdateCameraUnbounded(LevelCamera& cam, float dt) {
     if (cam.cameraPanning) {
         cam.cameraPanElapsed += dt;
 
         if (cam.cameraPanElapsed >= cam.cameraPanDuration) {
             cam.cameraPanning = false;
             cam.camera.target = cam.cameraPanTarget;
-            TraceLog(LOG_INFO, "Camera arrived at target!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
         } else {
             float t = cam.cameraPanElapsed / cam.cameraPanDuration;
             t = Smootherstep(t);  // Use a better interpolation function
@@ -91,6 +90,51 @@ void UpdateCamera(LevelCamera& cam, float dt) {
         }
     }
 }
+
+void UpdateCamera(LevelCamera& cam, float dt) {
+    if (cam.cameraPanning) {
+        cam.cameraPanElapsed += dt;
+
+        if (cam.cameraPanElapsed >= cam.cameraPanDuration) {
+            cam.cameraPanning = false;
+            cam.camera.target = cam.cameraPanTarget;
+        } else {
+            float t = cam.cameraPanElapsed / cam.cameraPanDuration;
+            t = Smootherstep(t);  // Use a better interpolation function
+            //t = EaseOutExpo(t);
+            cam.camera.target = Vector2Lerp(cam.cameraStartPos, cam.cameraPanTarget, t);
+
+            // Ceil camera target to prevent jittering
+            cam.camera.target.x = ceilf(cam.camera.target.x);
+            cam.camera.target.y = ceilf(cam.camera.target.y);
+        }
+    }
+
+    float border = 32;
+    // Ensure the camera does not scroll more than 16 pixels outside the visible area
+    float maxX = (float) cam.worldWidth - 480 + border;
+    float maxY = (float) cam.worldHeight - 270 + border;
+    float minX = -border;
+    float minY = -border;
+
+    if (cam.camera.target.x < minX) {
+        cam.camera.target.x = minX;
+        cam.cameraVelocity.x = 0.0f;
+    }
+    if (cam.camera.target.y < minY) {
+        cam.camera.target.y = minY;
+        cam.cameraVelocity.y = 0.0f;
+    }
+    if (cam.camera.target.x > maxX) {
+        cam.camera.target.x = maxX;
+        cam.cameraVelocity.x = 0.0f;
+    }
+    if (cam.camera.target.y > maxY) {
+        cam.camera.target.y = maxY;
+        cam.cameraVelocity.y = 0.0f;
+    }
+}
+
 
 void InitLevelCamera(LevelCamera &cam) {
     cam.camera = {0};
