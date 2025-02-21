@@ -4,11 +4,11 @@
 
 #include <algorithm>
 #include "FighterAi.h"
-#include "ui/Grid.h"
+#include "level/PlayField.h"
 #include "Ai.h"
 #include "audio/SoundEffect.h"
 
-static bool AttackIfPossible(LevelState &combat) {
+static bool AttackIfPossible(Level &combat) {
     auto playersWithinRange = GetAdjacentPlayers(combat, *combat.currentCharacter);
     combat.selectedSkill = nullptr;
     if((int) playersWithinRange.size() > 0) {
@@ -27,12 +27,12 @@ static bool AttackIfPossible(LevelState &combat) {
     }
 }
 
-static bool MoveIfPossible(LevelState& combat, GridState& gridState) {
+static bool MoveIfPossible(Level& combat, PlayField& gridState) {
     auto playersWithinRange = GetPlayersWithinMoveRange(combat, *combat.currentCharacter, 1, true);
     SortCharactersByThreat(combat, playersWithinRange);
 
     if((int) playersWithinRange.size() > 0) {
-        gridState.mode = GridMode::Normal;
+        gridState.mode = PlayFieldMode::Normal;
         gridState.path = playersWithinRange[0].second;
         gridState.moving = true;
         combat.currentCharacter->movePoints -= playersWithinRange[0].second.cost;
@@ -48,7 +48,7 @@ static bool MoveIfPossible(LevelState& combat, GridState& gridState) {
     return false;
 }
 
-static bool PartialMoveIfPossible(LevelState& combat, GridState& gridState) {
+static bool PartialMoveIfPossible(Level& combat, PlayField& gridState) {
     auto playersWithinRange = GetPlayersWithinMoveRangePartial(combat, *combat.currentCharacter, 1, false);
     SortCharactersByThreat(combat, playersWithinRange);
 
@@ -65,7 +65,7 @@ static bool PartialMoveIfPossible(LevelState& combat, GridState& gridState) {
             combat.turnState = TurnState::EndTurn;
             return false;
         }
-        gridState.mode = GridMode::Normal;
+        gridState.mode = PlayFieldMode::Normal;
         gridState.path = path;
         gridState.moving = true;
         combat.currentCharacter->movePoints -= path.cost;
@@ -83,7 +83,7 @@ static bool PartialMoveIfPossible(LevelState& combat, GridState& gridState) {
     return false;
 }
 
-static void HandleTurn(LevelState &combat, GridState &gridState) {
+static void HandleTurn(Level &combat, PlayField &gridState) {
     // do something
     TraceLog(LOG_INFO, "FighterAi::HandleTurn");
     switch(combat.turnState) {

@@ -21,7 +21,7 @@ FetchContent_MakeAvailable(raylib)
 
 # Add these flags for debug builds
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
-    set(SANITIZER_FLAGS "-fsanitize=address -g -O1 -fno-omit-frame-pointer")
+    set(SANITIZER_FLAGS "-fsanitize=address -g") # -O1 -fno-omit-frame-pointer
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${SANITIZER_FLAGS}")
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${SANITIZER_FLAGS}")
 endif()
@@ -37,8 +37,8 @@ add_executable(${PROJECT_NAME}
         sources/level/Combat.h
         sources/util/Random.cpp
         sources/util/Random.h
-        sources/ui/CombatScreen.cpp
-        sources/ui/CombatScreen.h
+        sources/level/LevelScreen.cpp
+        sources/level/LevelScreen.h
         sources/raygui.h
         sources/graphics/Animation.cpp
         sources/graphics/Animation.h
@@ -47,14 +47,14 @@ add_executable(${PROJECT_NAME}
         sources/level/SkillRunner.h
         sources/graphics/SpriteAnimation.cpp
         sources/graphics/SpriteAnimation.h
-        sources/ui/Grid.cpp
-        sources/ui/Grid.h
+        sources/level/PlayField.cpp
+        sources/level/PlayField.h
         sources/ui/UI.cpp
         sources/ui/UI.h
         sources/util/MathUtil.cpp
         sources/util/MathUtil.h
-        sources/level/LevelState.cpp
-        sources/level/LevelState.h
+        sources/level/Level.cpp
+        sources/level/Level.h
         sources/ai/Ai.cpp
         sources/ai/Ai.h
         sources/ai/FighterAi.cpp
@@ -92,6 +92,12 @@ add_executable(${PROJECT_NAME}
         sources/MenuGameMode.h
         sources/level/LevelCamera.cpp
         sources/level/LevelCamera.h
+        sources/game/Game.cpp
+        sources/game/Game.h
+        sources/util/GameEventQueue.cpp
+        sources/util/GameEventQueue.h
+        sources/util/EventBus.cpp
+        sources/util/EventBus.h
 )
 target_sources(${PROJECT_NAME} PRIVATE ${PROJECT_SOURCES})
 target_include_directories(${PROJECT_NAME} PRIVATE ${PROJECT_INCLUDE})

@@ -5,14 +5,14 @@
 #include "CombatAnimation.h"
 #include "raymath.h"
 
-void PlayAttackAnimation(LevelState &combat, Character &attacker, Character &defender) {
+void PlayAttackAnimation(Level &level, Character &attacker, Character &defender) {
     float attackerX = GetCharacterSpritePosX(attacker.sprite);
     float defenderX = GetCharacterSpritePosX(defender.sprite);
     float attackerY = GetCharacterSpritePosY(attacker.sprite);
     float defenderY = GetCharacterSpritePosY(defender.sprite);
     Animation attackerAnim{};
     SetupAttackAnimation(attackerAnim, &attacker, 0.4f, attackerY, defenderY, attackerX, defenderX);
-    combat.animations.push_back(attackerAnim);
+    level.animations.push_back(attackerAnim);
     switch(attacker.orientation) {
         case Orientation::Up:
             PlayCharacterSpriteAnimRestart(attacker.sprite, SpriteAnimationType::AttackUp, false);
@@ -29,7 +29,7 @@ void PlayAttackAnimation(LevelState &combat, Character &attacker, Character &def
     }
 }
 
-void PlayDefendAnimation(LevelState &combat, Character &attacker, Character &defender) {
+void PlayDefendAnimation(Level &level, Character &attacker, Character &defender) {
     if(defender.health <= 0) {
         return;
     }
@@ -43,16 +43,16 @@ void PlayDefendAnimation(LevelState &combat, Character &attacker, Character &def
 
     Animation defenderAnim{};
     SetupAttackAnimation(defenderAnim, &defender, 0.30f, defenderY, point.y, defenderX, point.x, 0.20f);
-    combat.animations.push_back(defenderAnim);
+    level.animations.push_back(defenderAnim);
 }
 
-void PlayAttackDefendAnimation(LevelState &combat, Character &attacker, Character &defender) {
-    PlayAttackAnimation(combat, attacker, defender);
-    PlayDefendAnimation(combat, attacker, defender);
+void PlayAttackDefendAnimation(Level &level, Character &attacker, Character &defender) {
+    PlayAttackAnimation(level, attacker, defender);
+    PlayDefendAnimation(level, attacker, defender);
 }
 
-void PlayEnemyVictoryAnimation(LevelState &combat) {
-    for(auto &c : combat.enemyCharacters) {
+void PlayEnemyVictoryAnimation(Level &level) {
+    for(auto &c : level.enemyCharacters) {
         // skip dead
         if(c->health <= 0) {
             continue;
@@ -60,12 +60,12 @@ void PlayEnemyVictoryAnimation(LevelState &combat) {
         PlayCharacterSpriteAnim(c->sprite, SpriteAnimationType::WalkDown, true);
         Animation anim{};
         SetupVictoryAnimation(anim, c, 10.0f, 12, 80.0f);
-        combat.animations.push_back(anim);
+        level.animations.push_back(anim);
     }
 }
 
-void PlayPlayerVictoryAnimation(LevelState &combat) {
-    for(auto &c : combat.playerCharacters) {
+void PlayPlayerVictoryAnimation(Level &level) {
+    for(auto &c : level.playerCharacters) {
         // skip dead
         if(c->health <= 0) {
             continue;
@@ -73,14 +73,14 @@ void PlayPlayerVictoryAnimation(LevelState &combat) {
         PlayCharacterSpriteAnim(c->sprite, SpriteAnimationType::WalkDown, true);
         Animation anim{};
         SetupVictoryAnimation(anim, c, 10.0f, 16, 80.0f);
-        combat.animations.push_back(anim);
+        level.animations.push_back(anim);
     }
 }
 
-void RemoveAttackAnimations(LevelState &combat) {
-    for(auto it = combat.animations.begin(); it != combat.animations.end(); ) {
+void RemoveAttackAnimations(Level &level) {
+    for(auto it = level.animations.begin(); it != level.animations.end(); ) {
         if(it->type == AnimationType::Attack) {
-            it = combat.animations.erase(it);
+            it = level.animations.erase(it);
         } else {
             ++it;
         }

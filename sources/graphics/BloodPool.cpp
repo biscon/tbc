@@ -22,29 +22,29 @@ void DestroyBloodRendering() {
 }
 
 // Render all blood pools to the precomposition texture
-void PreRenderBloodPools(LevelState &combat) {
+void PreRenderBloodPools(Level &level) {
     // Start rendering to the blood texture
     BeginTextureMode(bloodTexture);
     ClearBackground(BLANK); // Clear to transparent
 
     BeginBlendMode(BLEND_ADDITIVE);
-    for (auto &animation : combat.animations) {
+    for (auto &animation : level.animations) {
         if (animation.type == AnimationType::BloodPool) {
             int posX = (int)animation.state.bloodPool.position.x + (int)animation.state.bloodPool.offset1.x;
             int posY = (int)animation.state.bloodPool.position.y + (int)animation.state.bloodPool.offset1.y;
-            Vector2 screenPos = GetWorldToScreen2D({(float)posX, (float)posY}, combat.camera.camera);
+            Vector2 screenPos = GetWorldToScreen2D({(float)posX, (float)posY}, level.camera.camera);
             screenPos = ceilv(screenPos); // Round to nearest pixel
             DrawEllipse((int) screenPos.x, (int) screenPos.y, animation.state.bloodPool.radius1, 0.65f * animation.state.bloodPool.radius1, Fade(DARK_BLOOD_RED, 0.85f));
 
             posX = (int)animation.state.bloodPool.position.x + (int)animation.state.bloodPool.offset2.x;
             posY = (int)animation.state.bloodPool.position.y + (int)animation.state.bloodPool.offset2.y;
-            screenPos = GetWorldToScreen2D({(float)posX, (float)posY}, combat.camera.camera);
+            screenPos = GetWorldToScreen2D({(float)posX, (float)posY}, level.camera.camera);
             screenPos = ceilv(screenPos); // Round to nearest pixel
             DrawEllipse((int) screenPos.x, (int) screenPos.y, animation.state.bloodPool.radius2, 0.70f * animation.state.bloodPool.radius2, Fade(DARK_BLOOD_RED, 0.75f));
 
             posX = (int)animation.state.bloodPool.position.x + (int)animation.state.bloodPool.offset3.x;
             posY = (int)animation.state.bloodPool.position.y + (int)animation.state.bloodPool.offset3.y;
-            screenPos = GetWorldToScreen2D({(float)posX, (float)posY}, combat.camera.camera);
+            screenPos = GetWorldToScreen2D({(float)posX, (float)posY}, level.camera.camera);
             screenPos = ceilv(screenPos); // Round to nearest pixel
             DrawCircle((int) screenPos.x, (int) screenPos.y, animation.state.bloodPool.radius3, Fade(DARK_BLOOD_RED, 0.65f));
         }

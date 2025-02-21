@@ -7,6 +7,7 @@
 #include "character/Weapon.h"
 #include "LevelGameMode.h"
 #include "MenuGameMode.h"
+#include "game/Game.h"
 
 #define MAX(a, b) ((a)>(b)? (a) : (b))
 #define MIN(a, b) ((a)<(b)? (a) : (b))
@@ -16,9 +17,11 @@
 // Program main entry point
 //------------------------------------------------------------------------------------
 int main() {
+    Game game;
+    CreateGame(game, "town_level.json");
+    SetupMenuGameMode(&game);
+    SetupLevelGameMode(&game);
 
-    SetupMenuGameMode();
-    SetupLevelGameMode();
     int windowWidth = 1920;
     int windowHeight = 1080;
 
@@ -143,6 +146,6 @@ int main() {
 
     CloseWindow();                      // Close window and OpenGL context
     //--------------------------------------------------------------------------------------
-
+    DestroyGame(game);
     return 0;
 }

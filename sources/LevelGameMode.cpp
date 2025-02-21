@@ -5,27 +5,54 @@
 #include "LevelGameMode.h"
 #include "audio/SoundEffect.h"
 #include "character/Character.h"
-#include "level/LevelState.h"
-#include "ui/CombatScreen.h"
+#include "level/Level.h"
+#include "level/LevelScreen.h"
 #include "graphics/BloodPool.h"
 #include "rcamera.h"
 #include "raymath.h"
+#include "util/GameEventQueue.h"
 
-static Character warrior;
-static Character mage;
-static std::vector<Character> playerCharacters;
+static Game* game;
+
+/*
 static std::vector<Character> enemyCharacters = {
         {CharacterClass::Warrior, "Enemy1", "Fighter", 16,  16,  5, 3, 4, 0, 0, 0, 1, {}},
         {CharacterClass::Warrior, "Enemy2", "Fighter", 16,  16,  5, 3, 4, 0, 0, 0, 1, {}},
         //{CharacterClass::Warrior, "Enemy3", "Fighter", 20,  20,  5, 3, 4, 0, 0, 0, 1, {}},
         //{CharacterClass::Warrior, "Enemy4", "Fighter", 20,  20,  5, 3, 4, 0, 0, 0, 1, {}},
 };
-static LevelState combat;
-static CombatUIState combatUIState;
-static SpriteSheet tileSet;
+ */
+static Level level;
+static LevelScreen levelScreen;
 static ParticleManager particleManager;
-static GridState gridState{};
+static PlayField playField{};
+const Color BACKGROUND_GREY = Color{25, 25, 25, 255};
+static GameEventQueue eventQueue;
 
+static void moveParty(Vector2i target) {
+    TraceLog(LOG_INFO, "MoveParty event,target: %d,%d", target.x, target.y);
+    playField.activeMoves.clear();
+    MoveCharacter(playField, level, level.playerCharacters[0], target);
+    // move the rest partially
+    for(int i = 1; i < (int)level.playerCharacters.size(); i++) {
+        MoveCharacterPartial(playField, level, level.playerCharacters[i], target);
+    }
+}
+
+static void processEvents() {
+    GameEvent event{};
+    while(GetNextEvent(eventQueue, event)) {
+        switch(event.type) {
+            case GameEventType::MoveParty: {
+                StartCameraPanToTilePos(level.camera, event.moveParty.target, 250.0f);
+                moveParty(event.moveParty.target);
+                break;
+            }
+            default:
+                break;
+        }
+    }
+}
 
 void LevelInit() {
     //LoadSoundEffect(SoundEffectType::Ambience, ASSETS_PATH"music/ambience_cave.ogg", true);
@@ -58,35 +85,10 @@ void LevelInit() {
     LoadSoundEffect(SoundEffectType::StartRound, ASSETS_PATH"sound/start_round.wav", false);
     SetVolumeSoundEffect(SoundEffectType::StartRound, 0.75f);
     LoadSoundEffect(SoundEffectType::Burning, ASSETS_PATH"sound/burning_01.ogg", false);
-    PlaySoundEffect(SoundEffectType::Ambience);
-
-    CreateCharacter(warrior, CharacterClass::Warrior, "Player1", "Fighter");
-    AssignSkill(warrior.skills, SkillType::Taunt, "Howling Scream", 1, false, true, 0, 3, 0);
-    AssignSkill(warrior.skills, SkillType::Stun, "Stunning Blow", 1, false, false, 0, 3, 1);
-    InitCharacterSprite(warrior.sprite, "MaleWarrior", true);
-    GiveWeapon(warrior, "Sword");
-
-    LevelUp(warrior, true);
-    LevelUp(warrior, true);
-    LevelUp(warrior, true);
-    LevelUp(warrior, true);
-    playerCharacters.push_back(warrior);
+    //PlaySoundEffect(SoundEffectType::Ambience);
 
 
-
-    CreateCharacter(mage, CharacterClass::Mage, "Player2", "Fighter");
-    AssignSkill(mage.skills, SkillType::Dodge, "Dodge", 1, true, true, 0, 0, 0);
-    AssignSkill(mage.skills, SkillType::FlameJet, "Burning Hands", 1, false, false, 0, 3, 5);
-    InitCharacterSprite(mage.sprite, "MaleBase", true);
-    GiveWeapon(mage, "Bow");
-
-    LevelUp(mage, true);
-    LevelUp(mage, true);
-    LevelUp(mage, true);
-    LevelUp(mage, true);
-    playerCharacters.push_back(mage);
-
-
+    /*
     for(auto &character : enemyCharacters) {
         InitCharacterSprite(character.sprite, "MaleNinja", true);
         GiveWeapon(character, "Bow");
@@ -95,20 +97,19 @@ void LevelInit() {
         LevelUp(character, true);
         LevelUp(character, true);
     }
+    */
 
-    InitCombat(combat, playerCharacters, enemyCharacters);
-    InitCombatUIState(combatUIState);
+    CreateLevel(level);
+    CreateLevelScreen(levelScreen, &eventQueue);
 
-    LoadSpriteSheet(tileSet, ASSETS_PATH"town_tiles.png", 16, 16);
-    LoadTileMap(combat.tileMap, ASSETS_PATH"test_map_01.json", &tileSet);
     //LoadSpriteSheet(tileSet, ASSETS_PATH"sewer_tiles.png", 16, 16);
     //LoadTileMap(combat.tileMap, ASSETS_PATH"test_map_02.json", &tileSet);
     //LoadSpriteSheet(tileSet, ASSETS_PATH"forest_tiles.png", 16, 16);
     //LoadTileMap(combat.tileMap, ASSETS_PATH"test_map_03.json", &tileSet);
     CreateParticleManager(particleManager, {0, 0}, 480, 270);
 
-    InitGrid(gridState, &particleManager);
-    SetInitialGridPositions(gridState, combat);
+    CreatePlayField(playField, &particleManager, &eventQueue);
+    //SetInitialGridPositions(playField, level);
 
     InitBloodRendering();
 
@@ -129,23 +130,23 @@ void LevelInit() {
 void LevelDestroy() {
     DestroyParticleManager(particleManager);
     DestroyBloodRendering();
-    DestroyCombatUIState(combatUIState);
-    UnloadTileMap(combat.tileMap);     // Unload tile map (free memory
-    UnloadSpriteSheet(tileSet);     // Unload sprite sheet
+    DestroyLevelScreen(levelScreen);
+    DestroyLevel(level);
 }
 
 void LevelUpdate(float dt) {
-
-    if (!combat.camera.cameraPanning) {
-        combat.camera.camera.target = Vector2Add(combat.camera.camera.target, combat.camera.cameraVelocity);
+    UpdateCamera(level.camera, dt);
+    if (!level.camera.cameraPanning) {
+        level.camera.camera.target = Vector2Add(level.camera.camera.target, level.camera.cameraVelocity);
     }
-
     UpdateParticleManager(particleManager, dt);
-    UpdateCombatScreen(combat, combatUIState, gridState, dt);
-    UpdateGrid(gridState, combat, dt);
+    UpdateLevelScreen(level, levelScreen, playField, dt);
+    UpdatePlayField(playField, level, dt);
 }
 
 void LevelHandleInput() {
+    processEvents();
+
     float dt = GetFrameTime();
     float speed = 6.5f;
     float accelerationTime = 0.5f; // Time to reach full speed
@@ -156,60 +157,62 @@ void LevelHandleInput() {
 
     // Handle horizontal movement
     if (IsKeyDown(KEY_A)) {
-        combat.camera.cameraVelocity.x -= acceleration * dt;
-        if (combat.camera.cameraVelocity.x < -speed) {
-            combat.camera.cameraVelocity.x = -speed;
+        level.camera.cameraVelocity.x -= acceleration * dt;
+        if (level.camera.cameraVelocity.x < -speed) {
+            level.camera.cameraVelocity.x = -speed;
         }
     } else if (IsKeyDown(KEY_D)) {
-        combat.camera.cameraVelocity.x += acceleration * dt;
-        if (combat.camera.cameraVelocity.x > speed) {
-            combat.camera.cameraVelocity.x = speed;
+        level.camera.cameraVelocity.x += acceleration * dt;
+        if (level.camera.cameraVelocity.x > speed) {
+            level.camera.cameraVelocity.x = speed;
         }
     } else {
         // Decelerate smoothly
-        if (combat.camera.cameraVelocity.x > 0) {
-            combat.camera.cameraVelocity.x -= deceleration * dt;
-            if (combat.camera.cameraVelocity.x < 0) combat.camera.cameraVelocity.x = 0;
-        } else if (combat.camera.cameraVelocity.x < 0) {
-            combat.camera.cameraVelocity.x += deceleration * dt;
-            if (combat.camera.cameraVelocity.x > 0) combat.camera.cameraVelocity.x = 0;
+        if (level.camera.cameraVelocity.x > 0) {
+            level.camera.cameraVelocity.x -= deceleration * dt;
+            if (level.camera.cameraVelocity.x < 0) level.camera.cameraVelocity.x = 0;
+        } else if (level.camera.cameraVelocity.x < 0) {
+            level.camera.cameraVelocity.x += deceleration * dt;
+            if (level.camera.cameraVelocity.x > 0) level.camera.cameraVelocity.x = 0;
         }
     }
 
     // Handle vertical movement
     if (IsKeyDown(KEY_W)) {
-        combat.camera.cameraVelocity.y -= acceleration * dt;
-        if (combat.camera.cameraVelocity.y < -speed) {
-            combat.camera.cameraVelocity.y = -speed;
+        level.camera.cameraVelocity.y -= acceleration * dt;
+        if (level.camera.cameraVelocity.y < -speed) {
+            level.camera.cameraVelocity.y = -speed;
         }
     } else if (IsKeyDown(KEY_S)) {
-        combat.camera.cameraVelocity.y += acceleration * dt;
-        if (combat.camera.cameraVelocity.y > speed) {
-            combat.camera.cameraVelocity.y = speed;
+        level.camera.cameraVelocity.y += acceleration * dt;
+        if (level.camera.cameraVelocity.y > speed) {
+            level.camera.cameraVelocity.y = speed;
         }
     } else {
         // Decelerate smoothly
-        if (combat.camera.cameraVelocity.y > 0) {
-            combat.camera.cameraVelocity.y -= deceleration * dt;
-            if (combat.camera.cameraVelocity.y < 0) combat.camera.cameraVelocity.y = 0;
-        } else if (combat.camera.cameraVelocity.y < 0) {
-            combat.camera.cameraVelocity.y += deceleration * dt;
-            if (combat.camera.cameraVelocity.y > 0) combat.camera.cameraVelocity.y = 0;
+        if (level.camera.cameraVelocity.y > 0) {
+            level.camera.cameraVelocity.y -= deceleration * dt;
+            if (level.camera.cameraVelocity.y < 0) level.camera.cameraVelocity.y = 0;
+        } else if (level.camera.cameraVelocity.y < 0) {
+            level.camera.cameraVelocity.y += deceleration * dt;
+            if (level.camera.cameraVelocity.y > 0) level.camera.cameraVelocity.y = 0;
         }
     }
+    HandleInputPlayField(playField, level);
+    HandleInputLevelScreen(levelScreen, level);
 }
 
 void LevelRender() {
-    // Draw combat screen
-    DisplayCombatScreen(combat, combatUIState, gridState);
-    BeginMode2D(combat.camera.camera);
-    EndMode2D();
+    // Clear screen with a background color (dark gray)
+    ClearBackground(BACKGROUND_GREY);
+    DrawPlayField(playField, level);
+    DrawLevelScreen(level, levelScreen, playField);
     DrawParticleManager(particleManager);
 }
 
 void LevelPreRender() {
-    PreRenderBloodPools(combat);
-    PreRenderParticleManager(particleManager, combat.camera.camera);
+    PreRenderBloodPools(level);
+    PreRenderParticleManager(particleManager, level.camera.camera);
 }
 
 void LevelPause() {
@@ -217,9 +220,16 @@ void LevelPause() {
 }
 
 void LevelResume() {
-
+    TraceLog(LOG_INFO, "LevelResume");
+    if(game->state == GameState::LOAD_LEVEL) {
+        LoadLevel(level, game->levelFileName);
+        AddPartyToLevel(level, game->party);
+        game->state = GameState::PLAY_LEVEL;
+        playField.mode = PlayFieldMode::Move;
+    }
 }
 
-void SetupLevelGameMode() {
+void SetupLevelGameMode(Game* gameState) {
+    game = gameState;
     CreateGameMode(GameModes::Level, LevelInit, LevelUpdate, LevelHandleInput, LevelRender, LevelPreRender, LevelDestroy, LevelPause, LevelResume);
 }

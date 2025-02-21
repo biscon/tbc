@@ -6,11 +6,11 @@
 #define SANDBOX_BLOODPOOL_H
 
 
-#include "level/LevelState.h"
+#include "level/Level.h"
 
 void InitBloodRendering();
 void DestroyBloodRendering();
-void PreRenderBloodPools(LevelState &combat);
+void PreRenderBloodPools(Level &level);
 void DrawBloodPools();
 
 #endif //SANDBOX_BLOODPOOL_H

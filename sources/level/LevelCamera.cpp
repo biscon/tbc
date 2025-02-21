@@ -27,6 +27,11 @@ void StartCameraPanToTargetPos(LevelCamera& cam, Vector2 target, float speed) {
     cam.cameraPanElapsed = 0.0f;
 }
 
+void StartCameraPanToTilePos(LevelCamera& cam, Vector2i target, float speed) {
+    Vector2 targetPos = {(float) target.x * 16, (float) target.y * 16};
+    StartCameraPanToTargetPos(cam, targetPos, speed);
+}
+
 void StartCameraPanToTargetChar(LevelCamera& cam, Character* target, float speed) {
     // if distance is less than 20 abort
     if (Vector2Distance(Vector2Add(cam.camera.target, {240, 135}), GetCharacterSpritePos(target->sprite)) < 32) {

@@ -6,7 +6,7 @@
 #include "StatusEffectRunner.h"
 #include "Combat.h"
 
-static void ApplyStatusEffect(LevelState &combat, GridState &gridState, Character& character, StatusEffect& effect) {
+static void ApplyStatusEffect(Level &combat, PlayField &gridState, Character& character, StatusEffect& effect) {
     Vector2 charPos = GetCharacterSpritePos(character.sprite);
 
     switch(effect.type) {
@@ -44,21 +44,21 @@ static void ApplyStatusEffect(LevelState &combat, GridState &gridState, Characte
 }
 
 // runs when a round is started
-void ApplyStatusEffects(LevelState &combat, GridState &gridState) {
-    for(auto& character : combat.turnOrder) {
+void ApplyStatusEffects(Level &level, PlayField &playField) {
+    for(auto& character : level.turnOrder) {
         // skip dead characters
         if(character->health <= 0) {
             continue;
         }
         for(auto& effect : character->statusEffects) {
-            ApplyStatusEffect(combat, gridState, *character, effect);
+            ApplyStatusEffect(level, playField, *character, effect);
         }
     }
 }
 
 // runs when a round is over
-void UpdateStatusEffects(LevelState &combat) {
-    for(auto &character : combat.turnOrder) {
+void UpdateStatusEffects(Level &level) {
+    for(auto &character : level.turnOrder) {
         for(auto &effect : character->statusEffects) {
             if(effect.roundsLeft > 0) {
                 effect.roundsLeft--;
@@ -67,10 +67,10 @@ void UpdateStatusEffects(LevelState &combat) {
         // Use erase-remove idiom to remove animations which are done
         character->statusEffects.erase(
                 std::remove_if(character->statusEffects.begin(), character->statusEffects.end(),
-                               [&combat, &character](const StatusEffect& effect) {
+                               [&level, &character](const StatusEffect& effect) {
                                    if(effect.roundsLeft == 0) {
                                        std::string logMessage = character->name + " is no longer affected by " + GetStatusEffectName(effect.type);
-                                       combat.log.push_back(logMessage);
+                                       level.log.push_back(logMessage);
                                    }
                                    return effect.roundsLeft == 0;
                                }),

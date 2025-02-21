@@ -6,14 +6,14 @@
 #define SANDBOX_COMBATANIMATION_H
 
 #include "character/Character.h"
-#include "LevelState.h"
+#include "Level.h"
 
-void PlayAttackAnimation(LevelState &combat, Character &attacker, Character &defender);
-void PlayDefendAnimation(LevelState &combat, Character &attacker, Character &defender);
-void PlayAttackDefendAnimation(LevelState& combat, Character& attacker, Character& defender);
-void PlayEnemyVictoryAnimation(LevelState& combat);
-void PlayPlayerVictoryAnimation(LevelState& combat);
-void RemoveAttackAnimations(LevelState &combat);
+void PlayAttackAnimation(Level &level, Character &attacker, Character &defender);
+void PlayDefendAnimation(Level &level, Character &attacker, Character &defender);
+void PlayAttackDefendAnimation(Level& level, Character& attacker, Character& defender);
+void PlayEnemyVictoryAnimation(Level& level);
+void PlayPlayerVictoryAnimation(Level& level);
+void RemoveAttackAnimations(Level &level);
 int GetBloodIntensity(int dmg, int attackerAttack);
 
 #endif //SANDBOX_COMBATANIMATION_H

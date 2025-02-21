@@ -5,35 +5,26 @@
 #include <algorithm>
 #include <cmath>
 #include <climits>
-#include <cstring>
 #include "Combat.h"
 #include "util/Random.h"
 #include "graphics/Animation.h"
 #include "raylib.h"
 #include "ui/UI.h"
-#include "ui/CombatScreen.h"
+#include "LevelScreen.h"
 #include "audio/SoundEffect.h"
 
-
-static void InitializeThreatTable(LevelState& combat) {
-    combat.threatTable.clear();
-    for (const auto& player : combat.playerCharacters) {
-        combat.threatTable[player] = 0;
-    }
-}
-
-void DecayThreat(LevelState& combat, int amount) {
-    for (auto& entry : combat.threatTable) {
+void DecayThreat(Level& level, int amount) {
+    for (auto& entry : level.threatTable) {
         if (entry.first->health > 0) {
             entry.second = std::max(0, entry.second - amount); // Reduce threat but not below 0
         }
     }
 }
 
-Character* SelectTargetBasedOnThreat(LevelState& combat) {
+Character* SelectTargetBasedOnThreat(Level& level) {
     // Find the highest threat value among alive characters
     auto highestThreat = std::max_element(
-            combat.threatTable.begin(), combat.threatTable.end(),
+            level.threatTable.begin(), level.threatTable.end(),
             [](const std::pair<Character*, int>& a, const std::pair<Character*, int>& b) {
                 // Ensure both characters are alive, otherwise treat their threat as minimal
                 int threatA = (a.first->health > 0) ? a.second : INT_MIN;
@@ -43,9 +34,9 @@ Character* SelectTargetBasedOnThreat(LevelState& combat) {
     );
 
     // If all threats are zero or no valid targets exist, choose a random alive target
-    if (highestThreat == combat.threatTable.end() || highestThreat->second <= 0 || highestThreat->first->health <= 0) {
+    if (highestThreat == level.threatTable.end() || highestThreat->second <= 0 || highestThreat->first->health <= 0) {
         std::vector<Character*> aliveTargets;
-        for (const auto& entry : combat.threatTable) {
+        for (const auto& entry : level.threatTable) {
             if (entry.first->health > 0) {
                 aliveTargets.push_back(entry.first);
             }
@@ -64,7 +55,7 @@ Character* SelectTargetBasedOnThreat(LevelState& combat) {
     return highestThreat->first;
 }
 
-void IncreaseThreat(LevelState& combat, Character* target, int amount) {
+void IncreaseThreat(Level& combat, Character* target, int amount) {
     if (target->health <= 0) return; // Skip dead characters
 
     // Separate additive and multiplicative modifiers
@@ -92,15 +83,15 @@ void IncreaseThreat(LevelState& combat, Character* target, int amount) {
     }
 }
 
-void SetTaunt(LevelState& combat, Character* target) {
-    if (combat.threatTable.find(target) != combat.threatTable.end() && target->health > 0) { // Skip dead characters
+void SetTaunt(Level& level, Character* target) {
+    if (level.threatTable.find(target) != level.threatTable.end() && target->health > 0) { // Skip dead characters
         int highestThreat = 0;
-        for (const auto& entry : combat.threatTable) {
+        for (const auto& entry : level.threatTable) {
             if (entry.second > highestThreat && entry.first->health > 0) { // Skip dead characters
                 highestThreat = entry.second;
             }
         }
-        combat.threatTable[target] = highestThreat + 1; // Taunt sets the target as the highest threat.
+        level.threatTable[target] = highestThreat + 1; // Taunt sets the target as the highest threat.
     }
 }
 
@@ -117,7 +108,7 @@ bool IsIncapacitated(Character* character) {
 }
 
 
-Character* GetFirstLivingEnemy(LevelState &combat) {
+Character* GetFirstLivingEnemy(Level &combat) {
     for (auto &enemy : combat.enemyCharacters) {
         if (enemy->health > 0) {
             return enemy;
@@ -176,7 +167,7 @@ static int CalculateDamageReduction(Character &defender, int baseDamage) {
 }
 
 // Function to calculate baseAttack dealt in combat, with chance to miss and critical hit
-static void CalculateDamage(LevelState& combat, Character &attacker, Character &defender, AttackResult &result) {
+static void CalculateDamage(Level& combat, Character &attacker, Character &defender, AttackResult &result) {
     // Calculate miss chance based on defender's dodge skill and speed
     int missChance = CalculateMissChance(attacker, defender);
     int missRoll = RandomInRange(1, 100);  // Random roll between 1 and 100
@@ -240,31 +231,31 @@ static void CalculateDamage(LevelState& combat, Character &attacker, Character &
 }
 
 // Function for a character to attack another
-AttackResult Attack(LevelState& combat, Character &attacker, Character &defender) {
+AttackResult Attack(Level& level, Character &attacker, Character &defender) {
     AttackResult result{};
     result.attacker = &attacker;
     result.defender = &defender;
     result.hit = false;
     result.crit = false;
     result.damage = 0;
-    CalculateDamage(combat, attacker, defender, result);
+    CalculateDamage(level, attacker, defender, result);
     if (result.damage > 0) {
-        if(IsPlayerCharacter(combat, attacker)) {
+        if(IsPlayerCharacter(level, attacker)) {
             // If the attacker is a player character, increase their threat
-            IncreaseThreat(combat, &attacker, result.damage);
+            IncreaseThreat(level, &attacker, result.damage);
         }
 
         // Log the attack and baseAttack dealt
         std::string logMessage = attacker.name + " attacks " + defender.name + " for " + std::to_string(result.damage) + " baseAttack!";
-        combat.log.push_back(logMessage);
+        level.log.push_back(logMessage);
 
         std::string logMessage2 = defender.name + " has " + std::to_string(defender.health) + " health left.";
-        combat.log.push_back(logMessage2);
+        level.log.push_back(logMessage2);
     }
     return result;
 }
 
-int DealDamage(LevelState& combat, Character &attacker, Character &defender, int damage) {
+int DealDamage(Level& level, Character &attacker, Character &defender, int damage) {
     float defenderX = GetCharacterSpritePosX(defender.sprite);
     float defenderY = GetCharacterSpritePosY(defender.sprite);
     float attackerX = GetCharacterSpritePosX(attacker.sprite);
@@ -288,7 +279,7 @@ int DealDamage(LevelState& combat, Character &attacker, Character &defender, int
         baseDamage *= 2;  // Double the baseAttack for critical hit
         //std::cout << "**Critical Hit!** ";
         std::string logMessage = "**Critical Hit!** ";
-        combat.log.push_back(logMessage);
+        level.log.push_back(logMessage);
         /*
         Animation damageNumberAnim{};
         SetupDamageNumberAnimation(damageNumberAnim, "CRITICAL!!!", defenderX, defenderY-45, WHITE, 10);
@@ -298,12 +289,12 @@ int DealDamage(LevelState& combat, Character &attacker, Character &defender, int
     Animation damageNumberAnim{};
     Color dmgColor = GetDamageColor(baseDamage, GetAttack(attacker));
     SetupDamageNumberAnimation(damageNumberAnim, TextFormat("%d", baseDamage), defenderX, defenderY-25, dmgColor, isCritical ? 20 : 10);
-    combat.animations.push_back(damageNumberAnim);
+    level.animations.push_back(damageNumberAnim);
 
     defender.health -= baseDamage;
-    if(IsPlayerCharacter(combat, attacker)) {
+    if(IsPlayerCharacter(level, attacker)) {
         // If the attacker is a player character, increase their threat
-        IncreaseThreat(combat, &attacker, damage);
+        IncreaseThreat(level, &attacker, damage);
     }
 
     // Ensure health does not drop below 0
@@ -311,15 +302,15 @@ int DealDamage(LevelState& combat, Character &attacker, Character &defender, int
 
     // Log the attack and baseAttack dealt
     std::string logMessage = attacker.name + " hits " + defender.name + " for " + std::to_string(damage) + " baseAttack!";
-    combat.log.push_back(logMessage);
+    level.log.push_back(logMessage);
 
     std::string logMessage2 = defender.name + " has " + std::to_string(defender.health) + " health left.";
-    combat.log.push_back(logMessage2);
+    level.log.push_back(logMessage2);
     PlaySoundEffect(SoundEffectType::HumanPain, 0.25f);
     return baseDamage;
 }
 
-int DealDamageStatusEffect(LevelState& combat, Character &target, int damage) {
+int DealDamageStatusEffect(Level& level, Character &target, int damage) {
     float targetX = GetCharacterSpritePosX(target.sprite);
     float targetY = GetCharacterSpritePosY(target.sprite);
 
@@ -331,9 +322,9 @@ int DealDamageStatusEffect(LevelState& combat, Character &target, int damage) {
     if (baseDamage < 0) baseDamage = 0;  // No negative baseAttack
 
     Animation damageNumberAnim{};
-    Color dmgColor = GetDamageColor(baseDamage, GetAttack(*combat.currentCharacter));
+    Color dmgColor = GetDamageColor(baseDamage, GetAttack(*level.currentCharacter));
     SetupDamageNumberAnimation(damageNumberAnim, TextFormat("%d", baseDamage), targetX, targetY-25, dmgColor, 10);
-    combat.animations.push_back(damageNumberAnim);
+    level.animations.push_back(damageNumberAnim);
 
     target.health -= baseDamage;
 
@@ -342,19 +333,19 @@ int DealDamageStatusEffect(LevelState& combat, Character &target, int damage) {
 
     // Log the attack and baseAttack dealt
     std::string logMessage = target.name + " takes " + std::to_string(damage) + " baseAttack! (status effect)";
-    combat.log.push_back(logMessage);
+    level.log.push_back(logMessage);
 
     std::string logMessage2 = target.name + " has " + std::to_string(target.health) + " health left.";
-    combat.log.push_back(logMessage2);
+    level.log.push_back(logMessage2);
     return baseDamage;
 }
 
-void KillCharacter(LevelState &combat, Character &character) {
+void KillCharacter(Level &level, Character &character) {
     std::string logMessage = character.name + " is defeated!";
-    combat.log.push_back(logMessage);
+    level.log.push_back(logMessage);
     Animation deathAnim{};
     SetupDeathAnimation(deathAnim, &character, 0.5f);
-    combat.animations.push_back(deathAnim);
+    level.animations.push_back(deathAnim);
     character.health = 0;
     // Remove character from turn order
     //combat.turnOrder.erase(std::remove(combat.turnOrder.begin(), combat.turnOrder.end(), &character), combat.turnOrder.end());
@@ -362,81 +353,43 @@ void KillCharacter(LevelState &combat, Character &character) {
     Vector2 bloodPos = GetCharacterSpritePos(character.sprite);
     //bloodPos = GetWorldToScreen2D(bloodPos, combat.camera.camera);
     SetupBloodPoolAnimation(bloodAnim, bloodPos, 5.0f);
-    combat.animations.push_back(bloodAnim);
+    level.animations.push_back(bloodAnim);
     PlaySoundEffect(SoundEffectType::HumanDeath, 0.5f);
 }
 
-bool IsPlayerCharacter(LevelState &combat, Character &character) {
-    return (std::find(combat.playerCharacters.begin(), combat.playerCharacters.end(), &character) != combat.playerCharacters.end());
+bool IsPlayerCharacter(Level &level, Character &character) {
+    return (std::find(level.playerCharacters.begin(), level.playerCharacters.end(), &character) != level.playerCharacters.end());
 }
 
 
-
-void InitCombat(LevelState &combat, std::vector<Character> &playerCharacters, std::vector<Character> &enemyCharacters) {
-    memset(&combat, 0, sizeof(LevelState));
-    std::vector<std::pair<int, Character*>> allCharacters;
-    for (auto & playerCharacter : playerCharacters) {
-        allCharacters.emplace_back(playerCharacter.speed, &playerCharacter);
-        combat.playerCharacters.emplace_back(&playerCharacter);
-    }
-    for (auto & enemyCharacter : enemyCharacters) {
-        allCharacters.emplace_back(enemyCharacter.speed, &enemyCharacter);
-        combat.enemyCharacters.emplace_back(&enemyCharacter);
-    }
-
-    // Sort by speed, then randomize in case of tie
-    std::sort(allCharacters.begin(), allCharacters.end(), [](std::pair<int, Character*> &left, std::pair<int, Character*> &right) {
-        if (left.first != right.first) return left.first > right.first;
-        return left.second < right.second;  // Compare by pointer address
-    });
-
-    // Now set the current order
-    for (auto &pair : allCharacters) {
-        combat.turnOrder.push_back(pair.second);
-    }
-
-    InitializeThreatTable(combat);
-
-    combat.currentCharacter = combat.turnOrder[0];
-    combat.currentCharacterIdx = 0;
-    combat.nextState = TurnState::StartRound;
-    combat.waitTime = 3.0f;
-    combat.turnState = TurnState::Waiting;
-    Animation textAnim{};
-    SetupTextAnimation(textAnim, "First round!", 125, 2.0f, 0.0f);
-    combat.animations.push_back(textAnim);
-
-    InitLevelCamera(combat.camera);
-}
-
-void NextCharacter(LevelState &combat) {
-    combat.currentCharacterIdx++;
+void NextCharacter(Level &level) {
+    level.currentCharacterIdx++;
     // skip dead characters
-    while (combat.currentCharacterIdx < combat.turnOrder.size() && combat.turnOrder[combat.currentCharacterIdx]->health <= 0) {
-        combat.currentCharacterIdx++;
+    while (level.currentCharacterIdx < level.turnOrder.size() && level.turnOrder[level.currentCharacterIdx]->health <= 0) {
+        level.currentCharacterIdx++;
     }
-    bool nextRound = combat.currentCharacterIdx >= combat.turnOrder.size();
+    bool nextRound = level.currentCharacterIdx >= level.turnOrder.size();
     // check for end of turn/round
     if (nextRound) {
-        combat.currentCharacterIdx = 0;
+        level.currentCharacterIdx = 0;
     }
     // skip dead characters
-    while (combat.currentCharacterIdx < combat.turnOrder.size() && combat.turnOrder[combat.currentCharacterIdx]->health <= 0) {
-        combat.currentCharacterIdx++;
+    while (level.currentCharacterIdx < level.turnOrder.size() && level.turnOrder[level.currentCharacterIdx]->health <= 0) {
+        level.currentCharacterIdx++;
     }
-    combat.selectedCharacter = nullptr;
-    combat.currentCharacter = combat.turnOrder[combat.currentCharacterIdx];
+    level.selectedCharacter = nullptr;
+    level.currentCharacter = level.turnOrder[level.currentCharacterIdx];
     // log current character health
-    std::string logMessage = combat.currentCharacter->name + " has " + std::to_string(combat.currentCharacter->health) + " health.";
+    std::string logMessage = level.currentCharacter->name + " has " + std::to_string(level.currentCharacter->health) + " health.";
     TraceLog(LOG_INFO, logMessage.c_str());
     if(nextRound) {
-        combat.nextState = TurnState::EndRound;
-        combat.waitTime = 1.0f;
+        level.nextState = TurnState::EndRound;
+        level.waitTime = 1.0f;
     } else {
-        combat.nextState = TurnState::StartTurn;
-        combat.waitTime = 0.5f;
+        level.nextState = TurnState::StartTurn;
+        level.waitTime = 0.5f;
     }
 
-    combat.turnState = TurnState::Waiting;
-    TraceLog(LOG_INFO, "Next character: %s", combat.currentCharacter->name.c_str());
+    level.turnState = TurnState::Waiting;
+    TraceLog(LOG_INFO, "Next character: %s", level.currentCharacter->name.c_str());
 }

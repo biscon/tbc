@@ -1,0 +1,13 @@
+{
+    "name": "Town",
+    "map": "town_map.json",
+    "tileset": "town_tiles.png",
+    "spawnPoints": [
+        {
+            "name": "default",
+            "x": 14,
+            "y": 7,
+            "radius": 5
+        }
+    ]
+}

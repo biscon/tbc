@@ -5,10 +5,10 @@
 #ifndef SANDBOX_STATUSEFFECTRUNNER_H
 #define SANDBOX_STATUSEFFECTRUNNER_H
 
-#include "LevelState.h"
-#include "ui/Grid.h"
+#include "Level.h"
+#include "PlayField.h"
 
-void ApplyStatusEffects(LevelState& combat, GridState& gridState);
-void UpdateStatusEffects(LevelState &combat);
+void ApplyStatusEffects(Level& level, PlayField& playField);
+void UpdateStatusEffects(Level &level);
 
 #endif //SANDBOX_STATUSEFFECTRUNNER_H

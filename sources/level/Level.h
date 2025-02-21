@@ -2,16 +2,18 @@
 // Created by bison on 20-01-25.
 //
 
-#ifndef SANDBOX_LEVELSTATE_H
-#define SANDBOX_LEVELSTATE_H
+#ifndef SANDBOX_LEVEL_H
+#define SANDBOX_LEVEL_H
 
-#include <map>
+#include <string>
+#include <unordered_map>
 #include "character/Character.h"
 #include "graphics/Animation.h"
 #include "graphics/TileMap.h"
 #include "LevelCamera.h"
 
 enum class TurnState {
+    Explore,
     StartTurn,
     EndTurn,
     SelectDestination,
@@ -37,7 +39,15 @@ struct AttackResult {
     Character *defender;
 };
 
-struct LevelState {
+struct SpawnPoint {
+    std::string name;
+    int x;
+    int y;
+    int radius;
+};
+
+struct Level {
+    std::string name;
     std::vector<std::string> log;
     std::vector<Character*> playerCharacters;
     std::vector<Character*> enemyCharacters;
@@ -52,10 +62,17 @@ struct LevelState {
     TurnState nextState;
     std::map<Character*, int> threatTable;
     TileMap tileMap;
+    SpriteSheet tileSet;
     AttackResult attackResult;
     LevelCamera camera;
+    bool inCombat;
+    std::unordered_map<std::string, SpawnPoint> spawnPoints;
 };
 
-void WaitTurnState(LevelState &combat, TurnState state, float waitTime);
+void CreateLevel(Level &level);
+void LoadLevel(Level &level, const std::string &filename);
+void DestroyLevel(Level &level);
+void WaitTurnState(Level &level, TurnState state, float waitTime);
+void AddPartyToLevel(Level &level, std::vector<Character>& party);
 
-#endif //SANDBOX_LEVELSTATE_H
+#endif //SANDBOX_LEVEL_H

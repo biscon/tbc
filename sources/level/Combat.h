@@ -8,18 +8,17 @@
 #include <map>
 #include "character/Character.h"
 #include "graphics/Animation.h"
-#include "LevelState.h"
+#include "Level.h"
 
-AttackResult Attack(LevelState &combat, Character &attacker, Character &defender);
-int DealDamage(LevelState& combat, Character &attacker, Character &defender, int damage);
-int DealDamageStatusEffect(LevelState& combat, Character &target, int damage);
-void KillCharacter(LevelState &combat, Character &character);
-void InitCombat(LevelState &combat, std::vector<Character> &playerCharacters, std::vector<Character> &enemyCharacters);
-bool IsPlayerCharacter(LevelState &combat, Character &character);
-Character* GetFirstLivingEnemy(LevelState &combat);
+AttackResult Attack(Level &level, Character &attacker, Character &defender);
+int DealDamage(Level& level, Character &attacker, Character &defender, int damage);
+int DealDamageStatusEffect(Level& level, Character &target, int damage);
+void KillCharacter(Level &level, Character &character);
+bool IsPlayerCharacter(Level &level, Character &character);
+Character* GetFirstLivingEnemy(Level &combat);
 bool IsIncapacitated(Character* character);
-void DecayThreat(LevelState& combat, int amount);
-void SetTaunt(LevelState& combat, Character* target);
-void NextCharacter(LevelState &combat);
+void DecayThreat(Level& level, int amount);
+void SetTaunt(Level& level, Character* target);
+void NextCharacter(Level &level);
 
 #endif //SANDBOX_COMBAT_H
