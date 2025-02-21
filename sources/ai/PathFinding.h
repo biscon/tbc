@@ -20,15 +20,16 @@ struct Path {
 Vector2 PixelToGridPosition(float pixelX, float pixelY);
 Vector2i PixelToGridPositionI(int pixelX, int pixelY);
 Vector2 GridToPixelPosition(int gridX, int gridY);
-bool IsTileOccupied(Level &combat, int x, int y, Character* exceptCharacter);
-bool IsTileWalkable(Level &combat, int x, int y);
-bool InitPath(Level &combat, Path &path, Vector2i start, Vector2i end, Character *exceptCharacter);
-bool InitPathWithRange(Level &combat, Path &path, Vector2i start, Vector2i end, int range, Character *exceptCharacter);
-bool InitPathWithRangePartial(Level &combat, Path &path, Vector2i start, Vector2i end, int range, Character *exceptCharacter);
-bool InitPathIgnoreOccupied(Level &combat, Path &path, Vector2i start, Vector2i end);
-bool HasLineOfSight(Level &combat, Vector2i start, Vector2i end);
+bool IsTileOccupied(Level &level, int x, int y, Character* exceptCharacter);
+bool IsTileWalkable(Level &level, int x, int y);
+bool InitPath(Level &level, Path &path, Vector2i start, Vector2i end, Character *exceptCharacter);
+bool InitPathWithRange(Level &level, Path &path, Vector2i start, Vector2i end, int range, Character *exceptCharacter);
+bool InitPathWithRangePartial(Level &level, Path &path, Vector2i start, Vector2i end, int range, Character *exceptCharacter);
+bool InitPathIgnoreOccupied(Level &level, Path &path, Vector2i start, Vector2i end);
+bool HasLineOfSight(Level &level, Vector2i start, Vector2i end);
+bool HasLineOfSight(Level &level, Vector2i start, Vector2i end, int maxDist);
 bool IsCharacterAdjacentToPlayer(Character &player, Character &character);
-std::vector<Vector2i> FindFreePositionsCircular(Level &combat, int x, int y, int radius);
-std::vector<Character*> GetTargetsInLine(Level &combat, Vector2i start, Vector2 direction, int range, Character* exceptCharacter);
+std::vector<Vector2i> FindFreePositionsCircular(Level &level, int x, int y, int radius);
+std::vector<Character*> GetTargetsInLine(Level &level, Vector2i start, Vector2 direction, int range, Character* exceptCharacter);
 
 #endif //SANDBOX_PATHFINDING_H
