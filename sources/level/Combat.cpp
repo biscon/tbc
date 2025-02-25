@@ -108,15 +108,6 @@ bool IsIncapacitated(Character* character) {
 }
 
 
-Character* GetFirstLivingEnemy(Level &combat) {
-    for (auto &enemy : combat.enemyCharacters) {
-        if (enemy->health > 0) {
-            return enemy;
-        }
-    }
-    return nullptr;
-}
-
 static int CalculateMissChance(Character &attacker, Character &defender) {
     // Base miss chance starts at 15% at speed = 3 and should scale to 1% at speed = 30
     int baseMissChance = 15;
@@ -240,7 +231,7 @@ AttackResult Attack(Level& level, Character &attacker, Character &defender) {
     result.damage = 0;
     CalculateDamage(level, attacker, defender, result);
     if (result.damage > 0) {
-        if(IsPlayerCharacter(level, attacker)) {
+        if(IsPlayerCharacter(attacker)) {
             // If the attacker is a player character, increase their threat
             IncreaseThreat(level, &attacker, result.damage);
         }
@@ -292,7 +283,7 @@ int DealDamage(Level& level, Character &attacker, Character &defender, int damag
     level.animations.push_back(damageNumberAnim);
 
     defender.health -= baseDamage;
-    if(IsPlayerCharacter(level, attacker)) {
+    if(IsPlayerCharacter(attacker)) {
         // If the attacker is a player character, increase their threat
         IncreaseThreat(level, &attacker, damage);
     }
@@ -357,10 +348,9 @@ void KillCharacter(Level &level, Character &character) {
     PlaySoundEffect(SoundEffectType::HumanDeath, 0.5f);
 }
 
-bool IsPlayerCharacter(Level &level, Character &character) {
-    return (std::find(level.playerCharacters.begin(), level.playerCharacters.end(), &character) != level.playerCharacters.end());
+bool IsPlayerCharacter(Character &character) {
+    return character.faction == CharacterFaction::Player;
 }
-
 
 void NextCharacter(Level &level) {
     level.currentCharacterIdx++;

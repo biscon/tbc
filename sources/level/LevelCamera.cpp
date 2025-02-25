@@ -103,15 +103,15 @@ void UpdateCamera(LevelCamera& cam, float dt) {
             t = Smootherstep(t);  // Use a better interpolation function
             //t = EaseOutExpo(t);
             cam.camera.target = Vector2Lerp(cam.cameraStartPos, cam.cameraPanTarget, t);
-
             // Ceil camera target to prevent jittering
             cam.camera.target.x = ceilf(cam.camera.target.x);
             cam.camera.target.y = ceilf(cam.camera.target.y);
         }
     }
 
+
     float border = 32;
-    // Ensure the camera does not scroll more than 16 pixels outside the visible area
+    // Ensure the camera does not scroll more than border pixels outside the visible area
     float maxX = (float) cam.worldWidth - 480 + border;
     float maxY = (float) cam.worldHeight - 270 + border;
     float minX = -border;

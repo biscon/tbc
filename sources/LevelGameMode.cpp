@@ -14,14 +14,13 @@
 
 static Game* game;
 
-/*
 static std::vector<Character> enemyCharacters = {
-        {CharacterClass::Warrior, "Enemy1", "Fighter", 16,  16,  5, 3, 4, 0, 0, 0, 1, {}},
-        {CharacterClass::Warrior, "Enemy2", "Fighter", 16,  16,  5, 3, 4, 0, 0, 0, 1, {}},
+        {CharacterClass::Warrior, CharacterFaction::Enemy, "Enemy1", "Fighter", 16,  16,  5, 3, 4, 0, 0, 0, 1, {}},
+        {CharacterClass::Warrior, CharacterFaction::Enemy, "Enemy2", "Fighter", 16,  16,  5, 3, 4, 0, 0, 0, 1, {}},
         //{CharacterClass::Warrior, "Enemy3", "Fighter", 20,  20,  5, 3, 4, 0, 0, 0, 1, {}},
         //{CharacterClass::Warrior, "Enemy4", "Fighter", 20,  20,  5, 3, 4, 0, 0, 0, 1, {}},
 };
- */
+
 static Level level;
 static LevelScreen levelScreen;
 static ParticleManager particleManager;
@@ -32,10 +31,10 @@ static GameEventQueue eventQueue;
 static void moveParty(Vector2i target) {
     TraceLog(LOG_INFO, "MoveParty event,target: %d,%d", target.x, target.y);
     playField.activeMoves.clear();
-    MoveCharacter(playField, level, level.playerCharacters[0], target);
+    MoveCharacter(playField, level, level.partyCharacters[0], target);
     // move the rest partially
-    for(int i = 1; i < (int)level.playerCharacters.size(); i++) {
-        MoveCharacterPartial(playField, level, level.playerCharacters[i], target);
+    for(int i = 1; i < (int)level.partyCharacters.size(); i++) {
+        MoveCharacterPartial(playField, level, level.partyCharacters[i], target);
     }
 }
 
@@ -88,16 +87,7 @@ void LevelInit() {
     //PlaySoundEffect(SoundEffectType::Ambience);
 
 
-    /*
-    for(auto &character : enemyCharacters) {
-        InitCharacterSprite(character.sprite, "MaleNinja", true);
-        GiveWeapon(character, "Bow");
-        LevelUp(character, true);
-        LevelUp(character, true);
-        LevelUp(character, true);
-        LevelUp(character, true);
-    }
-    */
+
 
     CreateLevel(level);
     CreateLevelScreen(levelScreen, &eventQueue);
@@ -138,6 +128,9 @@ void LevelUpdate(float dt) {
     UpdateCamera(level.camera, dt);
     if (!level.camera.cameraPanning) {
         level.camera.camera.target = Vector2Add(level.camera.camera.target, level.camera.cameraVelocity);
+        // Ceil camera target to prevent jittering
+        level.camera.camera.target.x = ceilf(level.camera.camera.target.x);
+        level.camera.camera.target.y = ceilf(level.camera.camera.target.y);
     }
     UpdateParticleManager(particleManager, dt);
     UpdateLevelScreen(level, levelScreen, playField, dt);
@@ -219,13 +212,26 @@ void LevelPause() {
 
 }
 
+static void createTestEnemies() {
+    for(auto &character : enemyCharacters) {
+        InitCharacterSprite(character.sprite, "MaleNinja", true);
+        GiveWeapon(character, "Bow");
+        LevelUp(character, true);
+        LevelUp(character, true);
+        LevelUp(character, true);
+        LevelUp(character, true);
+    }
+    AddEnemiesToLevel(level, enemyCharacters, "enemies");
+}
+
 void LevelResume() {
     TraceLog(LOG_INFO, "LevelResume");
     if(game->state == GameState::LOAD_LEVEL) {
         LoadLevel(level, game->levelFileName);
-        AddPartyToLevel(level, game->party);
+        AddPartyToLevel(level, game->party, "default");
         game->state = GameState::PLAY_LEVEL;
         playField.mode = PlayFieldMode::Move;
+        createTestEnemies();
     }
 }
 

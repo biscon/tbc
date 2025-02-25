@@ -52,9 +52,9 @@ void PlayAttackDefendAnimation(Level &level, Character &attacker, Character &def
 }
 
 void PlayEnemyVictoryAnimation(Level &level) {
-    for(auto &c : level.enemyCharacters) {
+    for(auto &c : level.allCharacters) {
         // skip dead
-        if(c->health <= 0) {
+        if(c->health <= 0 || c->faction != CharacterFaction::Enemy) {
             continue;
         }
         PlayCharacterSpriteAnim(c->sprite, SpriteAnimationType::WalkDown, true);
@@ -65,7 +65,7 @@ void PlayEnemyVictoryAnimation(Level &level) {
 }
 
 void PlayPlayerVictoryAnimation(Level &level) {
-    for(auto &c : level.playerCharacters) {
+    for(auto &c : level.partyCharacters) {
         // skip dead
         if(c->health <= 0) {
             continue;

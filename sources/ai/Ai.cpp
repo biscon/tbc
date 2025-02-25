@@ -43,20 +43,20 @@ void SortCharactersByThreat(Level& combat, std::vector<std::pair<Character*, Pat
     });
 }
 
-static std::vector<Character*> GetCharactersWithinAttackRange(Level &combat, Character &character, int range, std::vector<Character*> &characters) {
+std::vector<Character*> GetCharactersWithinAttackRange(Level &combat, Character &character, int range, CharacterFaction faction) {
     // loop through all characters in combat
     Vector2 charPos = GetCharacterSpritePos(character.sprite);
     Vector2i charGridPos = PixelToGridPositionI(charPos.x, charPos.y);
     std::vector<Character*> charactersInRange;
-    for(auto &c : characters) {
+    for(auto &c : combat.allCharacters) {
         // skip same and death characters
-        if(c == &character || c->health <= 0) {
+        if(c == &character || c->health <= 0 || c->faction != faction) {
             continue;
         }
         Path path;
         Vector2i cCharPos = GetCharacterSpritePosI(c->sprite);
         Vector2i cGridPos = PixelToGridPositionI(cCharPos.x, cCharPos.y);
-        if(CalcPathWithRange(combat, path, charGridPos, cGridPos, range, &character)) {
+        if(CalcPathWithRange(combat, path, charGridPos, cGridPos, range, &character, IsTileOccupied)) {
             if(path.cost <= range) {
                 charactersInRange.push_back(c);
             }
@@ -65,28 +65,20 @@ static std::vector<Character*> GetCharactersWithinAttackRange(Level &combat, Cha
     return charactersInRange;
 }
 
-std::vector<Character*> GetPlayersWithinAttackRange(Level &combat, Character &character, int range) {
-    return GetCharactersWithinAttackRange(combat, character, range, combat.playerCharacters);
-}
-
-std::vector<Character*> GetEnemiesWithinAttackRange(Level &combat, Character &character, int range) {
-    return GetCharactersWithinAttackRange(combat, character, range, combat.enemyCharacters);
-}
-
-static std::vector<std::pair<Character*, Path>> GetCharactersWithinMoveRange(Level &combat, Character &character, int attackRange, std::vector<Character*> &characters, bool checkPoints) {
+std::vector<std::pair<Character*, Path>> GetCharactersWithinMoveRange(Level &combat, Character &character, int attackRange, bool checkPoints, CharacterFaction faction) {
     // loop through all characters in combat
     Vector2i charPos = GetCharacterSpritePosI(character.sprite);
     Vector2i charGridPos = PixelToGridPositionI(charPos.x, charPos.y);
     std::vector<std::pair<Character*, Path>> charactersInRange;
-    for(auto &c : characters) {
+    for(auto &c : combat.allCharacters) {
         // skip same and death characters
-        if(c == &character || c->health <= 0) {
+        if(c == &character || c->health <= 0 || c->faction != faction) {
             continue;
         }
         Path path;
         Vector2i cCharPos = GetCharacterSpritePosI(c->sprite);
         Vector2i cGridPos = PixelToGridPositionI(cCharPos.x, cCharPos.y);
-        if(CalcPathWithRange(combat, path, charGridPos, cGridPos, attackRange, &character)) {
+        if(CalcPathWithRange(combat, path, charGridPos, cGridPos, attackRange, &character, IsTileOccupied)) {
             if(checkPoints) {
                 if (path.cost <= character.movePoints) {
                     charactersInRange.push_back(std::make_pair(c, path));
@@ -99,29 +91,20 @@ static std::vector<std::pair<Character*, Path>> GetCharactersWithinMoveRange(Lev
     return charactersInRange;
 }
 
-std::vector<std::pair<Character*, Path>> GetPlayersWithinMoveRange(Level &combat, Character &character, int attackRange, bool checkPoints) {
-    return GetCharactersWithinMoveRange(combat, character, attackRange, combat.playerCharacters, checkPoints);
-}
-
-std::vector<std::pair<Character*, Path>> GetEnemiesWithinMoveRange(Level &combat, Character &character, int attackRange, bool checkPoints) {
-    return GetCharactersWithinMoveRange(combat, character, attackRange, combat.enemyCharacters, checkPoints);
-}
-
-
-static std::vector<std::pair<Character*, Path>> GetCharactersWithinMoveRangePartial(Level &combat, Character &character, int attackRange, std::vector<Character*> &characters, bool checkPoints) {
+std::vector<std::pair<Character*, Path>> GetCharactersWithinMoveRangePartial(Level &combat, Character &character, int attackRange, bool checkPoints, CharacterFaction faction) {
     // loop through all characters in combat
     Vector2i charPos = GetCharacterSpritePosI(character.sprite);
     Vector2i charGridPos = PixelToGridPositionI(charPos.x, charPos.y);
     std::vector<std::pair<Character*, Path>> charactersInRange;
-    for(auto &c : characters) {
+    for(auto &c : combat.allCharacters) {
         // skip same and death characters
-        if(c == &character || c->health <= 0) {
+        if(c == &character || c->health <= 0 || c->faction != faction) {
             continue;
         }
         Path path;
         Vector2i cCharPos = GetCharacterSpritePosI(c->sprite);
         Vector2i cGridPos = PixelToGridPositionI(cCharPos.x, cCharPos.y);
-        CalcPathWithRangePartial(combat, path, charGridPos, cGridPos, attackRange, &character);
+        CalcPathWithRangePartial(combat, path, charGridPos, cGridPos, attackRange, &character, IsTileOccupied);
         if(!path.path.empty()) {
             if(checkPoints) {
                 if (path.cost <= character.movePoints) {
@@ -135,41 +118,13 @@ static std::vector<std::pair<Character*, Path>> GetCharactersWithinMoveRangePart
     return charactersInRange;
 }
 
-std::vector<std::pair<Character*, Path>> GetPlayersWithinMoveRangePartial(Level &combat, Character &character, int attackRange, bool checkPoints) {
-    return GetCharactersWithinMoveRangePartial(combat, character, attackRange, combat.playerCharacters, checkPoints);
-}
-
-std::vector<std::pair<Character*, Path>> GetEnemiesWithinMoveRangePartial(Level &combat, Character &character, int attackRange, bool checkPoints) {
-    return GetCharactersWithinMoveRangePartial(combat, character, attackRange, combat.enemyCharacters, checkPoints);
-}
-
-
-
-std::vector<Character *> GetAdjacentEnemies(Level &combat, Character &character) {
+std::vector<Character *> GetAdjacentCharacters(Level &combat, Character &character, CharacterFaction faction) {
     Vector2i charPos = GetCharacterSpritePosI(character.sprite);
     Vector2i charGridPos = PixelToGridPositionI(charPos.x, charPos.y);
     std::vector<Character*> charactersInRange;
-    for(auto &c : combat.enemyCharacters) {
+    for(auto &c : combat.allCharacters) {
         // skip same and death characters
-        if(c == &character || c->health <= 0) {
-            continue;
-        }
-        Vector2i cCharPos = GetCharacterSpritePosI(c->sprite);
-        Vector2i cGridPos = PixelToGridPositionI(cCharPos.x, cCharPos.y);
-        if(abs(cGridPos.x - charGridPos.x) <= 1 && abs(cGridPos.y - charGridPos.y) <= 1) {
-            charactersInRange.push_back(c);
-        }
-    }
-    return charactersInRange;
-}
-
-std::vector<Character *> GetAdjacentPlayers(Level &combat, Character &character) {
-    Vector2i charPos = GetCharacterSpritePosI(character.sprite);
-    Vector2i charGridPos = PixelToGridPositionI(charPos.x, charPos.y);
-    std::vector<Character*> charactersInRange;
-    for(auto &c : combat.playerCharacters) {
-        // skip same and death characters
-        if(c == &character || c->health <= 0) {
+        if(c == &character || c->health <= 0 || c->faction != faction) {
             continue;
         }
         Vector2i cCharPos = GetCharacterSpritePosI(c->sprite);

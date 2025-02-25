@@ -48,9 +48,10 @@ bool IsAlive(const Character &character) {
     return character.health > 0;
 }
 
-void CreateCharacter(Character &character, CharacterClass characterClass, std::string name, std::string ai) {
+void CreateCharacter(Character &character, CharacterClass characterClass, CharacterFaction faction, std::string name, std::string ai) {
     character.name = std::move(name);
     character.ai = std::move(ai);
+    character.faction = faction;
 
     switch(characterClass) {
         case CharacterClass::Warrior: character.maxHealth = 16; break;

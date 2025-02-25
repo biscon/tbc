@@ -26,8 +26,15 @@ enum class CharacterClass {
     Rogue,
 };
 
+enum class CharacterFaction {
+    Player,
+    Npc,
+    Enemy,
+};
+
 struct Character {
     CharacterClass characterClass;
+    CharacterFaction faction;
     std::string name;
     std::string ai;
     int health;
@@ -47,7 +54,7 @@ struct Character {
     Weapon* equippedWeapon;
 };
 
-void CreateCharacter(Character &character, CharacterClass characterClass, std::string name, std::string ai);
+void CreateCharacter(Character &character, CharacterClass characterClass, CharacterFaction faction, std::string name, std::string ai);
 void DisplayCharacterInfo(const Character &character);
 Character GenerateRandomCharacter(std::string name, bool isEnemy = false);
 bool IsAlive(const Character &character);

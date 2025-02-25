@@ -14,15 +14,11 @@ struct AiInterface {
 void CreateAiInterface(const std::string& name, void (*HandleTurn)(Level& combat, PlayField& gridState));
 AiInterface* GetAiInterface(const std::string& name);
 void HandleTurn(AiInterface& ai, Level& combat, PlayField& gridState);
-std::vector<Character*> GetPlayersWithinAttackRange(Level &combat, Character &character, int range);
-std::vector<Character*> GetEnemiesWithinAttackRange(Level &combat, Character &character, int range);
-std::vector<std::pair<Character*, Path>> GetPlayersWithinMoveRange(Level &combat, Character &character, int attackRange, bool checkPoints);
-std::vector<std::pair<Character*, Path>> GetEnemiesWithinMoveRange(Level &combat, Character &character, int attackRange, bool checkPoints);
-std::vector<std::pair<Character*, Path>> GetPlayersWithinMoveRangePartial(Level &combat, Character &character, int attackRange, bool checkPoints);
-std::vector<std::pair<Character*, Path>> GetEnemiesWithinMoveRangePartial(Level &combat, Character &character, int attackRange, bool checkPoints);
+std::vector<Character*> GetCharactersWithinAttackRange(Level &combat, Character &character, int range, CharacterFaction faction);
+std::vector<std::pair<Character*, Path>> GetCharactersWithinMoveRange(Level &combat, Character &character, int attackRange, bool checkPoints, CharacterFaction faction);
+std::vector<std::pair<Character*, Path>> GetCharactersWithinMoveRangePartial(Level &combat, Character &character, int attackRange, bool checkPoints, CharacterFaction faction);
 void SortCharactersByThreat(Level& combat, std::vector<Character*>& characters);
 void SortCharactersByThreat(Level& combat, std::vector<std::pair<Character*, Path>>& characters);
-std::vector<Character*> GetAdjacentEnemies(Level &combat, Character &character);
-std::vector<Character*> GetAdjacentPlayers(Level &combat, Character &character);
+std::vector<Character*> GetAdjacentCharacters(Level &combat, Character &character, CharacterFaction faction);
 
 #endif //SANDBOX_AI_H

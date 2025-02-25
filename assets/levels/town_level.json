@@ -8,6 +8,12 @@
             "x": 14,
             "y": 7,
             "radius": 5
+        },
+        {
+            "name": "enemies",
+            "x": 44,
+            "y": 8,
+            "radius": 5
         }
     ]
 }

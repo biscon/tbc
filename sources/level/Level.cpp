@@ -2,7 +2,6 @@
 // Created by bison on 20-01-25.
 //
 
-#include <cstring>
 #include <algorithm>
 #include <fstream>
 #include "Level.h"
@@ -19,7 +18,7 @@ void WaitTurnState(Level &level, TurnState state, float waitTime) {
 
 static void InitializeThreatTable(Level& combat) {
     combat.threatTable.clear();
-    for (const auto& player : combat.playerCharacters) {
+    for (const auto& player : combat.partyCharacters) {
         combat.threatTable[player] = 0;
     }
 }
@@ -107,17 +106,20 @@ void DestroyLevel(Level &level) {
     UnloadSpriteSheet(level.tileSet);
 }
 
-static void SetInitialGridPositions(Level &level, SpawnPoint &sp) {
+static void SetInitialGridPositions(Level &level, SpawnPoint &sp, std::vector<Character*>& characters) {
     auto positions = FindFreePositionsCircular(level, sp.x, sp.y, sp.radius);
-    // Set initial grid positions for player characters
-    for (int i = 0; i < level.playerCharacters.size(); i++) {
+    if(characters.size() > positions.size()) {
+        TraceLog(LOG_WARNING, "Not enough positions for all characters");
+    }
+    // Set initial grid positions for characters
+    for (auto & character : characters) {
         // take a position from the list
         auto pos = positions.back();
         positions.pop_back();
-        SetCharacterSpritePos(level.playerCharacters[i]->sprite, GridToPixelPosition(pos.x, pos.y));
+        SetCharacterSpritePos(character->sprite, GridToPixelPosition(pos.x, pos.y));
         // Set initial animation to paused
-        StartPausedCharacterSpriteAnim(level.playerCharacters[i]->sprite, SpriteAnimationType::WalkRight, true);
-        level.playerCharacters[i]->orientation = Orientation::Right;
+        StartPausedCharacterSpriteAnim(character->sprite, SpriteAnimationType::WalkRight, true);
+        character->orientation = Orientation::Right;
     }
     /*
     positions = FindFreePositionsCircular(level, 55, 7, 5);
@@ -137,10 +139,21 @@ static void SetInitialGridPositions(Level &level, SpawnPoint &sp) {
     */
 }
 
-void AddPartyToLevel(Level &level, std::vector<Character> &party) {
-    SpawnPoint& sp = level.spawnPoints["default"];
+void AddPartyToLevel(Level &level, std::vector<Character> &party, const std::string& spawnPoint) {
+    SpawnPoint& sp = level.spawnPoints[spawnPoint];
     for (auto &character : party) {
-        level.playerCharacters.push_back(&character);
+        level.partyCharacters.push_back(&character);
+        level.allCharacters.push_back(&character);
     }
-    SetInitialGridPositions(level, sp);
+    SetInitialGridPositions(level, sp, level.partyCharacters);
+}
+
+void AddEnemiesToLevel(Level &level, std::vector<Character> &enemies, const std::string& spawnPoint) {
+    SpawnPoint& sp = level.spawnPoints[spawnPoint];
+    std::vector<Character*> enemyCharacters;
+    for (auto &character : enemies) {
+        enemyCharacters.push_back(&character);
+        level.allCharacters.push_back(&character);
+    }
+    SetInitialGridPositions(level, sp, enemyCharacters);
 }

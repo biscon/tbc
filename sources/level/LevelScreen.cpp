@@ -363,7 +363,7 @@ void DrawLevelScreen(Level &level, LevelScreen &levelScreen, PlayField &playFiel
         // to screen space
         Vector2 screenPos = GetWorldToScreen2D(Vector2{x, y}, level.camera.camera);
         DisplayCharacterStatsFloating(*playField.floatingStatsCharacter, (int) screenPos.x - 10, (int) screenPos.y + 12,
-                                      IsPlayerCharacter(level, *playField.floatingStatsCharacter));
+                                      IsPlayerCharacter(*playField.floatingStatsCharacter));
         /*
         DisplayCharacterStatsFloating(*gridState.floatingStatsCharacter, (int) x - 10, (int) y + 12,
                                       IsPlayerCharacter(combat, *gridState.floatingStatsCharacter));
@@ -432,7 +432,7 @@ void UpdateLevelScreen(Level &level, LevelScreen &levelScreen, PlayField& playFi
             TraceLog(LOG_INFO, "Restored move points for %s: %d", level.currentCharacter->name.c_str(), movePoints);
 
             level.waitTime = 0.5f;
-            if(IsPlayerCharacter(level, *level.currentCharacter)) {
+            if(IsPlayerCharacter(*level.currentCharacter)) {
                 SetupBlinkAnimation(blinkAnim, level.currentCharacter, 2.0f);
                 level.nextState = TurnState::SelectAction;
             } else {

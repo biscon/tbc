@@ -62,14 +62,14 @@ void DrawPathSelection(PlayField &playField, Level &level) {
     // check if mouse is over tile
     Vector2 mousePos = GetScreenToWorld2D(GetMousePosition(), level.camera.camera);
     Vector2 gridPos = PixelToGridPosition(mousePos.x, mousePos.y);
-    if (IsTileOccupied(level, static_cast<int>(gridPos.x), static_cast<int>(gridPos.y), nullptr)) {
+    if (!IsTileOccupied(level, static_cast<int>(gridPos.x), static_cast<int>(gridPos.y), nullptr)) {
         playField.selectedTile = gridPos;
         // calculate a path and draw it as lines
         Path path;
         Vector2i target = PixelToGridPositionI(static_cast<int>(mousePos.x), static_cast<int>(mousePos.y));
         if (CalcPath(level, path, PixelToGridPositionI((int) GetCharacterSpritePosX(level.currentCharacter->sprite),
                                                        (int) GetCharacterSpritePosY(level.currentCharacter->sprite)),
-                     target, level.currentCharacter)) {
+                     target, level.currentCharacter, IsTileOccupied)) {
             Color pathColor = Fade(WHITE, playField.highlightAlpha);
             if (path.cost > level.currentCharacter->movePoints) {
                 DrawStatusText(TextFormat("Not enough movement points (%d)", level.currentCharacter->movePoints),
@@ -137,12 +137,15 @@ void DrawPathSelection(PlayField &playField, Level &level) {
     }
 }
 
-void DrawSelectCharacters(PlayField &playField, std::vector<Character*> &characters, Color color, Camera2D &camera) {
+void DrawSelectCharacters(PlayField &playField, std::vector<Character*> &characters, Color color, Camera2D &camera, bool onlyEnemies) {
     Vector2 mousePos = GetScreenToWorld2D(GetMousePosition(), camera);
     Vector2 gridPos = PixelToGridPosition(mousePos.x, mousePos.y);
     for (auto &character: characters) {
         // skip death characters
         if (character->health <= 0) {
+            continue;
+        }
+        if(onlyEnemies && character->faction == CharacterFaction::Player) {
             continue;
         }
         Vector2 charPos = GetCharacterSpritePos(character->sprite);
@@ -162,10 +165,7 @@ void DrawSelectCharacters(PlayField &playField, std::vector<Character*> &charact
 
 void DrawSelectCharacter(PlayField &playField, Level &level, bool onlyEnemies) {
     playField.selectedCharacter = nullptr;
-    if (!onlyEnemies) {
-        DrawSelectCharacters(playField, level.playerCharacters, YELLOW, level.camera.camera);
-    }
-    DrawSelectCharacters(playField, level.enemyCharacters, RED, level.camera.camera);
+    DrawSelectCharacters(playField, level.allCharacters, RED, level.camera.camera, onlyEnemies);
     if (playField.selectedCharacter != nullptr) {
         DrawStatusText(TextFormat("Selected: %s", playField.selectedCharacter->name.c_str()), YELLOW, 220, 10);
         int range = 1;
@@ -247,10 +247,7 @@ void DrawHealthBar(float x, float y, float width, float health, float maxHealth)
 void DrawGridCharacters(PlayField &playField, Level &level) {
     // Sort characters by y position
     std::vector<Character *> sortedCharacters;
-    for (auto &character: level.playerCharacters) {
-        sortedCharacters.push_back(character);
-    }
-    for (auto &character: level.enemyCharacters) {
+    for (auto &character: level.allCharacters) {
         sortedCharacters.push_back(character);
     }
     std::sort(sortedCharacters.begin(), sortedCharacters.end(), [&level](Character *a, Character *b) {
@@ -404,7 +401,7 @@ void UpdatePlayFieldOLD(PlayField &playField, Level &level, float dt) {
                     auto finalPos = playField.path.path[playField.path.path.size() - 1];
                     SetCharacterSpritePos(level.currentCharacter->sprite, GridToPixelPosition(finalPos.x, finalPos.y));
 
-                    if (IsPlayerCharacter(level, *level.currentCharacter)) {
+                    if (IsPlayerCharacter(*level.currentCharacter)) {
                         level.turnState = TurnState::SelectAction;
                     } else {
                         level.turnState = TurnState::EnemyTurn;
@@ -415,10 +412,7 @@ void UpdatePlayFieldOLD(PlayField &playField, Level &level, float dt) {
     }
 
     // Update animations for all characters
-    for (auto &character: level.playerCharacters) {
-        UpdateCharacterSprite(character->sprite, dt);
-    }
-    for (auto &character: level.enemyCharacters) {
+    for (auto &character: level.allCharacters) {
         UpdateCharacterSprite(character->sprite, dt);
     }
 }
@@ -510,10 +504,7 @@ void UpdatePlayField(PlayField &playField, Level &level, float dt) {
     }
     updateActiveMovement(playField, dt);
     // Update animations for all characters
-    for (auto &character: level.playerCharacters) {
-        UpdateCharacterSprite(character->sprite, dt);
-    }
-    for (auto &character: level.enemyCharacters) {
+    for (auto &character: level.allCharacters) {
         UpdateCharacterSprite(character->sprite, dt);
     }
 }
@@ -535,14 +526,14 @@ static void handleInputPlayFieldShowMove(PlayField &playField, Level &level) {
     playField.selectedTilePos = {-1, -1};
     Vector2 mousePos = GetScreenToWorld2D(GetMousePosition(), level.camera.camera);
     Vector2i gridPos = PixelToGridPositionI(mousePos.x, mousePos.y);
-    if (IsTileOccupied(level, gridPos.x, gridPos.y, nullptr)) {
+    if (!IsTileOccupied(level, gridPos.x, gridPos.y, nullptr)) {
         // calculate a path and draw it as lines
         Path path;
         Vector2i target = PixelToGridPositionI(static_cast<int>(mousePos.x), static_cast<int>(mousePos.y));
-        auto& playerChar = level.playerCharacters.front();
+        auto& playerChar = level.partyCharacters.front();
         if (CalcPath(level, path, PixelToGridPositionI((int) GetCharacterSpritePosX(playerChar->sprite),
                                                        (int) GetCharacterSpritePosY(playerChar->sprite)),
-                     target, playerChar)) {
+                     target, playerChar, IsTileOccupiedEnemies)) {
             playField.selectedTilePos = gridPos;
             if(IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
                 PublishMovePartyEvent(*playField.eventQueue, gridPos);
@@ -603,7 +594,7 @@ void MoveCharacter(PlayField &playField, Level &level, Character *character, Vec
     Path path;
     Vector2i cCharPos = GetCharacterSpritePosI(character->sprite);
     Vector2i cGridPos = PixelToGridPositionI(cCharPos.x, cCharPos.y);
-    if (CalcPath(level, path, cGridPos, target, character)) {
+    if (CalcPath(level, path, cGridPos, target, character, IsTileOccupiedEnemies)) {
         CharacterMove move;
         move.character = character;
         move.path = path;
@@ -619,7 +610,7 @@ void MoveCharacterPartial(PlayField &playField, Level &level, Character *charact
     Path path;
     Vector2i cCharPos = GetCharacterSpritePosI(character->sprite);
     Vector2i cGridPos = PixelToGridPositionI(cCharPos.x, cCharPos.y);
-    CalcPathWithRangePartial(level, path, cGridPos, target, 1, character);
+    CalcPathWithRangePartial(level, path, cGridPos, target, 1, character, IsTileOccupiedEnemies);
     if(!path.path.empty()) {
         CharacterMove move;
         move.character = character;

@@ -49,8 +49,8 @@ struct SpawnPoint {
 struct Level {
     std::string name;
     std::vector<std::string> log;
-    std::vector<Character*> playerCharacters;
-    std::vector<Character*> enemyCharacters;
+    std::vector<Character*> partyCharacters;
+    std::vector<Character*> allCharacters;
     std::vector<Character*> turnOrder;
     Character* currentCharacter = nullptr;
     Character* selectedCharacter = nullptr;
@@ -73,6 +73,7 @@ void CreateLevel(Level &level);
 void LoadLevel(Level &level, const std::string &filename);
 void DestroyLevel(Level &level);
 void WaitTurnState(Level &level, TurnState state, float waitTime);
-void AddPartyToLevel(Level &level, std::vector<Character>& party);
+void AddPartyToLevel(Level &level, std::vector<Character>& party, const std::string& spawnPoint);
+void AddEnemiesToLevel(Level &level, std::vector<Character> &enemies, const std::string& spawnPoint);
 
 #endif //SANDBOX_LEVEL_H

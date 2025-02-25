@@ -37,27 +37,33 @@ Vector2 GridToPixelPosition(int gridX, int gridY) {
 }
 
 bool IsTileOccupied(Level &level, int x, int y, Character *exceptCharacter) {
-    if(GetTileAt(level.tileMap, NAV_LAYER, x, y) != 0) return false;
+    if(GetTileAt(level.tileMap, NAV_LAYER, x, y) != 0) return true;
     // check if any characters are in the way
-    for (auto &character: level.playerCharacters) {
+    for (auto &character: level.allCharacters) {
         // skip dead
         if (character->health <= 0) continue;
         Vector2 gridPos = PixelToGridPosition(GetCharacterSpritePosX(character->sprite), GetCharacterSpritePosY(character->sprite));
         if ((int) gridPos.x == x && (int) gridPos.y == y && character != exceptCharacter) {
             //TraceLog(LOG_WARNING, "Player character in the way, x: %d, y: %d", x, y);
-            return false;
+            return true;
         }
     }
-    for (auto &character: level.enemyCharacters) {
+    return false;
+}
+
+bool IsTileOccupiedEnemies(Level &level, int x, int y, Character *exceptCharacter) {
+    if(GetTileAt(level.tileMap, NAV_LAYER, x, y) != 0) return true;
+    for (auto &character: level.allCharacters) {
         // skip dead
-        if (character->health <= 0) continue;
+        if (character->health <= 0 || character->faction == CharacterFaction::Player)
+            continue;
         Vector2 gridPos = PixelToGridPosition(GetCharacterSpritePosX(character->sprite), GetCharacterSpritePosY(character->sprite));
         if ((int) gridPos.x == x && (int) gridPos.y == y && character != exceptCharacter) {
             //TraceLog(LOG_WARNING, "Enemy character in the way, x: %d, y: %d", x, y);
-            return false;
+            return true;
         }
     }
-    return true;
+    return false;
 }
 
 bool IsTileWalkable(Level &level, int x, int y) {
@@ -70,8 +76,8 @@ bool IsTileBlocking(Level &combat, int x, int y) {
     return false;
 }
 
-bool CalcPath(Level &level, Path &path, Vector2i start, Vector2i end, Character *exceptCharacter) {
-    if (!IsTileOccupied(level, start.x, start.y, exceptCharacter) || !IsTileOccupied(level, end.x, end.y,
+bool CalcPath(Level &level, Path &path, Vector2i start, Vector2i end, Character *exceptCharacter, CHECK_TILE_FUNC) {
+    if (checkTile(level, start.x, start.y, exceptCharacter) || checkTile(level, end.x, end.y,
                                                                                      exceptCharacter)) {
         TraceLog(LOG_WARNING, "Start or end position is blocked, startX: %d, startY: %d, endX: %d, endY: %d", start.x,
                  start.y, end.x, end.y);
@@ -120,7 +126,7 @@ bool CalcPath(Level &level, Path &path, Vector2i start, Vector2i end, Character 
             int neighborX = currentNode->position.x + dir.x;
             int neighborY = currentNode->position.y + dir.y;
 
-            if (!IsTileOccupied(level, neighborX, neighborY, exceptCharacter)) continue;
+            if (checkTile(level, neighborX, neighborY, exceptCharacter)) continue;
             if (closedSet[neighborX][neighborY]) continue;
 
             int tentativeGCost = currentNode->gCost + 1;
@@ -206,8 +212,8 @@ bool CalcPathIgnoreOccupied(Level &level, Path &path, Vector2i start, Vector2i e
 }
 
 bool CalcPathWithRange(Level &level, Path &path, Vector2i start, Vector2i end, int range,
-                       Character *exceptCharacter) {
-    if (!IsTileOccupied(level, start.x, start.y, exceptCharacter)) {
+                       Character *exceptCharacter, CHECK_TILE_FUNC) {
+    if (checkTile(level, start.x, start.y, exceptCharacter)) {
         TraceLog(LOG_WARNING, "Start position is blocked, startX: %d, startY: %d, endX: %d, endY: %d", start.x, start.y,
                  end.x, end.y);
         return false;  // If the start position is blocked, return false
@@ -257,7 +263,7 @@ bool CalcPathWithRange(Level &level, Path &path, Vector2i start, Vector2i end, i
             int neighborX = currentNode->position.x + dir.x;
             int neighborY = currentNode->position.y + dir.y;
 
-            if (!IsTileOccupied(level, neighborX, neighborY, exceptCharacter)) continue;
+            if (checkTile(level, neighborX, neighborY, exceptCharacter)) continue;
             if (closedSet[neighborX][neighborY]) continue;
 
             int tentativeGCost = currentNode->gCost + 1;
@@ -277,8 +283,8 @@ bool CalcPathWithRange(Level &level, Path &path, Vector2i start, Vector2i end, i
 }
 
 bool CalcPathWithRangePartial(Level &level, Path &path, Vector2i start, Vector2i end, int range,
-                              Character *exceptCharacter) {
-    if (!IsTileOccupied(level, start.x, start.y, exceptCharacter)) {
+                              Character *exceptCharacter, CHECK_TILE_FUNC) {
+    if (checkTile(level, start.x, start.y, exceptCharacter)) {
         TraceLog(LOG_WARNING, "Start position is blocked, startX: %d, startY: %d, endX: %d, endY: %d",
                  start.x, start.y, end.x, end.y);
         return false;  // If the start position is blocked, return false
@@ -333,7 +339,7 @@ bool CalcPathWithRangePartial(Level &level, Path &path, Vector2i start, Vector2i
             int neighborX = currentNode->position.x + dir.x;
             int neighborY = currentNode->position.y + dir.y;
 
-            if (!IsTileOccupied(level, neighborX, neighborY, exceptCharacter)) continue;
+            if (checkTile(level, neighborX, neighborY, exceptCharacter)) continue;
             if (closedSet[neighborX][neighborY]) continue;
 
             int tentativeGCost = currentNode->gCost + 1;
@@ -506,18 +512,7 @@ std::vector<Character*> GetTargetsInLine(Level &level, Vector2i start, Vector2 d
         }
 
         // Check if a character is on this tile
-        for (auto &character : level.playerCharacters) {
-            if(character == exceptCharacter) continue;
-            // skip dead
-            if (character->health <= 0) continue;
-            Vector2i charPos = GetCharacterSpritePosI(character->sprite);
-            Vector2i gridPos = PixelToGridPositionI(charPos.x, charPos.y);
-            if (gridPos == tilePos) {
-                affectedCharacters.push_back(character);
-            }
-        }
-
-        for (auto &character : level.enemyCharacters) {
+        for (auto &character : level.allCharacters) {
             if(character == exceptCharacter) continue;
             // skip dead
             if (character->health <= 0) continue;

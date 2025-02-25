@@ -9,7 +9,7 @@
 #include "audio/SoundEffect.h"
 
 static bool AttackIfPossible(Level &level) {
-    auto playersWithinRange = GetAdjacentPlayers(level, *level.currentCharacter);
+    auto playersWithinRange = GetAdjacentCharacters(level, *level.currentCharacter, CharacterFaction::Player);
     level.selectedSkill = nullptr;
     if((int) playersWithinRange.size() > 0) {
         // attack player
@@ -28,7 +28,7 @@ static bool AttackIfPossible(Level &level) {
 }
 
 static bool MoveIfPossible(Level& level, PlayField& playField) {
-    auto playersWithinRange = GetPlayersWithinMoveRange(level, *level.currentCharacter, 1, true);
+    auto playersWithinRange = GetCharactersWithinMoveRange(level, *level.currentCharacter, 1, true, CharacterFaction::Player);
     SortCharactersByThreat(level, playersWithinRange);
 
     if((int) playersWithinRange.size() > 0) {
@@ -49,7 +49,7 @@ static bool MoveIfPossible(Level& level, PlayField& playField) {
 }
 
 static bool PartialMoveIfPossible(Level& level, PlayField& playField) {
-    auto playersWithinRange = GetPlayersWithinMoveRangePartial(level, *level.currentCharacter, 1, false);
+    auto playersWithinRange = GetCharactersWithinMoveRangePartial(level, *level.currentCharacter, 1, false, CharacterFaction::Player);
     SortCharactersByThreat(level, playersWithinRange);
 
     if((int) playersWithinRange.size() > 0 && level.currentCharacter->movePoints > 0) {
