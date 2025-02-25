@@ -13,7 +13,7 @@
 #include "LevelCamera.h"
 
 enum class TurnState {
-    Explore,
+    None,
     StartTurn,
     EndTurn,
     SelectDestination,

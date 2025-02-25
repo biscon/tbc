@@ -96,7 +96,7 @@ void LoadLevel(Level &level, const std::string &filename) {
         level.spawnPoints[name] = sp;
     }
     level.inCombat = false;
-    level.turnState = TurnState::Explore;
+    level.turnState = TurnState::None;
     level.camera.worldWidth = level.tileMap.width * level.tileMap.tileWidth;
     level.camera.worldHeight = level.tileMap.height * level.tileMap.tileHeight;
 }
