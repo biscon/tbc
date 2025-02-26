@@ -2,7 +2,9 @@
 // Created by bison on 26-01-25.
 //
 
+#include <cmath>
 #include "CharacterSprite.h"
+#include "ai/PathFinding.h"
 
 static void LoadAnimType(std::map<SpriteAnimationType, SpriteAnimation*>& animations, const std::string& animType, bool hasAttacks) {
     animations[SpriteAnimationType::WalkUp] = GetSpriteAnimation(animType + "WalkUp");
@@ -54,6 +56,10 @@ Vector2 GetCharacterSpritePos(CharacterSprite &sprite) {
 
 Vector2i GetCharacterSpritePosI(CharacterSprite &sprite) {
     return Vector2i{(int)sprite.bodyPlayer.position.x, (int)sprite.bodyPlayer.position.y};
+}
+
+Vector2i GetCharacterGridPosI(CharacterSprite &sprite) {
+    return PixelToGridPositionI((int)sprite.bodyPlayer.position.x, (int)sprite.bodyPlayer.position.y);
 }
 
 float GetCharacterSpritePosX(CharacterSprite &sprite) {

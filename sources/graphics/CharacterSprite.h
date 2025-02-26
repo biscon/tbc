@@ -34,6 +34,7 @@ SpriteAnimation* GetCharacterAnimationBody(CharacterSprite& sprite, SpriteAnimat
 SpriteAnimation* GetCharacterAnimationWeapon(CharacterSprite& sprite, SpriteAnimationType type);
 Vector2 GetCharacterSpritePos(CharacterSprite& sprite);
 Vector2i GetCharacterSpritePosI(CharacterSprite& sprite);
+Vector2i GetCharacterGridPosI(CharacterSprite &sprite);
 float GetCharacterSpritePosX(CharacterSprite& sprite);
 float GetCharacterSpritePosY(CharacterSprite& sprite);
 void SetCharacterSpritePos(CharacterSprite& sprite, Vector2 pos);

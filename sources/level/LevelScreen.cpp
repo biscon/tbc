@@ -20,7 +20,7 @@
 #include "level/StatusEffectRunner.h"
 #include "level/CombatAnimation.h"
 #include "audio/SoundEffect.h"
-
+#include <cassert>
 
 void CreateLevelScreen(LevelScreen &levelScreen, GameEventQueue* eventQueue) {
     levelScreen.actionIconScrollIndex = 0;
@@ -385,31 +385,6 @@ static void UpdateAnimations(Level &combat, float dt) {
     );
 }
 
-static void FaceCharacter(Character &attacker, Character &defender) {
-    // Determine the direction of movement and set the appropriate animation
-    Vector2 start = GetCharacterSpritePos(attacker.sprite);
-    Vector2 end = GetCharacterSpritePos(defender.sprite);
-    if (fabs(end.x - start.x) > fabs(end.y - start.y)) {
-        // Horizontal movement
-        if (end.x > start.x) {
-            StartPausedCharacterSpriteAnim(attacker.sprite, SpriteAnimationType::WalkRight, true);
-            attacker.orientation = Orientation::Right;
-        } else {
-            StartPausedCharacterSpriteAnim(attacker.sprite, SpriteAnimationType::WalkLeft, true);
-            attacker.orientation = Orientation::Left;
-        }
-    } else {
-        // Vertical movement
-        if (end.y > start.y) {
-            StartPausedCharacterSpriteAnim(attacker.sprite, SpriteAnimationType::WalkDown, true);
-            attacker.orientation = Orientation::Down;
-        } else {
-            StartPausedCharacterSpriteAnim(attacker.sprite, SpriteAnimationType::WalkUp, true);
-            attacker.orientation = Orientation::Up;
-        }
-    }
-}
-
 void UpdateLevelScreen(Level &level, LevelScreen &levelScreen, PlayField& playField, float dt) {
 
     switch(level.turnState) {
@@ -502,9 +477,12 @@ void UpdateLevelScreen(Level &level, LevelScreen &levelScreen, PlayField& playFi
         }
         case TurnState::Attack: {
             TraceLog(LOG_INFO, "Attack");
+
             level.attackResult = Attack(level, *level.currentCharacter, *level.selectedCharacter);
             FaceCharacter(*level.currentCharacter, *level.selectedCharacter);
             FaceCharacter(*level.selectedCharacter, *level.currentCharacter);
+            assert(level.attackResult.defender == level.selectedCharacter);
+            assert(level.attackResult.attacker == level.currentCharacter);
 
             PlayAttackDefendAnimation(level, *level.currentCharacter, *level.selectedCharacter);
 
@@ -514,6 +492,8 @@ void UpdateLevelScreen(Level &level, LevelScreen &levelScreen, PlayField& playFi
             break;
         }
         case TurnState::AttackDone: {
+            assert(level.attackResult.defender == level.selectedCharacter);
+            assert(level.attackResult.attacker == level.currentCharacter);
             float attackerX = GetCharacterSpritePosX(level.currentCharacter->sprite);
             float attackerY = GetCharacterSpritePosY(level.currentCharacter->sprite);
             float defenderX = GetCharacterSpritePosX(level.selectedCharacter->sprite);
@@ -521,7 +501,7 @@ void UpdateLevelScreen(Level &level, LevelScreen &levelScreen, PlayField& playFi
             int damage = level.attackResult.damage;
             if(damage > 0) {
                 float intensity = (float) GetBloodIntensity(damage, GetAttack(*level.currentCharacter));
-                //TraceLog(LOG_INFO, "Damage: %d, intensity: %f", damage, intensity);
+                TraceLog(LOG_INFO, "Damage: %d, intensity: %f", damage, intensity);
                 Vector2 bloodPos = {defenderX + (float) RandomInRange(-2,2), defenderY - 8 + (float) RandomInRange(-2,2)};
                 CreateBloodSplatter(*playField.particleManager, bloodPos, 10, intensity);
                 Animation damageNumberAnim{};

@@ -2,6 +2,7 @@
 // Created by bison on 09-02-25.
 //
 
+#include <cassert>
 #include "MenuGameMode.h"
 #include "raylib.h"
 #include "raygui.h"
@@ -19,31 +20,31 @@ void MenuUpdate(float dt) {
 }
 
 static void StartNewGame() {
-    Character warrior;
+    //game->party.reserve(10);
+    game->party.emplace_back();
+    Character &warrior = game->party.back();
     CreateCharacter(warrior, CharacterClass::Warrior, CharacterFaction::Player, "Player1", "Fighter");
     AssignSkill(warrior.skills, SkillType::Taunt, "Howling Scream", 1, false, true, 0, 3, 0);
     AssignSkill(warrior.skills, SkillType::Stun, "Stunning Blow", 1, false, false, 0, 3, 1);
     InitCharacterSprite(warrior.sprite, "MaleWarrior", true);
     GiveWeapon(warrior, "Sword");
+    LevelUp(warrior, true);
+    LevelUp(warrior, true);
+    LevelUp(warrior, true);
+    LevelUp(warrior, true);
 
-    LevelUp(warrior, true);
-    LevelUp(warrior, true);
-    LevelUp(warrior, true);
-    LevelUp(warrior, true);
-    game->party.push_back(warrior);
 
-    Character mage;
+    game->party.emplace_back();
+    Character &mage = game->party.back();
     CreateCharacter(mage, CharacterClass::Mage, CharacterFaction::Player, "Player2", "Fighter");
     AssignSkill(mage.skills, SkillType::Dodge, "Dodge", 1, true, true, 0, 0, 0);
     AssignSkill(mage.skills, SkillType::FlameJet, "Burning Hands", 1, false, false, 0, 3, 5);
     InitCharacterSprite(mage.sprite, "MaleBase", true);
     GiveWeapon(mage, "Bow");
-
     LevelUp(mage, true);
     LevelUp(mage, true);
     LevelUp(mage, true);
     LevelUp(mage, true);
-    game->party.push_back(mage);
 
     game->state = GameState::LOAD_LEVEL;
     PushGameMode(GameModes::Level);

@@ -43,5 +43,6 @@ void CreateWeapon(Weapon &weapon, const std::string &name) {
         weapon.range = it->second.range;
     } else {
         TraceLog(LOG_ERROR, "CreateWeapon: Weapon template not found: %s", name.c_str());
+        std::abort();
     }
 }

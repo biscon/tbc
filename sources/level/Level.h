@@ -50,6 +50,7 @@ struct Level {
     std::string name;
     std::vector<std::string> log;
     std::vector<Character*> partyCharacters;
+    std::vector<Character*> enemyCharacters;
     std::vector<Character*> allCharacters;
     std::vector<Character*> turnOrder;
     Character* currentCharacter = nullptr;

@@ -21,7 +21,9 @@ FetchContent_MakeAvailable(raylib)
 
 # Add these flags for debug builds
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
-    set(SANITIZER_FLAGS "-fsanitize=address -g") # -O1 -fno-omit-frame-pointer
+    set(SANITIZER_FLAGS "-fsanitize=address -fno-omit-frame-pointer -fno-strict-aliasing -g") # -O1 -fno-omit-frame-pointer
+    #set(SANITIZER_FLAGS "-g")
+    #set(SANITIZER_FLAGS "-fno-strict-aliasing -O3") # -O1 -fno-omit-frame-pointer
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${SANITIZER_FLAGS}")
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${SANITIZER_FLAGS}")
 endif()

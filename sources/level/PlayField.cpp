@@ -4,6 +4,8 @@
 
 #include <algorithm>
 #include <cmath>
+#include <queue>
+#include <unordered_set>
 #include "PlayField.h"
 #include "raylib.h"
 #include "ui/UI.h"
@@ -332,19 +334,7 @@ void DrawTileSelection(PlayField &playField, Level &level) {
     }
 }
 
-void UpdatePlayFieldOLD(PlayField &playField, Level &level, float dt) {
-    // Update the pulsing alpha
-    if (playField.increasing) {
-        playField.highlightAlpha = Lerp(playField.highlightAlpha, 1.0f, dt * playField.pulseSpeed);
-        if (playField.highlightAlpha >= 0.99f) {
-            playField.increasing = false;
-        }
-    } else {
-        playField.highlightAlpha = Lerp(playField.highlightAlpha, 0.25f, dt * playField.pulseSpeed);
-        if (playField.highlightAlpha <= 0.26f) {
-            playField.increasing = true;
-        }
-    }
+static void updateTurnBasedMove(PlayField &playField, Level &level, float dt) {
     if (playField.moving) {
         playField.path.moveTime += dt;
 
@@ -410,14 +400,9 @@ void UpdatePlayFieldOLD(PlayField &playField, Level &level, float dt) {
             }
         }
     }
-
-    // Update animations for all characters
-    for (auto &character: level.allCharacters) {
-        UpdateCharacterSprite(character->sprite, dt);
-    }
 }
 
-void updateActiveMovement(PlayField &playField, float dt) {
+static void updateActiveMovement(PlayField &playField, float dt) {
     for(auto& move : playField.activeMoves) {
         move.path.moveTime += dt;
 
@@ -489,6 +474,23 @@ void updateActiveMovement(PlayField &playField, float dt) {
     );
 }
 
+static void checkIfPartySpotted(PlayField &playField, Level &level) {
+    for(auto& c : level.allCharacters) {
+        if(c->faction != CharacterFaction::Enemy) {
+            continue;
+        }
+        Vector2i enemyGridPos = GetCharacterGridPosI(c->sprite);
+        for(auto& partyChar : level.partyCharacters) {
+            Vector2i partyGridPos = GetCharacterGridPosI(partyChar->sprite);
+            if(HasLineOfSight(level, enemyGridPos, partyGridPos, 5)) {
+                TraceLog(LOG_INFO, "Party last spotted by %s", c->name.c_str());
+                PublishPartySpottedEvent(*playField.eventQueue, c);
+                return;
+            }
+        }
+    }
+}
+
 void UpdatePlayField(PlayField &playField, Level &level, float dt) {
     // Update the pulsing alpha
     if (playField.increasing) {
@@ -503,9 +505,14 @@ void UpdatePlayField(PlayField &playField, Level &level, float dt) {
         }
     }
     updateActiveMovement(playField, dt);
+    updateTurnBasedMove(playField, level, dt);
+
     // Update animations for all characters
     for (auto &character: level.allCharacters) {
         UpdateCharacterSprite(character->sprite, dt);
+    }
+    if(level.turnState == TurnState::None) {
+        checkIfPartySpotted(playField, level);
     }
 }
 
@@ -564,6 +571,8 @@ void DrawPlayField(PlayField &playField, Level &level) {
 
     if(playField.mode == PlayFieldMode::Move) {
         DrawTileSelection(playField, level);
+    } else {
+        DrawPathAndSelection(playField, level);
     }
 
     DrawGridCharacters(playField, level);

@@ -19,5 +19,6 @@ bool IsIncapacitated(Character* character);
 void DecayThreat(Level& level, int amount);
 void SetTaunt(Level& level, Character* target);
 void NextCharacter(Level &level);
+void StartCombat(Level &level, Character &spotter, int maxDist);
 
 #endif //SANDBOX_COMBAT_H

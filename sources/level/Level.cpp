@@ -16,50 +16,8 @@ void WaitTurnState(Level &level, TurnState state, float waitTime) {
     level.turnState = TurnState::Waiting;
 }
 
-static void InitializeThreatTable(Level& combat) {
-    combat.threatTable.clear();
-    for (const auto& player : combat.partyCharacters) {
-        combat.threatTable[player] = 0;
-    }
-}
-
 void CreateLevel(Level &level) {
-    /*
-    std::vector<std::pair<int, Character*>> allCharacters;
-    for (auto & playerCharacter : playerCharacters) {
-        allCharacters.emplace_back(playerCharacter.speed, &playerCharacter);
-        level.playerCharacters.emplace_back(&playerCharacter);
-    }
-    for (auto & enemyCharacter : enemyCharacters) {
-        allCharacters.emplace_back(enemyCharacter.speed, &enemyCharacter);
-        level.enemyCharacters.emplace_back(&enemyCharacter);
-    }
-
-    // Sort by speed, then randomize in case of tie
-    std::sort(allCharacters.begin(), allCharacters.end(), [](std::pair<int, Character*> &left, std::pair<int, Character*> &right) {
-        if (left.first != right.first) return left.first > right.first;
-        return left.second < right.second;  // Compare by pointer address
-    });
-
-    // Now set the current order
-    for (auto &pair : allCharacters) {
-        level.turnOrder.push_back(pair.second);
-    }
-
-    InitializeThreatTable(level);
-
-    level.currentCharacter = level.turnOrder[0];
-    level.currentCharacterIdx = 0;
-
-    combat.nextState = TurnState::StartRound;
-    combat.waitTime = 3.0f;
-    combat.turnState = TurnState::Waiting;
-    Animation textAnim{};
-    SetupTextAnimation(textAnim, "First round!", 125, 2.0f, 0.0f);
-    combat.animations.push_back(textAnim);
-
-    level.turnState = TurnState::Explore;
-    */
+    level.turnState = TurnState::None;
     InitLevelCamera(level.camera);
 }
 

@@ -2,6 +2,7 @@
 // Created by bison on 29-01-25.
 //
 
+#include <cassert>
 #include "LevelGameMode.h"
 #include "audio/SoundEffect.h"
 #include "character/Character.h"
@@ -14,12 +15,16 @@
 
 static Game* game;
 
+/*
 static std::vector<Character> enemyCharacters = {
         {CharacterClass::Warrior, CharacterFaction::Enemy, "Enemy1", "Fighter", 16,  16,  5, 3, 4, 0, 0, 0, 1, {}},
         {CharacterClass::Warrior, CharacterFaction::Enemy, "Enemy2", "Fighter", 16,  16,  5, 3, 4, 0, 0, 0, 1, {}},
         //{CharacterClass::Warrior, "Enemy3", "Fighter", 20,  20,  5, 3, 4, 0, 0, 0, 1, {}},
         //{CharacterClass::Warrior, "Enemy4", "Fighter", 20,  20,  5, 3, 4, 0, 0, 0, 1, {}},
 };
+*/
+
+static std::vector<Character> enemyCharacters;
 
 static Level level;
 static LevelScreen levelScreen;
@@ -45,6 +50,11 @@ static void processEvents() {
             case GameEventType::MoveParty: {
                 StartCameraPanToTilePos(level.camera, event.moveParty.target, 250.0f);
                 moveParty(event.moveParty.target);
+                break;
+            }
+            case GameEventType::PartySpotted: {
+                playField.mode = PlayFieldMode::Normal;
+                StartCombat(level, *event.partySpotted.spotter, 5);
                 break;
             }
             default:
@@ -213,14 +223,26 @@ void LevelPause() {
 }
 
 static void createTestEnemies() {
-    for(auto &character : enemyCharacters) {
-        InitCharacterSprite(character.sprite, "MaleNinja", true);
-        GiveWeapon(character, "Bow");
-        LevelUp(character, true);
-        LevelUp(character, true);
-        LevelUp(character, true);
-        LevelUp(character, true);
-    }
+    enemyCharacters.emplace_back();
+    Character& w1 = enemyCharacters.back();
+    CreateCharacter(w1, CharacterClass::Warrior, CharacterFaction::Enemy, "Enemy1", "Fighter");
+    InitCharacterSprite(w1.sprite, "MaleNinja", true);
+    GiveWeapon(w1, "Sword");
+    LevelUp(w1, true);
+    LevelUp(w1, true);
+    LevelUp(w1, true);
+    LevelUp(w1, true);
+
+    enemyCharacters.emplace_back();
+    Character& w2 = enemyCharacters.back();
+    CreateCharacter(w2, CharacterClass::Warrior, CharacterFaction::Enemy, "Enemy2", "Fighter");
+    InitCharacterSprite(w2.sprite, "MaleNinja", true);
+    GiveWeapon(w2, "Sword");
+    LevelUp(w2, true);
+    LevelUp(w2, true);
+    LevelUp(w2, true);
+    LevelUp(w2, true);
+
     AddEnemiesToLevel(level, enemyCharacters, "enemies");
 }
 

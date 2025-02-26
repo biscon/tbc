@@ -2,6 +2,7 @@
 // Created by bison on 09-01-25.
 //
 
+#include <cmath>
 #include "Character.h"
 #include "util/Random.h"
 
@@ -73,18 +74,18 @@ void CreateCharacter(Character &character, CharacterClass characterClass, Charac
     character.characterClass = characterClass;
     character.orientation = Orientation::Right;
     character.weapon = Weapon{};
-    character.equippedWeapon = nullptr;
+    character.isWeaponEquipped = false;
 }
 
 void GiveWeapon(Character &character, Weapon &weapon) {
     character.weapon = weapon;
-    character.equippedWeapon = &character.weapon;
+    character.isWeaponEquipped = true;
     SetCharacterSpriteWeaponAnimation(character.sprite, weapon.weaponTemplate->animationTemplate);
 }
 
 void GiveWeapon(Character &character, const std::string& weaponTemplate) {
     CreateWeapon(character.weapon, weaponTemplate);
-    character.equippedWeapon = &character.weapon;
+    character.isWeaponEquipped = true;
     SetCharacterSpriteWeaponAnimation(character.sprite, character.weapon.weaponTemplate->animationTemplate);
 }
 
@@ -211,8 +212,33 @@ void LevelUp(Character &character, bool autoDistributePoints) {
 }
 
 int GetAttack(const Character &character) {
-    if(character.equippedWeapon != nullptr) {
-        return character.attack + character.equippedWeapon->baseAttack;
+    if(character.isWeaponEquipped) {
+        return character.attack + character.weapon.baseAttack;
     }
     return character.attack;
+}
+
+void FaceCharacter(Character &attacker, Character &defender) {
+    // Determine the direction of movement and set the appropriate animation
+    Vector2 start = GetCharacterSpritePos(attacker.sprite);
+    Vector2 end = GetCharacterSpritePos(defender.sprite);
+    if (fabs(end.x - start.x) > fabs(end.y - start.y)) {
+        // Horizontal movement
+        if (end.x > start.x) {
+            StartPausedCharacterSpriteAnim(attacker.sprite, SpriteAnimationType::WalkRight, true);
+            attacker.orientation = Orientation::Right;
+        } else {
+            StartPausedCharacterSpriteAnim(attacker.sprite, SpriteAnimationType::WalkLeft, true);
+            attacker.orientation = Orientation::Left;
+        }
+    } else {
+        // Vertical movement
+        if (end.y > start.y) {
+            StartPausedCharacterSpriteAnim(attacker.sprite, SpriteAnimationType::WalkDown, true);
+            attacker.orientation = Orientation::Down;
+        } else {
+            StartPausedCharacterSpriteAnim(attacker.sprite, SpriteAnimationType::WalkUp, true);
+            attacker.orientation = Orientation::Up;
+        }
+    }
 }

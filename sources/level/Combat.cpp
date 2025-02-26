@@ -5,6 +5,9 @@
 #include <algorithm>
 #include <cmath>
 #include <climits>
+#include <queue>
+#include <unordered_set>
+#include <cassert>
 #include "Combat.h"
 #include "util/Random.h"
 #include "graphics/Animation.h"
@@ -180,17 +183,21 @@ static void CalculateDamage(Level& combat, Character &attacker, Character &defen
     // Base baseAttack calculation
     float totalAttack = (float) attacker.attack;
     int effectiveDefense = defender.defense;
-    if (attacker.equippedWeapon != nullptr) {
+
+
+    if (attacker.isWeaponEquipped && attacker.weapon.weaponTemplate) {
         int scalingStatValue = 0;
-        switch(attacker.equippedWeapon->weaponTemplate->scalingStat) {
+        switch (attacker.weapon.weaponTemplate->scalingStat) {
             case ScalingStat::Attack: scalingStatValue = attacker.attack; break;
             case ScalingStat::Speed: scalingStatValue = attacker.speed; break;
             default: break;
         }
-        totalAttack = (float) scalingStatValue * attacker.equippedWeapon->weaponTemplate->attackMultiplier + (float) attacker.equippedWeapon->weaponTemplate->baseAttack;
-
-        effectiveDefense = (int) ((float) defender.defense * (1.0f - attacker.equippedWeapon->weaponTemplate->armorPenetration));
+        totalAttack = (float) scalingStatValue * attacker.weapon.weaponTemplate->attackMultiplier +
+                      (float) attacker.weapon.weaponTemplate->baseAttack;
+        assert(totalAttack < 100.0f);
+        effectiveDefense = (int)((float) defender.defense * (1.0f - attacker.weapon.weaponTemplate->armorPenetration));
     }
+
     TraceLog(LOG_INFO, "Total attack: %f", totalAttack);
     TraceLog(LOG_INFO, "Effective defense: %i", effectiveDefense);
     int attackerAttack = (int) totalAttack;
@@ -382,4 +389,69 @@ void NextCharacter(Level &level) {
 
     level.turnState = TurnState::Waiting;
     TraceLog(LOG_INFO, "Next character: %s", level.currentCharacter->name.c_str());
+}
+
+static void InitializeThreatTable(Level& level) {
+    level.threatTable.clear();
+    for (const auto& player : level.partyCharacters) {
+        level.threatTable[player] = 0;
+    }
+}
+
+void StartCombat(Level &level, Character &spotter, int maxDist) {
+    std::queue<Character*> queue;
+    std::unordered_set<Character*> alertedEnemies;
+
+    queue.push(&spotter);
+    alertedEnemies.insert(&spotter);
+
+    while (!queue.empty()) {
+        Character* current = queue.front();
+        queue.pop();
+        Vector2i currentGridPos = GetCharacterGridPosI(current->sprite);
+
+        for (auto &enemy : level.allCharacters) {
+            if (enemy == current || alertedEnemies.count(enemy) || enemy->faction != CharacterFaction::Enemy) continue;
+            Vector2i enemyGridPos = GetCharacterGridPosI(enemy->sprite);
+            if (HasLineOfSight(level, currentGridPos, enemyGridPos, maxDist)) {
+                alertedEnemies.insert(enemy);
+                queue.push(enemy);
+            }
+        }
+    }
+    if(!alertedEnemies.empty()) {
+        TraceLog(LOG_INFO, "%d enemies alerted.", alertedEnemies.size());
+    }
+
+    std::vector<std::pair<int, Character*>> allCharacters;
+    for (auto &enemy : alertedEnemies) {
+        level.enemyCharacters.emplace_back(enemy);
+        allCharacters.emplace_back(enemy->speed, enemy);
+    }
+    for (auto &c : level.partyCharacters) {
+        allCharacters.emplace_back(c->speed, c);
+    }
+
+    // Sort by speed, then randomize in case of tie
+    std::sort(allCharacters.begin(), allCharacters.end(), [](std::pair<int, Character*> &left, std::pair<int, Character*> &right) {
+        if (left.first != right.first) return left.first > right.first;
+        return left.second < right.second;  // Compare by pointer address
+    });
+
+    // Now set the current order
+    for (auto &pair : allCharacters) {
+        level.turnOrder.push_back(pair.second);
+    }
+
+    InitializeThreatTable(level);
+
+    level.currentCharacter = level.turnOrder[0];
+    level.currentCharacterIdx = 0;
+
+    level.nextState = TurnState::StartRound;
+    level.waitTime = 3.0f;
+    level.turnState = TurnState::Waiting;
+    Animation textAnim{};
+    SetupTextAnimation(textAnim, "First round!", 125, 2.0f, 0.0f);
+    level.animations.push_back(textAnim);
 }

@@ -51,7 +51,7 @@ struct Character {
     std::vector<StatusEffect> statusEffects;
     Orientation orientation;
     Weapon weapon;
-    Weapon* equippedWeapon;
+    bool isWeaponEquipped;
 };
 
 void CreateCharacter(Character &character, CharacterClass characterClass, CharacterFaction faction, std::string name, std::string ai);
@@ -63,5 +63,6 @@ void GiveWeapon(Character &character, const std::string& weaponTemplate);
 Vector2 GetOrientationVector(Orientation orientation);
 void LevelUp(Character &character, bool autoDistributePoints);
 int GetAttack(const Character &character);
+void FaceCharacter(Character &attacker, Character &defender);
 
 #endif //SANDBOX_CHARACTER_H

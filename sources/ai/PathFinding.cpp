@@ -8,6 +8,8 @@
 #include <functional>
 #include <algorithm>
 
+#define NODE_POOL_SIZE 1024  // Pre-allocated node pool size
+
 struct Node {
     Vector2i position;
     int gCost, hCost;
@@ -17,6 +19,53 @@ struct Node {
 
     int fCost() const { return gCost + hCost; }
 };
+
+class NodePool {
+public:
+    NodePool() {
+        nodes.reserve(NODE_POOL_SIZE);
+        for (int i = 0; i < NODE_POOL_SIZE; ++i) {
+            nodes.push_back(nullptr);
+        }
+    }
+
+    Node* acquireNode(Vector2i position, int gCost, int hCost, Node* parent = nullptr) {
+        if (nodeIndex < NODE_POOL_SIZE) {
+            if (nodes[nodeIndex] == nullptr) {
+                nodes[nodeIndex] = new Node(position, gCost, hCost, parent);
+            } else {
+                nodes[nodeIndex]->position = position;
+                nodes[nodeIndex]->gCost = gCost;
+                nodes[nodeIndex]->hCost = hCost;
+                nodes[nodeIndex]->parent = parent;
+            }
+            return nodes[nodeIndex++];
+        } else {
+            // If we exceed the pool size, trigger an error
+            std::cerr << "Error: Node pool exceeded the maximum size of " << NODE_POOL_SIZE << " nodes.\n";
+            std::abort();  // or use assert(nodeIndex < NODE_POOL_SIZE)
+            return nullptr;  // Just to silence the compiler warning
+        }
+    }
+
+    void reset() {
+        nodeIndex = 0;
+    }
+
+    ~NodePool() {
+        // Cleanup nodes
+        for (Node* node : nodes) {
+            delete node;
+        }
+    }
+
+private:
+    std::vector<Node*> nodes;
+    int nodeIndex = 0;
+};
+
+// Static global node pool
+static NodePool nodePool;
 
 Vector2 PixelToGridPosition(float pixelX, float pixelY) {
     int gridX = static_cast<int>((pixelX) / 16.0f);
@@ -77,8 +126,7 @@ bool IsTileBlocking(Level &combat, int x, int y) {
 }
 
 bool CalcPath(Level &level, Path &path, Vector2i start, Vector2i end, Character *exceptCharacter, CHECK_TILE_FUNC) {
-    if (checkTile(level, start.x, start.y, exceptCharacter) || checkTile(level, end.x, end.y,
-                                                                                     exceptCharacter)) {
+    if (checkTile(level, start.x, start.y, exceptCharacter) || checkTile(level, end.x, end.y, exceptCharacter)) {
         TraceLog(LOG_WARNING, "Start or end position is blocked, startX: %d, startY: %d, endX: %d, endY: %d", start.x,
                  start.y, end.x, end.y);
         return false;  // If the start or end is blocked, return false
@@ -89,7 +137,7 @@ bool CalcPath(Level &level, Path &path, Vector2i start, Vector2i end, Character 
     std::priority_queue<Node *, std::vector<Node *>, std::function<bool(Node *, Node *)>> openSet(
             [](Node *a, Node *b) { return a->fCost() > b->fCost(); });
 
-    Node *startNode = new Node(start, 0, std::abs(start.x - end.x) + std::abs(start.y - end.y));
+    Node *startNode = nodePool.acquireNode(start, 0, std::abs(start.x - end.x) + std::abs(start.y - end.y));
     openSet.push(startNode);
     allNodes[start.x][start.y] = startNode;
 
@@ -117,6 +165,8 @@ bool CalcPath(Level &level, Path &path, Vector2i start, Vector2i end, Character 
             path.currentStep = 0;
             path.moveTime = 0.0f;
             path.moveSpeed = 0.15f;  // This can be adjusted based on game mechanics
+
+            nodePool.reset();  // Reset node pool for next call
             return true;
         }
 
@@ -133,14 +183,16 @@ bool CalcPath(Level &level, Path &path, Vector2i start, Vector2i end, Character 
             Node *neighborNode = allNodes[neighborX][neighborY];
 
             if (!neighborNode || tentativeGCost < neighborNode->gCost) {
-                neighborNode = new Node(Vector2i(neighborX, neighborY), tentativeGCost,
-                                        std::abs(neighborX - end.x) + std::abs(neighborY - end.y), currentNode);
+                neighborNode = nodePool.acquireNode(Vector2i(neighborX, neighborY), tentativeGCost,
+                                                    std::abs(neighborX - end.x) + std::abs(neighborY - end.y), currentNode);
 
                 allNodes[neighborX][neighborY] = neighborNode;
                 openSet.push(neighborNode);
             }
         }
     }
+
+    nodePool.reset();  // Reset node pool for next call
     return false;  // Path not found
 }
 
@@ -156,7 +208,7 @@ bool CalcPathIgnoreOccupied(Level &level, Path &path, Vector2i start, Vector2i e
     std::priority_queue<Node *, std::vector<Node *>, std::function<bool(Node *, Node *)>> openSet(
             [](Node *a, Node *b) { return a->fCost() > b->fCost(); });
 
-    Node *startNode = new Node(start, 0, std::abs(start.x - end.x) + std::abs(start.y - end.y));
+    Node *startNode = nodePool.acquireNode(start, 0, std::abs(start.x - end.x) + std::abs(start.y - end.y));
     openSet.push(startNode);
     allNodes[start.x][start.y] = startNode;
 
@@ -184,6 +236,8 @@ bool CalcPathIgnoreOccupied(Level &level, Path &path, Vector2i start, Vector2i e
             path.currentStep = 0;
             path.moveTime = 0.0f;
             path.moveSpeed = 0.15f;  // This can be adjusted based on game mechanics
+
+            nodePool.reset();  // Reset node pool for next call
             return true;
         }
 
@@ -200,16 +254,19 @@ bool CalcPathIgnoreOccupied(Level &level, Path &path, Vector2i start, Vector2i e
             Node *neighborNode = allNodes[neighborX][neighborY];
 
             if (!neighborNode || tentativeGCost < neighborNode->gCost) {
-                neighborNode = new Node(Vector2i(neighborX, neighborY), tentativeGCost,
-                                        std::abs(neighborX - end.x) + std::abs(neighborY - end.y), currentNode);
+                neighborNode = nodePool.acquireNode(Vector2i(neighborX, neighborY), tentativeGCost,
+                                                    std::abs(neighborX - end.x) + std::abs(neighborY - end.y), currentNode);
 
                 allNodes[neighborX][neighborY] = neighborNode;
                 openSet.push(neighborNode);
             }
         }
     }
+
+    nodePool.reset();  // Reset node pool for next call
     return false;  // Path not found
 }
+
 
 bool CalcPathWithRange(Level &level, Path &path, Vector2i start, Vector2i end, int range,
                        Character *exceptCharacter, CHECK_TILE_FUNC) {
@@ -224,7 +281,7 @@ bool CalcPathWithRange(Level &level, Path &path, Vector2i start, Vector2i end, i
     std::priority_queue<Node *, std::vector<Node *>, std::function<bool(Node *, Node *)>> openSet(
             [](Node *a, Node *b) { return a->fCost() > b->fCost(); });
 
-    Node *startNode = new Node(start, 0, std::abs(start.x - end.x) + std::abs(start.y - end.y));
+    Node *startNode = nodePool.acquireNode(start, 0, std::abs(start.x - end.x) + std::abs(start.y - end.y));
     openSet.push(startNode);
     allNodes[start.x][start.y] = startNode;
 
@@ -254,6 +311,8 @@ bool CalcPathWithRange(Level &level, Path &path, Vector2i start, Vector2i end, i
             path.currentStep = 0;
             path.moveTime = 0.0f;
             path.moveSpeed = 0.15f;  // This can be adjusted based on game mechanics
+
+            nodePool.reset();  // Reset node pool for next call
             return true;
         }
 
@@ -270,8 +329,8 @@ bool CalcPathWithRange(Level &level, Path &path, Vector2i start, Vector2i end, i
             Node *neighborNode = allNodes[neighborX][neighborY];
 
             if (!neighborNode || tentativeGCost < neighborNode->gCost) {
-                neighborNode = new Node(Vector2i(neighborX, neighborY), tentativeGCost,
-                                        std::abs(neighborX - end.x) + std::abs(neighborY - end.y), currentNode);
+                neighborNode = nodePool.acquireNode(Vector2i(neighborX, neighborY), tentativeGCost,
+                                                    std::abs(neighborX - end.x) + std::abs(neighborY - end.y), currentNode);
 
                 allNodes[neighborX][neighborY] = neighborNode;
                 openSet.push(neighborNode);
@@ -279,6 +338,7 @@ bool CalcPathWithRange(Level &level, Path &path, Vector2i start, Vector2i end, i
         }
     }
 
+    nodePool.reset();  // Reset node pool for next call
     return false;  // Path not found
 }
 
@@ -295,7 +355,7 @@ bool CalcPathWithRangePartial(Level &level, Path &path, Vector2i start, Vector2i
     std::priority_queue<Node *, std::vector<Node *>, std::function<bool(Node *, Node *)>> openSet(
             [](Node *a, Node *b) { return a->fCost() > b->fCost(); });
 
-    Node *startNode = new Node(start, 0, std::abs(start.x - end.x) + std::abs(start.y - end.y));
+    Node *startNode = nodePool.acquireNode(start, 0, std::abs(start.x - end.x) + std::abs(start.y - end.y));
     openSet.push(startNode);
     allNodes[start.x][start.y] = startNode;
 
@@ -324,6 +384,8 @@ bool CalcPathWithRangePartial(Level &level, Path &path, Vector2i start, Vector2i
             path.currentStep = 0;
             path.moveTime = 0.0f;
             path.moveSpeed = 0.15f;  // This can be adjusted based on game mechanics
+
+            nodePool.reset();  // Reset node pool for next call
             return true;
         }
 
@@ -346,8 +408,8 @@ bool CalcPathWithRangePartial(Level &level, Path &path, Vector2i start, Vector2i
             Node *neighborNode = allNodes[neighborX][neighborY];
 
             if (!neighborNode || tentativeGCost < neighborNode->gCost) {
-                neighborNode = new Node(Vector2i(neighborX, neighborY), tentativeGCost,
-                                        std::abs(neighborX - end.x) + std::abs(neighborY - end.y), currentNode);
+                neighborNode = nodePool.acquireNode(Vector2i(neighborX, neighborY), tentativeGCost,
+                                                    std::abs(neighborX - end.x) + std::abs(neighborY - end.y), currentNode);
 
                 allNodes[neighborX][neighborY] = neighborNode;
                 openSet.push(neighborNode);
@@ -368,6 +430,7 @@ bool CalcPathWithRangePartial(Level &level, Path &path, Vector2i start, Vector2i
     path.moveTime = 0.0f;
     path.moveSpeed = 0.15f;
 
+    nodePool.reset();  // Reset node pool for next call
     return false;  // Path to the destination was not found
 }
 
