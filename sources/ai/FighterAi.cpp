@@ -32,7 +32,7 @@ static bool MoveIfPossible(Level& level, PlayField& playField) {
     SortCharactersByThreat(level, playersWithinRange);
 
     if((int) playersWithinRange.size() > 0) {
-        playField.mode = PlayFieldMode::Normal;
+        playField.mode = PlayFieldMode::None;
         playField.path = playersWithinRange[0].second;
         playField.moving = true;
         level.currentCharacter->movePoints -= playersWithinRange[0].second.cost;
@@ -65,7 +65,7 @@ static bool PartialMoveIfPossible(Level& level, PlayField& playField) {
             level.turnState = TurnState::EndTurn;
             return false;
         }
-        playField.mode = PlayFieldMode::Normal;
+        playField.mode = PlayFieldMode::None;
         playField.path = path;
         playField.moving = true;
         level.currentCharacter->movePoints -= path.cost;

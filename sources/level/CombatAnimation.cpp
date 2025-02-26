@@ -72,7 +72,7 @@ void PlayPlayerVictoryAnimation(Level &level) {
         }
         PlayCharacterSpriteAnim(c->sprite, SpriteAnimationType::WalkDown, true);
         Animation anim{};
-        SetupVictoryAnimation(anim, c, 10.0f, 16, 80.0f);
+        SetupVictoryAnimation(anim, c, 2.0f, 16, 80.0f);
         level.animations.push_back(anim);
     }
 }

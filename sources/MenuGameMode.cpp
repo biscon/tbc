@@ -39,7 +39,7 @@ static void StartNewGame() {
     CreateCharacter(mage, CharacterClass::Mage, CharacterFaction::Player, "Player2", "Fighter");
     AssignSkill(mage.skills, SkillType::Dodge, "Dodge", 1, true, true, 0, 0, 0);
     AssignSkill(mage.skills, SkillType::FlameJet, "Burning Hands", 1, false, false, 0, 3, 5);
-    InitCharacterSprite(mage.sprite, "MaleBase", true);
+    InitCharacterSprite(mage.sprite, "MaleWarrior", true);
     GiveWeapon(mage, "Bow");
     LevelUp(mage, true);
     LevelUp(mage, true);

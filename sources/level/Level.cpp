@@ -79,22 +79,6 @@ static void SetInitialGridPositions(Level &level, SpawnPoint &sp, std::vector<Ch
         StartPausedCharacterSpriteAnim(character->sprite, SpriteAnimationType::WalkRight, true);
         character->orientation = Orientation::Right;
     }
-    /*
-    positions = FindFreePositionsCircular(level, 55, 7, 5);
-    if(level.enemyCharacters.size() > positions.size()) {
-        TraceLog(LOG_WARNING, "Not enough positions for all enemy characters");
-    }
-    // Set initial grid positions for enemy characters
-    for (int i = 0; i < level.enemyCharacters.size(); i++) {
-        // take a position from the list
-        auto pos = positions.back();
-        positions.pop_back();
-        SetCharacterSpritePos(level.enemyCharacters[i]->sprite, GridToPixelPosition(pos.x, pos.y));
-        // Set initial animation to paused
-        StartPausedCharacterSpriteAnim(level.enemyCharacters[i]->sprite, SpriteAnimationType::WalkLeft, true);
-        level.enemyCharacters[i]->orientation = Orientation::Left;
-    }
-    */
 }
 
 void AddPartyToLevel(Level &level, std::vector<Character> &party, const std::string& spawnPoint) {

@@ -24,7 +24,8 @@ static std::vector<Character> enemyCharacters = {
 };
 */
 
-static std::vector<Character> enemyCharacters;
+static std::vector<Character> enemyGroup1;
+static std::vector<Character> enemyGroup2;
 
 static Level level;
 static LevelScreen levelScreen;
@@ -53,8 +54,23 @@ static void processEvents() {
                 break;
             }
             case GameEventType::PartySpotted: {
-                playField.mode = PlayFieldMode::Normal;
+                playField.mode = PlayFieldMode::None;
                 StartCombat(level, *event.partySpotted.spotter, 5);
+                break;
+            }
+            case GameEventType::EndCombat: {
+                level.turnState = TurnState::None;
+                playField.mode = PlayFieldMode::Move;
+                for(auto& c : level.partyCharacters) {
+                    // Set initial animation to paused
+                    StartPausedCharacterSpriteAnim(c->sprite, SpriteAnimationType::WalkDown, true);
+                    c->orientation = Orientation::Down;
+                    c->statusEffects.clear();
+                    if(c->health <= 0) {
+                        c->health = 1;
+                        SetCharacterSpriteRotation(c->sprite, 0);
+                    }
+                }
                 break;
             }
             default:
@@ -210,7 +226,6 @@ void LevelRender() {
     ClearBackground(BACKGROUND_GREY);
     DrawPlayField(playField, level);
     DrawLevelScreen(level, levelScreen, playField);
-    DrawParticleManager(particleManager);
 }
 
 void LevelPreRender() {
@@ -223,27 +238,53 @@ void LevelPause() {
 }
 
 static void createTestEnemies() {
-    enemyCharacters.emplace_back();
-    Character& w1 = enemyCharacters.back();
+    enemyGroup1.emplace_back();
+    Character& w1 = enemyGroup1.back();
     CreateCharacter(w1, CharacterClass::Warrior, CharacterFaction::Enemy, "Enemy1", "Fighter");
     InitCharacterSprite(w1.sprite, "MaleNinja", true);
     GiveWeapon(w1, "Sword");
     LevelUp(w1, true);
-    LevelUp(w1, true);
-    LevelUp(w1, true);
-    LevelUp(w1, true);
 
-    enemyCharacters.emplace_back();
-    Character& w2 = enemyCharacters.back();
+
+    enemyGroup1.emplace_back();
+    Character& w2 = enemyGroup1.back();
     CreateCharacter(w2, CharacterClass::Warrior, CharacterFaction::Enemy, "Enemy2", "Fighter");
     InitCharacterSprite(w2.sprite, "MaleNinja", true);
     GiveWeapon(w2, "Sword");
     LevelUp(w2, true);
-    LevelUp(w2, true);
-    LevelUp(w2, true);
-    LevelUp(w2, true);
 
-    AddEnemiesToLevel(level, enemyCharacters, "enemies");
+    AddEnemiesToLevel(level, enemyGroup1, "enemies");
+
+    // Group 2
+    enemyGroup2.emplace_back();
+    Character& w = enemyGroup2.back();
+    CreateCharacter(w, CharacterClass::Warrior, CharacterFaction::Enemy, "Enemy3", "Fighter");
+    InitCharacterSprite(w.sprite, "MaleNinja", true);
+    GiveWeapon(w, "Sword");
+    LevelUp(w, true);
+
+    enemyGroup2.emplace_back();
+    Character& w4 = enemyGroup2.back();
+    CreateCharacter(w4, CharacterClass::Warrior, CharacterFaction::Enemy, "Enemy4", "Fighter");
+    InitCharacterSprite(w4.sprite, "MaleNinja", true);
+    GiveWeapon(w4, "Sword");
+    LevelUp(w4, true);
+
+    enemyGroup2.emplace_back();
+    Character& w5 = enemyGroup2.back();
+    CreateCharacter(w5, CharacterClass::Warrior, CharacterFaction::Enemy, "Enemy5", "Fighter");
+    InitCharacterSprite(w5.sprite, "MaleBase", true);
+    GiveWeapon(w5, "Staff");
+    LevelUp(w5, true);
+
+    enemyGroup2.emplace_back();
+    Character& w6 = enemyGroup2.back();
+    CreateCharacter(w6, CharacterClass::Warrior, CharacterFaction::Enemy, "Enemy6", "Fighter");
+    InitCharacterSprite(w6.sprite, "MaleBase", true);
+    GiveWeapon(w6, "Staff");
+    LevelUp(w6, true);
+
+    AddEnemiesToLevel(level, enemyGroup2, "enemies2");
 }
 
 void LevelResume() {

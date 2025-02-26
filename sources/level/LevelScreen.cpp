@@ -342,7 +342,7 @@ void DrawLevelScreen(Level &level, LevelScreen &levelScreen, PlayField &playFiel
         // Draw the enemy selection UI
         DrawText(text.c_str(), 240 - (MeasureText(text.c_str(), 20) / 2), 10, 20, WHITE);
         if (GuiButton((Rectangle) {240 - 50, 245, 100, 20}, "End Battle")) {
-
+            PublishEndCombatEvent(*levelScreen.eventQueue, true);
         }
     }
     if (level.turnState == TurnState::Defeat) {
@@ -350,7 +350,7 @@ void DrawLevelScreen(Level &level, LevelScreen &levelScreen, PlayField &playFiel
         // Draw the enemy selection UI
         DrawText(text.c_str(), 240 - (MeasureText(text.c_str(), 20) / 2), 10, 20, WHITE);
         if (GuiButton((Rectangle) {240 - 50, 245, 100, 20}, "End Battle")) {
-
+            PublishEndCombatEvent(*levelScreen.eventQueue, false);
         }
     }
 
@@ -572,38 +572,38 @@ void UpdateLevelScreen(Level &level, LevelScreen &levelScreen, PlayField& playFi
         }
     }
     UpdateAnimations(level, dt);
-    // check victory condition, all enemies have zero health
-    /*
-    bool allEnemiesDefeated = true;
-    for (auto &enemy : level.enemyCharacters) {
-        if (enemy->health > 0) {
-            allEnemiesDefeated = false;
-            break;
+    if(level.turnState != TurnState::None) {
+        // check victory condition, all enemies have zero health
+        bool allEnemiesDefeated = true;
+        for (auto &enemy: level.enemyCharacters) {
+            if (enemy->health > 0) {
+                allEnemiesDefeated = false;
+                break;
+            }
+        }
+        if (allEnemiesDefeated && level.turnState != TurnState::Victory) {
+            level.turnState = TurnState::Victory;
+            //StopSoundEffect(SoundEffectType::Ambience);
+            PlaySoundEffect(SoundEffectType::Victory, 0.5f);
+            PlayPlayerVictoryAnimation(level);
+            //combat.animations.clear();
+        }
+        // check defeat condition, all players have zero health
+        bool allPlayersDefeated = true;
+        for (auto &player: level.partyCharacters) {
+            if (player->health > 0) {
+                allPlayersDefeated = false;
+                break;
+            }
+        }
+        if (allPlayersDefeated && level.turnState != TurnState::Defeat) {
+            level.turnState = TurnState::Defeat;
+            //StopSoundEffect(SoundEffectType::Ambience);
+            PlaySoundEffect(SoundEffectType::Defeat, 0.5f);
+            PlayEnemyVictoryAnimation(level);
+            //combat.animations.clear();
         }
     }
-    if(allEnemiesDefeated && level.turnState != TurnState::Victory) {
-        level.turnState = TurnState::Victory;
-        StopSoundEffect(SoundEffectType::Ambience);
-        PlaySoundEffect(SoundEffectType::Victory, 0.5f);
-        PlayPlayerVictoryAnimation(level);
-        //combat.animations.clear();
-    }
-    // check defeat condition, all players have zero health
-    bool allPlayersDefeated = true;
-    for (auto &player : level.playerCharacters) {
-        if (player->health > 0) {
-            allPlayersDefeated = false;
-            break;
-        }
-    }
-    if(allPlayersDefeated && level.turnState != TurnState::Defeat) {
-        level.turnState = TurnState::Defeat;
-        StopSoundEffect(SoundEffectType::Ambience);
-        PlaySoundEffect(SoundEffectType::Defeat, 0.5f);
-        PlayEnemyVictoryAnimation(level);
-        //combat.animations.clear();
-    }
-    */
 }
 
 void HandleInputLevelScreen(LevelScreen &levelScreen, Level &level) {

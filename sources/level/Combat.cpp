@@ -399,6 +399,8 @@ static void InitializeThreatTable(Level& level) {
 }
 
 void StartCombat(Level &level, Character &spotter, int maxDist) {
+    level.turnOrder.clear();
+    level.enemyCharacters.clear();
     std::queue<Character*> queue;
     std::unordered_set<Character*> alertedEnemies;
 

@@ -12,6 +12,7 @@
 enum class GameEventType {
     MoveParty,
     PartySpotted,
+    EndCombat,
 };
 
 struct MovePartyEvent {
@@ -22,11 +23,16 @@ struct PartySpottedEvent {
     Character *spotter;
 };
 
+struct EndCombatEvent {
+    bool victory;
+};
+
 struct GameEvent {
     GameEventType type;
     union {
         MovePartyEvent moveParty;
         PartySpottedEvent partySpotted;
+        EndCombatEvent endCombat;
     };
 };
 
@@ -39,5 +45,6 @@ bool GetNextEvent(GameEventQueue &eventQueue, GameEvent &event);
 
 void PublishMovePartyEvent(GameEventQueue &eventQueue, Vector2i target);
 void PublishPartySpottedEvent(GameEventQueue &eventQueue, Character* spotter);
+void PublishEndCombatEvent(GameEventQueue &eventQueue, bool victory);
 
 #endif //SANDBOX_GAMEEVENTQUEUE_H

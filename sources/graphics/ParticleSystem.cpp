@@ -115,6 +115,7 @@ void PreRenderParticleManager(ParticleManager &manager, Camera2D& camera) {
                 Color fadeColor = { particle.color.r, particle.color.g, particle.color.b,
                                     static_cast<unsigned char>(particle.color.a * lifeRatio) };
                 Vector2 screenPos = GetWorldToScreen2D(particle.position, camera);
+                //TraceLog(LOG_INFO, "ScreenPos: %f,%f", screenPos.x, screenPos.y);
                 DrawCircleV(screenPos, particle.size * lifeRatio, fadeColor);
             }
         }

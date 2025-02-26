@@ -12,7 +12,7 @@
 #include "util/GameEventQueue.h"
 
 enum class PlayFieldMode {
-    Normal,
+    None,
     SelectingTile,
     SelectingEnemyTarget,
     Move,

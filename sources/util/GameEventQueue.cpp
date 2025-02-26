@@ -30,3 +30,10 @@ void PublishPartySpottedEvent(GameEventQueue &eventQueue, Character *spotter) {
     event.partySpotted.spotter = spotter;
     PublishEvent(eventQueue, event);
 }
+
+void PublishEndCombatEvent(GameEventQueue &eventQueue, bool victory) {
+    GameEvent event{};
+    event.type = GameEventType::EndCombat;
+    event.endCombat.victory = victory;
+    PublishEvent(eventQueue, event);
+}

@@ -44,7 +44,7 @@ static Vector2 GetAnimatedCharPos(Level &level, Character *character) {
 void CreatePlayField(PlayField &playField, ParticleManager* particleManager, GameEventQueue* eventQueue) {
     playField.particleManager = particleManager;
     playField.moving = false;
-    playField.mode = PlayFieldMode::Normal;
+    playField.mode = PlayFieldMode::None;
     playField.selectedCharacter = nullptr;
     playField.selectedTile = {-1, -1};
     playField.path = {};
@@ -54,7 +54,7 @@ void CreatePlayField(PlayField &playField, ParticleManager* particleManager, Gam
 
 static void ResetGridState(PlayField &playField) {
     playField.moving = false;
-    playField.mode = PlayFieldMode::Normal;
+    playField.mode = PlayFieldMode::None;
     playField.selectedCharacter = nullptr;
     playField.selectedTile = {-1, -1};
     playField.path = {};
@@ -104,7 +104,7 @@ void DrawPathSelection(PlayField &playField, Level &level) {
             }
             // Check for a mouse click
             if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT) && path.cost <= level.currentCharacter->movePoints) {
-                playField.mode = PlayFieldMode::Normal;
+                playField.mode = PlayFieldMode::None;
                 playField.path = path;
                 playField.moving = true;
                 level.currentCharacter->movePoints -= path.cost;
@@ -476,7 +476,7 @@ static void updateActiveMovement(PlayField &playField, float dt) {
 
 static void checkIfPartySpotted(PlayField &playField, Level &level) {
     for(auto& c : level.allCharacters) {
-        if(c->faction != CharacterFaction::Enemy) {
+        if(c->faction != CharacterFaction::Enemy || c->health <= 0) {
             continue;
         }
         Vector2i enemyGridPos = GetCharacterGridPosI(c->sprite);
@@ -551,7 +551,7 @@ static void handleInputPlayFieldShowMove(PlayField &playField, Level &level) {
 
 void HandleInputPlayField(PlayField &playField, Level &level) {
     switch(playField.mode) {
-        case PlayFieldMode::Normal:handleInputPlayFieldNormal(playField, level);break;
+        case PlayFieldMode::None:handleInputPlayFieldNormal(playField, level);break;
         case PlayFieldMode::SelectingTile:handleInputPlayFieldSelectingTile(playField, level);break;
         case PlayFieldMode::SelectingEnemyTarget:handleInputPlayFieldSelectingEnemyTarget(playField, level);break;
         case PlayFieldMode::Move:handleInputPlayFieldShowMove(playField, level);break;
@@ -576,7 +576,9 @@ void DrawPlayField(PlayField &playField, Level &level) {
     }
 
     DrawGridCharacters(playField, level);
+    EndMode2D();
     DrawParticleManager(*playField.particleManager);
+    BeginMode2D(level.camera.camera);
     DrawTileLayer(level.tileMap, TOP_LAYER, 0, 0);
 
     // get mouse position
