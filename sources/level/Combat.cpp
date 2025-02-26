@@ -451,9 +451,9 @@ void StartCombat(Level &level, Character &spotter, int maxDist) {
     level.currentCharacterIdx = 0;
 
     level.nextState = TurnState::StartRound;
-    level.waitTime = 3.0f;
+    level.waitTime = 1.0f;
     level.turnState = TurnState::Waiting;
     Animation textAnim{};
-    SetupTextAnimation(textAnim, "First round!", 125, 2.0f, 0.0f);
+    SetupTextAnimation(textAnim, "Entering Combat", 125, 2.0f, 0.0f);
     level.animations.push_back(textAnim);
 }
