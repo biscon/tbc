@@ -429,6 +429,7 @@ void StartCombat(Level &level, Character &spotter, int maxDist) {
     for (auto &enemy : alertedEnemies) {
         level.enemyCharacters.emplace_back(enemy);
         allCharacters.emplace_back(enemy->speed, enemy);
+        FaceCharacter(*enemy, *level.partyCharacters[0]);
     }
     for (auto &c : level.partyCharacters) {
         allCharacters.emplace_back(c->speed, c);
