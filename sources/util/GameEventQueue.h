@@ -20,7 +20,7 @@ struct MovePartyEvent {
 };
 
 struct PartySpottedEvent {
-    Character *spotter;
+    int spotter;
 };
 
 struct EndCombatEvent {
@@ -44,7 +44,7 @@ void PublishEvent(GameEventQueue &eventQueue, GameEvent event);
 bool GetNextEvent(GameEventQueue &eventQueue, GameEvent &event);
 
 void PublishMovePartyEvent(GameEventQueue &eventQueue, Vector2i target);
-void PublishPartySpottedEvent(GameEventQueue &eventQueue, Character* spotter);
+void PublishPartySpottedEvent(GameEventQueue &eventQueue, int spotter);
 void PublishEndCombatEvent(GameEventQueue &eventQueue, bool victory);
 
 #endif //SANDBOX_GAMEEVENTQUEUE_H

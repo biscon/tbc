@@ -7,6 +7,7 @@
 
 #include <string>
 #include <unordered_map>
+#include <vector>
 
 enum class WeaponType {
     Melee,
@@ -18,6 +19,7 @@ enum class ScalingStat {
     Speed,
 };
 
+/*
 struct WeaponTemplate {
     std::string name;
     WeaponType type;
@@ -39,8 +41,36 @@ struct Weapon {
 struct WeaponManager {
     std::unordered_map<std::string, WeaponTemplate> weaponTemplates;
 };
+*/
 
-void InitWeaponManager(const std::string& filename);
+struct WeaponStats {
+    int baseAttack;
+    int range;
+    float armorPenetration;  // Percentage of defender’s defense ignored
+    float attackMultiplier;
+    ScalingStat scalingStat;
+};
+
+struct WeaponTemplateData {
+    std::vector<std::string> name;
+    std::vector<WeaponType> type;
+    std::vector<WeaponStats> stats;
+    std::vector<std::string> animationTemplate;
+    std::vector<std::string> soundEffectType;
+    std::unordered_map<std::string, int> weaponTemplates;
+};
+
+struct WeaponInstanceData {
+    std::vector<std::string> name;
+    std::vector<int> weaponTemplateIdx;
+};
+
+struct WeaponData {
+    WeaponTemplateData templateData;
+    WeaponInstanceData instanceData;
+};
+
+void InitWeaponTemplateData(WeaponTemplateData& weaponTemplateData, const std::string& filename);
 void DestroyWeaponManager();
-void CreateWeapon(Weapon &weapon, const std::string& name);
+int CreateWeapon(WeaponData& weaponData, const std::string& templateName);
 #endif //SANDBOX_WEAPON_H

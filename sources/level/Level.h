@@ -35,8 +35,8 @@ struct AttackResult {
     bool hit;
     bool crit;
     int damage;
-    Character *attacker;
-    Character *defender;
+    int attacker;
+    int defender;
 };
 
 struct SpawnPoint {
@@ -49,24 +49,23 @@ struct SpawnPoint {
 struct Level {
     std::string name;
     std::vector<std::string> log;
-    std::vector<Character*> partyCharacters;
-    std::vector<Character*> enemyCharacters;
-    std::vector<Character*> allCharacters;
-    std::vector<Character*> turnOrder;
-    Character* currentCharacter = nullptr;
-    Character* selectedCharacter = nullptr;
+    std::vector<int> partyCharacters;
+    std::vector<int> enemyCharacters;
+    std::vector<int> allCharacters;
+    std::vector<int> turnOrder;
+    int currentCharacter = -1;
+    int selectedCharacter = -1;
     Skill* selectedSkill = nullptr;
     int currentCharacterIdx;
     TurnState turnState;
     std::vector<Animation> animations;
     float waitTime;
     TurnState nextState;
-    std::map<Character*, int> threatTable;
+    std::map<int, int> threatTable;
     TileMap tileMap;
     SpriteSheet tileSet;
     AttackResult attackResult;
     LevelCamera camera;
-    bool inCombat;
     std::unordered_map<std::string, SpawnPoint> spawnPoints;
 };
 
@@ -74,7 +73,7 @@ void CreateLevel(Level &level);
 void LoadLevel(Level &level, const std::string &filename);
 void DestroyLevel(Level &level);
 void WaitTurnState(Level &level, TurnState state, float waitTime);
-void AddPartyToLevel(Level &level, std::vector<Character>& party, const std::string& spawnPoint);
-void AddEnemiesToLevel(Level &level, std::vector<Character> &enemies, const std::string& spawnPoint);
+void AddPartyToLevel(CharacterData& charData, Level &level, std::vector<int> &party, const std::string& spawnPoint);
+void AddEnemiesToLevel(CharacterData& charData, Level &level, std::vector<int> &enemies, const std::string& spawnPoint);
 
 #endif //SANDBOX_LEVEL_H

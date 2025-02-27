@@ -13,11 +13,6 @@
 #include "character/Character.h"
 #include "PlayField.h"
 #include "ui/UI.h"
-#include "level/SkillRunner.h"
-#include "ai/Ai.h"
-#include "raymath.h"
-#include "util/Random.h"
-#include "level/StatusEffectRunner.h"
 #include "level/CombatAnimation.h"
 #include "audio/SoundEffect.h"
 #include <cassert>
@@ -26,13 +21,14 @@ void CreateLevelScreen(LevelScreen &levelScreen, GameEventQueue* eventQueue) {
     levelScreen.actionIconScrollIndex = 0;
     levelScreen.showActionBarTitle = true;
     levelScreen.eventQueue = eventQueue;
+    levelScreen.floatingStatsCharacter = -1;
 }
 
 void DestroyLevelScreen(LevelScreen &levelScreen) {
 
 }
 
-static bool IsCharacterVisible(Level &combat, Character *character) {
+static bool IsCharacterVisible(Level &combat, int character) {
     // Check if the character is visible (not blinking)
     for (auto &animation: combat.animations) {
         if (animation.type == AnimationType::Blink) {
@@ -88,7 +84,7 @@ static bool DrawActionIcon(float x, float y, ActionIcon &actionIcon, LevelScreen
     return false;
 }
 
-static void DisplayActionUI(Level &combat, LevelScreen &uiState, PlayField &gridState) {
+static void DisplayActionUI(CharacterData& charData, Level &combat, LevelScreen &uiState, PlayField &gridState) {
     //DrawRectangleRec((Rectangle) {0, 209, 480, 65}, Fade(BLACK, 0.75f));
 
     float iconWidth = 32;
@@ -115,14 +111,14 @@ static void DisplayActionUI(Level &combat, LevelScreen &uiState, PlayField &grid
     DrawTriangle(scrollRight[0], scrollRight[1], scrollRight[2], mouseOverScrollRight ? WHITE : GRAY);
 
     std::vector<ActionIcon> actionIcons = {
-            ActionIcon{"MOV", "Move", combat.currentCharacter->movePoints <= 0, nullptr},
+            ActionIcon{"MOV", "Move", charData.stats[combat.currentCharacter].movePoints <= 0, nullptr},
             ActionIcon{"ATK", "Attack", false, nullptr},
             ActionIcon{"DEF", "Defend (50% baseAttack reduction, cannot attack)", false, nullptr},
             ActionIcon{"END", "End turn (Do nothing)", false, nullptr},
     };
 
     // add active character skills
-    for (auto &skill: combat.currentCharacter->skills) {
+    for (auto &skill: charData.skills[combat.currentCharacter]) {
         if (skill.isPassive) {
             continue;
         }
@@ -171,9 +167,9 @@ static void DisplayActionUI(Level &combat, LevelScreen &uiState, PlayField &grid
             if (i + uiState.actionIconScrollIndex == 2) {
                 // Defend button pressed
                 combat.turnState = TurnState::EndTurn;
-                AssignStatusEffectAllowStacking(combat.currentCharacter->statusEffects, StatusEffectType::DamageReduction, 1, 0.5f);
-                float charX = GetCharacterSpritePosX(combat.currentCharacter->sprite);
-                float charY = GetCharacterSpritePosY(combat.currentCharacter->sprite);
+                AssignStatusEffectAllowStacking(charData.statusEffects[combat.currentCharacter], StatusEffectType::DamageReduction, 1, 0.5f);
+                float charX = GetCharacterSpritePosX(charData.sprite[combat.currentCharacter]);
+                float charY = GetCharacterSpritePosY(charData.sprite[combat.currentCharacter]);
                 Animation anim{};
                 SetupDamageNumberAnimation(anim, "DEFENDING", charX, charY - 25, WHITE, 10);
                 combat.animations.push_back(anim);
@@ -191,7 +187,7 @@ static void DisplayActionUI(Level &combat, LevelScreen &uiState, PlayField &grid
                 combat.selectedSkill = actionIcons[uiState.actionIconScrollIndex + i].skill;
                 if (combat.selectedSkill->noTarget) {
                     combat.nextState = TurnState::UseSkill;
-                    combat.selectedCharacter = nullptr;
+                    combat.selectedCharacter = -1;
                 } else {
                     combat.nextState = TurnState::SelectEnemy;
                     gridState.mode = PlayFieldMode::SelectingEnemyTarget;
@@ -313,7 +309,7 @@ static void DisplaySpeechBubbleAnimations(Level &combat) {
 
 
 // Function to display combat screen
-void DrawLevelScreen(Level &level, LevelScreen &levelScreen, PlayField &playField) {
+void DrawLevelScreen(CharacterData& charData, Level &level, LevelScreen &levelScreen, PlayField &playField) {
 
     // Draw the dividing line in the middle of the screen
     //DrawLine(0, 125, 480, 125, LIGHTGRAY); // Horizontal dividing line
@@ -335,7 +331,7 @@ void DrawLevelScreen(Level &level, LevelScreen &levelScreen, PlayField &playFiel
 
 
     if (level.turnState == TurnState::SelectAction) {
-        DisplayActionUI(level, levelScreen, playField);
+        DisplayActionUI(charData, level, levelScreen, playField);
     }
     if (level.turnState == TurnState::Victory) {
         std::string text = "Victory!";
@@ -356,24 +352,20 @@ void DrawLevelScreen(Level &level, LevelScreen &levelScreen, PlayField &playFiel
 
     DisplayTextAnimations(level);
 
-    if (playField.floatingStatsCharacter != nullptr && (level.turnState == TurnState::SelectAction ||
+    if (levelScreen.floatingStatsCharacter != -1 && (level.turnState == TurnState::None || level.turnState == TurnState::SelectAction ||
                                                         level.turnState == TurnState::SelectEnemy || level.turnState == TurnState::SelectDestination)) {
-        float x = GetCharacterSpritePosX(playField.floatingStatsCharacter->sprite);
-        float y = GetCharacterSpritePosY(playField.floatingStatsCharacter->sprite);
+        float x = GetCharacterSpritePosX(charData.sprite[levelScreen.floatingStatsCharacter]);
+        float y = GetCharacterSpritePosY(charData.sprite[levelScreen.floatingStatsCharacter]);
         // to screen space
         Vector2 screenPos = GetWorldToScreen2D(Vector2{x, y}, level.camera.camera);
-        DisplayCharacterStatsFloating(*playField.floatingStatsCharacter, (int) screenPos.x - 10, (int) screenPos.y + 12,
-                                      IsPlayerCharacter(*playField.floatingStatsCharacter));
-        /*
-        DisplayCharacterStatsFloating(*gridState.floatingStatsCharacter, (int) x - 10, (int) y + 12,
-                                      IsPlayerCharacter(combat, *gridState.floatingStatsCharacter));
-        */
+        DisplayCharacterStatsFloating(charData, levelScreen.floatingStatsCharacter, (int) screenPos.x - 10, (int) screenPos.y + 12,
+                                      IsPlayerCharacter(charData, levelScreen.floatingStatsCharacter));
     }
 }
 
-static void UpdateAnimations(Level &combat, float dt) {
+static void UpdateAnimations(CharacterData& charData, Level &combat, float dt) {
     for (auto &anim : combat.animations) {
-        UpdateAnimation(anim, dt);
+        UpdateAnimation(charData, anim, dt);
     }
     // Use erase-remove idiom to remove animations which are done
     combat.animations.erase(
@@ -385,228 +377,26 @@ static void UpdateAnimations(Level &combat, float dt) {
     );
 }
 
-void UpdateLevelScreen(Level &level, LevelScreen &levelScreen, PlayField& playField, float dt) {
-
-    switch(level.turnState) {
-        case TurnState::StartRound: {
-            TraceLog(LOG_INFO, "Start round");
-            WaitTurnState(level, TurnState::StartTurn, 1.0f);
-            ApplyStatusEffects(level, playField);
-            PlaySoundEffect(SoundEffectType::StartRound);
-            break;
-        }
-        case TurnState::StartTurn: {
-            TraceLog(LOG_INFO, "Start turn");
-            StartCameraPanToTargetChar(level.camera, level.currentCharacter, 500.0f);
-
-            Animation blinkAnim{};
-
-            // restore movepoints
-            int movePoints = (int) (5 + sqrt(level.currentCharacter->speed) * 2);
-            level.currentCharacter->movePoints = movePoints;
-            TraceLog(LOG_INFO, "Restored move points for %s: %d", level.currentCharacter->name.c_str(), movePoints);
-
-            level.waitTime = 0.5f;
-            if(IsPlayerCharacter(*level.currentCharacter)) {
-                SetupBlinkAnimation(blinkAnim, level.currentCharacter, 2.0f);
-                level.nextState = TurnState::SelectAction;
-            } else {
-                SetupBlinkAnimation(blinkAnim, level.currentCharacter, 1.0f);
-                level.nextState = TurnState::EnemyTurn;
-            }
-            if(IsIncapacitated(level.currentCharacter)) {
-                level.nextState = TurnState::EndTurn;
-                std::string logMessage = level.currentCharacter->name + " is skipping the turn!";
-                level.log.push_back(logMessage);
-                float charX = GetCharacterSpritePosX(level.currentCharacter->sprite);
-                float charY = GetCharacterSpritePosY(level.currentCharacter->sprite);
-                Animation anim{};
-                SetupDamageNumberAnimation(anim, "STUNNED", charX, charY-25, WHITE, 10);
-                level.animations.push_back(anim);
-            }
-            level.turnState = TurnState::Waiting;
-            level.animations.push_back(blinkAnim);
-            break;
-        }
-        case TurnState::EndTurn: {
-            NextCharacter(level);
-            break;
-        }
-        case TurnState::SelectAction: {
-            break;
-        }
-        case TurnState::SelectEnemy: {
-            break;
-        }
-        case TurnState::UseSkill: {
-            TraceLog(LOG_INFO, "Use skill");
-            float attackerX = GetCharacterSpritePosX(level.currentCharacter->sprite);
-            float attackerY = GetCharacterSpritePosY(level.currentCharacter->sprite);
-
-            SkillResult result = ExecuteSkill(level, playField);
-            Animation damageNumberAnim{};
-            if(!level.selectedSkill->noTarget) {
-                if(!result.success) {
-                    SetupDamageNumberAnimation(damageNumberAnim, "FAILED", attackerX, attackerY-25, WHITE, 10);
-                }
-            } else {
-                if(result.success) {
-                    SetupDamageNumberAnimation(damageNumberAnim, level.selectedSkill->name, attackerX, attackerY - 25, YELLOW, 10);
-                } else {
-                    SetupDamageNumberAnimation(damageNumberAnim, "FAILED", attackerX, attackerY-25, WHITE, 10);
-                }
-            }
-            level.log.push_back(result.message);
-            level.animations.push_back(damageNumberAnim);
-
-            WaitTurnState(level, TurnState::EndTurn, 1.0f);
-
-
-            if(result.attack) {
-                level.nextState = TurnState::Attack;
-            } else if(!result.consumeAction) {
-                level.nextState = TurnState::SelectAction;
-            } else {
-                level.nextState = TurnState::EndTurn;
-            }
-            if(result.giveAggro) {
-                SetTaunt(level, level.currentCharacter);
-            }
-            level.selectedSkill = nullptr;
-            break;
-        }
-        case TurnState::Attack: {
-            TraceLog(LOG_INFO, "Attack");
-
-            level.attackResult = Attack(level, *level.currentCharacter, *level.selectedCharacter);
-            FaceCharacter(*level.currentCharacter, *level.selectedCharacter);
-            FaceCharacter(*level.selectedCharacter, *level.currentCharacter);
-            assert(level.attackResult.defender == level.selectedCharacter);
-            assert(level.attackResult.attacker == level.currentCharacter);
-
-            PlayAttackDefendAnimation(level, *level.currentCharacter, *level.selectedCharacter);
-
-            level.waitTime = 0.25f;
-            level.nextState = TurnState::AttackDone;
-            level.turnState = TurnState::Waiting;
-            break;
-        }
-        case TurnState::AttackDone: {
-            assert(level.attackResult.defender == level.selectedCharacter);
-            assert(level.attackResult.attacker == level.currentCharacter);
-            float attackerX = GetCharacterSpritePosX(level.currentCharacter->sprite);
-            float attackerY = GetCharacterSpritePosY(level.currentCharacter->sprite);
-            float defenderX = GetCharacterSpritePosX(level.selectedCharacter->sprite);
-            float defenderY = GetCharacterSpritePosY(level.selectedCharacter->sprite);
-            int damage = level.attackResult.damage;
-            if(damage > 0) {
-                float intensity = (float) GetBloodIntensity(damage, GetAttack(*level.currentCharacter));
-                TraceLog(LOG_INFO, "Damage: %d, intensity: %f", damage, intensity);
-                Vector2 bloodPos = {defenderX + (float) RandomInRange(-2,2), defenderY - 8 + (float) RandomInRange(-2,2)};
-                CreateBloodSplatter(*playField.particleManager, bloodPos, 10, intensity);
-                Animation damageNumberAnim{};
-                Color dmgColor = GetDamageColor(damage, GetAttack(*level.currentCharacter));
-                SetupDamageNumberAnimation(damageNumberAnim, TextFormat("%d", damage), defenderX, defenderY-25, dmgColor, level.attackResult.crit ? 20 : 10);
-                level.animations.push_back(damageNumberAnim);
-                PlaySoundEffect(SoundEffectType::HumanPain, 0.25f);
-            } else {
-                Animation damageNumberAnim{};
-                SetupDamageNumberAnimation(damageNumberAnim, "MISS", attackerX, attackerY-25, WHITE, 10);
-                level.animations.push_back(damageNumberAnim);
-                PlaySoundEffect(SoundEffectType::MeleeMiss);
-            }
-
-            if(level.attackResult.crit) {
-                Animation damageNumberAnim{};
-                SetupDamageNumberAnimation(damageNumberAnim, "CRITICAL!!!", attackerX, attackerY, WHITE, 10);
-                level.animations.push_back(damageNumberAnim);
-                PlaySoundEffect(SoundEffectType::MeleeCrit);
-            } else {
-                if(damage > 0)
-                    PlaySoundEffect(SoundEffectType::MeleeHit);
-            }
-
-            level.attackResult.defender->health -= damage;
-            if(level.attackResult.defender->health <= 0) {
-                Animation speechBubble{};
-                SetupSpeechBubbleAnimation(speechBubble, "Haha!", attackerX, attackerY - 25, 1.5f, 0.0f);
-                level.animations.push_back(speechBubble);
-                RemoveAttackAnimations(level);
-                KillCharacter(level, *level.attackResult.defender);
-                WaitTurnState(level, TurnState::EndTurn, 0.95f);
-            } else {
-                WaitTurnState(level, TurnState::EndTurn, 0.60f);
-            }
-            break;
-        }
-        case TurnState::EnemyTurn: {
-            TraceLog(LOG_INFO, "Enemy turn");
-
-            // obtain AiInterface
-            AiInterface* ai = GetAiInterface(level.currentCharacter->ai);
-            if(ai != nullptr) {
-                HandleTurn(*ai, level, playField);
-            } else {
-                TraceLog(LOG_WARNING, "No AI interface found for %s", level.currentCharacter->ai.c_str());
-                level.turnState = TurnState::EndTurn;
-            }
-            break;
-        }
-        case TurnState::Waiting: {
-            level.waitTime -= dt;
-            if (level.waitTime <= 0) {
-                level.turnState = level.nextState;
-                TraceLog(LOG_INFO, "Waiting done");
-            }
-            break;
-        }
-        case TurnState::EndRound: {
-            Animation textAnim{};
-            SetupTextAnimation(textAnim, "Next round!", 125, 1.0f, 1.0f);
-            level.animations.push_back(textAnim);
-            WaitTurnState(level, TurnState::StartRound, 0.2f);
-            UpdateStatusEffects(level);
-            DecayThreat(level, 10);
-            UpdateSkillCooldown(level);
-            break;
-        }
-    }
-    UpdateAnimations(level, dt);
-    if(level.turnState != TurnState::None) {
-        // check victory condition, all enemies have zero health
-        bool allEnemiesDefeated = true;
-        for (auto &enemy: level.enemyCharacters) {
-            if (enemy->health > 0) {
-                allEnemiesDefeated = false;
-                break;
-            }
-        }
-        if (allEnemiesDefeated && level.turnState != TurnState::Victory) {
-            level.turnState = TurnState::Victory;
-            //StopSoundEffect(SoundEffectType::Ambience);
-            PlaySoundEffect(SoundEffectType::Victory, 0.5f);
-            PlayPlayerVictoryAnimation(level);
-            //combat.animations.clear();
-        }
-        // check defeat condition, all players have zero health
-        bool allPlayersDefeated = true;
-        for (auto &player: level.partyCharacters) {
-            if (player->health > 0) {
-                allPlayersDefeated = false;
-                break;
-            }
-        }
-        if (allPlayersDefeated && level.turnState != TurnState::Defeat) {
-            level.turnState = TurnState::Defeat;
-            //StopSoundEffect(SoundEffectType::Ambience);
-            PlaySoundEffect(SoundEffectType::Defeat, 0.5f);
-            PlayEnemyVictoryAnimation(level);
-            //combat.animations.clear();
-        }
-    }
+void UpdateLevelScreen(CharacterData& charData, Level &level, LevelScreen &levelScreen, float dt) {
+    UpdateAnimations(charData, level, dt);
 }
 
-void HandleInputLevelScreen(LevelScreen &levelScreen, Level &level) {
-
+void HandleInputLevelScreen(CharacterData& charData, LevelScreen &levelScreen, Level &level) {
+    // get mouse position
+    levelScreen.floatingStatsCharacter = -1;
+    Vector2 mousePos = GetScreenToWorld2D(GetMousePosition(), level.camera.camera);
+    Vector2 gridPos = PixelToGridPosition(mousePos.x, mousePos.y);
+    // check if mouse is over character
+    for (auto &character: level.allCharacters) {
+        // skip dead
+        if (charData.stats[character].health <= 0) {
+            continue;
+        }
+        Vector2 gridPosCharacter = PixelToGridPosition(GetCharacterSpritePosX(charData.sprite[character]),
+                                                       GetCharacterSpritePosY(charData.sprite[character]));
+        if ((int) gridPosCharacter.x == (int) gridPos.x && (int) gridPosCharacter.y == (int) gridPos.y) {
+            levelScreen.floatingStatsCharacter = character;
+        }
+    }
 }
 

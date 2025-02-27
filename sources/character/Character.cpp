@@ -7,6 +7,7 @@
 #include "util/Random.h"
 
 // Simple function to display character info
+/*
 void DisplayCharacterInfo(const Character &character) {
     std::cout << "Name: " << character.name << "\n"
               << "Health: " << character.health << "/" << character.maxHealth << "\n"
@@ -28,65 +29,53 @@ void DisplayCharacterInfo(const Character &character) {
 
     std::cout << "\n";  // Adding a line break for better readability
 }
+*/
 
 
-
-// Function to generate a random character
-Character GenerateRandomCharacter(std::string name, bool isEnemy) {
-    Character c;
-    c.name = std::move(name);
-    c.maxHealth = RandomInRange(50, 100);
-    c.health = c.maxHealth;  // New characters start at full health
-    c.attack = RandomInRange(isEnemy ? 15 : 5, isEnemy ? 25 : 10);  // Enemies are stronger
-    c.defense = RandomInRange(0, 10);
-    c.speed = RandomInRange(1, 5);
-    c.hunger = RandomInRange(0, 100);
-    c.thirst = RandomInRange(0, 100);
-    return c;
+bool IsAlive(CharacterData &data, int characterIdx) {
+    return data.stats[characterIdx].health > 0;
 }
 
-bool IsAlive(const Character &character) {
-    return character.health > 0;
-}
+int CreateCharacter(CharacterData &data, CharacterClass characterClass, CharacterFaction faction, const std::string& name, const std::string& ai) {
+    data.name.push_back(name);
+    data.ai.push_back(ai);
+    data.faction.emplace_back(faction);
 
-void CreateCharacter(Character &character, CharacterClass characterClass, CharacterFaction faction, std::string name, std::string ai) {
-    character.name = std::move(name);
-    character.ai = std::move(ai);
-    character.faction = faction;
-
+    CharacterStats stats{};
     switch(characterClass) {
-        case CharacterClass::Warrior: character.maxHealth = 16; break;
-        case CharacterClass::Mage: character.maxHealth = 12; break;
-        case CharacterClass::Rogue: character.maxHealth = 14; break;
-        default: character.maxHealth = 16; break;
+        case CharacterClass::Warrior: stats.maxHealth = 16; break;
+        case CharacterClass::Mage: stats.maxHealth = 12; break;
+        case CharacterClass::Rogue: stats.maxHealth = 14; break;
+        default: stats.maxHealth = 16; break;
     }
 
+
     //character.maxHealth = 16;
-    character.health = character.maxHealth;
-
-    character.attack = 5;
-    character.defense = 3;
-    character.speed = 4;
-    character.hunger = 0;
-    character.thirst = 0;
-    character.movePoints = 0;
-    character.level = 1;
-    character.characterClass = characterClass;
-    character.orientation = Orientation::Right;
-    character.weapon = Weapon{};
-    character.isWeaponEquipped = false;
+    stats.health = stats.maxHealth;
+    stats.attack = 5;
+    stats.defense = 3;
+    stats.speed = 4;
+    stats.hunger = 0;
+    stats.thirst = 0;
+    stats.movePoints = 0;
+    stats.level = 1;
+    data.stats.emplace_back(stats);
+    data.characterClass.emplace_back(characterClass);
+    data.orientation.emplace_back(Orientation::Right);
+    data.weaponIdx.emplace_back(-1);
+    data.isWeaponEquipped.emplace_back(false);
+    data.statusEffects.emplace_back();
+    data.skills.emplace_back();
+    data.sprite.emplace_back();
+    return (int) data.name.size()-1;
 }
 
-void GiveWeapon(Character &character, Weapon &weapon) {
-    character.weapon = weapon;
-    character.isWeaponEquipped = true;
-    SetCharacterSpriteWeaponAnimation(character.sprite, weapon.weaponTemplate->animationTemplate);
-}
-
-void GiveWeapon(Character &character, const std::string& weaponTemplate) {
-    CreateWeapon(character.weapon, weaponTemplate);
-    character.isWeaponEquipped = true;
-    SetCharacterSpriteWeaponAnimation(character.sprite, character.weapon.weaponTemplate->animationTemplate);
+void GiveWeapon(WeaponData& weaponData, CharacterData &charData, int characterIdx, const std::string& weaponTemplate) {
+    int weaponIdx = CreateWeapon(weaponData, weaponTemplate);
+    charData.weaponIdx[characterIdx] = weaponIdx;
+    charData.isWeaponEquipped[characterIdx] = true;
+    int tplIdx = weaponData.instanceData.weaponTemplateIdx[weaponIdx];
+    SetCharacterSpriteWeaponAnimation(charData.sprite[characterIdx], weaponData.templateData.animationTemplate[tplIdx]);
 }
 
 Vector2 GetOrientationVector(Orientation orientation) {
@@ -104,15 +93,15 @@ Vector2 GetOrientationVector(Orientation orientation) {
 }
 
 // This could be in your Character struct or class
-void LevelUp(Character &character, bool autoDistributePoints) {
-    character.level++;
+void LevelUp(CharacterData &charData, int cid, bool autoDistributePoints) {
+    charData.stats[cid].level++;
     int healthIncrease = 0;
     int attackIncrease = 0;
     int defenseIncrease = 0;
     int speedIncrease = 0;
 
     // Automatic stat increases per level
-    switch(character.characterClass) {
+    switch(charData.characterClass[cid]) {
         case CharacterClass::Warrior:
             healthIncrease = 3;
             attackIncrease = 1;
@@ -131,114 +120,112 @@ void LevelUp(Character &character, bool autoDistributePoints) {
     }
 
     // Apply automatic increases
-    character.maxHealth += healthIncrease;
-    character.attack += attackIncrease;
-    character.defense += defenseIncrease;
-    character.speed += speedIncrease;
+    charData.stats[cid].maxHealth += healthIncrease;
+    charData.stats[cid].attack += attackIncrease;
+    charData.stats[cid].defense += defenseIncrease;
+    charData.stats[cid].speed += speedIncrease;
 
-    if (character.level % 2 == 0 && autoDistributePoints) {
+    if (charData.stats[cid].level % 2 == 0 && autoDistributePoints) {
         int pointsToDistribute = 5;
         int pointsPerStat = pointsToDistribute / 3;  // Divide points evenly
         int remainder = pointsToDistribute % 3;      // The leftover points
 
         // Distribute the evenly divided points
-        switch(character.characterClass) {
+        switch(charData.characterClass[cid]) {
             case CharacterClass::Warrior: {
-                character.maxHealth += pointsPerStat;
-                character.attack += pointsPerStat;
-                character.defense += pointsPerStat;
+                charData.stats[cid].maxHealth += pointsPerStat;
+                charData.stats[cid].attack += pointsPerStat;
+                charData.stats[cid].defense += pointsPerStat;
 
                 // Now distribute the remaining points
                 if (remainder > 0) {
-                    character.attack++;  // Next point goes to attack
+                    charData.stats[cid].attack++;  // Next point goes to attack
                     remainder--;
                 }
                 if (remainder > 0) {
-                    character.speed++;  // Extra point goes to health (for example)
+                    charData.stats[cid].speed++;  // Extra point goes to health (for example)
                     remainder--;
                 }
                 if (remainder > 0) {
-                    character.defense++;  // Remaining point goes to defense
+                    charData.stats[cid].defense++;  // Remaining point goes to defense
                     remainder--;
                 }
                 break;
             }
             case CharacterClass::Mage: {
-                character.maxHealth += pointsPerStat;
-                character.attack += pointsPerStat;
-                character.defense += pointsPerStat;
+                charData.stats[cid].maxHealth += pointsPerStat;
+                charData.stats[cid].attack += pointsPerStat;
+                charData.stats[cid].defense += pointsPerStat;
 
                 // Distribute the remaining points
                 if (remainder > 0) {
-                    character.attack++;  // Extra point goes to attack
+                    charData.stats[cid].attack++;  // Extra point goes to attack
                     remainder--;
                 }
                 if (remainder > 0) {
-                    character.maxHealth++;  // Next point goes to health
+                    charData.stats[cid].maxHealth++;  // Next point goes to health
                     remainder--;
                 }
                 if (remainder > 0) {
-                    character.defense++;  // Last point goes to defense
+                    charData.stats[cid].defense++;  // Last point goes to defense
                     remainder--;
                 }
                 break;
             }
             case CharacterClass::Rogue: {
-                character.maxHealth += pointsPerStat;
-                character.attack += pointsPerStat;
-                character.speed += pointsPerStat;
+                charData.stats[cid].maxHealth += pointsPerStat;
+                charData.stats[cid].attack += pointsPerStat;
+                charData.stats[cid].speed += pointsPerStat;
 
                 // Distribute the remaining points
                 if (remainder > 0) {
-                    character.attack++;  // Extra point goes to attack (for example)
+                    charData.stats[cid].attack++;  // Extra point goes to attack (for example)
                     remainder--;
                 }
                 if (remainder > 0) {
-                    character.defense++;  // Next point goes to defense
+                    charData.stats[cid].defense++;  // Next point goes to defense
                     remainder--;
                 }
                 if (remainder > 0) {
-                    character.maxHealth++;  // Last point goes to health
+                    charData.stats[cid].maxHealth++;  // Last point goes to health
                     remainder--;
                 }
                 break;
             }
         }
     }
-
-    // Recalculate max health if you have a max health stat
-    // Optionally, you could add max health directly as a function of level or health
-    character.health = character.maxHealth;
+    charData.stats[cid].health = charData.stats[cid].maxHealth;
 }
 
-int GetAttack(const Character &character) {
-    if(character.isWeaponEquipped) {
-        return character.attack + character.weapon.baseAttack;
+int GetAttack(CharacterData &charData, WeaponData& weaponData, int cid) {
+    if(charData.isWeaponEquipped[cid]) {
+        int tplIdx = weaponData.instanceData.weaponTemplateIdx[charData.weaponIdx[cid]];
+        return charData.stats[cid].attack + weaponData.templateData.stats[tplIdx].baseAttack;
     }
-    return character.attack;
+    return charData.stats[cid].attack;
 }
 
-void FaceCharacter(Character &attacker, Character &defender) {
+void FaceCharacter(CharacterData &charData, int attackerId, int defenderId) {
     // Determine the direction of movement and set the appropriate animation
-    Vector2 start = GetCharacterSpritePos(attacker.sprite);
-    Vector2 end = GetCharacterSpritePos(defender.sprite);
+    Vector2 start = GetCharacterSpritePos(charData.sprite[attackerId]);
+    Vector2 end = GetCharacterSpritePos(charData.sprite[defenderId]);
     if (fabs(end.x - start.x) > fabs(end.y - start.y)) {
         // Horizontal movement
         if (end.x > start.x) {
-            StartPausedCharacterSpriteAnim(attacker.sprite, SpriteAnimationType::WalkRight, true);
-            attacker.orientation = Orientation::Right;
+            StartPausedCharacterSpriteAnim(charData.sprite[attackerId], SpriteAnimationType::WalkRight, true);
+            charData.orientation[attackerId] = Orientation::Right;
         } else {
-            StartPausedCharacterSpriteAnim(attacker.sprite, SpriteAnimationType::WalkLeft, true);
-            attacker.orientation = Orientation::Left;
+            StartPausedCharacterSpriteAnim(charData.sprite[attackerId], SpriteAnimationType::WalkLeft, true);
+            charData.orientation[attackerId] = Orientation::Left;
         }
     } else {
         // Vertical movement
         if (end.y > start.y) {
-            StartPausedCharacterSpriteAnim(attacker.sprite, SpriteAnimationType::WalkDown, true);
-            attacker.orientation = Orientation::Down;
+            StartPausedCharacterSpriteAnim(charData.sprite[attackerId], SpriteAnimationType::WalkDown, true);
+            charData.orientation[attackerId] = Orientation::Down;
         } else {
-            StartPausedCharacterSpriteAnim(attacker.sprite, SpriteAnimationType::WalkUp, true);
-            attacker.orientation = Orientation::Up;
+            StartPausedCharacterSpriteAnim(charData.sprite[attackerId], SpriteAnimationType::WalkUp, true);
+            charData.orientation[attackerId] = Orientation::Up;
         }
     }
 }

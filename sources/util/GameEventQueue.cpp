@@ -24,7 +24,7 @@ void PublishMovePartyEvent(GameEventQueue &eventQueue, Vector2i target) {
     PublishEvent(eventQueue, event);
 }
 
-void PublishPartySpottedEvent(GameEventQueue &eventQueue, Character *spotter) {
+void PublishPartySpottedEvent(GameEventQueue &eventQueue, int spotter) {
     GameEvent event{};
     event.type = GameEventType::PartySpotted;
     event.partySpotted.spotter = spotter;

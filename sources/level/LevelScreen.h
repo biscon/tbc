@@ -22,14 +22,15 @@ struct LevelScreen {
     int actionIconScrollIndex;
     bool showActionBarTitle;
     GameEventQueue* eventQueue;
+    int floatingStatsCharacter;
 };
 
 void CreateLevelScreen(LevelScreen &levelScreen, GameEventQueue* eventQueue);
 void DestroyLevelScreen(LevelScreen &levelScreen);
-void DrawLevelScreen(Level &level, LevelScreen &levelScreen, PlayField &playField);
-void UpdateLevelScreen(Level &level, LevelScreen &levelScreen, PlayField& playField, float dt);
-void HandleInputLevelScreen(LevelScreen &levelScreen, Level &level);
-Character* SelectTargetBasedOnThreat(Level& level);
+void DrawLevelScreen(CharacterData& charData, Level &level, LevelScreen &levelScreen, PlayField &playField);
+void UpdateLevelScreen(CharacterData& charData, Level &level, LevelScreen &levelScreen, float dt);
+void HandleInputLevelScreen(CharacterData& charData, LevelScreen &levelScreen, Level &level);
+//Character* SelectTargetBasedOnThreat(Level& level);
 
 
 #endif //SANDBOX_LEVELSCREEN_H

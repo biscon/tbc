@@ -8,59 +8,61 @@
 #include "Ai.h"
 #include "audio/SoundEffect.h"
 
-static bool AttackIfPossible(Level &level) {
-    auto playersWithinRange = GetAdjacentCharacters(level, *level.currentCharacter, CharacterFaction::Player);
+static bool AttackIfPossible(CharacterData& charData, Level &level) {
+    auto playersWithinRange = GetAdjacentCharacters(charData, level, level.currentCharacter, CharacterFaction::Player);
     level.selectedSkill = nullptr;
     if((int) playersWithinRange.size() > 0) {
         // attack player
         SortCharactersByThreat(level, playersWithinRange);
-        Character* target = playersWithinRange[0];
+        int target = playersWithinRange[0];
         level.selectedCharacter = target;
         level.turnState = TurnState::Attack;
-        TraceLog(LOG_INFO, "Enemy attacking: %s", level.selectedCharacter->name.c_str());
+        TraceLog(LOG_INFO, "Enemy attacking: %s", charData.name[level.selectedCharacter].c_str());
         return true;
     }
     else {
-        level.selectedCharacter = nullptr;
+        level.selectedCharacter = -1;
         level.turnState = TurnState::EndTurn;
         return false;
     }
 }
 
-static bool MoveIfPossible(Level& level, PlayField& playField) {
-    auto playersWithinRange = GetCharactersWithinMoveRange(level, *level.currentCharacter, 1, true, CharacterFaction::Player);
+static bool MoveIfPossible(CharacterData& charData, Level& level, PlayField& playField) {
+    auto playersWithinRange = GetCharactersWithinMoveRange(charData, level, level.currentCharacter, 1, true, CharacterFaction::Player);
     SortCharactersByThreat(level, playersWithinRange);
 
     if((int) playersWithinRange.size() > 0) {
         playField.mode = PlayFieldMode::None;
         playField.path = playersWithinRange[0].second;
         playField.moving = true;
-        level.currentCharacter->movePoints -= playersWithinRange[0].second.cost;
+        CharacterStats& stats = charData.stats[level.currentCharacter];
+        stats.movePoints -= playersWithinRange[0].second.cost;
         // cap at zero
-        if(level.currentCharacter->movePoints < 0) {
-            level.currentCharacter->movePoints = 0;
+        if(stats.movePoints < 0) {
+            stats.movePoints = 0;
         }
         level.turnState = TurnState::Move;
-        StartCameraPanToTargetChar(level.camera, playersWithinRange[0].first, 250.0f);
+        StartCameraPanToTargetChar(charData, level.camera, playersWithinRange[0].first, 250.0f);
         return true;
     }
     level.turnState = TurnState::EndTurn;
     return false;
 }
 
-static bool PartialMoveIfPossible(Level& level, PlayField& playField) {
-    auto playersWithinRange = GetCharactersWithinMoveRangePartial(level, *level.currentCharacter, 1, false, CharacterFaction::Player);
+static bool PartialMoveIfPossible(CharacterData& charData, Level& level, PlayField& playField) {
+    auto playersWithinRange = GetCharactersWithinMoveRangePartial(charData, level, level.currentCharacter, 1, false, CharacterFaction::Player);
     SortCharactersByThreat(level, playersWithinRange);
+    CharacterStats& stats = charData.stats[level.currentCharacter];
 
-    if((int) playersWithinRange.size() > 0 && level.currentCharacter->movePoints > 0) {
+    if((int) playersWithinRange.size() > 0 && stats.movePoints > 0) {
         auto path = playersWithinRange[0].second;
         // truncate path to move points steps
-        if(path.path.size() > level.currentCharacter->movePoints) {
-            TraceLog(LOG_INFO, "Truncating path to %d steps", level.currentCharacter->movePoints);
-            path.path.resize(level.currentCharacter->movePoints);
-            path.cost = level.currentCharacter->movePoints;
+        if(path.path.size() > stats.movePoints) {
+            TraceLog(LOG_INFO, "Truncating path to %d steps", stats.movePoints);
+            path.path.resize(stats.movePoints);
+            path.cost = stats.movePoints;
         }
-        if(path.cost > level.currentCharacter->movePoints || path.cost == 0) {
+        if(path.cost > stats.movePoints || path.cost == 0) {
             TraceLog(LOG_INFO, "Cant move further toward player");
             level.turnState = TurnState::EndTurn;
             return false;
@@ -68,10 +70,10 @@ static bool PartialMoveIfPossible(Level& level, PlayField& playField) {
         playField.mode = PlayFieldMode::None;
         playField.path = path;
         playField.moving = true;
-        level.currentCharacter->movePoints -= path.cost;
+        stats.movePoints -= path.cost;
         // cap at zero
-        if(level.currentCharacter->movePoints < 0) {
-            level.currentCharacter->movePoints = 0;
+        if(stats.movePoints < 0) {
+            stats.movePoints = 0;
         }
         level.turnState = TurnState::Move;
         auto lastStep = path.path.back();
@@ -83,16 +85,16 @@ static bool PartialMoveIfPossible(Level& level, PlayField& playField) {
     return false;
 }
 
-static void HandleTurn(Level &level, PlayField &playField) {
+static void HandleTurn(CharacterData& charData, Level &level, PlayField &playField) {
     // do something
     TraceLog(LOG_INFO, "FighterAi::HandleTurn");
     switch(level.turnState) {
         case TurnState::EnemyTurn: {
-            if(!AttackIfPossible(level)) {
+            if(!AttackIfPossible(charData, level)) {
                 TraceLog(LOG_INFO, "Attack not possible, move if possible");
-                if(!MoveIfPossible(level, playField)) {
+                if(!MoveIfPossible(charData, level, playField)) {
                     TraceLog(LOG_INFO, "Move not possible, partial move if possible");
-                    if(!PartialMoveIfPossible(level, playField)) {
+                    if(!PartialMoveIfPossible(charData, level, playField)) {
                         TraceLog(LOG_INFO, "Partial move not possible, end turn");
                     } else {
                         TraceLog(LOG_INFO, "Partial move possible, moving");

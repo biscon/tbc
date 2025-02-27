@@ -9,8 +9,8 @@ void DrawStatusText(const char* text, Color color, int y, int size) {
     DrawText(text, 240 - (MeasureText(text, size) / 2), y, size, color);
 }
 
-void DisplayCharacterStatsFloating(Character &character, int x, int y, bool isPlayer) {
-    int statusEffectsHeight = (int)character.statusEffects.size() * 12;
+void DisplayCharacterStatsFloating(CharacterData& charData, int character, int x, int y, bool isPlayer) {
+    int statusEffectsHeight = (int)charData.statusEffects[character].size() * 12;
 
     // Calculate the initial rectangle
     auto backgroundRect = (Rectangle){(float)x, (float)y, 82, 76 + (float)statusEffectsHeight + 4}; // Adjusted height for level
@@ -33,22 +33,23 @@ void DisplayCharacterStatsFloating(Character &character, int x, int y, bool isPl
     int offsetX = (int)backgroundRect.x + 4;
     int offsetY = (int)backgroundRect.y + 4;
 
+    CharacterStats& stats = charData.stats[character];
     // Draw the adjusted rectangle and its content
     DrawRectangleRounded(backgroundRect, 0.1f, 16, DARKGRAY);
     DrawRectangleRoundedLinesEx(backgroundRect, 0.1f, 16, 1.0f, LIGHTGRAY);
-    DrawText(TextFormat("%s", character.name.c_str()), offsetX, offsetY, 10, YELLOW);
-    DrawText(TextFormat("Level: %d", character.level), offsetX, offsetY + 12, 10, WHITE); // Added level
-    DrawText(TextFormat("Health: %d/%d", character.health, character.maxHealth), offsetX, offsetY + 24, 10, WHITE);
-    DrawText(TextFormat("Attack: %d", character.attack), offsetX, offsetY + 36, 10, WHITE);
-    DrawText(TextFormat("Defense: %d", character.defense), offsetX, offsetY + 48, 10, WHITE);
-    DrawText(TextFormat("Speed: %d", character.speed), offsetX, offsetY + 60, 10, WHITE); // Adjusted offsets
+    DrawText(TextFormat("%s", charData.name[character].c_str()), offsetX, offsetY, 10, YELLOW);
+    DrawText(TextFormat("Level: %d", stats.level), offsetX, offsetY + 12, 10, WHITE); // Added level
+    DrawText(TextFormat("Health: %d/%d", stats.health, stats.maxHealth), offsetX, offsetY + 24, 10, WHITE);
+    DrawText(TextFormat("Attack: %d", stats.attack), offsetX, offsetY + 36, 10, WHITE);
+    DrawText(TextFormat("Defense: %d", stats.defense), offsetX, offsetY + 48, 10, WHITE);
+    DrawText(TextFormat("Speed: %d", stats.speed), offsetX, offsetY + 60, 10, WHITE); // Adjusted offsets
 
     if (statusEffectsHeight > 0) {
         DrawLine(backgroundRect.x, backgroundRect.y + 76, backgroundRect.x + 82, backgroundRect.y + 76, LIGHTGRAY); // Adjusted separator position
         offsetY += 76;
         // Show status effects
-        for (size_t i = 0; i < character.statusEffects.size(); ++i) {
-            DrawText(TextFormat("%s", GetStatusEffectName(character.statusEffects[i].type).c_str()), offsetX, offsetY + i * 12, 10, YELLOW);
+        for (size_t i = 0; i < charData.statusEffects[character].size(); ++i) {
+            DrawText(TextFormat("%s", GetStatusEffectName(charData.statusEffects[character][i].type).c_str()), offsetX, offsetY + i * 12, 10, YELLOW);
         }
     }
 }

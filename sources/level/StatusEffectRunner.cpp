@@ -6,8 +6,8 @@
 #include "StatusEffectRunner.h"
 #include "Combat.h"
 
-static void ApplyStatusEffect(Level &combat, PlayField &gridState, Character& character, StatusEffect& effect) {
-    Vector2 charPos = GetCharacterSpritePos(character.sprite);
+static void ApplyStatusEffect(CharacterData& charData, WeaponData& weaponData, Level &combat, PlayField &gridState, int character, StatusEffect& effect) {
+    Vector2 charPos = GetCharacterSpritePos(charData.sprite[character]);
 
     switch(effect.type) {
         case StatusEffectType::DamageReduction:
@@ -28,7 +28,7 @@ static void ApplyStatusEffect(Level &combat, PlayField &gridState, Character& ch
             break;
         case StatusEffectType::Burning: {
             // Burning effect
-            int damage = DealDamageStatusEffect(combat, character, (int) effect.value);
+            int damage = DealDamageStatusEffect(charData, weaponData, combat, character, (int) effect.value);
             if(damage > 0) {
                 CreateExplosionEffect(*gridState.particleManager, {charPos.x, charPos.y}, 5, 10.0f, 0.2f);
             }
@@ -38,43 +38,42 @@ static void ApplyStatusEffect(Level &combat, PlayField &gridState, Character& ch
             break;
     }
     // check if dead
-    if(character.health <= 0) {
-        KillCharacter(combat, character);
+    if(charData.stats[character].health <= 0) {
+        KillCharacter(charData, combat, character);
     }
 }
 
-// runs when a round is started
-void ApplyStatusEffects(Level &level, PlayField &playField) {
+void ApplyStatusEffects(CharacterData& charData, WeaponData& weaponData, Level &level, PlayField &playField) {
     for(auto& character : level.turnOrder) {
         // skip dead characters
-        if(character->health <= 0) {
+        if(charData.stats[character].health <= 0) {
             continue;
         }
-        for(auto& effect : character->statusEffects) {
-            ApplyStatusEffect(level, playField, *character, effect);
+        for(auto& effect : charData.statusEffects[character]) {
+            ApplyStatusEffect(charData, weaponData, level, playField, character, effect);
         }
     }
 }
 
 // runs when a round is over
-void UpdateStatusEffects(Level &level) {
+void UpdateStatusEffects(CharacterData& charData, Level &level) {
     for(auto &character : level.turnOrder) {
-        for(auto &effect : character->statusEffects) {
+        for(auto &effect : charData.statusEffects[character]) {
             if(effect.roundsLeft > 0) {
                 effect.roundsLeft--;
             }
         }
         // Use erase-remove idiom to remove animations which are done
-        character->statusEffects.erase(
-                std::remove_if(character->statusEffects.begin(), character->statusEffects.end(),
-                               [&level, &character](const StatusEffect& effect) {
+        charData.statusEffects[character].erase(
+                std::remove_if(charData.statusEffects[character].begin(), charData.statusEffects[character].end(),
+                               [&charData, &level, &character](const StatusEffect& effect) {
                                    if(effect.roundsLeft == 0) {
-                                       std::string logMessage = character->name + " is no longer affected by " + GetStatusEffectName(effect.type);
+                                       std::string logMessage = charData.name[character] + " is no longer affected by " + GetStatusEffectName(effect.type);
                                        level.log.push_back(logMessage);
                                    }
                                    return effect.roundsLeft == 0;
                                }),
-                character->statusEffects.end()
+                charData.statusEffects[character].end()
         );
     }
 }

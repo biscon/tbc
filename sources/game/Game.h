@@ -14,9 +14,11 @@ enum class GameState {
 };
 
 struct Game {
-    std::vector<Character> party;
+    std::vector<int> party;
     std::string levelFileName;
     GameState state;
+    WeaponData weaponData;
+    CharacterData charData;
 };
 
 void CreateGame(Game &game, const std::string& levelFileName);

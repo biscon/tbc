@@ -19,7 +19,7 @@ enum class PlayFieldMode {
 };
 
 struct CharacterMove {
-    Character* character;
+    int character;
     Path path;
     bool isDone;
 };
@@ -29,23 +29,22 @@ struct PlayField {
     PlayFieldMode mode;
     Vector2 selectedTile;
     Vector2i selectedTilePos;
-    Character* selectedCharacter;
+    int selectedCharacter;
     Path path;
     // Static variables for pulsing highlight
     float highlightAlpha = 0.25f; // Current alpha value
     bool increasing = true;       // Direction of the alpha
     float pulseSpeed = 4.0f; // Speed of the pulsing
-    Character* floatingStatsCharacter;
     ParticleManager* particleManager;
     GameEventQueue* eventQueue;
     std::vector<CharacterMove> activeMoves;
 };
 
 void CreatePlayField(PlayField &playField, ParticleManager* particleManager, GameEventQueue* eventQueue);
-void UpdatePlayField(PlayField &playField, Level &level, float dt);
-void HandleInputPlayField(PlayField &playField, Level &level);
-void DrawPlayField(PlayField &playField, Level &level);
-void MoveCharacter(PlayField &playField, Level &level, Character* character, Vector2i target);
-void MoveCharacterPartial(PlayField &playField, Level &level, Character *character, Vector2i target);
+void UpdatePlayField(CharacterData& charData, PlayField &playField, Level &level, float dt);
+void HandleInputPlayField(CharacterData& charData, PlayField &playField, Level &level);
+void DrawPlayField(CharacterData& charData, PlayField &playField, Level &level);
+void MoveCharacter(CharacterData& charData, PlayField &playField, Level &level, int character, Vector2i target);
+void MoveCharacterPartial(CharacterData& charData, PlayField &playField, Level &level, int character, Vector2i target);
 
 #endif //SANDBOX_PLAYFIELD_H

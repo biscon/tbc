@@ -10,15 +10,15 @@
 #include "graphics/Animation.h"
 #include "Level.h"
 
-AttackResult Attack(Level &level, Character &attacker, Character &defender);
-int DealDamage(Level& level, Character &attacker, Character &defender, int damage);
-int DealDamageStatusEffect(Level& level, Character &target, int damage);
-void KillCharacter(Level &level, Character &character);
-bool IsPlayerCharacter(Character &character);
-bool IsIncapacitated(Character* character);
-void DecayThreat(Level& level, int amount);
-void SetTaunt(Level& level, Character* target);
-void NextCharacter(Level &level);
-void StartCombat(Level &level, Character &spotter, int maxDist);
+AttackResult Attack(CharacterData& charData, WeaponData& weaponData, Level& level, int attacker, int defender);
+int DealDamage(CharacterData& charData, WeaponData& weaponData, Level& level, int attacker, int defender, int damage);
+int DealDamageStatusEffect(CharacterData& charData, WeaponData& weaponData, Level& level, int target, int damage);
+void KillCharacter(CharacterData& charData, Level &level, int character);
+bool IsPlayerCharacter(CharacterData& charData, int character);
+bool IsIncapacitated(CharacterData& charData, int character);
+void DecayThreat(CharacterData& charData, Level& level, int amount);
+void SetTaunt(CharacterData& charData, Level& level, int target);
+void NextCharacter(CharacterData& charData, Level &level);
+void StartCombat(CharacterData& charData, Level &level, int spotter, int maxDist);
 
 #endif //SANDBOX_COMBAT_H

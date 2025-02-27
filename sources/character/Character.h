@@ -32,6 +32,7 @@ enum class CharacterFaction {
     Enemy,
 };
 
+/*
 struct Character {
     CharacterClass characterClass;
     CharacterFaction faction;
@@ -50,19 +51,44 @@ struct Character {
     std::vector<Skill> skills;  // List of skills the character possesses
     std::vector<StatusEffect> statusEffects;
     Orientation orientation;
-    Weapon weapon;
+    int weaponIdx;
     bool isWeaponEquipped;
 };
+*/
 
-void CreateCharacter(Character &character, CharacterClass characterClass, CharacterFaction faction, std::string name, std::string ai);
-void DisplayCharacterInfo(const Character &character);
-Character GenerateRandomCharacter(std::string name, bool isEnemy = false);
-bool IsAlive(const Character &character);
-void GiveWeapon(Character &character, Weapon &weapon);
-void GiveWeapon(Character &character, const std::string& weaponTemplate);
+struct CharacterStats {
+    int health;
+    int maxHealth;
+    int attack;
+    int defense;
+    int speed;
+    int hunger;
+    int thirst;
+    int movePoints;
+    int level;
+};
+
+struct CharacterData {
+    std::vector<CharacterClass> characterClass;
+    std::vector<CharacterFaction> faction;
+    std::vector<std::string> name;
+    std::vector<std::string> ai;
+    std::vector<CharacterStats> stats;
+    std::vector<CharacterSprite> sprite;
+    std::vector<std::vector<Skill>> skills;  // List of skills the character possesses
+    std::vector<std::vector<StatusEffect>> statusEffects;
+    std::vector<Orientation> orientation;
+    std::vector<int> weaponIdx;
+    std::vector<bool> isWeaponEquipped;
+};
+
+
+int CreateCharacter(CharacterData &data, CharacterClass characterClass, CharacterFaction faction, const std::string& name, const std::string& ai);
+bool IsAlive(CharacterData &data, int characterIdx);
+void GiveWeapon(WeaponData& weaponData, CharacterData &data, int characterIdx, const std::string& weaponTemplate);
 Vector2 GetOrientationVector(Orientation orientation);
-void LevelUp(Character &character, bool autoDistributePoints);
-int GetAttack(const Character &character);
-void FaceCharacter(Character &attacker, Character &defender);
+void LevelUp(CharacterData &charData, int cid, bool autoDistributePoints);
+int GetAttack(CharacterData &charData, WeaponData& weaponData, int cid);
+void FaceCharacter(CharacterData &charData, int attackerId, int defenderId);
 
 #endif //SANDBOX_CHARACTER_H

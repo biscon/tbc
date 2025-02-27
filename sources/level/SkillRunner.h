@@ -16,7 +16,7 @@ struct SkillResult {
     bool giveAggro;
 };
 
-SkillResult ExecuteSkill(Level& level, PlayField& playField);
-void UpdateSkillCooldown(Level &level);
+SkillResult ExecuteSkill(CharacterData& charData, WeaponData& weaponData, Level& level, PlayField& playField);
+void UpdateSkillCooldown(CharacterData& charData, Level &level);
 
 #endif //SANDBOX_SKILLRUNNER_H

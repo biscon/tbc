@@ -20,31 +20,27 @@ void MenuUpdate(float dt) {
 }
 
 static void StartNewGame() {
-    //game->party.reserve(10);
-    game->party.emplace_back();
-    Character &warrior = game->party.back();
-    CreateCharacter(warrior, CharacterClass::Warrior, CharacterFaction::Player, "Player1", "Fighter");
-    AssignSkill(warrior.skills, SkillType::Taunt, "Howling Scream", 1, false, true, 0, 3, 0);
-    AssignSkill(warrior.skills, SkillType::Stun, "Stunning Blow", 1, false, false, 0, 3, 1);
-    InitCharacterSprite(warrior.sprite, "MaleWarrior", true);
-    GiveWeapon(warrior, "Sword");
-    LevelUp(warrior, true);
-    LevelUp(warrior, true);
-    LevelUp(warrior, true);
-    LevelUp(warrior, true);
+    int id = CreateCharacter(game->charData, CharacterClass::Warrior, CharacterFaction::Player, "Player1", "Fighter");
+    AssignSkill(game->charData.skills[id], SkillType::Taunt, "Howling Scream", 1, false, true, 0, 3, 0);
+    AssignSkill(game->charData.skills[id], SkillType::Stun, "Stunning Blow", 1, false, false, 0, 3, 1);
+    InitCharacterSprite(game->charData.sprite[id], "MaleWarrior", true);
+    GiveWeapon(game->weaponData, game->charData, id, "Sword");
+    LevelUp(game->charData, id, true);
+    LevelUp(game->charData, id, true);
+    LevelUp(game->charData, id, true);
+    LevelUp(game->charData, id, true);
+    game->party.emplace_back(id);
 
-
-    game->party.emplace_back();
-    Character &mage = game->party.back();
-    CreateCharacter(mage, CharacterClass::Mage, CharacterFaction::Player, "Player2", "Fighter");
-    AssignSkill(mage.skills, SkillType::Dodge, "Dodge", 1, true, true, 0, 0, 0);
-    AssignSkill(mage.skills, SkillType::FlameJet, "Burning Hands", 1, false, false, 0, 3, 5);
-    InitCharacterSprite(mage.sprite, "MaleWarrior", true);
-    GiveWeapon(mage, "Bow");
-    LevelUp(mage, true);
-    LevelUp(mage, true);
-    LevelUp(mage, true);
-    LevelUp(mage, true);
+    id = CreateCharacter(game->charData, CharacterClass::Mage, CharacterFaction::Player, "Player2", "Fighter");
+    AssignSkill(game->charData.skills[id], SkillType::Dodge, "Dodge", 1, true, true, 0, 0, 0);
+    AssignSkill(game->charData.skills[id], SkillType::FlameJet, "Burning Hands", 1, false, false, 0, 3, 5);
+    InitCharacterSprite(game->charData.sprite[id], "MaleWarrior", true);
+    GiveWeapon(game->weaponData, game->charData, id, "Bow");
+    LevelUp(game->charData, id, true);
+    LevelUp(game->charData, id, true);
+    LevelUp(game->charData, id, true);
+    LevelUp(game->charData, id, true);
+    game->party.emplace_back(id);
 
     game->state = GameState::LOAD_LEVEL;
     PushGameMode(GameModes::Level);

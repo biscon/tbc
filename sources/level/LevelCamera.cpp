@@ -32,15 +32,16 @@ void StartCameraPanToTilePos(LevelCamera& cam, Vector2i target, float speed) {
     StartCameraPanToTargetPos(cam, targetPos, speed);
 }
 
-void StartCameraPanToTargetChar(LevelCamera& cam, Character* target, float speed) {
+void StartCameraPanToTargetChar(CharacterData& charData, LevelCamera& cam, int target, float speed) {
+    CharacterSprite& sprite = charData.sprite[target];
     // if distance is less than 20 abort
-    if (Vector2Distance(Vector2Add(cam.camera.target, {240, 135}), GetCharacterSpritePos(target->sprite)) < 32) {
+    if (Vector2Distance(Vector2Add(cam.camera.target, {240, 135}), GetCharacterSpritePos(sprite)) < 32) {
         TraceLog(LOG_INFO, "Camera distance less than threshold, aborting camera pan");
         return;
     }
     cam.cameraVelocity = Vector2{0, 0};
     cam.cameraPanning = true;
-    cam.cameraPanTarget = GetCharacterSpritePos(target->sprite);
+    cam.cameraPanTarget = GetCharacterSpritePos(sprite);
     cam.cameraPanTarget.x -= 240;
     cam.cameraPanTarget.y -= 135;
     cam.cameraStartPos = cam.camera.target;
@@ -51,10 +52,10 @@ void StartCameraPanToTargetChar(LevelCamera& cam, Character* target, float speed
     cam.cameraPanElapsed = 0.0f;
 }
 
-void StartCameraPanToTargetCharTime(LevelCamera& cam, Character* target, float duration) {
+void StartCameraPanToTargetCharTime(CharacterData& charData, LevelCamera& cam, int target, float duration) {
     cam.cameraVelocity = Vector2{0, 0};
     cam.cameraPanning = true;
-    cam.cameraPanTarget = GetCharacterSpritePos(target->sprite);
+    cam.cameraPanTarget = GetCharacterSpritePos(charData.sprite[target]);
     cam.cameraPanTarget.x -= 240;
     cam.cameraPanTarget.y -= 135;
     cam.cameraStartPos = cam.camera.target;

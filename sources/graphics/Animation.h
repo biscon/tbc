@@ -20,12 +20,12 @@ enum class AnimationType {
 };
 
 struct BlinkAnimationState {
-    struct Character* character; // Assuming Character is defined elsewhere
+    int character;
     bool visible;
 };
 
 struct AttackAnimationState {
-    struct Character* attacker;
+    int attacker;
     float startY;
     float endY;
     float currentY;
@@ -53,7 +53,7 @@ struct TextAnimationState {
 };
 
 struct DeathAnimationState {
-    struct Character* character;
+    int character;
     float startY;
     float endY;
     float startX;
@@ -86,7 +86,7 @@ struct SpeechBubbleAnimationState {
 };
 
 struct VictoryAnimationState {
-    struct Character* character;
+    int character;
     float baseY;
     float jumpHeight;
     float jumpSpeed;
@@ -118,14 +118,14 @@ struct Animation {
     }
 };
 
-void SetupBlinkAnimation(Animation &animation, Character *character, float duration);
-void SetupAttackAnimation(Animation &animation, Character *attacker, float duration, float startY, float endY, float startX, float endX, float initialDelay = 0.0f);
+void SetupBlinkAnimation(Animation &animation, int character, float duration);
+void SetupAttackAnimation(Animation &animation, int attacker, float duration, float startY, float endY, float startX, float endX, float initialDelay = 0.0f);
 void SetupDamageNumberAnimation(Animation &animation, const char *text, float x, float y, Color color, int fontSize);
 void SetupTextAnimation(Animation &animation, const char *text, float y, float duration, float initialDelay = 0.0f);
-void SetupDeathAnimation(Animation &animation, Character *character, float duration);
+void SetupDeathAnimation(CharacterData& charData, Animation &animation, int character, float duration);
 void SetupBloodPoolAnimation(Animation &animation, Vector2 position, float duration);
 void SetupSpeechBubbleAnimation(Animation &animation, const char *text, float x, float y, float duration, float initialDelay = 0.0f);
-void SetupVictoryAnimation(Animation &animation, Character *character, float duration, float jumpHeight, float jumpSpeed);
-void UpdateAnimation(Animation &animation, float dt);
+void SetupVictoryAnimation(CharacterData& charData, Animation &animation, int character, float duration, float jumpHeight, float jumpSpeed);
+void UpdateAnimation(CharacterData& charData, Animation &animation, float dt);
 
 #endif //SANDBOX_ANIMATION_H

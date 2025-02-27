@@ -56,7 +56,7 @@ int main() {
     CreateFighterAi("Fighter");
 
     InitSpriteAnimationManager(ASSETS_PATH"animations.json");
-    InitWeaponManager(ASSETS_PATH"weapons.json");
+    InitWeaponTemplateData(game.weaponData.templateData, ASSETS_PATH"weapons.json");
 
     //SetGameMode(GameModes::Combat);
     //SetGameMode(GameModes::Dungeon);

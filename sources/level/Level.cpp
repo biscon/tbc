@@ -53,7 +53,6 @@ void LoadLevel(Level &level, const std::string &filename) {
         sp.radius = spawn["radius"].get<int>();
         level.spawnPoints[name] = sp;
     }
-    level.inCombat = false;
     level.turnState = TurnState::None;
     level.camera.worldWidth = level.tileMap.width * level.tileMap.tileWidth;
     level.camera.worldHeight = level.tileMap.height * level.tileMap.tileHeight;
@@ -64,7 +63,7 @@ void DestroyLevel(Level &level) {
     UnloadSpriteSheet(level.tileSet);
 }
 
-static void SetInitialGridPositions(Level &level, SpawnPoint &sp, std::vector<Character*>& characters) {
+static void setInitialGridPositions(CharacterData& charData, Level &level, SpawnPoint &sp, std::vector<int>& characters) {
     auto positions = FindFreePositionsCircular(level, sp.x, sp.y, sp.radius);
     if(characters.size() > positions.size()) {
         TraceLog(LOG_WARNING, "Not enough positions for all characters");
@@ -74,28 +73,28 @@ static void SetInitialGridPositions(Level &level, SpawnPoint &sp, std::vector<Ch
         // take a position from the list
         auto pos = positions.back();
         positions.pop_back();
-        SetCharacterSpritePos(character->sprite, GridToPixelPosition(pos.x, pos.y));
+        SetCharacterSpritePos(charData.sprite[character], GridToPixelPosition(pos.x, pos.y));
         // Set initial animation to paused
-        StartPausedCharacterSpriteAnim(character->sprite, SpriteAnimationType::WalkRight, true);
-        character->orientation = Orientation::Right;
+        StartPausedCharacterSpriteAnim(charData.sprite[character], SpriteAnimationType::WalkRight, true);
+        charData.orientation[character] = Orientation::Right;
     }
 }
 
-void AddPartyToLevel(Level &level, std::vector<Character> &party, const std::string& spawnPoint) {
+void AddPartyToLevel(CharacterData& charData, Level &level, std::vector<int> &party, const std::string& spawnPoint) {
     SpawnPoint& sp = level.spawnPoints[spawnPoint];
     for (auto &character : party) {
-        level.partyCharacters.push_back(&character);
-        level.allCharacters.push_back(&character);
+        level.partyCharacters.push_back(character);
+        level.allCharacters.push_back(character);
     }
-    SetInitialGridPositions(level, sp, level.partyCharacters);
+    setInitialGridPositions(charData, level, sp, level.partyCharacters);
 }
 
-void AddEnemiesToLevel(Level &level, std::vector<Character> &enemies, const std::string& spawnPoint) {
+void AddEnemiesToLevel(CharacterData& charData, Level &level, std::vector<int> &enemies, const std::string& spawnPoint) {
     SpawnPoint& sp = level.spawnPoints[spawnPoint];
-    std::vector<Character*> enemyCharacters;
+    std::vector<int> enemyCharacters;
     for (auto &character : enemies) {
-        enemyCharacters.push_back(&character);
-        level.allCharacters.push_back(&character);
+        enemyCharacters.push_back(character);
+        level.allCharacters.push_back(character);
     }
-    SetInitialGridPositions(level, sp, enemyCharacters);
+    setInitialGridPositions(charData, level, sp, enemyCharacters);
 }
