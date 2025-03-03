@@ -84,7 +84,7 @@ static bool DrawActionIcon(float x, float y, ActionIcon &actionIcon, LevelScreen
     return false;
 }
 
-static void DisplayActionUI(CharacterData& charData, Level &combat, LevelScreen &uiState, PlayField &gridState) {
+static void DisplayActionUI(SpriteData& spriteData, CharacterData& charData, Level &combat, LevelScreen &uiState, PlayField &gridState) {
     //DrawRectangleRec((Rectangle) {0, 209, 480, 65}, Fade(BLACK, 0.75f));
 
     float iconWidth = 32;
@@ -168,8 +168,8 @@ static void DisplayActionUI(CharacterData& charData, Level &combat, LevelScreen 
                 // Defend button pressed
                 combat.turnState = TurnState::EndTurn;
                 AssignStatusEffectAllowStacking(charData.statusEffects[combat.currentCharacter], StatusEffectType::DamageReduction, 1, 0.5f);
-                float charX = GetCharacterSpritePosX(charData.sprite[combat.currentCharacter]);
-                float charY = GetCharacterSpritePosY(charData.sprite[combat.currentCharacter]);
+                float charX = GetCharacterSpritePosX(spriteData, charData.sprite[combat.currentCharacter]);
+                float charY = GetCharacterSpritePosY(spriteData, charData.sprite[combat.currentCharacter]);
                 Animation anim{};
                 SetupDamageNumberAnimation(anim, "DEFENDING", charX, charY - 25, WHITE, 10);
                 combat.animations.push_back(anim);
@@ -309,7 +309,7 @@ static void DisplaySpeechBubbleAnimations(Level &combat) {
 
 
 // Function to display combat screen
-void DrawLevelScreen(CharacterData& charData, Level &level, LevelScreen &levelScreen, PlayField &playField) {
+void DrawLevelScreen(SpriteData& spriteData, CharacterData& charData, Level &level, LevelScreen &levelScreen, PlayField &playField) {
 
     // Draw the dividing line in the middle of the screen
     //DrawLine(0, 125, 480, 125, LIGHTGRAY); // Horizontal dividing line
@@ -331,7 +331,7 @@ void DrawLevelScreen(CharacterData& charData, Level &level, LevelScreen &levelSc
 
 
     if (level.turnState == TurnState::SelectAction) {
-        DisplayActionUI(charData, level, levelScreen, playField);
+        DisplayActionUI(spriteData, charData, level, levelScreen, playField);
     }
     if (level.turnState == TurnState::Victory) {
         std::string text = "Victory!";
@@ -354,8 +354,8 @@ void DrawLevelScreen(CharacterData& charData, Level &level, LevelScreen &levelSc
 
     if (levelScreen.floatingStatsCharacter != -1 && (level.turnState == TurnState::None || level.turnState == TurnState::SelectAction ||
                                                         level.turnState == TurnState::SelectEnemy || level.turnState == TurnState::SelectDestination)) {
-        float x = GetCharacterSpritePosX(charData.sprite[levelScreen.floatingStatsCharacter]);
-        float y = GetCharacterSpritePosY(charData.sprite[levelScreen.floatingStatsCharacter]);
+        float x = GetCharacterSpritePosX(spriteData, charData.sprite[levelScreen.floatingStatsCharacter]);
+        float y = GetCharacterSpritePosY(spriteData, charData.sprite[levelScreen.floatingStatsCharacter]);
         // to screen space
         Vector2 screenPos = GetWorldToScreen2D(Vector2{x, y}, level.camera.camera);
         DisplayCharacterStatsFloating(charData, levelScreen.floatingStatsCharacter, (int) screenPos.x - 10, (int) screenPos.y + 12,
@@ -363,9 +363,9 @@ void DrawLevelScreen(CharacterData& charData, Level &level, LevelScreen &levelSc
     }
 }
 
-static void UpdateAnimations(CharacterData& charData, Level &combat, float dt) {
+static void UpdateAnimations(SpriteData& spriteData, CharacterData& charData, Level &combat, float dt) {
     for (auto &anim : combat.animations) {
-        UpdateAnimation(charData, anim, dt);
+        UpdateAnimation(spriteData, charData, anim, dt);
     }
     // Use erase-remove idiom to remove animations which are done
     combat.animations.erase(
@@ -377,11 +377,11 @@ static void UpdateAnimations(CharacterData& charData, Level &combat, float dt) {
     );
 }
 
-void UpdateLevelScreen(CharacterData& charData, Level &level, LevelScreen &levelScreen, float dt) {
-    UpdateAnimations(charData, level, dt);
+void UpdateLevelScreen(SpriteData& spriteData, CharacterData& charData, Level &level, LevelScreen &levelScreen, float dt) {
+    UpdateAnimations(spriteData, charData, level, dt);
 }
 
-void HandleInputLevelScreen(CharacterData& charData, LevelScreen &levelScreen, Level &level) {
+void HandleInputLevelScreen(SpriteData& spriteData, CharacterData& charData, LevelScreen &levelScreen, Level &level) {
     // get mouse position
     levelScreen.floatingStatsCharacter = -1;
     Vector2 mousePos = GetScreenToWorld2D(GetMousePosition(), level.camera.camera);
@@ -392,8 +392,8 @@ void HandleInputLevelScreen(CharacterData& charData, LevelScreen &levelScreen, L
         if (charData.stats[character].health <= 0) {
             continue;
         }
-        Vector2 gridPosCharacter = PixelToGridPosition(GetCharacterSpritePosX(charData.sprite[character]),
-                                                       GetCharacterSpritePosY(charData.sprite[character]));
+        Vector2 gridPosCharacter = PixelToGridPosition(GetCharacterSpritePosX(spriteData, charData.sprite[character]),
+                                                       GetCharacterSpritePosY(spriteData, charData.sprite[character]));
         if ((int) gridPosCharacter.x == (int) gridPos.x && (int) gridPosCharacter.y == (int) gridPos.y) {
             levelScreen.floatingStatsCharacter = character;
         }

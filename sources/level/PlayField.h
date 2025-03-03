@@ -41,10 +41,10 @@ struct PlayField {
 };
 
 void CreatePlayField(PlayField &playField, ParticleManager* particleManager, GameEventQueue* eventQueue);
-void UpdatePlayField(CharacterData& charData, PlayField &playField, Level &level, float dt);
-void HandleInputPlayField(CharacterData& charData, PlayField &playField, Level &level);
-void DrawPlayField(CharacterData& charData, PlayField &playField, Level &level);
-void MoveCharacter(CharacterData& charData, PlayField &playField, Level &level, int character, Vector2i target);
-void MoveCharacterPartial(CharacterData& charData, PlayField &playField, Level &level, int character, Vector2i target);
+void UpdatePlayField(SpriteData& spriteData, CharacterData& charData, PlayField &playField, Level &level, float dt);
+void HandleInputPlayField(SpriteData& spriteData, CharacterData& charData, PlayField &playField, Level &level);
+void DrawPlayField(SpriteData& spriteData, CharacterData& charData, PlayField &playField, Level &level);
+void MoveCharacter(SpriteData& spriteData, CharacterData& charData, PlayField &playField, Level &level, int character, Vector2i target);
+void MoveCharacterPartial(SpriteData& spriteData, CharacterData& charData, PlayField &playField, Level &level, int character, Vector2i target);
 
 #endif //SANDBOX_PLAYFIELD_H

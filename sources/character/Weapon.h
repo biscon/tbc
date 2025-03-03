@@ -71,6 +71,5 @@ struct WeaponData {
 };
 
 void InitWeaponTemplateData(WeaponTemplateData& weaponTemplateData, const std::string& filename);
-void DestroyWeaponManager();
 int CreateWeapon(WeaponData& weaponData, const std::string& templateName);
 #endif //SANDBOX_WEAPON_H

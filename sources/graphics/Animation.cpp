@@ -59,8 +59,8 @@ void SetupTextAnimation(Animation &animation, const char *text, float y, float d
     TraceLog(LOG_INFO, "SetupTextAnimation: %s", text);
 }
 
-void SetupDeathAnimation(CharacterData& charData, Animation &animation, int character, float duration) {
-    Vector2 charPos = GetCharacterSpritePos(charData.sprite[character]);
+void SetupDeathAnimation(SpriteData& spriteData, CharacterData& charData, Animation &animation, int character, float duration) {
+    Vector2 charPos = GetCharacterSpritePos(spriteData, charData.sprite[character]);
     animation.type = AnimationType::Death;
     animation.duration = duration;
     animation.time = 0;
@@ -110,7 +110,7 @@ void SetupSpeechBubbleAnimation(Animation &animation, const char *text, float x,
     TraceLog(LOG_INFO, "SetupSpeechBubbleAnimation: %s", text);
 }
 
-void SetupVictoryAnimation(CharacterData& charData, Animation &animation, int character, float duration, float jumpHeight, float jumpSpeed) {
+void SetupVictoryAnimation(SpriteData& spriteData, CharacterData& charData, Animation &animation, int character, float duration, float jumpHeight, float jumpSpeed) {
     animation.type = AnimationType::Victory;
     animation.duration = duration;
     animation.time = 0.0f;
@@ -118,14 +118,14 @@ void SetupVictoryAnimation(CharacterData& charData, Animation &animation, int ch
 
     VictoryAnimationState &state = animation.state.victory;
     state.character = character;
-    state.baseY = GetCharacterSpritePosY(charData.sprite[character]); // Assuming `position.y` is the character's initial vertical position
+    state.baseY = GetCharacterSpritePosY(spriteData, charData.sprite[character]); // Assuming `position.y` is the character's initial vertical position
     state.jumpHeight = jumpHeight;
     state.jumpSpeed = jumpSpeed;
     state.currentY = state.baseY;
     state.movingUp = true;
 }
 
-void UpdateAnimation(CharacterData& charData, Animation &animation, float dt) {
+void UpdateAnimation(SpriteData& spriteData, CharacterData& charData, Animation &animation, float dt) {
     animation.time += dt;
     switch(animation.type) {
         case AnimationType::Blink: {
@@ -202,10 +202,10 @@ void UpdateAnimation(CharacterData& charData, Animation &animation, float dt) {
             float bounceDuration = animation.duration * 0.3f; // 30% of duration for bounce
             float fallDuration = animation.duration * 0.7f;   // 70% of duration for fall
             CharacterSprite& charSprite = charData.sprite[animation.state.death.character];
-            Vector2 charPos = GetCharacterSpritePos(charSprite);
+            Vector2 charPos = GetCharacterSpritePos(spriteData, charSprite);
             if (animation.time <= bounceDuration) {
                 // Bounce phase (upwards motion)
-                SetCharacterSpritePosY(charSprite, EaseQuadOut(animation.time, animation.state.death.startY, animation.state.death.bounceY - animation.state.death.startY, bounceDuration));
+                SetCharacterSpritePosY(spriteData, charSprite, EaseQuadOut(animation.time, animation.state.death.startY, animation.state.death.bounceY - animation.state.death.startY, bounceDuration));
             } else {
                 // Fall phase (downwards motion)
                 float fallTime = animation.time - bounceDuration;
@@ -213,10 +213,10 @@ void UpdateAnimation(CharacterData& charData, Animation &animation, float dt) {
                     EaseQuadIn(fallTime, animation.state.death.startX, animation.state.death.endX - animation.state.death.startX, fallDuration),
                     EaseQuadIn(fallTime, animation.state.death.bounceY, animation.state.death.endY - animation.state.death.bounceY, fallDuration)
                 };
-                SetCharacterSpritePos(charSprite, newPos);
+                SetCharacterSpritePos(spriteData, charSprite, newPos);
             }
             // Rotate the character
-            SetCharacterSpriteRotation(charSprite, EaseQuadOut(animation.time, 0, 90, animation.duration));
+            SetCharacterSpriteRotation(spriteData, charSprite, EaseQuadOut(animation.time, 0, 90, animation.duration));
             break;
         }
         case AnimationType::BloodPool: {
@@ -274,7 +274,7 @@ void UpdateAnimation(CharacterData& charData, Animation &animation, float dt) {
             }
 
             // Update character's position
-            SetCharacterSpritePosY(charData.sprite[state.character], state.currentY);
+            SetCharacterSpritePosY(spriteData, charData.sprite[state.character], state.currentY);
             break;
         }
     }

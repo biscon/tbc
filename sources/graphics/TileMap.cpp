@@ -7,7 +7,7 @@
 #define CUTE_TILED_IMPLEMENTATION
 #include "util/cute_tiled.h"
 
-void LoadTileMap(TileMap &tileMap, const char *filename, SpriteSheet* tileSet) {
+void LoadTileMap(TileMap &tileMap, const char *filename, int tileSet) {
     tileMap.tileSet = tileSet;
     int fileLength = GetFileLength(filename);
     if(fileLength == 0) {
@@ -67,7 +67,7 @@ int GetTileAt(TileMap &tileMap, int layer, int x, int y) {
     return tileMap.layers[layer].data[y * tileMap.width + x];
 }
 
-void DrawTileLayer(TileMap &tileMap, int layer, int x, int y) {
+void DrawTileLayer(SpriteSheetData& sheetData, TileMap &tileMap, int layer, int x, int y) {
     if(layer < 0 || layer >= tileMap.layers.size()) {
         return;
     }
@@ -75,7 +75,7 @@ void DrawTileLayer(TileMap &tileMap, int layer, int x, int y) {
         for(int tx = 0; tx < tileMap.width; tx++) {
             int tileIndex = GetTileAt(tileMap, layer, tx, ty);
             if(tileIndex > 0) {
-                DrawTextureRec(tileMap.tileSet->texture, tileMap.tileSet->frameRects[tileIndex-1], Vector2{(float)(x + tx * tileMap.tileWidth), (float)(y + ty * tileMap.tileHeight)}, WHITE);
+                DrawTextureRec(sheetData.texture[tileMap.tileSet], sheetData.frameRects[tileMap.tileSet][tileIndex-1], Vector2{(float)(x + tx * tileMap.tileWidth), (float)(y + ty * tileMap.tileHeight)}, WHITE);
             }
         }
     }

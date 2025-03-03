@@ -85,13 +85,13 @@ Vector2 GridToPixelPosition(int gridX, int gridY) {
     return {gridX * 16.0f + 8.0f, gridY * 16.0f + 8.0f};
 }
 
-bool IsTileOccupied(CharacterData& charData, Level &level, int x, int y, int exceptCharacter) {
+bool IsTileOccupied(SpriteData& spriteData, CharacterData& charData, Level &level, int x, int y, int exceptCharacter) {
     if(GetTileAt(level.tileMap, NAV_LAYER, x, y) != 0) return true;
     // check if any characters are in the way
     for (auto &character: level.allCharacters) {
         // skip dead
         if (charData.stats[character].health <= 0) continue;
-        Vector2 gridPos = PixelToGridPosition(GetCharacterSpritePosX(charData.sprite[character]), GetCharacterSpritePosY(charData.sprite[character]));
+        Vector2 gridPos = PixelToGridPosition(GetCharacterSpritePosX(spriteData, charData.sprite[character]), GetCharacterSpritePosY(spriteData, charData.sprite[character]));
         if ((int) gridPos.x == x && (int) gridPos.y == y && character != exceptCharacter) {
             //TraceLog(LOG_WARNING, "Player character in the way, x: %d, y: %d", x, y);
             return true;
@@ -100,13 +100,13 @@ bool IsTileOccupied(CharacterData& charData, Level &level, int x, int y, int exc
     return false;
 }
 
-bool IsTileOccupiedEnemies(CharacterData& charData, Level &level, int x, int y, int exceptCharacter) {
+bool IsTileOccupiedEnemies(SpriteData& spriteData, CharacterData& charData, Level &level, int x, int y, int exceptCharacter) {
     if(GetTileAt(level.tileMap, NAV_LAYER, x, y) != 0) return true;
     for (auto &character: level.allCharacters) {
         // skip dead
         if (charData.stats[character].health <= 0 || charData.faction[character] == CharacterFaction::Player)
             continue;
-        Vector2 gridPos = PixelToGridPosition(GetCharacterSpritePosX(charData.sprite[character]), GetCharacterSpritePosY(charData.sprite[character]));
+        Vector2 gridPos = PixelToGridPosition(GetCharacterSpritePosX(spriteData, charData.sprite[character]), GetCharacterSpritePosY(spriteData, charData.sprite[character]));
         if ((int) gridPos.x == x && (int) gridPos.y == y && character != exceptCharacter) {
             //TraceLog(LOG_WARNING, "Enemy character in the way, x: %d, y: %d", x, y);
             return true;
@@ -125,8 +125,8 @@ bool IsTileBlocking(Level &combat, int x, int y) {
     return false;
 }
 
-bool CalcPath(CharacterData& charData, Level &level, Path &path, Vector2i start, Vector2i end, int exceptCharacter, CHECK_TILE_FUNC) {
-    if (checkTile(charData, level, start.x, start.y, exceptCharacter) || checkTile(charData, level, end.x, end.y, exceptCharacter)) {
+bool CalcPath(SpriteData& spriteData, CharacterData& charData, Level &level, Path &path, Vector2i start, Vector2i end, int exceptCharacter, CHECK_TILE_FUNC) {
+    if (checkTile(spriteData, charData, level, start.x, start.y, exceptCharacter) || checkTile(spriteData, charData, level, end.x, end.y, exceptCharacter)) {
         TraceLog(LOG_WARNING, "Start or end position is blocked, startX: %d, startY: %d, endX: %d, endY: %d", start.x,
                  start.y, end.x, end.y);
         return false;  // If the start or end is blocked, return false
@@ -176,7 +176,7 @@ bool CalcPath(CharacterData& charData, Level &level, Path &path, Vector2i start,
             int neighborX = currentNode->position.x + dir.x;
             int neighborY = currentNode->position.y + dir.y;
 
-            if (checkTile(charData, level, neighborX, neighborY, exceptCharacter)) continue;
+            if (checkTile(spriteData, charData, level, neighborX, neighborY, exceptCharacter)) continue;
             if (closedSet[neighborX][neighborY]) continue;
 
             int tentativeGCost = currentNode->gCost + 1;
@@ -268,9 +268,9 @@ bool CalcPathIgnoreOccupied(Level &level, Path &path, Vector2i start, Vector2i e
 }
 
 
-bool CalcPathWithRange(CharacterData& charData, Level &level, Path &path, Vector2i start, Vector2i end, int range,
+bool CalcPathWithRange(SpriteData& spriteData, CharacterData& charData, Level &level, Path &path, Vector2i start, Vector2i end, int range,
                        int exceptCharacter, CHECK_TILE_FUNC) {
-    if (checkTile(charData, level, start.x, start.y, exceptCharacter)) {
+    if (checkTile(spriteData, charData, level, start.x, start.y, exceptCharacter)) {
         TraceLog(LOG_WARNING, "Start position is blocked, startX: %d, startY: %d, endX: %d, endY: %d", start.x, start.y,
                  end.x, end.y);
         return false;  // If the start position is blocked, return false
@@ -322,7 +322,7 @@ bool CalcPathWithRange(CharacterData& charData, Level &level, Path &path, Vector
             int neighborX = currentNode->position.x + dir.x;
             int neighborY = currentNode->position.y + dir.y;
 
-            if (checkTile(charData, level, neighborX, neighborY, exceptCharacter)) continue;
+            if (checkTile(spriteData, charData, level, neighborX, neighborY, exceptCharacter)) continue;
             if (closedSet[neighborX][neighborY]) continue;
 
             int tentativeGCost = currentNode->gCost + 1;
@@ -342,9 +342,9 @@ bool CalcPathWithRange(CharacterData& charData, Level &level, Path &path, Vector
     return false;  // Path not found
 }
 
-bool CalcPathWithRangePartial(CharacterData& charData, Level &level, Path &path, Vector2i start, Vector2i end, int range,
+bool CalcPathWithRangePartial(SpriteData& spriteData, CharacterData& charData, Level &level, Path &path, Vector2i start, Vector2i end, int range,
                               int exceptCharacter, CHECK_TILE_FUNC) {
-    if (checkTile(charData, level, start.x, start.y, exceptCharacter)) {
+    if (checkTile(spriteData, charData, level, start.x, start.y, exceptCharacter)) {
         TraceLog(LOG_WARNING, "Start position is blocked, startX: %d, startY: %d, endX: %d, endY: %d",
                  start.x, start.y, end.x, end.y);
         return false;  // If the start position is blocked, return false
@@ -401,7 +401,7 @@ bool CalcPathWithRangePartial(CharacterData& charData, Level &level, Path &path,
             int neighborX = currentNode->position.x + dir.x;
             int neighborY = currentNode->position.y + dir.y;
 
-            if (checkTile(charData, level, neighborX, neighborY, exceptCharacter)) continue;
+            if (checkTile(spriteData, charData, level, neighborX, neighborY, exceptCharacter)) continue;
             if (closedSet[neighborX][neighborY]) continue;
 
             int tentativeGCost = currentNode->gCost + 1;
@@ -434,9 +434,9 @@ bool CalcPathWithRangePartial(CharacterData& charData, Level &level, Path &path,
     return false;  // Path to the destination was not found
 }
 
-bool IsCharacterAdjacentToPlayer(CharacterData& charData, int player, int character) {
-    Vector2i charPos = GetCharacterSpritePosI(charData.sprite[character]);
-    Vector2i playerPos = GetCharacterSpritePosI(charData.sprite[player]);
+bool IsCharacterAdjacentToPlayer(SpriteData& spriteData, CharacterData& charData, int player, int character) {
+    Vector2i charPos = GetCharacterSpritePosI(spriteData, charData.sprite[character]);
+    Vector2i playerPos = GetCharacterSpritePosI(spriteData, charData.sprite[player]);
 
     Vector2i charGridPos = PixelToGridPositionI(charPos.x, charPos.y);
     Vector2i playerGridPos = PixelToGridPositionI(playerPos.x, playerPos.y);
@@ -554,7 +554,7 @@ std::vector<Vector2i> FindFreePositionsCircular(Level& level, int x, int y, int 
     return freePositions;
 }
 
-std::vector<int> GetTargetsInLine(CharacterData& charData, Level &level, Vector2i start, Vector2 direction, int range, int exceptCharacter) {
+std::vector<int> GetTargetsInLine(SpriteData& spriteData, CharacterData& charData, Level &level, Vector2i start, Vector2 direction, int range, int exceptCharacter) {
     std::vector<int> affectedCharacters;
 
     // Normalize the direction vector to ensure consistent movement
@@ -579,7 +579,7 @@ std::vector<int> GetTargetsInLine(CharacterData& charData, Level &level, Vector2
             if(character == exceptCharacter) continue;
             // skip dead
             if (charData.stats[character].health <= 0) continue;
-            Vector2i charPos = GetCharacterSpritePosI(charData.sprite[character]);
+            Vector2i charPos = GetCharacterSpritePosI(spriteData, charData.sprite[character]);
             Vector2i gridPos = PixelToGridPositionI(charPos.x, charPos.y);
             if (gridPos == tilePos) {
                 affectedCharacters.push_back(character);

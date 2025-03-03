@@ -29,7 +29,7 @@ static bool IsCharacterVisible(Level &level, int character) {
     return true;
 }
 
-static Vector2 GetAnimatedCharPos(CharacterData& charData, Level &level, int character) {
+static Vector2 GetAnimatedCharPos(SpriteData& spriteData, CharacterData& charData, Level &level, int character) {
     // Check if the character is visible (not blinking)
     for (auto &animation: level.animations) {
         if (animation.type == AnimationType::Attack) {
@@ -38,7 +38,7 @@ static Vector2 GetAnimatedCharPos(CharacterData& charData, Level &level, int cha
             }
         }
     }
-    return GetCharacterSpritePos(charData.sprite[character]);
+    return GetCharacterSpritePos(spriteData, charData.sprite[character]);
 }
 
 void CreatePlayField(PlayField &playField, ParticleManager* particleManager, GameEventQueue* eventQueue) {
@@ -59,18 +59,18 @@ static void ResetGridState(PlayField &playField) {
     playField.path = {};
 }
 
-static void DrawPathSelection(CharacterData& charData, PlayField &playField, Level &level) {
+static void DrawPathSelection(SpriteData& spriteData, CharacterData& charData, PlayField &playField, Level &level) {
     // check if mouse is over tile
     Vector2 mousePos = GetScreenToWorld2D(GetMousePosition(), level.camera.camera);
     Vector2 gridPos = PixelToGridPosition(mousePos.x, mousePos.y);
-    if (!IsTileOccupied(charData, level, static_cast<int>(gridPos.x), static_cast<int>(gridPos.y), -1)) {
+    if (!IsTileOccupied(spriteData, charData, level, static_cast<int>(gridPos.x), static_cast<int>(gridPos.y), -1)) {
         playField.selectedTile = gridPos;
         // calculate a path and draw it as lines
         Path path;
         CharacterStats& stats = charData.stats[level.currentCharacter];
         Vector2i target = PixelToGridPositionI(static_cast<int>(mousePos.x), static_cast<int>(mousePos.y));
-        if (CalcPath(charData, level, path, PixelToGridPositionI((int) GetCharacterSpritePosX(charData.sprite[level.currentCharacter]),
-                                                       (int) GetCharacterSpritePosY(charData.sprite[level.currentCharacter])),
+        if (CalcPath(spriteData, charData, level, path, PixelToGridPositionI((int) GetCharacterSpritePosX(spriteData, charData.sprite[level.currentCharacter]),
+                                                       (int) GetCharacterSpritePosY(spriteData, charData.sprite[level.currentCharacter])),
                      target, level.currentCharacter, IsTileOccupied)) {
             Color pathColor = Fade(WHITE, playField.highlightAlpha);
             if (path.cost > stats.movePoints) {
@@ -139,7 +139,7 @@ static void DrawPathSelection(CharacterData& charData, PlayField &playField, Lev
     }
 }
 
-static void DrawSelectCharacters(CharacterData& charData, PlayField &playField, std::vector<int> &characters, Color color, Camera2D &camera, bool onlyEnemies) {
+static void DrawSelectCharacters(SpriteData& spriteData, CharacterData& charData, PlayField &playField, std::vector<int> &characters, Color color, Camera2D &camera, bool onlyEnemies) {
     Vector2 mousePos = GetScreenToWorld2D(GetMousePosition(), camera);
     Vector2 gridPos = PixelToGridPosition(mousePos.x, mousePos.y);
     for (auto &character: characters) {
@@ -150,7 +150,7 @@ static void DrawSelectCharacters(CharacterData& charData, PlayField &playField, 
         if(onlyEnemies && charData.faction[character] == CharacterFaction::Player) {
             continue;
         }
-        Vector2 charPos = GetCharacterSpritePos(charData.sprite[character]);
+        Vector2 charPos = GetCharacterSpritePos(spriteData, charData.sprite[character]);
         Vector2 gridPosCharacter = PixelToGridPosition(charPos.x, charPos.y);
         if ((int) gridPosCharacter.x == (int) gridPos.x && (int) gridPosCharacter.y == (int) gridPos.y) {
             DrawCircleLines(charPos.x, charPos.y, 10,
@@ -165,9 +165,9 @@ static void DrawSelectCharacters(CharacterData& charData, PlayField &playField, 
     }
 }
 
-static void DrawSelectCharacter(CharacterData& charData, PlayField &playField, Level &level, bool onlyEnemies) {
+static void DrawSelectCharacter(SpriteData& spriteData, CharacterData& charData, PlayField &playField, Level &level, bool onlyEnemies) {
     playField.selectedCharacter = -1;
-    DrawSelectCharacters(charData, playField, level.allCharacters, RED, level.camera.camera, onlyEnemies);
+    DrawSelectCharacters(spriteData, charData, playField, level.allCharacters, RED, level.camera.camera, onlyEnemies);
     if (playField.selectedCharacter != -1) {
         DrawStatusText(TextFormat("Selected: %s", charData.name[playField.selectedCharacter].c_str()), YELLOW, 220, 10);
         int range = 1;
@@ -175,10 +175,10 @@ static void DrawSelectCharacter(CharacterData& charData, PlayField &playField, L
             range = level.selectedSkill->range;
         }
         if(range == 1) {
-            if (IsCharacterAdjacentToPlayer(charData, level.currentCharacter, playField.selectedCharacter)) {
+            if (IsCharacterAdjacentToPlayer(spriteData, charData, level.currentCharacter, playField.selectedCharacter)) {
                 // draw last line from player to selected character
-                Vector2 start = GetCharacterSpritePos(charData.sprite[level.currentCharacter]);
-                Vector2 end = GetCharacterSpritePos(charData.sprite[playField.selectedCharacter]);
+                Vector2 start = GetCharacterSpritePos(spriteData, charData.sprite[level.currentCharacter]);
+                Vector2 end = GetCharacterSpritePos(spriteData, charData.sprite[playField.selectedCharacter]);
                 DrawLineEx(start, end, 1, Fade(RED, playField.highlightAlpha));
                 // Check for a mouse click
                 if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
@@ -197,8 +197,8 @@ static void DrawSelectCharacter(CharacterData& charData, PlayField &playField, L
             }
         } else {
             // draw last line from player to selected character
-            Vector2 start = GetCharacterSpritePos(charData.sprite[level.currentCharacter]);
-            Vector2 end = GetCharacterSpritePos(charData.sprite[playField.selectedCharacter]);
+            Vector2 start = GetCharacterSpritePos(spriteData, charData.sprite[level.currentCharacter]);
+            Vector2 end = GetCharacterSpritePos(spriteData, charData.sprite[playField.selectedCharacter]);
             if(HasLineOfSight(level, PixelToGridPositionI((int) start.x, (int) start.y), PixelToGridPositionI((int) end.x, (int) end.y))) {
                 int distance = (int) Vector2Distance(start, end);
                 if(distance <= range * 16) {
@@ -227,8 +227,8 @@ static void DrawSelectCharacter(CharacterData& charData, PlayField &playField, L
     }
 }
 
-static void DrawTargetSelection(CharacterData& charData, PlayField &gridState, Level &level, bool onlyEnemies) {
-    DrawSelectCharacter(charData, gridState, level, onlyEnemies);
+static void DrawTargetSelection(SpriteData& spriteData, CharacterData& charData, PlayField &gridState, Level &level, bool onlyEnemies) {
+    DrawSelectCharacter(spriteData, charData, gridState, level, onlyEnemies);
     if (IsMouseButtonReleased(MOUSE_BUTTON_RIGHT)) {
         level.selectedSkill = nullptr;
         level.selectedCharacter = -1;
@@ -246,20 +246,20 @@ void DrawHealthBar(float x, float y, float width, float health, float maxHealth)
 }
 
 
-static void DrawGridCharacters(CharacterData& charData, PlayField &playField, Level &level) {
+static void DrawGridCharacters(SpriteData& spriteData, CharacterData& charData, PlayField &playField, Level &level) {
     // Sort characters by y position
     std::vector<int> sortedCharacters;
     for (auto &character: level.allCharacters) {
         sortedCharacters.push_back(character);
     }
-    std::sort(sortedCharacters.begin(), sortedCharacters.end(), [&charData, &level](int a, int b) {
-        return GetAnimatedCharPos(charData, level, a).y < GetAnimatedCharPos(charData, level, b).y;
+    std::sort(sortedCharacters.begin(), sortedCharacters.end(), [&spriteData, &charData, &level](int a, int b) {
+        return GetAnimatedCharPos(spriteData, charData, level, a).y < GetAnimatedCharPos(spriteData, charData, level, b).y;
     });
 
 
     // Draw a highlight for the current character if not moving
     if (level.currentCharacter != -1 && (level.turnState == TurnState::SelectAction || level.turnState == TurnState::SelectEnemy)) {
-        Vector2 charPos = GetAnimatedCharPos(charData, level, level.currentCharacter);
+        Vector2 charPos = GetAnimatedCharPos(spriteData, charData, level, level.currentCharacter);
         Color outlineColor = Fade(YELLOW, playField.highlightAlpha);
         DrawRectangleLinesEx(
                 Rectangle{
@@ -273,18 +273,18 @@ static void DrawGridCharacters(CharacterData& charData, PlayField &playField, Le
 
     // Draw characters
     for (auto &character: sortedCharacters) {
-        Vector2 charPos = GetAnimatedCharPos(charData, level, character);
+        Vector2 charPos = GetAnimatedCharPos(spriteData, charData, level, character);
         // Draw oval shadow underneath
         if(charData.stats[character].health > 0 && level.turnState != TurnState::Victory && level.turnState != TurnState::Defeat)
             DrawEllipse((int) charPos.x, (int) charPos.y, 6, 4, Fade(BLACK, 0.25f));
 
         CharacterSprite& charSprite = charData.sprite[character];
         if (IsCharacterVisible(level, character)) {
-            DrawCharacterSprite(charSprite, charPos.x, charPos.y);
+            DrawCharacterSprite(spriteData, charSprite, charPos.x, charPos.y);
         } else {
-            SetCharacterSpriteTint(charSprite, {255, 255, 255, 64});
-            DrawCharacterSprite(charSprite, charPos.x, charPos.y);
-            SetCharacterSpriteTint(charSprite, WHITE); // Reset tint
+            SetCharacterSpriteTint(spriteData, charSprite, {255, 255, 255, 64});
+            DrawCharacterSprite(spriteData, charSprite, charPos.x, charPos.y);
+            SetCharacterSpriteTint(spriteData, charSprite, WHITE); // Reset tint
         }
         CharacterStats& stats = charData.stats[character];
         // Draw health bar
@@ -306,12 +306,12 @@ static void DrawGridLines() {
 }
 */
 
-static void DrawPathAndSelection(CharacterData& charData, PlayField &playField, Level &level) {
+static void DrawPathAndSelection(SpriteData& spriteData, CharacterData& charData, PlayField &playField, Level &level) {
     if (playField.mode == PlayFieldMode::SelectingTile) {
-        DrawPathSelection(charData, playField, level);
+        DrawPathSelection(spriteData, charData, playField, level);
     }
     if (playField.mode == PlayFieldMode::SelectingEnemyTarget) {
-        DrawTargetSelection(charData, playField, level, true);
+        DrawTargetSelection(spriteData, charData, playField, level, true);
     }
 }
 
@@ -334,7 +334,7 @@ static void DrawTileSelection(PlayField &playField, Level &level) {
     }
 }
 
-static void updateTurnBasedMove(CharacterData& charData, PlayField &playField, Level &level, float dt) {
+static void updateTurnBasedMove(SpriteData& spriteData, CharacterData& charData, PlayField &playField, Level &level, float dt) {
     if (playField.moving) {
         playField.path.moveTime += dt;
 
@@ -352,26 +352,26 @@ static void updateTurnBasedMove(CharacterData& charData, PlayField &playField, L
 
             CharacterSprite& sprite = charData.sprite[level.currentCharacter];
             // Lerp the x and y components separately
-            SetCharacterSpritePosX(sprite, Lerp(start.x, end.x, t));
-            SetCharacterSpritePosY(sprite, Lerp(start.y, end.y, t));
+            SetCharacterSpritePosX(spriteData, sprite, Lerp(start.x, end.x, t));
+            SetCharacterSpritePosY(spriteData, sprite, Lerp(start.y, end.y, t));
 
             // Determine the direction of movement and set the appropriate animation
             if (fabs(end.x - start.x) > fabs(end.y - start.y)) {
                 // Horizontal movement
                 if (end.x > start.x) {
-                    PlayCharacterSpriteAnim(sprite, SpriteAnimationType::WalkRight, true);
+                    PlayCharacterSpriteAnim(spriteData, sprite, SpriteAnimationType::WalkRight, true);
                     charData.orientation[level.currentCharacter] = Orientation::Right;
                 } else {
-                    PlayCharacterSpriteAnim(sprite, SpriteAnimationType::WalkLeft, true);
+                    PlayCharacterSpriteAnim(spriteData, sprite, SpriteAnimationType::WalkLeft, true);
                     charData.orientation[level.currentCharacter] = Orientation::Left;
                 }
             } else {
                 // Vertical movement
                 if (end.y > start.y) {
-                    PlayCharacterSpriteAnim(sprite, SpriteAnimationType::WalkDown, true);
+                    PlayCharacterSpriteAnim(spriteData, sprite, SpriteAnimationType::WalkDown, true);
                     charData.orientation[level.currentCharacter] = Orientation::Down;
                 } else {
-                    PlayCharacterSpriteAnim(sprite, SpriteAnimationType::WalkUp, true);
+                    PlayCharacterSpriteAnim(spriteData, sprite, SpriteAnimationType::WalkUp, true);
                     charData.orientation[level.currentCharacter] = Orientation::Up;
                 }
             }
@@ -385,12 +385,12 @@ static void updateTurnBasedMove(CharacterData& charData, PlayField &playField, L
                 if (playField.path.currentStep >= playField.path.path.size() - 1) {
                     StopSoundEffect(SoundEffectType::Footstep);
                     playField.moving = false;
-                    PauseCharacterSpriteAnim(sprite);
+                    PauseCharacterSpriteAnim(spriteData, sprite);
 
-                    SetCharacterSpriteFrame(sprite, 0);
+                    SetCharacterSpriteFrame(spriteData, sprite, 0);
                     // set final position
                     auto finalPos = playField.path.path[playField.path.path.size() - 1];
-                    SetCharacterSpritePos(sprite, GridToPixelPosition(finalPos.x, finalPos.y));
+                    SetCharacterSpritePos(spriteData, sprite, GridToPixelPosition(finalPos.x, finalPos.y));
 
                     if (IsPlayerCharacter(charData, level.currentCharacter)) {
                         level.turnState = TurnState::SelectAction;
@@ -403,7 +403,7 @@ static void updateTurnBasedMove(CharacterData& charData, PlayField &playField, L
     }
 }
 
-static void updateActiveMovement(CharacterData& charData, PlayField &playField, float dt) {
+static void updateActiveMovement(SpriteData& spriteData, CharacterData& charData, PlayField &playField, float dt) {
     for(auto& move : playField.activeMoves) {
         move.path.moveTime += dt;
 
@@ -421,26 +421,26 @@ static void updateActiveMovement(CharacterData& charData, PlayField &playField, 
 
             CharacterSprite& sprite = charData.sprite[move.character];
             // Lerp the x and y components separately
-            SetCharacterSpritePosX(sprite, Lerp(start.x, end.x, t));
-            SetCharacterSpritePosY(sprite, Lerp(start.y, end.y, t));
+            SetCharacterSpritePosX(spriteData, sprite, Lerp(start.x, end.x, t));
+            SetCharacterSpritePosY(spriteData, sprite, Lerp(start.y, end.y, t));
 
             // Determine the direction of movement and set the appropriate animation
             if (fabs(end.x - start.x) > fabs(end.y - start.y)) {
                 // Horizontal movement
                 if (end.x > start.x) {
-                    PlayCharacterSpriteAnim(sprite, SpriteAnimationType::WalkRight, true);
+                    PlayCharacterSpriteAnim(spriteData, sprite, SpriteAnimationType::WalkRight, true);
                     charData.orientation[move.character] = Orientation::Right;
                 } else {
-                    PlayCharacterSpriteAnim(sprite, SpriteAnimationType::WalkLeft, true);
+                    PlayCharacterSpriteAnim(spriteData, sprite, SpriteAnimationType::WalkLeft, true);
                     charData.orientation[move.character] = Orientation::Left;
                 }
             } else {
                 // Vertical movement
                 if (end.y > start.y) {
-                    PlayCharacterSpriteAnim(sprite, SpriteAnimationType::WalkDown, true);
+                    PlayCharacterSpriteAnim(spriteData, sprite, SpriteAnimationType::WalkDown, true);
                     charData.orientation[move.character] = Orientation::Down;
                 } else {
-                    PlayCharacterSpriteAnim(sprite, SpriteAnimationType::WalkUp, true);
+                    PlayCharacterSpriteAnim(spriteData, sprite, SpriteAnimationType::WalkUp, true);
                     charData.orientation[move.character] = Orientation::Up;
                 }
             }
@@ -453,11 +453,11 @@ static void updateActiveMovement(CharacterData& charData, PlayField &playField, 
                 // If the last step is reached, stop moving
                 if (move.path.currentStep >= move.path.path.size() - 1) {
                     //StopSoundEffect(SoundEffectType::Footstep);
-                    PauseCharacterSpriteAnim(sprite);
-                    SetCharacterSpriteFrame(sprite, 0);
+                    PauseCharacterSpriteAnim(spriteData, sprite);
+                    SetCharacterSpriteFrame(spriteData, sprite, 0);
                     // set final position
                     auto finalPos = move.path.path[move.path.path.size() - 1];
-                    SetCharacterSpritePos(sprite, GridToPixelPosition(finalPos.x, finalPos.y));
+                    SetCharacterSpritePos(spriteData, sprite, GridToPixelPosition(finalPos.x, finalPos.y));
                     move.isDone = true;
                     TraceLog(LOG_INFO, "Move done");
                 }
@@ -476,14 +476,14 @@ static void updateActiveMovement(CharacterData& charData, PlayField &playField, 
     );
 }
 
-static void checkIfPartySpotted(CharacterData& charData, PlayField &playField, Level &level) {
+static void checkIfPartySpotted(SpriteData& spriteData, CharacterData& charData, PlayField &playField, Level &level) {
     for(auto& c : level.allCharacters) {
         if(charData.faction[c] != CharacterFaction::Enemy || charData.stats[c].health <= 0) {
             continue;
         }
-        Vector2i enemyGridPos = GetCharacterGridPosI(charData.sprite[c]);
+        Vector2i enemyGridPos = GetCharacterGridPosI(spriteData, charData.sprite[c]);
         for(auto& partyChar : level.partyCharacters) {
-            Vector2i partyGridPos = GetCharacterGridPosI(charData.sprite[partyChar]);
+            Vector2i partyGridPos = GetCharacterGridPosI(spriteData, charData.sprite[partyChar]);
             if(HasLineOfSight(level, enemyGridPos, partyGridPos, 5)) {
                 TraceLog(LOG_INFO, "Party last spotted by %s", charData.name[c].c_str());
                 PublishPartySpottedEvent(*playField.eventQueue, c);
@@ -493,7 +493,7 @@ static void checkIfPartySpotted(CharacterData& charData, PlayField &playField, L
     }
 }
 
-void UpdatePlayField(CharacterData& charData, PlayField &playField, Level &level, float dt) {
+void UpdatePlayField(SpriteData& spriteData, CharacterData& charData, PlayField &playField, Level &level, float dt) {
     // Update the pulsing alpha
     if (playField.increasing) {
         playField.highlightAlpha = Lerp(playField.highlightAlpha, 1.0f, dt * playField.pulseSpeed);
@@ -506,15 +506,15 @@ void UpdatePlayField(CharacterData& charData, PlayField &playField, Level &level
             playField.increasing = true;
         }
     }
-    updateActiveMovement(charData, playField, dt);
-    updateTurnBasedMove(charData, playField, level, dt);
+    updateActiveMovement(spriteData, charData, playField, dt);
+    updateTurnBasedMove(spriteData, charData, playField, level, dt);
 
     // Update animations for all characters
     for (auto &character: level.allCharacters) {
-        UpdateCharacterSprite(charData.sprite[character], dt);
+        UpdateCharacterSprite(spriteData, charData.sprite[character], dt);
     }
     if(level.turnState == TurnState::None) {
-        checkIfPartySpotted(charData, playField, level);
+        checkIfPartySpotted(spriteData, charData, playField, level);
     }
 }
 
@@ -530,18 +530,18 @@ static void handleInputPlayFieldSelectingEnemyTarget(PlayField &playField, Level
 
 }
 
-static void handleInputPlayFieldShowMove(CharacterData& charData, PlayField &playField, Level &level) {
+static void handleInputPlayFieldShowMove(SpriteData& spriteData, CharacterData& charData, PlayField &playField, Level &level) {
     // check if mouse is over tile
     playField.selectedTilePos = {-1, -1};
     Vector2 mousePos = GetScreenToWorld2D(GetMousePosition(), level.camera.camera);
     Vector2i gridPos = PixelToGridPositionI(mousePos.x, mousePos.y);
-    if (!IsTileOccupied(charData, level, gridPos.x, gridPos.y, -1)) {
+    if (!IsTileOccupied(spriteData, charData, level, gridPos.x, gridPos.y, -1)) {
         // calculate a path and draw it as lines
         Path path;
         Vector2i target = PixelToGridPositionI(static_cast<int>(mousePos.x), static_cast<int>(mousePos.y));
         auto& playerChar = level.partyCharacters.front();
-        if (CalcPath(charData, level, path, PixelToGridPositionI((int) GetCharacterSpritePosX(charData.sprite[playerChar]),
-                                                       (int) GetCharacterSpritePosY(charData.sprite[playerChar])),
+        if (CalcPath(spriteData, charData, level, path, PixelToGridPositionI((int) GetCharacterSpritePosX(spriteData, charData.sprite[playerChar]),
+                                                       (int) GetCharacterSpritePosY(spriteData, charData.sprite[playerChar])),
                      target, playerChar, IsTileOccupiedEnemies)) {
             playField.selectedTilePos = gridPos;
             if(IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
@@ -551,45 +551,45 @@ static void handleInputPlayFieldShowMove(CharacterData& charData, PlayField &pla
     }
 }
 
-void HandleInputPlayField(CharacterData& charData, PlayField &playField, Level &level) {
+void HandleInputPlayField(SpriteData& spriteData, CharacterData& charData, PlayField &playField, Level &level) {
     switch(playField.mode) {
         case PlayFieldMode::None:handleInputPlayFieldNormal(playField, level);break;
         case PlayFieldMode::SelectingTile:handleInputPlayFieldSelectingTile(playField, level);break;
         case PlayFieldMode::SelectingEnemyTarget:handleInputPlayFieldSelectingEnemyTarget(playField, level);break;
-        case PlayFieldMode::Move:handleInputPlayFieldShowMove(charData, playField, level);break;
+        case PlayFieldMode::Move:handleInputPlayFieldShowMove(spriteData, charData, playField, level);break;
     }
 }
 
-void DrawPlayField(CharacterData& charData, PlayField &playField, Level &level) {
+void DrawPlayField(SpriteData& spriteData, CharacterData& charData, PlayField &playField, Level &level) {
     BeginMode2D(level.camera.camera);
     // Draw tilemap layer 0
-    DrawTileLayer(level.tileMap, BOTTOM_LAYER, 0, 0);
+    DrawTileLayer(spriteData.sheet, level.tileMap, BOTTOM_LAYER, 0, 0);
     EndMode2D();
     DrawBloodPools();
     BeginMode2D(level.camera.camera);
-    DrawTileLayer(level.tileMap, MIDDLE_LAYER, 0, 0);
+    DrawTileLayer(spriteData.sheet, level.tileMap, MIDDLE_LAYER, 0, 0);
 
     if(playField.mode == PlayFieldMode::Move) {
         DrawTileSelection(playField, level);
     } else {
-        DrawPathAndSelection(charData, playField, level);
+        DrawPathAndSelection(spriteData, charData, playField, level);
     }
 
-    DrawGridCharacters(charData, playField, level);
+    DrawGridCharacters(spriteData, charData, playField, level);
     EndMode2D();
     DrawParticleManager(*playField.particleManager);
     BeginMode2D(level.camera.camera);
-    DrawTileLayer(level.tileMap, TOP_LAYER, 0, 0);
+    DrawTileLayer(spriteData.sheet, level.tileMap, TOP_LAYER, 0, 0);
 
     EndMode2D();
 }
 
-void MoveCharacter(CharacterData& charData, PlayField &playField, Level &level, int character, Vector2i target) {
+void MoveCharacter(SpriteData& spriteData, CharacterData& charData, PlayField &playField, Level &level, int character, Vector2i target) {
     // calculate a path and draw it as lines
     Path path;
-    Vector2i cCharPos = GetCharacterSpritePosI(charData.sprite[character]);
+    Vector2i cCharPos = GetCharacterSpritePosI(spriteData, charData.sprite[character]);
     Vector2i cGridPos = PixelToGridPositionI(cCharPos.x, cCharPos.y);
-    if (CalcPath(charData, level, path, cGridPos, target, character, IsTileOccupiedEnemies)) {
+    if (CalcPath(spriteData, charData, level, path, cGridPos, target, character, IsTileOccupiedEnemies)) {
         CharacterMove move;
         move.character = character;
         move.path = path;
@@ -600,12 +600,12 @@ void MoveCharacter(CharacterData& charData, PlayField &playField, Level &level, 
     }
 }
 
-void MoveCharacterPartial(CharacterData& charData, PlayField &playField, Level &level, int character, Vector2i target) {
+void MoveCharacterPartial(SpriteData& spriteData, CharacterData& charData, PlayField &playField, Level &level, int character, Vector2i target) {
     // calculate a path and draw it as lines
     Path path;
-    Vector2i cCharPos = GetCharacterSpritePosI(charData.sprite[character]);
+    Vector2i cCharPos = GetCharacterSpritePosI(spriteData, charData.sprite[character]);
     Vector2i cGridPos = PixelToGridPositionI(cCharPos.x, cCharPos.y);
-    CalcPathWithRangePartial(charData, level, path, cGridPos, target, 1, character, IsTileOccupiedEnemies);
+    CalcPathWithRangePartial(spriteData, charData, level, path, cGridPos, target, 1, character, IsTileOccupiedEnemies);
     if(!path.path.empty()) {
         CharacterMove move;
         move.character = character;
@@ -615,7 +615,4 @@ void MoveCharacterPartial(CharacterData& charData, PlayField &playField, Level &
     } else {
         TraceLog(LOG_WARNING, "No path found");
     }
-
 }
-
-

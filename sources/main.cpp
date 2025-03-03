@@ -55,7 +55,7 @@ int main() {
     // Create AI
     CreateFighterAi("Fighter");
 
-    InitSpriteAnimationManager(ASSETS_PATH"animations.json");
+    InitSpriteAnimationData(game.spriteData, ASSETS_PATH"animations.json");
     InitWeaponTemplateData(game.weaponData.templateData, ASSETS_PATH"weapons.json");
 
     //SetGameMode(GameModes::Combat);
@@ -139,8 +139,7 @@ int main() {
     //UnloadFont(font);                   // Unload custom font
     UnloadFont(font2);                   // Unload custom font
 
-    DestroyWeaponManager();
-    DestroySpriteAnimationManager();
+    DestroySpriteAnimationData(game.spriteData);
     DestroySoundEffectManager();
     CloseAudioDevice();     // Close audio device
 

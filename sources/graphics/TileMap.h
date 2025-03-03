@@ -24,13 +24,13 @@ struct TileMap {
     int height;
     int tileWidth;
     int tileHeight;
-    SpriteSheet* tileSet;
+    int tileSet;
     std::vector<TileMapLayer> layers;
 };
 
-void LoadTileMap(TileMap &tileMap, const char* filename, SpriteSheet* tileSet);
+void LoadTileMap(TileMap &tileMap, const char* filename, int tileSet);
 void UnloadTileMap(TileMap &tileMap);
 int GetTileAt(TileMap &tileMap, int layer, int x, int y);
-void DrawTileLayer(TileMap &tileMap, int layer, int x, int y);
+void DrawTileLayer(SpriteSheetData& sheetData, TileMap &tileMap, int layer, int x, int y);
 
 #endif //SANDBOX_TILEMAP_H

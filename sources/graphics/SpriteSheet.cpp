@@ -5,16 +5,18 @@
 #include "SpriteSheet.h"
 
 // Load a sprite sheet from a file and split it into frames
-void LoadSpriteSheet(SpriteSheet& spriteSheet, const char* filename, int frameWidth, int frameHeight) {
+int LoadSpriteSheet(SpriteSheetData& sheetData, const char* filename, int frameWidth, int frameHeight) {
+
     // Load the texture
-    spriteSheet.texture = LoadTexture(filename);
-    spriteSheet.frameWidth = frameWidth;
-    spriteSheet.frameHeight = frameHeight;
+    Texture2D texture = LoadTexture(filename);
+    sheetData.texture.emplace_back(texture);
+    sheetData.frameSizeData.push_back({ frameWidth, frameHeight});
 
     // Calculate the number of frames in the sprite sheet
-    int columns = spriteSheet.texture.width / frameWidth;
-    int rows = spriteSheet.texture.height / frameHeight;
+    int columns = texture.width / frameWidth;
+    int rows = texture.height / frameHeight;
 
+    sheetData.frameRects.emplace_back();
     // Populate the frameRects vector
     for (int y = 0; y < rows; ++y) {
         for (int x = 0; x < columns; ++x) {
@@ -24,11 +26,12 @@ void LoadSpriteSheet(SpriteSheet& spriteSheet, const char* filename, int frameWi
                     static_cast<float>(frameWidth), // frame width
                     static_cast<float>(frameHeight)  // frame height
             };
-            spriteSheet.frameRects.push_back(frame);
+            sheetData.frameRects.back().push_back(frame);
         }
     }
+    return (int) sheetData.texture.size()-1;
 }
 
-void UnloadSpriteSheet(SpriteSheet &spriteSheet) {
-    UnloadTexture(spriteSheet.texture);
+void UnloadSpriteSheet(SpriteSheetData& sheetData, int spriteSheet) {
+    UnloadTexture(sheetData.texture[spriteSheet]);
 }

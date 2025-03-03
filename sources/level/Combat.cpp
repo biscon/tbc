@@ -259,10 +259,10 @@ AttackResult Attack(CharacterData& charData, WeaponData& weaponData, Level& leve
     return result;
 }
 
-int DealDamage(CharacterData& charData, WeaponData& weaponData, Level& level, int attacker, int defender, int damage) {
+int DealDamage(SpriteData& spriteData, CharacterData& charData, WeaponData& weaponData, Level& level, int attacker, int defender, int damage) {
     CharacterSprite& defenderSprite = charData.sprite[defender];
-    float defenderX = GetCharacterSpritePosX(defenderSprite);
-    float defenderY = GetCharacterSpritePosY(defenderSprite);
+    float defenderX = GetCharacterSpritePosX(spriteData, defenderSprite);
+    float defenderY = GetCharacterSpritePosY(spriteData, defenderSprite);
 
     // Base baseAttack calculation
     int baseDamage = damage;
@@ -313,9 +313,9 @@ int DealDamage(CharacterData& charData, WeaponData& weaponData, Level& level, in
     return baseDamage;
 }
 
-int DealDamageStatusEffect(CharacterData& charData, WeaponData& weaponData, Level& level, int target, int damage) {
-    float targetX = GetCharacterSpritePosX(charData.sprite[target]);
-    float targetY = GetCharacterSpritePosY(charData.sprite[target]);
+int DealDamageStatusEffect(SpriteData& spriteData, CharacterData& charData, WeaponData& weaponData, Level& level, int target, int damage) {
+    float targetX = GetCharacterSpritePosX(spriteData, charData.sprite[target]);
+    float targetY = GetCharacterSpritePosY(spriteData, charData.sprite[target]);
 
     // Base baseAttack calculation
     int baseDamage = damage;
@@ -344,17 +344,17 @@ int DealDamageStatusEffect(CharacterData& charData, WeaponData& weaponData, Leve
     return baseDamage;
 }
 
-void KillCharacter(CharacterData& charData, Level &level, int character) {
+void KillCharacter(SpriteData& spriteData, CharacterData& charData, Level &level, int character) {
     std::string logMessage = charData.name[character] + " is defeated!";
     level.log.push_back(logMessage);
     Animation deathAnim{};
-    SetupDeathAnimation(charData, deathAnim, character, 0.5f);
+    SetupDeathAnimation(spriteData, charData, deathAnim, character, 0.5f);
     level.animations.push_back(deathAnim);
     charData.stats[character].health = 0;
     // Remove character from turn order
     //combat.turnOrder.erase(std::remove(combat.turnOrder.begin(), combat.turnOrder.end(), &character), combat.turnOrder.end());
     Animation bloodAnim{};
-    Vector2 bloodPos = GetCharacterSpritePos(charData.sprite[character]);
+    Vector2 bloodPos = GetCharacterSpritePos(spriteData, charData.sprite[character]);
     //bloodPos = GetWorldToScreen2D(bloodPos, combat.camera.camera);
     SetupBloodPoolAnimation(bloodAnim, bloodPos, 5.0f);
     level.animations.push_back(bloodAnim);
@@ -404,7 +404,7 @@ static void InitializeThreatTable(Level& level) {
     }
 }
 
-void StartCombat(CharacterData& charData, Level &level, int spotter, int maxDist) {
+void StartCombat(SpriteData& spriteData, CharacterData& charData, Level &level, int spotter, int maxDist) {
     level.turnOrder.clear();
     level.enemyCharacters.clear();
     std::queue<int> queue;
@@ -416,11 +416,11 @@ void StartCombat(CharacterData& charData, Level &level, int spotter, int maxDist
     while (!queue.empty()) {
         int current = queue.front();
         queue.pop();
-        Vector2i currentGridPos = GetCharacterGridPosI(charData.sprite[current]);
+        Vector2i currentGridPos = GetCharacterGridPosI(spriteData, charData.sprite[current]);
 
         for (auto &enemy : level.allCharacters) {
             if (enemy == current || alertedEnemies.count(enemy) || charData.faction[enemy] != CharacterFaction::Enemy) continue;
-            Vector2i enemyGridPos = GetCharacterGridPosI(charData.sprite[enemy]);
+            Vector2i enemyGridPos = GetCharacterGridPosI(spriteData, charData.sprite[enemy]);
             if (HasLineOfSight(level, currentGridPos, enemyGridPos, maxDist)) {
                 alertedEnemies.insert(enemy);
                 queue.push(enemy);
@@ -435,7 +435,7 @@ void StartCombat(CharacterData& charData, Level &level, int spotter, int maxDist
     for (auto &enemy : alertedEnemies) {
         level.enemyCharacters.emplace_back(enemy);
         allCharacters.emplace_back(charData.stats[enemy].speed, enemy);
-        FaceCharacter(charData, enemy, level.partyCharacters[0]);
+        FaceCharacter(spriteData, charData, enemy, level.partyCharacters[0]);
     }
     for (auto &c : level.partyCharacters) {
         allCharacters.emplace_back(charData.stats[c].speed, c);

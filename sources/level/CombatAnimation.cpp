@@ -5,74 +5,74 @@
 #include "CombatAnimation.h"
 #include "raymath.h"
 
-void PlayAttackAnimation(CharacterData& charData, Level &level, int attacker, int defender) {
-    float attackerX = GetCharacterSpritePosX(charData.sprite[attacker]);
-    float defenderX = GetCharacterSpritePosX(charData.sprite[defender]);
-    float attackerY = GetCharacterSpritePosY(charData.sprite[attacker]);
-    float defenderY = GetCharacterSpritePosY(charData.sprite[defender]);
+void PlayAttackAnimation(SpriteData& spriteData, CharacterData& charData, Level &level, int attacker, int defender) {
+    float attackerX = GetCharacterSpritePosX(spriteData, charData.sprite[attacker]);
+    float defenderX = GetCharacterSpritePosX(spriteData, charData.sprite[defender]);
+    float attackerY = GetCharacterSpritePosY(spriteData, charData.sprite[attacker]);
+    float defenderY = GetCharacterSpritePosY(spriteData, charData.sprite[defender]);
     Animation attackerAnim{};
     SetupAttackAnimation(attackerAnim, attacker, 0.4f, attackerY, defenderY, attackerX, defenderX);
     level.animations.push_back(attackerAnim);
     switch(charData.orientation[attacker]) {
         case Orientation::Up:
-            PlayCharacterSpriteAnimRestart(charData.sprite[attacker], SpriteAnimationType::AttackUp, false);
+            PlayCharacterSpriteAnimRestart(spriteData, charData.sprite[attacker], SpriteAnimationType::AttackUp, false);
             break;
         case Orientation::Down:
-            PlayCharacterSpriteAnimRestart(charData.sprite[attacker], SpriteAnimationType::AttackDown, false);
+            PlayCharacterSpriteAnimRestart(spriteData, charData.sprite[attacker], SpriteAnimationType::AttackDown, false);
             break;
         case Orientation::Left:
-            PlayCharacterSpriteAnimRestart(charData.sprite[attacker], SpriteAnimationType::AttackLeft, false);
+            PlayCharacterSpriteAnimRestart(spriteData, charData.sprite[attacker], SpriteAnimationType::AttackLeft, false);
             break;
         case Orientation::Right:
-            PlayCharacterSpriteAnimRestart(charData.sprite[attacker], SpriteAnimationType::AttackRight, false);
+            PlayCharacterSpriteAnimRestart(spriteData, charData.sprite[attacker], SpriteAnimationType::AttackRight, false);
             break;
     }
 }
 
-void PlayDefendAnimation(CharacterData& charData, Level &level, int attacker, int defender) {
+void PlayDefendAnimation(SpriteData& spriteData, CharacterData& charData, Level &level, int attacker, int defender) {
     if(charData.stats[defender].health <= 0) {
         return;
     }
-    float defenderX = GetCharacterSpritePosX(charData.sprite[defender]);
-    float defenderY = GetCharacterSpritePosY(charData.sprite[defender]);
+    float defenderX = GetCharacterSpritePosX(spriteData, charData.sprite[defender]);
+    float defenderY = GetCharacterSpritePosY(spriteData, charData.sprite[defender]);
 
-    Vector2 orientationVector = Vector2Normalize(Vector2Subtract(GetCharacterSpritePos(charData.sprite[defender]), GetCharacterSpritePos(charData.sprite[attacker])));
+    Vector2 orientationVector = Vector2Normalize(Vector2Subtract(GetCharacterSpritePos(spriteData, charData.sprite[defender]), GetCharacterSpritePos(spriteData, charData.sprite[attacker])));
     // invert vector
     orientationVector = Vector2Scale(orientationVector, 5);
-    Vector2 point = Vector2Add(GetCharacterSpritePos(charData.sprite[defender]), orientationVector);
+    Vector2 point = Vector2Add(GetCharacterSpritePos(spriteData, charData.sprite[defender]), orientationVector);
 
     Animation defenderAnim{};
     SetupAttackAnimation(defenderAnim, defender, 0.30f, defenderY, point.y, defenderX, point.x, 0.20f);
     level.animations.push_back(defenderAnim);
 }
 
-void PlayAttackDefendAnimation(CharacterData& charData, Level &level, int attacker, int defender) {
-    PlayAttackAnimation(charData, level, attacker, defender);
-    PlayDefendAnimation(charData, level, attacker, defender);
+void PlayAttackDefendAnimation(SpriteData& spriteData, CharacterData& charData, Level &level, int attacker, int defender) {
+    PlayAttackAnimation(spriteData, charData, level, attacker, defender);
+    PlayDefendAnimation(spriteData, charData, level, attacker, defender);
 }
 
-void PlayEnemyVictoryAnimation(CharacterData& charData, Level &level) {
+void PlayEnemyVictoryAnimation(SpriteData& spriteData, CharacterData& charData, Level &level) {
     for(auto &c : level.allCharacters) {
         // skip dead
         if(charData.stats[c].health <= 0 || charData.faction[c] != CharacterFaction::Enemy) {
             continue;
         }
-        PlayCharacterSpriteAnim(charData.sprite[c], SpriteAnimationType::WalkDown, true);
+        PlayCharacterSpriteAnim(spriteData, charData.sprite[c], SpriteAnimationType::WalkDown, true);
         Animation anim{};
-        SetupVictoryAnimation(charData, anim, c, 10.0f, 12, 80.0f);
+        SetupVictoryAnimation(spriteData, charData, anim, c, 10.0f, 12, 80.0f);
         level.animations.push_back(anim);
     }
 }
 
-void PlayPlayerVictoryAnimation(CharacterData& charData, Level &level) {
+void PlayPlayerVictoryAnimation(SpriteData& spriteData, CharacterData& charData, Level &level) {
     for(auto &c : level.partyCharacters) {
         // skip dead
         if(charData.stats[c].health <= 0) {
             continue;
         }
-        PlayCharacterSpriteAnim(charData.sprite[c], SpriteAnimationType::WalkDown, true);
+        PlayCharacterSpriteAnim(spriteData, charData.sprite[c], SpriteAnimationType::WalkDown, true);
         Animation anim{};
-        SetupVictoryAnimation(charData, anim, c, 2.0f, 16, 80.0f);
+        SetupVictoryAnimation(spriteData, charData, anim, c, 2.0f, 16, 80.0f);
         level.animations.push_back(anim);
     }
 }

@@ -70,12 +70,12 @@ int CreateCharacter(CharacterData &data, CharacterClass characterClass, Characte
     return (int) data.name.size()-1;
 }
 
-void GiveWeapon(WeaponData& weaponData, CharacterData &charData, int characterIdx, const std::string& weaponTemplate) {
+void GiveWeapon(SpriteData& spriteData, WeaponData& weaponData, CharacterData &charData, int characterIdx, const std::string& weaponTemplate) {
     int weaponIdx = CreateWeapon(weaponData, weaponTemplate);
     charData.weaponIdx[characterIdx] = weaponIdx;
     charData.isWeaponEquipped[characterIdx] = true;
     int tplIdx = weaponData.instanceData.weaponTemplateIdx[weaponIdx];
-    SetCharacterSpriteWeaponAnimation(charData.sprite[characterIdx], weaponData.templateData.animationTemplate[tplIdx]);
+    SetCharacterSpriteWeaponAnimation(spriteData, charData.sprite[characterIdx], weaponData.templateData.animationTemplate[tplIdx]);
 }
 
 Vector2 GetOrientationVector(Orientation orientation) {
@@ -205,26 +205,26 @@ int GetAttack(CharacterData &charData, WeaponData& weaponData, int cid) {
     return charData.stats[cid].attack;
 }
 
-void FaceCharacter(CharacterData &charData, int attackerId, int defenderId) {
+void FaceCharacter(SpriteData& spriteData, CharacterData &charData, int attackerId, int defenderId) {
     // Determine the direction of movement and set the appropriate animation
-    Vector2 start = GetCharacterSpritePos(charData.sprite[attackerId]);
-    Vector2 end = GetCharacterSpritePos(charData.sprite[defenderId]);
+    Vector2 start = GetCharacterSpritePos(spriteData, charData.sprite[attackerId]);
+    Vector2 end = GetCharacterSpritePos(spriteData, charData.sprite[defenderId]);
     if (fabs(end.x - start.x) > fabs(end.y - start.y)) {
         // Horizontal movement
         if (end.x > start.x) {
-            StartPausedCharacterSpriteAnim(charData.sprite[attackerId], SpriteAnimationType::WalkRight, true);
+            StartPausedCharacterSpriteAnim(spriteData, charData.sprite[attackerId], SpriteAnimationType::WalkRight, true);
             charData.orientation[attackerId] = Orientation::Right;
         } else {
-            StartPausedCharacterSpriteAnim(charData.sprite[attackerId], SpriteAnimationType::WalkLeft, true);
+            StartPausedCharacterSpriteAnim(spriteData, charData.sprite[attackerId], SpriteAnimationType::WalkLeft, true);
             charData.orientation[attackerId] = Orientation::Left;
         }
     } else {
         // Vertical movement
         if (end.y > start.y) {
-            StartPausedCharacterSpriteAnim(charData.sprite[attackerId], SpriteAnimationType::WalkDown, true);
+            StartPausedCharacterSpriteAnim(spriteData, charData.sprite[attackerId], SpriteAnimationType::WalkDown, true);
             charData.orientation[attackerId] = Orientation::Down;
         } else {
-            StartPausedCharacterSpriteAnim(charData.sprite[attackerId], SpriteAnimationType::WalkUp, true);
+            StartPausedCharacterSpriteAnim(spriteData, charData.sprite[attackerId], SpriteAnimationType::WalkUp, true);
             charData.orientation[attackerId] = Orientation::Up;
         }
     }

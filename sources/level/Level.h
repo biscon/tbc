@@ -63,17 +63,17 @@ struct Level {
     TurnState nextState;
     std::map<int, int> threatTable;
     TileMap tileMap;
-    SpriteSheet tileSet;
+    int tileSet;
     AttackResult attackResult;
     LevelCamera camera;
     std::unordered_map<std::string, SpawnPoint> spawnPoints;
 };
 
 void CreateLevel(Level &level);
-void LoadLevel(Level &level, const std::string &filename);
-void DestroyLevel(Level &level);
+void LoadLevel(SpriteSheetData& sheetData, Level &level, const std::string &filename);
+void DestroyLevel(SpriteSheetData& sheetData, Level &level);
 void WaitTurnState(Level &level, TurnState state, float waitTime);
-void AddPartyToLevel(CharacterData& charData, Level &level, std::vector<int> &party, const std::string& spawnPoint);
-void AddEnemiesToLevel(CharacterData& charData, Level &level, std::vector<int> &enemies, const std::string& spawnPoint);
+void AddPartyToLevel(SpriteData& spriteData, CharacterData& charData, Level &level, std::vector<int> &party, const std::string& spawnPoint);
+void AddEnemiesToLevel(SpriteData& spriteData, CharacterData& charData, Level &level, std::vector<int> &enemies, const std::string& spawnPoint);
 
 #endif //SANDBOX_LEVEL_H

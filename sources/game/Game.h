@@ -19,6 +19,7 @@ struct Game {
     GameState state;
     WeaponData weaponData;
     CharacterData charData;
+    SpriteData spriteData;
 };
 
 void CreateGame(Game &game, const std::string& levelFileName);

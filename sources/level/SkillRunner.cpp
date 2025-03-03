@@ -9,7 +9,7 @@
 #include "audio/SoundEffect.h"
 #include "Combat.h"
 
-SkillResult ExecuteSkill(CharacterData& charData, WeaponData& weaponData, Level& level, PlayField& playField) {
+SkillResult ExecuteSkill(SpriteData& spriteData, CharacterData& charData, WeaponData& weaponData, Level& level, PlayField& playField) {
     SkillResult result;
     result.success = false;
     result.attack = false;
@@ -31,8 +31,8 @@ SkillResult ExecuteSkill(CharacterData& charData, WeaponData& weaponData, Level&
                 result.attack = true;
                 result.consumeAction = true;
                 Animation damageNumberAnim{};
-                float userX = GetCharacterSpritePosX(charData.sprite[user]);
-                float userY = GetCharacterSpritePosY(charData.sprite[user]);
+                float userX = GetCharacterSpritePosX(spriteData, charData.sprite[user]);
+                float userY = GetCharacterSpritePosY(spriteData, charData.sprite[user]);
                 SetupDamageNumberAnimation(damageNumberAnim, level.selectedSkill->name, userX, userY - 25, YELLOW, 10);
                 level.animations.push_back(damageNumberAnim);
             } else {
@@ -65,8 +65,8 @@ SkillResult ExecuteSkill(CharacterData& charData, WeaponData& weaponData, Level&
                 //user.statusEffects.push_back({StatusEffectType::ThreatModifier, skill->rank + 1, 2.0f});
                 result.success = true;
                 result.message = charData.name[user] + " used " + skill->name;
-                Vector2 userPos = GetCharacterSpritePos(charData.sprite[user]);
-                Vector2 targetPos = GetCharacterSpritePos(charData.sprite[target]);
+                Vector2 userPos = GetCharacterSpritePos(spriteData, charData.sprite[user]);
+                Vector2 targetPos = GetCharacterSpritePos(spriteData, charData.sprite[target]);
                 Vector2 dir = CalculateDirection(userPos, targetPos);
                 dir.x *= 100;
                 dir.y *= 100;
@@ -76,19 +76,19 @@ SkillResult ExecuteSkill(CharacterData& charData, WeaponData& weaponData, Level&
                 Vector2 gridDir = CalculateDirection(startPos, endPos);
                 PlaySoundEffect(SoundEffectType::Burning);
 
-                std::vector<int> targets = GetTargetsInLine(charData, level, startPos, gridDir, skill->range + 1, user);
+                std::vector<int> targets = GetTargetsInLine(spriteData, charData, level, startPos, gridDir, skill->range + 1, user);
                 for(auto &t : targets) {
                     AssignStatusEffect(charData.statusEffects[t], StatusEffectType::Burning, skill->rank + 2, 5.0f);
                     // calculate baseAttack
                     int damage = RandomInRange(10, 20);
-                    DealDamage(charData, weaponData, level, user, t, damage);
-                    Vector2 tPos = GetCharacterSpritePos(charData.sprite[t]);
+                    DealDamage(spriteData, charData, weaponData, level, user, t, damage);
+                    Vector2 tPos = GetCharacterSpritePos(spriteData, charData.sprite[t]);
                     CreateExplosionEffect(*playField.particleManager, tPos, 10, 16.0f, 0.2f);
                     // check if dead
                     if(charData.stats[t].health <= 0) {
-                        KillCharacter(charData, level, t);
+                        KillCharacter(spriteData, charData, level, t);
                     } else {
-                        PlayDefendAnimation(charData, level, user, t);
+                        PlayDefendAnimation(spriteData, charData, level, user, t);
                     }
                 }
             } else {

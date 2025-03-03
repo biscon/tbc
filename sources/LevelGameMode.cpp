@@ -38,10 +38,10 @@ static GameEventQueue eventQueue;
 static void moveParty(Vector2i target) {
     TraceLog(LOG_INFO, "MoveParty event,target: %d,%d", target.x, target.y);
     playField.activeMoves.clear();
-    MoveCharacter(game->charData, playField, level, level.partyCharacters[0], target);
+    MoveCharacter(game->spriteData, game->charData, playField, level, level.partyCharacters[0], target);
     // move the rest partially
     for(int i = 1; i < (int)level.partyCharacters.size(); i++) {
-        MoveCharacterPartial(game->charData, playField, level, level.partyCharacters[i], target);
+        MoveCharacterPartial(game->spriteData, game->charData, playField, level, level.partyCharacters[i], target);
     }
 }
 
@@ -56,7 +56,7 @@ static void processEvents() {
             }
             case GameEventType::PartySpotted: {
                 playField.mode = PlayFieldMode::None;
-                StartCombat(game->charData, level, event.partySpotted.spotter, 5);
+                StartCombat(game->spriteData, game->charData, level, event.partySpotted.spotter, 5);
                 break;
             }
             case GameEventType::EndCombat: {
@@ -65,12 +65,12 @@ static void processEvents() {
                 for(auto& c : level.partyCharacters) {
                     // Set initial animation to paused
                     CharacterSprite& sprite = game->charData.sprite[c];
-                    StartPausedCharacterSpriteAnim(sprite, SpriteAnimationType::WalkDown, true);
+                    StartPausedCharacterSpriteAnim(game->spriteData, sprite, SpriteAnimationType::WalkDown, true);
                     game->charData.orientation[c] = Orientation::Down;
                     game->charData.statusEffects[c].clear();
                     if(game->charData.stats[c].health <= 0) {
                         game->charData.stats[c].health = 1;
-                        SetCharacterSpriteRotation(sprite, 0);
+                        SetCharacterSpriteRotation(game->spriteData, sprite, 0);
                     }
                 }
                 break;
@@ -141,7 +141,7 @@ void LevelDestroy() {
     DestroyParticleManager(particleManager);
     DestroyBloodRendering();
     DestroyLevelScreen(levelScreen);
-    DestroyLevel(level);
+    DestroyLevel(game->spriteData.sheet, level);
 }
 
 void LevelUpdate(float dt) {
@@ -152,10 +152,10 @@ void LevelUpdate(float dt) {
         level.camera.camera.target.x = ceilf(level.camera.camera.target.x);
         level.camera.camera.target.y = ceilf(level.camera.camera.target.y);
     }
-    UpdateCombat(game->charData, game->weaponData, level, playField, dt);
+    UpdateCombat(game->spriteData, game->charData, game->weaponData, level, playField, dt);
     UpdateParticleManager(particleManager, dt);
-    UpdateLevelScreen(game->charData, level, levelScreen, dt);
-    UpdatePlayField(game->charData, playField, level, dt);
+    UpdateLevelScreen(game->spriteData, game->charData, level, levelScreen, dt);
+    UpdatePlayField(game->spriteData, game->charData, playField, level, dt);
 }
 
 void LevelHandleInput() {
@@ -212,15 +212,15 @@ void LevelHandleInput() {
             if (level.camera.cameraVelocity.y > 0) level.camera.cameraVelocity.y = 0;
         }
     }
-    HandleInputPlayField(game->charData, playField, level);
-    HandleInputLevelScreen(game->charData, levelScreen, level);
+    HandleInputPlayField(game->spriteData, game->charData, playField, level);
+    HandleInputLevelScreen(game->spriteData, game->charData, levelScreen, level);
 }
 
 void LevelRender() {
     // Clear screen with a background color (dark gray)
     ClearBackground(BACKGROUND_GREY);
-    DrawPlayField(game->charData, playField, level);
-    DrawLevelScreen(game->charData, level, levelScreen, playField);
+    DrawPlayField(game->spriteData, game->charData, playField, level);
+    DrawLevelScreen(game->spriteData, game->charData, level, levelScreen, playField);
 }
 
 void LevelPreRender() {
@@ -234,52 +234,52 @@ void LevelPause() {
 
 static void createTestEnemies() {
     int id = CreateCharacter(game->charData, CharacterClass::Warrior, CharacterFaction::Enemy, "Enemy1", "Fighter");
-    InitCharacterSprite(game->charData.sprite[id], "MaleNinja", true);
-    GiveWeapon(game->weaponData, game->charData, id, "Sword");
+    InitCharacterSprite(game->spriteData, game->charData.sprite[id], "MaleNinja", true);
+    GiveWeapon(game->spriteData, game->weaponData, game->charData, id, "Sword");
     LevelUp(game->charData, id, true);
     enemyGroup1.emplace_back(id);
 
     id = CreateCharacter(game->charData, CharacterClass::Warrior, CharacterFaction::Enemy, "Enemy2", "Fighter");
-    InitCharacterSprite(game->charData.sprite[id], "MaleNinja", true);
-    GiveWeapon(game->weaponData, game->charData, id, "Sword");
+    InitCharacterSprite(game->spriteData, game->charData.sprite[id], "MaleNinja", true);
+    GiveWeapon(game->spriteData, game->weaponData, game->charData, id, "Sword");
     LevelUp(game->charData, id, true);
     enemyGroup1.emplace_back(id);
 
-    AddEnemiesToLevel(game->charData, level, enemyGroup1, "enemies");
+    AddEnemiesToLevel(game->spriteData, game->charData, level, enemyGroup1, "enemies");
 
     // Group 2
     id = CreateCharacter(game->charData, CharacterClass::Warrior, CharacterFaction::Enemy, "Enemy3", "Fighter");
-    InitCharacterSprite(game->charData.sprite[id], "MaleNinja", true);
-    GiveWeapon(game->weaponData, game->charData, id, "Sword");
+    InitCharacterSprite(game->spriteData, game->charData.sprite[id], "MaleNinja", true);
+    GiveWeapon(game->spriteData, game->weaponData, game->charData, id, "Sword");
     LevelUp(game->charData, id, true);
     enemyGroup2.emplace_back(id);
 
     id = CreateCharacter(game->charData, CharacterClass::Warrior, CharacterFaction::Enemy, "Enemy4", "Fighter");
-    InitCharacterSprite(game->charData.sprite[id], "MaleNinja", true);
-    GiveWeapon(game->weaponData, game->charData, id, "Sword");
+    InitCharacterSprite(game->spriteData, game->charData.sprite[id], "MaleNinja", true);
+    GiveWeapon(game->spriteData, game->weaponData, game->charData, id, "Sword");
     LevelUp(game->charData, id, true);
     enemyGroup2.emplace_back(id);
 
     id = CreateCharacter(game->charData, CharacterClass::Warrior, CharacterFaction::Enemy, "Enemy5", "Fighter");
-    InitCharacterSprite(game->charData.sprite[id], "MaleBase", true);
-    GiveWeapon(game->weaponData, game->charData, id, "Staff");
+    InitCharacterSprite(game->spriteData, game->charData.sprite[id], "MaleBase", true);
+    GiveWeapon(game->spriteData, game->weaponData, game->charData, id, "Staff");
     LevelUp(game->charData, id, true);
     enemyGroup2.emplace_back(id);
 
     id = CreateCharacter(game->charData, CharacterClass::Warrior, CharacterFaction::Enemy, "Enemy6", "Fighter");
-    InitCharacterSprite(game->charData.sprite[id], "MaleBase", true);
-    GiveWeapon(game->weaponData, game->charData, id, "Staff");
+    InitCharacterSprite(game->spriteData, game->charData.sprite[id], "MaleBase", true);
+    GiveWeapon(game->spriteData, game->weaponData, game->charData, id, "Staff");
     LevelUp(game->charData, id, true);
     enemyGroup2.emplace_back(id);
 
-    AddEnemiesToLevel(game->charData, level, enemyGroup2, "enemies2");
+    AddEnemiesToLevel(game->spriteData, game->charData, level, enemyGroup2, "enemies2");
 }
 
 void LevelResume() {
     TraceLog(LOG_INFO, "LevelResume");
     if(game->state == GameState::LOAD_LEVEL) {
-        LoadLevel(level, game->levelFileName);
-        AddPartyToLevel(game->charData, level, game->party, "default");
+        LoadLevel(game->spriteData.sheet, level, game->levelFileName);
+        AddPartyToLevel(game->spriteData, game->charData, level, game->party, "default");
         game->state = GameState::PLAY_LEVEL;
         playField.mode = PlayFieldMode::Move;
         createTestEnemies();

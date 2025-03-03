@@ -21,38 +21,38 @@ enum class SpriteAnimationType {
 };
 
 struct CharacterSprite {
-    std::map<SpriteAnimationType, SpriteAnimation*> bodyAnimations;
-    std::map<SpriteAnimationType, SpriteAnimation*> weaponAnimations;
-    SpriteAnimationPlayer bodyPlayer;
-    SpriteAnimationPlayer weaponPlayer;
+    std::map<SpriteAnimationType, int> bodyAnimations;
+    std::map<SpriteAnimationType, int> weaponAnimations;
+    int bodyPlayer;
+    int weaponPlayer;
     bool displayWeapon;
 };
 
-void InitCharacterSprite(CharacterSprite &sprite, const std::string& bodyType, bool hasAttacks);
-void SetCharacterSpriteWeaponAnimation(CharacterSprite &sprite, const std::string &weaponType);
-SpriteAnimation* GetCharacterAnimationBody(CharacterSprite& sprite, SpriteAnimationType type);
-SpriteAnimation* GetCharacterAnimationWeapon(CharacterSprite& sprite, SpriteAnimationType type);
-Vector2 GetCharacterSpritePos(CharacterSprite& sprite);
-Vector2i GetCharacterSpritePosI(CharacterSprite& sprite);
-Vector2i GetCharacterGridPosI(CharacterSprite &sprite);
-float GetCharacterSpritePosX(CharacterSprite& sprite);
-float GetCharacterSpritePosY(CharacterSprite& sprite);
-void SetCharacterSpritePos(CharacterSprite& sprite, Vector2 pos);
-void SetCharacterSpritePosI(CharacterSprite& sprite, Vector2i pos);
-void SetCharacterSpritePosX(CharacterSprite& sprite, float x);
-void SetCharacterSpritePosY(CharacterSprite& sprite, float y);
-void SetCharacterSpriteRotation(CharacterSprite& sprite, float rotation);
-float GetCharacterSpriteRotation(CharacterSprite& sprite);
-void PlayCharacterSpriteAnim(CharacterSprite& sprite, SpriteAnimationType type, bool loop);
-void PlayCharacterSpriteAnimRestart(CharacterSprite& sprite, SpriteAnimationType type, bool loop);
-void PauseCharacterSpriteAnim(CharacterSprite& sprite);
-void StartPausedCharacterSpriteAnim(CharacterSprite& sprite, SpriteAnimationType type, bool loop);
-void DrawCharacterSprite(CharacterSprite& sprite);
-void DrawCharacterSprite(CharacterSprite& sprite, float x, float y);
-void SetCharacterSpriteTint(CharacterSprite& sprite, Color tint);
-Color GetCharacterSpriteTint(CharacterSprite& sprite);
-void SetCharacterSpriteFrame(CharacterSprite& sprite, int frame);
-void UpdateCharacterSprite(CharacterSprite& sprite, float deltaTime);
+void InitCharacterSprite(SpriteData& spriteData, CharacterSprite &sprite, const std::string& bodyType, bool hasAttacks);
+void SetCharacterSpriteWeaponAnimation(SpriteData& spriteData, CharacterSprite &sprite, const std::string &weaponType);
+int GetCharacterAnimationBody(CharacterSprite& sprite, SpriteAnimationType type);
+int GetCharacterAnimationWeapon(CharacterSprite& sprite, SpriteAnimationType type);
+Vector2 GetCharacterSpritePos(SpriteData& spriteData, CharacterSprite &sprite);
+Vector2i GetCharacterSpritePosI(SpriteData& spriteData, CharacterSprite& sprite);
+Vector2i GetCharacterGridPosI(SpriteData& spriteData, CharacterSprite &sprite);
+float GetCharacterSpritePosX(SpriteData& spriteData, CharacterSprite& sprite);
+float GetCharacterSpritePosY(SpriteData& spriteData, CharacterSprite& sprite);
+void SetCharacterSpritePos(SpriteData& spriteData, CharacterSprite& sprite, Vector2 pos);
+void SetCharacterSpritePosI(SpriteData& spriteData, CharacterSprite& sprite, Vector2i pos);
+void SetCharacterSpritePosX(SpriteData& spriteData, CharacterSprite& sprite, float x);
+void SetCharacterSpritePosY(SpriteData& spriteData, CharacterSprite& sprite, float y);
+void SetCharacterSpriteRotation(SpriteData& spriteData, CharacterSprite& sprite, float rotation);
+float GetCharacterSpriteRotation(SpriteData& spriteData, CharacterSprite& sprite);
+void PlayCharacterSpriteAnim(SpriteData& spriteData, CharacterSprite& sprite, SpriteAnimationType type, bool loop);
+void PlayCharacterSpriteAnimRestart(SpriteData& spriteData, CharacterSprite& sprite, SpriteAnimationType type, bool loop);
+void PauseCharacterSpriteAnim(SpriteData& spriteData, CharacterSprite& sprite);
+void StartPausedCharacterSpriteAnim(SpriteData& spriteData, CharacterSprite& sprite, SpriteAnimationType type, bool loop);
+void DrawCharacterSprite(SpriteData& spriteData, CharacterSprite& sprite);
+void DrawCharacterSprite(SpriteData& spriteData, CharacterSprite& sprite, float x, float y);
+void SetCharacterSpriteTint(SpriteData& spriteData, CharacterSprite& sprite, Color tint);
+Color GetCharacterSpriteTint(SpriteData& spriteData, CharacterSprite& sprite);
+void SetCharacterSpriteFrame(SpriteData& spriteData, CharacterSprite& sprite, int frame);
+void UpdateCharacterSprite(SpriteData& spriteData, CharacterSprite& sprite, float deltaTime);
 
 
 

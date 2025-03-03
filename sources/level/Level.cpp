@@ -25,7 +25,7 @@ static std::string GetFilePath(const std::string &filename) {
     return ASSETS_PATH + std::string("levels/") + filename;
 }
 
-void LoadLevel(Level &level, const std::string &filename) {
+void LoadLevel(SpriteSheetData& sheetData, Level &level, const std::string &filename) {
     std::string filePath = GetFilePath(filename);
     TraceLog(LOG_INFO, "Loading level from %s", filePath.c_str());
 
@@ -40,8 +40,8 @@ void LoadLevel(Level &level, const std::string &filename) {
     std::string n = j["name"].get<std::string>();
     level.name = n;
     TraceLog(LOG_INFO, "Level name: %s", n.c_str());
-    LoadSpriteSheet(level.tileSet, GetFilePath(j["tileset"].get<std::string>()).c_str(), 16, 16);
-    LoadTileMap(level.tileMap, GetFilePath(j["map"].get<std::string>()).c_str(), &level.tileSet);
+    level.tileSet = LoadSpriteSheet(sheetData, GetFilePath(j["tileset"].get<std::string>()).c_str(), 16, 16);
+    LoadTileMap(level.tileMap, GetFilePath(j["map"].get<std::string>()).c_str(), level.tileSet);
 
     // load spawn points
     for (auto &spawn : j["spawnPoints"]) {
@@ -58,12 +58,12 @@ void LoadLevel(Level &level, const std::string &filename) {
     level.camera.worldHeight = level.tileMap.height * level.tileMap.tileHeight;
 }
 
-void DestroyLevel(Level &level) {
+void DestroyLevel(SpriteSheetData& sheetData, Level &level) {
     UnloadTileMap(level.tileMap);
-    UnloadSpriteSheet(level.tileSet);
+    UnloadSpriteSheet(sheetData, level.tileSet);
 }
 
-static void setInitialGridPositions(CharacterData& charData, Level &level, SpawnPoint &sp, std::vector<int>& characters) {
+static void setInitialGridPositions(SpriteData& spriteData, CharacterData& charData, Level &level, SpawnPoint &sp, std::vector<int>& characters) {
     auto positions = FindFreePositionsCircular(level, sp.x, sp.y, sp.radius);
     if(characters.size() > positions.size()) {
         TraceLog(LOG_WARNING, "Not enough positions for all characters");
@@ -73,28 +73,28 @@ static void setInitialGridPositions(CharacterData& charData, Level &level, Spawn
         // take a position from the list
         auto pos = positions.back();
         positions.pop_back();
-        SetCharacterSpritePos(charData.sprite[character], GridToPixelPosition(pos.x, pos.y));
+        SetCharacterSpritePos(spriteData, charData.sprite[character], GridToPixelPosition(pos.x, pos.y));
         // Set initial animation to paused
-        StartPausedCharacterSpriteAnim(charData.sprite[character], SpriteAnimationType::WalkRight, true);
+        StartPausedCharacterSpriteAnim(spriteData, charData.sprite[character], SpriteAnimationType::WalkRight, true);
         charData.orientation[character] = Orientation::Right;
     }
 }
 
-void AddPartyToLevel(CharacterData& charData, Level &level, std::vector<int> &party, const std::string& spawnPoint) {
+void AddPartyToLevel(SpriteData& spriteData, CharacterData& charData, Level &level, std::vector<int> &party, const std::string& spawnPoint) {
     SpawnPoint& sp = level.spawnPoints[spawnPoint];
     for (auto &character : party) {
         level.partyCharacters.push_back(character);
         level.allCharacters.push_back(character);
     }
-    setInitialGridPositions(charData, level, sp, level.partyCharacters);
+    setInitialGridPositions(spriteData, charData, level, sp, level.partyCharacters);
 }
 
-void AddEnemiesToLevel(CharacterData& charData, Level &level, std::vector<int> &enemies, const std::string& spawnPoint) {
+void AddEnemiesToLevel(SpriteData& spriteData, CharacterData& charData, Level &level, std::vector<int> &enemies, const std::string& spawnPoint) {
     SpawnPoint& sp = level.spawnPoints[spawnPoint];
     std::vector<int> enemyCharacters;
     for (auto &character : enemies) {
         enemyCharacters.push_back(character);
         level.allCharacters.push_back(character);
     }
-    setInitialGridPositions(charData, level, sp, enemyCharacters);
+    setInitialGridPositions(spriteData, charData, level, sp, enemyCharacters);
 }

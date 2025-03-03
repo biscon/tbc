@@ -8,8 +8,8 @@
 #include "Ai.h"
 #include "audio/SoundEffect.h"
 
-static bool AttackIfPossible(CharacterData& charData, Level &level) {
-    auto playersWithinRange = GetAdjacentCharacters(charData, level, level.currentCharacter, CharacterFaction::Player);
+static bool AttackIfPossible(SpriteData& spriteData, CharacterData& charData, Level &level) {
+    auto playersWithinRange = GetAdjacentCharacters(spriteData, charData, level, level.currentCharacter, CharacterFaction::Player);
     level.selectedSkill = nullptr;
     if((int) playersWithinRange.size() > 0) {
         // attack player
@@ -27,8 +27,8 @@ static bool AttackIfPossible(CharacterData& charData, Level &level) {
     }
 }
 
-static bool MoveIfPossible(CharacterData& charData, Level& level, PlayField& playField) {
-    auto playersWithinRange = GetCharactersWithinMoveRange(charData, level, level.currentCharacter, 1, true, CharacterFaction::Player);
+static bool MoveIfPossible(SpriteData& spriteData, CharacterData& charData, Level& level, PlayField& playField) {
+    auto playersWithinRange = GetCharactersWithinMoveRange(spriteData, charData, level, level.currentCharacter, 1, true, CharacterFaction::Player);
     SortCharactersByThreat(level, playersWithinRange);
 
     if((int) playersWithinRange.size() > 0) {
@@ -42,15 +42,15 @@ static bool MoveIfPossible(CharacterData& charData, Level& level, PlayField& pla
             stats.movePoints = 0;
         }
         level.turnState = TurnState::Move;
-        StartCameraPanToTargetChar(charData, level.camera, playersWithinRange[0].first, 250.0f);
+        StartCameraPanToTargetChar(spriteData, charData, level.camera, playersWithinRange[0].first, 250.0f);
         return true;
     }
     level.turnState = TurnState::EndTurn;
     return false;
 }
 
-static bool PartialMoveIfPossible(CharacterData& charData, Level& level, PlayField& playField) {
-    auto playersWithinRange = GetCharactersWithinMoveRangePartial(charData, level, level.currentCharacter, 1, false, CharacterFaction::Player);
+static bool PartialMoveIfPossible(SpriteData& spriteData, CharacterData& charData, Level& level, PlayField& playField) {
+    auto playersWithinRange = GetCharactersWithinMoveRangePartial(spriteData, charData, level, level.currentCharacter, 1, false, CharacterFaction::Player);
     SortCharactersByThreat(level, playersWithinRange);
     CharacterStats& stats = charData.stats[level.currentCharacter];
 
@@ -85,16 +85,16 @@ static bool PartialMoveIfPossible(CharacterData& charData, Level& level, PlayFie
     return false;
 }
 
-static void HandleTurn(CharacterData& charData, Level &level, PlayField &playField) {
+static void HandleTurn(SpriteData& spriteData, CharacterData& charData, Level &level, PlayField &playField) {
     // do something
     TraceLog(LOG_INFO, "FighterAi::HandleTurn");
     switch(level.turnState) {
         case TurnState::EnemyTurn: {
-            if(!AttackIfPossible(charData, level)) {
+            if(!AttackIfPossible(spriteData, charData, level)) {
                 TraceLog(LOG_INFO, "Attack not possible, move if possible");
-                if(!MoveIfPossible(charData, level, playField)) {
+                if(!MoveIfPossible(spriteData, charData, level, playField)) {
                     TraceLog(LOG_INFO, "Move not possible, partial move if possible");
-                    if(!PartialMoveIfPossible(charData, level, playField)) {
+                    if(!PartialMoveIfPossible(spriteData, charData, level, playField)) {
                         TraceLog(LOG_INFO, "Partial move not possible, end turn");
                     } else {
                         TraceLog(LOG_INFO, "Partial move possible, moving");

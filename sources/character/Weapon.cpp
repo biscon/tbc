@@ -36,10 +36,6 @@ void InitWeaponTemplateData(WeaponTemplateData& weaponTemplateData, const std::s
     }
 }
 
-void DestroyWeaponManager() {
-
-}
-
 int CreateWeapon(WeaponData& weaponData, const std::string &templateName) {
     auto it = weaponData.templateData.weaponTemplates.find(templateName);
     if(it != weaponData.templateData.weaponTemplates.end()) {

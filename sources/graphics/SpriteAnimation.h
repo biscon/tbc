@@ -12,49 +12,59 @@
 #include <string>
 #include <unordered_map>
 
-struct SpriteAnimation {
-    std::string name;
-    int spriteSheetIndex;
-    std::vector<int> frames; // indexes into the sprite sheet
-    std::vector<float> frameDelays; // time to display each frame
-    Vector2 origin; // origin of the sprite in the frame
+struct FrameInfo {
+    Texture2D texture;
+    Rectangle srcRect;
 };
 
-struct SpriteAnimationPlayer {
-    SpriteAnimation* animation;
-    int currentFrame;
-    float frameTime;
+struct SpriteAnimationData {
+    std::vector<std::string> name;
+    std::vector<int> spriteSheetIdx;
+    std::vector<std::vector<int>> frames;
+    std::vector<std::vector<float>> frameDelays;
+    std::vector<Vector2> origin;
+
+    std::unordered_map<std::string, int> nameIndexMap;
+};
+
+struct SpriteAnimationPlayerRenderData {
     Vector2 position;
     Vector2 scale;
     float rotation;
     Color tint;
+};
+
+struct SpriteAnimationPlayerAnimData {
+    int currentFrame;
+    float frameTime;
     bool loop; // if false, the animation stops at the last frame
     bool playing; // if false, the animation is paused
 };
 
-struct FrameInfo {
-    Texture2D* texture;
-    Rectangle srcRect;
+struct SpriteAnimationPlayerData {
+    std::vector<int> animationIdx;
+    std::vector<SpriteAnimationPlayerRenderData> renderData;
+    std::vector<SpriteAnimationPlayerAnimData> animData;
 };
 
-void InitSpriteAnimationPlayer(SpriteAnimationPlayer& player);
-void UpdateSpriteAnimation(SpriteAnimationPlayer& player, float dt);
-void DrawSpriteAnimation(SpriteAnimationPlayer& player);
-void DrawSpriteAnimation(SpriteAnimationPlayer& player, float x, float y);
-FrameInfo GetFrameInfo(SpriteAnimationPlayer& player);
-void PlaySpriteAnimation(SpriteAnimationPlayer& player, SpriteAnimation* animation, bool loop = true);
-void PlaySpriteAnimationRestart(SpriteAnimationPlayer &player, SpriteAnimation *animation, bool loop);
-void SetFrame(SpriteAnimationPlayer& player, int frame);
-
-struct SpriteAnimationManager {
-    std::vector<SpriteSheet> spriteSheets;
-    std::unordered_map<std::string, SpriteAnimation> animations;
+struct SpriteData {
+    SpriteSheetData sheet;
+    SpriteAnimationData anim;
+    SpriteAnimationPlayerData player;
 };
 
-void InitSpriteAnimationManager(const std::string& filename);
-void DestroySpriteAnimationManager();
-//void CreateSpriteAnimation(const std::string& name, int spriteSheetIndex, std::vector<int> frames, std::vector<float> frameDelays, Vector2 origin);
-SpriteAnimation* GetSpriteAnimation(const std::string& name);
-SpriteSheet* GetSpriteSheet(int index);
+int CreateSpriteAnimationPlayer(SpriteData& sprite);
+void UpdateSpriteAnimation(SpriteData& sprite, int player, float dt);
+void DrawSpriteAnimation(SpriteData& sprite, int player);
+void DrawSpriteAnimation(SpriteData& sprite, int player, float x, float y);
+FrameInfo GetFrameInfo(SpriteData& sprite, int player);
+void PlaySpriteAnimation(SpriteData& sprite, int player, int animation, bool loop = true);
+void PlaySpriteAnimationRestart(SpriteData& sprite, int player, int animation, bool loop);
+void SetFrame(SpriteData& sprite, int player, int frame);
+
+
+void InitSpriteAnimationData(SpriteData& spriteData, const std::string &filename);
+void DestroySpriteAnimationData(SpriteData& spriteData);
+int GetSpriteAnimation(SpriteData& spriteData, const std::string& name);
 
 #endif //SANDBOX_SPRITEANIMATION_H

@@ -13,18 +13,18 @@
 #include "util/Random.h"
 #include "ui/UI.h"
 
-void UpdateCombat(CharacterData& charData, WeaponData& weaponData, Level &level, PlayField& playField, float dt) {
+void UpdateCombat(SpriteData& spriteData, CharacterData& charData, WeaponData& weaponData, Level &level, PlayField& playField, float dt) {
     switch(level.turnState) {
         case TurnState::StartRound: {
             TraceLog(LOG_INFO, "Start round");
             WaitTurnState(level, TurnState::StartTurn, 1.0f);
-            ApplyStatusEffects(charData, weaponData, level, playField);
+            ApplyStatusEffects(spriteData, charData, weaponData, level, playField);
             PlaySoundEffect(SoundEffectType::StartRound);
             break;
         }
         case TurnState::StartTurn: {
             TraceLog(LOG_INFO, "Start turn");
-            StartCameraPanToTargetChar(charData, level.camera, level.currentCharacter, 500.0f);
+            StartCameraPanToTargetChar(spriteData, charData, level.camera, level.currentCharacter, 500.0f);
 
             Animation blinkAnim{};
 
@@ -47,8 +47,8 @@ void UpdateCombat(CharacterData& charData, WeaponData& weaponData, Level &level,
                 std::string logMessage = charData.name[level.currentCharacter] + " is skipping the turn!";
                 level.log.push_back(logMessage);
                 CharacterSprite& sprite = charData.sprite[level.currentCharacter];
-                float charX = GetCharacterSpritePosX(sprite);
-                float charY = GetCharacterSpritePosY(sprite);
+                float charX = GetCharacterSpritePosX(spriteData, sprite);
+                float charY = GetCharacterSpritePosY(spriteData, sprite);
                 Animation anim{};
                 SetupDamageNumberAnimation(anim, "STUNNED", charX, charY-25, WHITE, 10);
                 level.animations.push_back(anim);
@@ -70,10 +70,10 @@ void UpdateCombat(CharacterData& charData, WeaponData& weaponData, Level &level,
         case TurnState::UseSkill: {
             TraceLog(LOG_INFO, "Use skill");
             CharacterSprite& sprite = charData.sprite[level.currentCharacter];
-            float attackerX = GetCharacterSpritePosX(sprite);
-            float attackerY = GetCharacterSpritePosY(sprite);
+            float attackerX = GetCharacterSpritePosX(spriteData, sprite);
+            float attackerY = GetCharacterSpritePosY(spriteData, sprite);
 
-            SkillResult result = ExecuteSkill(charData, weaponData, level, playField);
+            SkillResult result = ExecuteSkill(spriteData, charData, weaponData, level, playField);
             Animation damageNumberAnim{};
             if(!level.selectedSkill->noTarget) {
                 if(!result.success) {
@@ -109,12 +109,12 @@ void UpdateCombat(CharacterData& charData, WeaponData& weaponData, Level &level,
             TraceLog(LOG_INFO, "Attack");
 
             level.attackResult = Attack(charData, weaponData, level, level.currentCharacter, level.selectedCharacter);
-            FaceCharacter(charData, level.currentCharacter, level.selectedCharacter);
-            FaceCharacter(charData, level.selectedCharacter, level.currentCharacter);
+            FaceCharacter(spriteData, charData, level.currentCharacter, level.selectedCharacter);
+            FaceCharacter(spriteData, charData, level.selectedCharacter, level.currentCharacter);
             assert(level.attackResult.defender == level.selectedCharacter);
             assert(level.attackResult.attacker == level.currentCharacter);
 
-            PlayAttackDefendAnimation(charData, level, level.currentCharacter, level.selectedCharacter);
+            PlayAttackDefendAnimation(spriteData, charData, level, level.currentCharacter, level.selectedCharacter);
 
             level.waitTime = 0.25f;
             level.nextState = TurnState::AttackDone;
@@ -124,10 +124,10 @@ void UpdateCombat(CharacterData& charData, WeaponData& weaponData, Level &level,
         case TurnState::AttackDone: {
             assert(level.attackResult.defender == level.selectedCharacter);
             assert(level.attackResult.attacker == level.currentCharacter);
-            float attackerX = GetCharacterSpritePosX(charData.sprite[level.currentCharacter]);
-            float attackerY = GetCharacterSpritePosY(charData.sprite[level.currentCharacter]);
-            float defenderX = GetCharacterSpritePosX(charData.sprite[level.selectedCharacter]);
-            float defenderY = GetCharacterSpritePosY(charData.sprite[level.selectedCharacter]);
+            float attackerX = GetCharacterSpritePosX(spriteData, charData.sprite[level.currentCharacter]);
+            float attackerY = GetCharacterSpritePosY(spriteData, charData.sprite[level.currentCharacter]);
+            float defenderX = GetCharacterSpritePosX(spriteData, charData.sprite[level.selectedCharacter]);
+            float defenderY = GetCharacterSpritePosY(spriteData, charData.sprite[level.selectedCharacter]);
             int damage = level.attackResult.damage;
             if(damage > 0) {
                 float intensity = (float) GetBloodIntensity(damage, GetAttack(charData, weaponData, level.currentCharacter));
@@ -162,7 +162,7 @@ void UpdateCombat(CharacterData& charData, WeaponData& weaponData, Level &level,
                 SetupSpeechBubbleAnimation(speechBubble, "Haha!", attackerX, attackerY - 25, 1.5f, 0.0f);
                 level.animations.push_back(speechBubble);
                 RemoveAttackAnimations(level);
-                KillCharacter(charData, level, level.attackResult.defender);
+                KillCharacter(spriteData, charData, level, level.attackResult.defender);
                 WaitTurnState(level, TurnState::EndTurn, 0.95f);
             } else {
                 WaitTurnState(level, TurnState::EndTurn, 0.60f);
@@ -175,7 +175,7 @@ void UpdateCombat(CharacterData& charData, WeaponData& weaponData, Level &level,
             // obtain AiInterface
             AiInterface* ai = GetAiInterface(charData.ai[level.currentCharacter]);
             if(ai != nullptr) {
-                HandleTurn(*ai, charData, level, playField);
+                HandleTurn(*ai, spriteData, charData, level, playField);
             } else {
                 TraceLog(LOG_WARNING, "No AI interface found for %s", charData.ai[level.currentCharacter].c_str());
                 level.turnState = TurnState::EndTurn;
@@ -215,7 +215,7 @@ void UpdateCombat(CharacterData& charData, WeaponData& weaponData, Level &level,
             level.turnState = TurnState::Victory;
             //StopSoundEffect(SoundEffectType::Ambience);
             PlaySoundEffect(SoundEffectType::Victory, 0.5f);
-            PlayPlayerVictoryAnimation(charData, level);
+            PlayPlayerVictoryAnimation(spriteData, charData, level);
             //combat.animations.clear();
         }
         // check defeat condition, all players have zero health
@@ -230,7 +230,7 @@ void UpdateCombat(CharacterData& charData, WeaponData& weaponData, Level &level,
             level.turnState = TurnState::Defeat;
             //StopSoundEffect(SoundEffectType::Ambience);
             PlaySoundEffect(SoundEffectType::Defeat, 0.5f);
-            PlayEnemyVictoryAnimation(charData, level);
+            PlayEnemyVictoryAnimation(spriteData, charData, level);
             //combat.animations.clear();
         }
     }

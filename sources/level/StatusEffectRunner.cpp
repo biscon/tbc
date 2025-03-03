@@ -6,8 +6,8 @@
 #include "StatusEffectRunner.h"
 #include "Combat.h"
 
-static void ApplyStatusEffect(CharacterData& charData, WeaponData& weaponData, Level &combat, PlayField &gridState, int character, StatusEffect& effect) {
-    Vector2 charPos = GetCharacterSpritePos(charData.sprite[character]);
+static void ApplyStatusEffect(SpriteData& spriteData, CharacterData& charData, WeaponData& weaponData, Level &combat, PlayField &gridState, int character, StatusEffect& effect) {
+    Vector2 charPos = GetCharacterSpritePos(spriteData, charData.sprite[character]);
 
     switch(effect.type) {
         case StatusEffectType::DamageReduction:
@@ -28,7 +28,7 @@ static void ApplyStatusEffect(CharacterData& charData, WeaponData& weaponData, L
             break;
         case StatusEffectType::Burning: {
             // Burning effect
-            int damage = DealDamageStatusEffect(charData, weaponData, combat, character, (int) effect.value);
+            int damage = DealDamageStatusEffect(spriteData, charData, weaponData, combat, character, (int) effect.value);
             if(damage > 0) {
                 CreateExplosionEffect(*gridState.particleManager, {charPos.x, charPos.y}, 5, 10.0f, 0.2f);
             }
@@ -39,18 +39,18 @@ static void ApplyStatusEffect(CharacterData& charData, WeaponData& weaponData, L
     }
     // check if dead
     if(charData.stats[character].health <= 0) {
-        KillCharacter(charData, combat, character);
+        KillCharacter(spriteData, charData, combat, character);
     }
 }
 
-void ApplyStatusEffects(CharacterData& charData, WeaponData& weaponData, Level &level, PlayField &playField) {
+void ApplyStatusEffects(SpriteData& spriteData, CharacterData& charData, WeaponData& weaponData, Level &level, PlayField &playField) {
     for(auto& character : level.turnOrder) {
         // skip dead characters
         if(charData.stats[character].health <= 0) {
             continue;
         }
         for(auto& effect : charData.statusEffects[character]) {
-            ApplyStatusEffect(charData, weaponData, level, playField, character, effect);
+            ApplyStatusEffect(spriteData, charData, weaponData, level, playField, character, effect);
         }
     }
 }

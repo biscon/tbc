@@ -7,16 +7,21 @@
 
 #include <vector>
 #include "raylib.h"
+#include "util/MathUtil.h"
 
-struct SpriteSheet {
-    Texture2D texture;
+struct SpriteSheetFrameSizeData {
     int frameWidth;
     int frameHeight;
-    std::vector<Rectangle> frameRects;
+};
+
+struct SpriteSheetData {
+    std::vector<Texture2D> texture;
+    std::vector<SpriteSheetFrameSizeData> frameSizeData;
+    std::vector<std::vector<Rectangle>> frameRects;
 };
 
 // Load a sprite sheet from a file and split it into frames
-void LoadSpriteSheet(SpriteSheet& spriteSheet, const char* filename, int frameWidth, int frameHeight);
-void UnloadSpriteSheet(SpriteSheet& spriteSheet);
+int LoadSpriteSheet(SpriteSheetData& sheetData, const char* filename, int frameWidth, int frameHeight);
+void UnloadSpriteSheet(SpriteSheetData& sheetData, int spriteSheet);
 
 #endif //SANDBOX_SPRITESHEET_H

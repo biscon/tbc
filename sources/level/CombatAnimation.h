@@ -8,11 +8,11 @@
 #include "character/Character.h"
 #include "Level.h"
 
-void PlayAttackAnimation(CharacterData& charData, Level &level, int attacker, int defender);
-void PlayDefendAnimation(CharacterData& charData, Level &level, int attacker, int defender);
-void PlayAttackDefendAnimation(CharacterData& charData, Level &level, int attacker, int defender);
-void PlayEnemyVictoryAnimation(CharacterData& charData, Level &level);
-void PlayPlayerVictoryAnimation(CharacterData& charData, Level& level);
+void PlayAttackAnimation(SpriteData& spriteData, CharacterData& charData, Level &level, int attacker, int defender);
+void PlayDefendAnimation(SpriteData& spriteData, CharacterData& charData, Level &level, int attacker, int defender);
+void PlayAttackDefendAnimation(SpriteData& spriteData, CharacterData& charData, Level &level, int attacker, int defender);
+void PlayEnemyVictoryAnimation(SpriteData& spriteData, CharacterData& charData, Level &level);
+void PlayPlayerVictoryAnimation(SpriteData& spriteData, CharacterData& charData, Level& level);
 void RemoveAttackAnimations(Level &level);
 int GetBloodIntensity(int dmg, int attackerAttack);
 

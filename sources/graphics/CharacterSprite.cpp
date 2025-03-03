@@ -6,16 +6,16 @@
 #include "CharacterSprite.h"
 #include "ai/PathFinding.h"
 
-static void LoadAnimType(std::map<SpriteAnimationType, SpriteAnimation*>& animations, const std::string& animType, bool hasAttacks) {
-    animations[SpriteAnimationType::WalkUp] = GetSpriteAnimation(animType + "WalkUp");
-    animations[SpriteAnimationType::WalkDown] = GetSpriteAnimation(animType + "WalkDown");
-    animations[SpriteAnimationType::WalkLeft] = GetSpriteAnimation(animType + "WalkLeft");
-    animations[SpriteAnimationType::WalkRight] = GetSpriteAnimation(animType + "WalkRight");
+static void LoadAnimType(SpriteData& spriteData, std::map<SpriteAnimationType, int>& animations, const std::string& animType, bool hasAttacks) {
+    animations[SpriteAnimationType::WalkUp] = GetSpriteAnimation(spriteData, animType + "WalkUp");
+    animations[SpriteAnimationType::WalkDown] = GetSpriteAnimation(spriteData, animType + "WalkDown");
+    animations[SpriteAnimationType::WalkLeft] = GetSpriteAnimation(spriteData, animType + "WalkLeft");
+    animations[SpriteAnimationType::WalkRight] = GetSpriteAnimation(spriteData, animType + "WalkRight");
     if(hasAttacks) {
-        animations[SpriteAnimationType::AttackUp] = GetSpriteAnimation(animType + "AttackUp");
-        animations[SpriteAnimationType::AttackDown] = GetSpriteAnimation(animType + "AttackDown");
-        animations[SpriteAnimationType::AttackLeft] = GetSpriteAnimation(animType + "AttackLeft");
-        animations[SpriteAnimationType::AttackRight] = GetSpriteAnimation(animType + "AttackRight");
+        animations[SpriteAnimationType::AttackUp] = GetSpriteAnimation(spriteData, animType + "AttackUp");
+        animations[SpriteAnimationType::AttackDown] = GetSpriteAnimation(spriteData, animType + "AttackDown");
+        animations[SpriteAnimationType::AttackLeft] = GetSpriteAnimation(spriteData, animType + "AttackLeft");
+        animations[SpriteAnimationType::AttackRight] = GetSpriteAnimation(spriteData, animType + "AttackRight");
     } else {
         animations[SpriteAnimationType::AttackUp] = animations[SpriteAnimationType::WalkUp];
         animations[SpriteAnimationType::AttackDown] = animations[SpriteAnimationType::WalkDown];
@@ -24,138 +24,162 @@ static void LoadAnimType(std::map<SpriteAnimationType, SpriteAnimation*>& animat
     }
 }
 
-void InitCharacterSprite(CharacterSprite &sprite, const std::string& bodyType, bool hasAttacks) {
+void InitCharacterSprite(SpriteData& spriteData, CharacterSprite &sprite, const std::string& bodyType, bool hasAttacks) {
     sprite.displayWeapon = false;
-    LoadAnimType(sprite.bodyAnimations, bodyType, hasAttacks);
+    LoadAnimType(spriteData, sprite.bodyAnimations, bodyType, hasAttacks);
     /*
     if(sprite.displayWeapon) {
         LoadAnimType(sprite.weaponAnimations, weaponType, hasAttacks);
     }
      */
-    InitSpriteAnimationPlayer(sprite.bodyPlayer);
-    InitSpriteAnimationPlayer(sprite.weaponPlayer);
+    sprite.bodyPlayer = CreateSpriteAnimationPlayer(spriteData);
+    sprite.weaponPlayer = CreateSpriteAnimationPlayer(spriteData);
 }
 
-void SetCharacterSpriteWeaponAnimation(CharacterSprite &sprite, const std::string &weaponType) {
+void SetCharacterSpriteWeaponAnimation(SpriteData& spriteData, CharacterSprite &sprite, const std::string &weaponType) {
     sprite.displayWeapon = true;
-    LoadAnimType(sprite.weaponAnimations, weaponType, true);
-    InitSpriteAnimationPlayer(sprite.weaponPlayer);
+    LoadAnimType(spriteData, sprite.weaponAnimations, weaponType, true);
+    sprite.weaponPlayer = CreateSpriteAnimationPlayer(spriteData);
 }
 
-SpriteAnimation *GetCharacterAnimationBody(CharacterSprite &sprite, SpriteAnimationType type) {
+int GetCharacterAnimationBody(CharacterSprite &sprite, SpriteAnimationType type) {
     return sprite.bodyAnimations[type];
 }
 
-SpriteAnimation *GetCharacterAnimationWeapon(CharacterSprite &sprite, SpriteAnimationType type) {
+int GetCharacterAnimationWeapon(CharacterSprite &sprite, SpriteAnimationType type) {
     return sprite.weaponAnimations[type];
 }
 
-Vector2 GetCharacterSpritePos(CharacterSprite &sprite) {
-    return sprite.bodyPlayer.position;
+Vector2 GetCharacterSpritePos(SpriteData& spriteData, CharacterSprite &sprite) {
+    return spriteData.player.renderData[sprite.bodyPlayer].position;
 }
 
-Vector2i GetCharacterSpritePosI(CharacterSprite &sprite) {
-    return Vector2i{(int)sprite.bodyPlayer.position.x, (int)sprite.bodyPlayer.position.y};
+Vector2i GetCharacterSpritePosI(SpriteData& spriteData, CharacterSprite &sprite) {
+    SpriteAnimationPlayerRenderData& renderData = spriteData.player.renderData[sprite.bodyPlayer];
+    return Vector2i{(int) renderData.position.x, (int) renderData.position.y};
 }
 
-Vector2i GetCharacterGridPosI(CharacterSprite &sprite) {
-    return PixelToGridPositionI((int)sprite.bodyPlayer.position.x, (int)sprite.bodyPlayer.position.y);
+Vector2i GetCharacterGridPosI(SpriteData& spriteData, CharacterSprite &sprite) {
+    SpriteAnimationPlayerRenderData& renderData = spriteData.player.renderData[sprite.bodyPlayer];
+    return PixelToGridPositionI((int) renderData.position.x, (int) renderData.position.y);
 }
 
-float GetCharacterSpritePosX(CharacterSprite &sprite) {
-    return sprite.bodyPlayer.position.x;
+float GetCharacterSpritePosX(SpriteData& spriteData, CharacterSprite &sprite) {
+    SpriteAnimationPlayerRenderData& renderData = spriteData.player.renderData[sprite.bodyPlayer];
+    return renderData.position.x;
 }
 
-float GetCharacterSpritePosY(CharacterSprite &sprite) {
-    return sprite.bodyPlayer.position.y;
+float GetCharacterSpritePosY(SpriteData& spriteData, CharacterSprite &sprite) {
+    SpriteAnimationPlayerRenderData& renderData = spriteData.player.renderData[sprite.bodyPlayer];
+    return renderData.position.y;
 }
 
-void SetCharacterSpritePos(CharacterSprite &sprite, Vector2 pos) {
-    sprite.bodyPlayer.position = pos;
-    sprite.weaponPlayer.position = pos;
+void SetCharacterSpritePos(SpriteData& spriteData, CharacterSprite &sprite, Vector2 pos) {
+    SpriteAnimationPlayerRenderData& bodyRenderData = spriteData.player.renderData[sprite.bodyPlayer];
+    SpriteAnimationPlayerRenderData& weaponRenderData = spriteData.player.renderData[sprite.weaponPlayer];
+    bodyRenderData.position = pos;
+    weaponRenderData.position = pos;
 }
 
-void SetCharacterSpritePosI(CharacterSprite &sprite, Vector2i pos) {
-    sprite.bodyPlayer.position = Vector2{(float)pos.x, (float)pos.y};
-    sprite.weaponPlayer.position = Vector2{(float)pos.x, (float)pos.y};
+void SetCharacterSpritePosI(SpriteData& spriteData, CharacterSprite &sprite, Vector2i pos) {
+    SpriteAnimationPlayerRenderData& bodyRenderData = spriteData.player.renderData[sprite.bodyPlayer];
+    SpriteAnimationPlayerRenderData& weaponRenderData = spriteData.player.renderData[sprite.weaponPlayer];
+    bodyRenderData.position = Vector2{(float)pos.x, (float)pos.y};
+    weaponRenderData.position = Vector2{(float)pos.x, (float)pos.y};
 }
 
-void SetCharacterSpritePosX(CharacterSprite &sprite, float x) {
-    sprite.bodyPlayer.position.x = x;
-    sprite.weaponPlayer.position.x = x;
+void SetCharacterSpritePosX(SpriteData& spriteData, CharacterSprite &sprite, float x) {
+    SpriteAnimationPlayerRenderData& bodyRenderData = spriteData.player.renderData[sprite.bodyPlayer];
+    SpriteAnimationPlayerRenderData& weaponRenderData = spriteData.player.renderData[sprite.weaponPlayer];
+    bodyRenderData.position.x = x;
+    weaponRenderData.position.x = x;
 }
 
-void SetCharacterSpritePosY(CharacterSprite &sprite, float y) {
-    sprite.bodyPlayer.position.y = y;
-    sprite.weaponPlayer.position.y = y;
+void SetCharacterSpritePosY(SpriteData& spriteData, CharacterSprite &sprite, float y) {
+    SpriteAnimationPlayerRenderData& bodyRenderData = spriteData.player.renderData[sprite.bodyPlayer];
+    SpriteAnimationPlayerRenderData& weaponRenderData = spriteData.player.renderData[sprite.weaponPlayer];
+    bodyRenderData.position.y = y;
+    weaponRenderData.position.y = y;
 }
 
-void SetCharacterSpriteRotation(CharacterSprite &sprite, float rotation) {
-    sprite.bodyPlayer.rotation = rotation;
-    sprite.weaponPlayer.rotation = rotation;
+void SetCharacterSpriteRotation(SpriteData& spriteData, CharacterSprite &sprite, float rotation) {
+    SpriteAnimationPlayerRenderData& bodyRenderData = spriteData.player.renderData[sprite.bodyPlayer];
+    SpriteAnimationPlayerRenderData& weaponRenderData = spriteData.player.renderData[sprite.weaponPlayer];
+    bodyRenderData.rotation = rotation;
+    weaponRenderData.rotation = rotation;
 }
 
-float GetCharacterSpriteRotation(CharacterSprite &sprite) {
-    return sprite.bodyPlayer.rotation;
+float GetCharacterSpriteRotation(SpriteData& spriteData, CharacterSprite &sprite) {
+    SpriteAnimationPlayerRenderData& bodyRenderData = spriteData.player.renderData[sprite.bodyPlayer];
+    return bodyRenderData.rotation;
 }
 
-void PlayCharacterSpriteAnim(CharacterSprite &sprite, SpriteAnimationType type, bool loop) {
-    PlaySpriteAnimation(sprite.bodyPlayer, GetCharacterAnimationBody(sprite, type), loop);
+void PlayCharacterSpriteAnim(SpriteData& spriteData, CharacterSprite &sprite, SpriteAnimationType type, bool loop) {
+    PlaySpriteAnimation(spriteData, sprite.bodyPlayer, GetCharacterAnimationBody(sprite, type), loop);
     if(sprite.displayWeapon)
-        PlaySpriteAnimation(sprite.weaponPlayer, GetCharacterAnimationWeapon(sprite, type), loop);
+        PlaySpriteAnimation(spriteData, sprite.weaponPlayer, GetCharacterAnimationWeapon(sprite, type), loop);
 }
 
-void PauseCharacterSpriteAnim(CharacterSprite &sprite) {
-    sprite.bodyPlayer.playing = false;
-    sprite.weaponPlayer.playing = false;
+void PauseCharacterSpriteAnim(SpriteData& spriteData, CharacterSprite &sprite) {
+    SpriteAnimationPlayerAnimData& bodyAnimData = spriteData.player.animData[sprite.bodyPlayer];
+    SpriteAnimationPlayerAnimData& weaponAnimData = spriteData.player.animData[sprite.weaponPlayer];
+    bodyAnimData.playing = false;
+    weaponAnimData.playing = false;
 }
 
-void StartPausedCharacterSpriteAnim(CharacterSprite &sprite, SpriteAnimationType type, bool loop) {
-    PlaySpriteAnimation(sprite.bodyPlayer, GetCharacterAnimationBody(sprite, type), loop);
-    SetFrame(sprite.bodyPlayer, 0);
-    sprite.bodyPlayer.playing = false;
+void StartPausedCharacterSpriteAnim(SpriteData& spriteData, CharacterSprite &sprite, SpriteAnimationType type, bool loop) {
+    PlaySpriteAnimation(spriteData, sprite.bodyPlayer, GetCharacterAnimationBody(sprite, type), loop);
+    SetFrame(spriteData, sprite.bodyPlayer, 0);
+
+    SpriteAnimationPlayerAnimData& bodyAnimData = spriteData.player.animData[sprite.bodyPlayer];
+    SpriteAnimationPlayerAnimData& weaponAnimData = spriteData.player.animData[sprite.weaponPlayer];
+
+    bodyAnimData.playing = false;
 
     if(sprite.displayWeapon) {
-        PlaySpriteAnimation(sprite.weaponPlayer, GetCharacterAnimationWeapon(sprite, type), loop);
-        SetFrame(sprite.weaponPlayer, 0);
-        sprite.weaponPlayer.playing = false;
+        PlaySpriteAnimation(spriteData, sprite.weaponPlayer, GetCharacterAnimationWeapon(sprite, type), loop);
+        SetFrame(spriteData, sprite.weaponPlayer, 0);
+        weaponAnimData.playing = false;
     }
 }
 
-void DrawCharacterSprite(CharacterSprite &sprite) {
-    DrawSpriteAnimation(sprite.bodyPlayer);
+void DrawCharacterSprite(SpriteData& spriteData, CharacterSprite &sprite) {
+    DrawSpriteAnimation(spriteData, sprite.bodyPlayer);
     if(sprite.displayWeapon)
-        DrawSpriteAnimation(sprite.weaponPlayer);
+        DrawSpriteAnimation(spriteData, sprite.weaponPlayer);
 }
 
-void DrawCharacterSprite(CharacterSprite &sprite, float x, float y) {
-    DrawSpriteAnimation(sprite.bodyPlayer, x, y);
+void DrawCharacterSprite(SpriteData& spriteData, CharacterSprite &sprite, float x, float y) {
+    DrawSpriteAnimation(spriteData, sprite.bodyPlayer, x, y);
     if(sprite.displayWeapon)
-        DrawSpriteAnimation(sprite.weaponPlayer, x, y);
+        DrawSpriteAnimation(spriteData, sprite.weaponPlayer, x, y);
 }
 
-void SetCharacterSpriteTint(CharacterSprite &sprite, Color tint) {
-    sprite.bodyPlayer.tint = tint;
-    sprite.weaponPlayer.tint = tint;
+void SetCharacterSpriteTint(SpriteData& spriteData, CharacterSprite &sprite, Color tint) {
+    SpriteAnimationPlayerRenderData& bodyRenderData = spriteData.player.renderData[sprite.bodyPlayer];
+    SpriteAnimationPlayerRenderData& weaponRenderData = spriteData.player.renderData[sprite.weaponPlayer];
+    bodyRenderData.tint = tint;
+    weaponRenderData.tint = tint;
 }
 
-Color GetCharacterSpriteTint(CharacterSprite &sprite) {
-    return sprite.bodyPlayer.tint;
+Color GetCharacterSpriteTint(SpriteData& spriteData, CharacterSprite &sprite) {
+    SpriteAnimationPlayerRenderData& bodyRenderData = spriteData.player.renderData[sprite.bodyPlayer];
+    return bodyRenderData.tint;
 }
 
-void SetCharacterSpriteFrame(CharacterSprite &sprite, int frame) {
-    SetFrame(sprite.bodyPlayer, frame);
+void SetCharacterSpriteFrame(SpriteData& spriteData, CharacterSprite &sprite, int frame) {
+    SetFrame(spriteData, sprite.bodyPlayer, frame);
     if(sprite.displayWeapon)
-        SetFrame(sprite.weaponPlayer, frame);
+        SetFrame(spriteData, sprite.weaponPlayer, frame);
 }
 
-void UpdateCharacterSprite(CharacterSprite &sprite, float deltaTime) {
-    UpdateSpriteAnimation(sprite.bodyPlayer, deltaTime);
-    UpdateSpriteAnimation(sprite.weaponPlayer, deltaTime);
+void UpdateCharacterSprite(SpriteData& spriteData, CharacterSprite &sprite, float deltaTime) {
+    UpdateSpriteAnimation(spriteData, sprite.bodyPlayer, deltaTime);
+    UpdateSpriteAnimation(spriteData, sprite.weaponPlayer, deltaTime);
 }
 
-void PlayCharacterSpriteAnimRestart(CharacterSprite &sprite, SpriteAnimationType type, bool loop) {
-    PlaySpriteAnimationRestart(sprite.bodyPlayer, GetCharacterAnimationBody(sprite, type), loop);
+void PlayCharacterSpriteAnimRestart(SpriteData& spriteData, CharacterSprite &sprite, SpriteAnimationType type, bool loop) {
+    PlaySpriteAnimationRestart(spriteData, sprite.bodyPlayer, GetCharacterAnimationBody(sprite, type), loop);
     if(sprite.displayWeapon)
-        PlaySpriteAnimationRestart(sprite.weaponPlayer, GetCharacterAnimationWeapon(sprite, type), loop);
+        PlaySpriteAnimationRestart(spriteData, sprite.weaponPlayer, GetCharacterAnimationWeapon(sprite, type), loop);
 }

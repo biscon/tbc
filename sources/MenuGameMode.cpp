@@ -23,8 +23,8 @@ static void StartNewGame() {
     int id = CreateCharacter(game->charData, CharacterClass::Warrior, CharacterFaction::Player, "Player1", "Fighter");
     AssignSkill(game->charData.skills[id], SkillType::Taunt, "Howling Scream", 1, false, true, 0, 3, 0);
     AssignSkill(game->charData.skills[id], SkillType::Stun, "Stunning Blow", 1, false, false, 0, 3, 1);
-    InitCharacterSprite(game->charData.sprite[id], "MaleWarrior", true);
-    GiveWeapon(game->weaponData, game->charData, id, "Sword");
+    InitCharacterSprite(game->spriteData, game->charData.sprite[id], "MaleWarrior", true);
+    GiveWeapon(game->spriteData, game->weaponData, game->charData, id, "Sword");
     LevelUp(game->charData, id, true);
     LevelUp(game->charData, id, true);
     LevelUp(game->charData, id, true);
@@ -34,8 +34,8 @@ static void StartNewGame() {
     id = CreateCharacter(game->charData, CharacterClass::Mage, CharacterFaction::Player, "Player2", "Fighter");
     AssignSkill(game->charData.skills[id], SkillType::Dodge, "Dodge", 1, true, true, 0, 0, 0);
     AssignSkill(game->charData.skills[id], SkillType::FlameJet, "Burning Hands", 1, false, false, 0, 3, 5);
-    InitCharacterSprite(game->charData.sprite[id], "MaleWarrior", true);
-    GiveWeapon(game->weaponData, game->charData, id, "Bow");
+    InitCharacterSprite(game->spriteData, game->charData.sprite[id], "MaleWarrior", true);
+    GiveWeapon(game->spriteData, game->weaponData, game->charData, id, "Bow");
     LevelUp(game->charData, id, true);
     LevelUp(game->charData, id, true);
     LevelUp(game->charData, id, true);

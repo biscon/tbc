@@ -85,10 +85,10 @@ struct CharacterData {
 
 int CreateCharacter(CharacterData &data, CharacterClass characterClass, CharacterFaction faction, const std::string& name, const std::string& ai);
 bool IsAlive(CharacterData &data, int characterIdx);
-void GiveWeapon(WeaponData& weaponData, CharacterData &data, int characterIdx, const std::string& weaponTemplate);
+void GiveWeapon(SpriteData& spriteData, WeaponData& weaponData, CharacterData &data, int characterIdx, const std::string& weaponTemplate);
 Vector2 GetOrientationVector(Orientation orientation);
 void LevelUp(CharacterData &charData, int cid, bool autoDistributePoints);
 int GetAttack(CharacterData &charData, WeaponData& weaponData, int cid);
-void FaceCharacter(CharacterData &charData, int attackerId, int defenderId);
+void FaceCharacter(SpriteData& spriteData, CharacterData &charData, int attackerId, int defenderId);
 
 #endif //SANDBOX_CHARACTER_H

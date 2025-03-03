@@ -8,6 +8,6 @@
 #include "Combat.h"
 #include "PlayField.h"
 
-void UpdateCombat(CharacterData& charData, WeaponData& weaponData, Level &level, PlayField& playField, float dt);
+void UpdateCombat(SpriteData& spriteData, CharacterData& charData, WeaponData& weaponData, Level &level, PlayField& playField, float dt);
 
 #endif //SANDBOX_COMBATENGINE_H
