@@ -46,6 +46,14 @@ struct SpawnPoint {
     int radius;
 };
 
+struct LevelExit {
+    std::string levelFile;
+    std::string spawnPoint;
+    int x;
+    int y;
+};
+
+
 struct Level {
     std::string name;
     std::vector<std::string> log;
@@ -56,17 +64,18 @@ struct Level {
     int currentCharacter = -1;
     int selectedCharacter = -1;
     Skill* selectedSkill = nullptr;
-    int currentCharacterIdx;
+    int currentCharacterIdx = -1;
     TurnState turnState;
     std::vector<Animation> animations;
-    float waitTime;
+    float waitTime = 0;
     TurnState nextState;
     std::map<int, int> threatTable;
     TileMap tileMap;
-    int tileSet;
+    int tileSet = -1;
     AttackResult attackResult;
     LevelCamera camera;
     std::unordered_map<std::string, SpawnPoint> spawnPoints;
+    std::vector<LevelExit> exits;
 };
 
 void CreateLevel(Level &level);

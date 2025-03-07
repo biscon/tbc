@@ -8,6 +8,7 @@
 #include "util/cute_tiled.h"
 
 void LoadTileMap(TileMap &tileMap, const char *filename, int tileSet) {
+    tileMap.layers.clear();
     tileMap.tileSet = tileSet;
     int fileLength = GetFileLength(filename);
     if(fileLength == 0) {

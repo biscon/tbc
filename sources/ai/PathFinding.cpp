@@ -536,8 +536,15 @@ std::vector<Vector2i> FindFreePositionsCircular(Level& level, int x, int y, int 
 
             // Check if the position is within the circle's radius
             if (offsetX * offsetX + offsetY * offsetY <= radius * radius) {
+                bool hasExit = false;
+                for(auto& exit : level.exits) {
+                    if(exit.x == checkX && exit.y == checkY) {
+                        hasExit = true;
+                        break;
+                    }
+                }
                 // Add the position if it is not occupied
-                if (IsTileWalkable(level, checkX, checkY)) {
+                if (IsTileWalkable(level, checkX, checkY) && !hasExit) {
                     freePositions.push_back(Vector2i{checkX, checkY});
                 }
             }

@@ -18,6 +18,7 @@ struct SpriteSheetData {
     std::vector<Texture2D> texture;
     std::vector<SpriteSheetFrameSizeData> frameSizeData;
     std::vector<std::vector<Rectangle>> frameRects;
+    std::vector<bool> loaded;
 };
 
 // Load a sprite sheet from a file and split it into frames

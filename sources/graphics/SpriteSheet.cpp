@@ -29,9 +29,11 @@ int LoadSpriteSheet(SpriteSheetData& sheetData, const char* filename, int frameW
             sheetData.frameRects.back().push_back(frame);
         }
     }
+    sheetData.loaded.push_back(true);
     return (int) sheetData.texture.size()-1;
 }
 
 void UnloadSpriteSheet(SpriteSheetData& sheetData, int spriteSheet) {
     UnloadTexture(sheetData.texture[spriteSheet]);
+    sheetData.loaded[spriteSheet] = false;
 }

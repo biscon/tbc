@@ -13,6 +13,7 @@ enum class GameEventType {
     MoveParty,
     PartySpotted,
     EndCombat,
+    ExitLevel,
 };
 
 struct MovePartyEvent {
@@ -27,12 +28,18 @@ struct EndCombatEvent {
     bool victory;
 };
 
+struct ExitLevelEvent {
+    char levelFile[64];
+    char spawnPoint[64];
+};
+
 struct GameEvent {
     GameEventType type;
     union {
         MovePartyEvent moveParty;
         PartySpottedEvent partySpotted;
         EndCombatEvent endCombat;
+        ExitLevelEvent exitLevelEvent;
     };
 };
 
@@ -46,5 +53,6 @@ bool GetNextEvent(GameEventQueue &eventQueue, GameEvent &event);
 void PublishMovePartyEvent(GameEventQueue &eventQueue, Vector2i target);
 void PublishPartySpottedEvent(GameEventQueue &eventQueue, int spotter);
 void PublishEndCombatEvent(GameEventQueue &eventQueue, bool victory);
+void PublishExitLevelEvent(GameEventQueue &eventQueue, const std::string& levelFile, const std::string& spawnPoint);
 
 #endif //SANDBOX_GAMEEVENTQUEUE_H

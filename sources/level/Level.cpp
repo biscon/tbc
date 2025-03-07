@@ -18,6 +18,7 @@ void WaitTurnState(Level &level, TurnState state, float waitTime) {
 
 void CreateLevel(Level &level) {
     level.turnState = TurnState::None;
+    level.tileSet = -1;
     InitLevelCamera(level.camera);
 }
 
@@ -26,12 +27,21 @@ static std::string GetFilePath(const std::string &filename) {
 }
 
 void LoadLevel(SpriteSheetData& sheetData, Level &level, const std::string &filename) {
+    level.animations.clear();
+    level.partyCharacters.clear();
+    level.allCharacters.clear();
+    level.enemyCharacters.clear();
+    level.currentCharacter = -1;
+    level.selectedCharacter = -1;
+    level.selectedSkill = nullptr;
+    level.turnState = TurnState::None;
     std::string filePath = GetFilePath(filename);
     TraceLog(LOG_INFO, "Loading level from %s", filePath.c_str());
 
     std::ifstream file(filePath);
     if (!file) {
         TraceLog(LOG_ERROR, "Failed to open level file: %s", filePath.c_str());
+        std::abort();
         return;
     }
 
@@ -40,9 +50,13 @@ void LoadLevel(SpriteSheetData& sheetData, Level &level, const std::string &file
     std::string n = j["name"].get<std::string>();
     level.name = n;
     TraceLog(LOG_INFO, "Level name: %s", n.c_str());
+    if(level.tileSet != -1) {
+        UnloadSpriteSheet(sheetData, level.tileSet);
+    }
     level.tileSet = LoadSpriteSheet(sheetData, GetFilePath(j["tileset"].get<std::string>()).c_str(), 16, 16);
     LoadTileMap(level.tileMap, GetFilePath(j["map"].get<std::string>()).c_str(), level.tileSet);
 
+    level.spawnPoints.clear();
     // load spawn points
     for (auto &spawn : j["spawnPoints"]) {
         SpawnPoint sp;
@@ -53,7 +67,20 @@ void LoadLevel(SpriteSheetData& sheetData, Level &level, const std::string &file
         sp.radius = spawn["radius"].get<int>();
         level.spawnPoints[name] = sp;
     }
-    level.turnState = TurnState::None;
+
+    // load exits
+    level.exits.clear();
+    for (auto &jExit : j["exits"]) {
+        LevelExit e;
+        std::string levelFile = jExit["level"].get<std::string>();
+        e.levelFile = levelFile;
+        std::string spawnPoint = jExit["spawnPoint"].get<std::string>();
+        e.spawnPoint = spawnPoint;
+        e.x = jExit["x"].get<int>();
+        e.y = jExit["y"].get<int>();
+        level.exits.emplace_back(e);
+    }
+
     level.camera.worldWidth = level.tileMap.width * level.tileMap.tileWidth;
     level.camera.worldHeight = level.tileMap.height * level.tileMap.tileHeight;
 }
@@ -76,6 +103,9 @@ static void setInitialGridPositions(SpriteData& spriteData, CharacterData& charD
         SetCharacterSpritePos(spriteData, charData.sprite[character], GridToPixelPosition(pos.x, pos.y));
         // Set initial animation to paused
         StartPausedCharacterSpriteAnim(spriteData, charData.sprite[character], SpriteAnimationType::WalkRight, true);
+        Vector2 charPos = GetCharacterSpritePos(spriteData, charData.sprite[character]);
+        Vector2i gridPos = GetCharacterGridPosI(spriteData, charData.sprite[character]);
+        TraceLog(LOG_INFO, "Placed character %s at %f,%f, grid: %i,%i", charData.name[character].c_str(), charPos.x, charPos.y, gridPos.x, gridPos.y);
         charData.orientation[character] = Orientation::Right;
     }
 }

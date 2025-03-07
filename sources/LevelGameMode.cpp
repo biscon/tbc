@@ -75,6 +75,18 @@ static void processEvents() {
                 }
                 break;
             }
+            case GameEventType::ExitLevel: {
+                TraceLog(LOG_INFO, "ExitLevel: %s, spawnPoint: %s", event.exitLevelEvent.levelFile, event.exitLevelEvent.spawnPoint);
+                game->levelFileName = std::string(event.exitLevelEvent.levelFile);
+                ResetPlayField(playField);
+                LoadLevel(game->spriteData.sheet, level, game->levelFileName);
+                std::string spawnPoint = std::string(event.exitLevelEvent.spawnPoint);
+                AddPartyToLevel(game->spriteData, game->charData, level, game->party, spawnPoint);
+                StartCameraPanToTargetCharTime(game->spriteData, game->charData, level.camera, game->party[0], 0.01f);
+                game->state = GameState::PLAY_LEVEL;
+                playField.mode = PlayFieldMode::Move;
+                break;
+            }
             default:
                 break;
         }

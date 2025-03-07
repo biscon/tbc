@@ -115,6 +115,9 @@ void UpdateCamera(LevelCamera& cam, float dt) {
     // Ensure the camera does not scroll more than border pixels outside the visible area
     float maxX = (float) cam.worldWidth - 480 + border;
     float maxY = (float) cam.worldHeight - 270 + border;
+    if(cam.worldHeight < 270) {
+        maxY = 0;
+    }
     float minX = -border;
     float minY = -border;
 

@@ -2,6 +2,7 @@
 // Created by bison on 20-02-25.
 //
 
+#include <cstring>
 #include "GameEventQueue.h"
 
 void PublishEvent(GameEventQueue &eventQueue, GameEvent event) {
@@ -35,5 +36,13 @@ void PublishEndCombatEvent(GameEventQueue &eventQueue, bool victory) {
     GameEvent event{};
     event.type = GameEventType::EndCombat;
     event.endCombat.victory = victory;
+    PublishEvent(eventQueue, event);
+}
+
+void PublishExitLevelEvent(GameEventQueue &eventQueue, const std::string &levelFile, const std::string& spawnPoint) {
+    GameEvent event{};
+    event.type = GameEventType::ExitLevel;
+    strncpy(event.exitLevelEvent.levelFile, levelFile.c_str(), sizeof(event.exitLevelEvent.levelFile));
+    strncpy(event.exitLevelEvent.spawnPoint, spawnPoint.c_str(), sizeof(event.exitLevelEvent.spawnPoint));
     PublishEvent(eventQueue, event);
 }

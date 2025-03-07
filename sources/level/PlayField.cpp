@@ -493,6 +493,17 @@ static void checkIfPartySpotted(SpriteData& spriteData, CharacterData& charData,
     }
 }
 
+static void checkLevelExits(SpriteData& spriteData, CharacterData& charData, PlayField &playField, Level &level) {
+    for(auto& exit : level.exits) {
+        for(auto& c : level.partyCharacters) {
+            Vector2i cGridPos = GetCharacterGridPosI(spriteData, charData.sprite[c]);
+            if(exit.x == cGridPos.x && exit.y == cGridPos.y) {
+                PublishExitLevelEvent(*playField.eventQueue, exit.levelFile, exit.spawnPoint);
+            }
+        }
+    }
+}
+
 void UpdatePlayField(SpriteData& spriteData, CharacterData& charData, PlayField &playField, Level &level, float dt) {
     // Update the pulsing alpha
     if (playField.increasing) {
@@ -515,6 +526,7 @@ void UpdatePlayField(SpriteData& spriteData, CharacterData& charData, PlayField 
     }
     if(level.turnState == TurnState::None) {
         checkIfPartySpotted(spriteData, charData, playField, level);
+        checkLevelExits(spriteData, charData, playField, level);
     }
 }
 
@@ -615,4 +627,14 @@ void MoveCharacterPartial(SpriteData& spriteData, CharacterData& charData, PlayF
     } else {
         TraceLog(LOG_WARNING, "No path found");
     }
+}
+
+void ResetPlayField(PlayField &playField) {
+    playField.selectedCharacter = -1;
+    playField.activeMoves.clear();
+    playField.moving = false;
+    playField.mode = PlayFieldMode::None;
+    playField.selectedCharacter = -1;
+    playField.selectedTile = {-1, -1};
+    playField.path = {};
 }
