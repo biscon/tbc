@@ -19,30 +19,6 @@ enum class ScalingStat {
     Speed,
 };
 
-/*
-struct WeaponTemplate {
-    std::string name;
-    WeaponType type;
-    int baseAttack;
-    int range;
-    float armorPenetration;  // Percentage of defender’s defense ignored
-    float attackMultiplier;
-    ScalingStat scalingStat;
-    std::string animationTemplate;
-    std::string soundEffectType;
-};
-
-struct Weapon {
-    WeaponTemplate* weaponTemplate;
-    int baseAttack;
-    int range;
-};
-
-struct WeaponManager {
-    std::unordered_map<std::string, WeaponTemplate> weaponTemplates;
-};
-*/
-
 struct WeaponStats {
     int baseAttack;
     int range;

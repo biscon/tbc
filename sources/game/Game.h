@@ -6,6 +6,7 @@
 #define SANDBOX_GAME_H
 
 #include "character/Character.h"
+#include "character/Npc.h"
 
 enum class GameState {
     START_NEW_GAME,
@@ -20,6 +21,7 @@ struct Game {
     WeaponData weaponData;
     CharacterData charData;
     SpriteData spriteData;
+    NpcData npcData;
 };
 
 void CreateGame(Game &game, const std::string& levelFileName);

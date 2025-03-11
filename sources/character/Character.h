@@ -90,5 +90,7 @@ Vector2 GetOrientationVector(Orientation orientation);
 void LevelUp(CharacterData &charData, int cid, bool autoDistributePoints);
 int GetAttack(CharacterData &charData, WeaponData& weaponData, int cid);
 void FaceCharacter(SpriteData& spriteData, CharacterData &charData, int attackerId, int defenderId);
+CharacterClass StringToClass(const std::string& className);
+CharacterFaction StringToFaction(const std::string& factionName);
 
 #endif //SANDBOX_CHARACTER_H

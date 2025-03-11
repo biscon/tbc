@@ -229,3 +229,13 @@ void FaceCharacter(SpriteData& spriteData, CharacterData &charData, int attacker
         }
     }
 }
+
+CharacterClass StringToClass(const std::string &className) {
+    return CharacterClass::Warrior;
+}
+
+CharacterFaction StringToFaction(const std::string &factionName) {
+    if(factionName == "Player") return CharacterFaction::Player;
+    if(factionName == "Npc") return CharacterFaction::Npc;
+    return CharacterFaction::Enemy;
+}

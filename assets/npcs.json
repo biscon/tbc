@@ -1,0 +1,11 @@
+[
+    {
+        "name": "MaleNinja",
+        "class": "Warrior",
+        "faction": "Enemy",
+        "ai": "Fighter",
+        "sprite": "MaleNinja",
+        "level": 1,
+        "weapon": "Sword"
+    }
+]

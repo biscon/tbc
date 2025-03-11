@@ -102,6 +102,8 @@ add_executable(${PROJECT_NAME}
         sources/util/EventBus.h
         sources/level/CombatEngine.cpp
         sources/level/CombatEngine.h
+        sources/character/Npc.cpp
+        sources/character/Npc.h
 )
 target_sources(${PROJECT_NAME} PRIVATE ${PROJECT_SOURCES})
 target_include_directories(${PROJECT_NAME} PRIVATE ${PROJECT_INCLUDE})

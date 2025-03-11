@@ -57,6 +57,7 @@ int main() {
 
     InitSpriteAnimationData(game.spriteData, ASSETS_PATH"animations.json");
     InitWeaponTemplateData(game.weaponData.templateData, ASSETS_PATH"weapons.json");
+    InitNpcTemplateData(game.npcData.templateData, ASSETS_PATH"npcs.json");
 
     //SetGameMode(GameModes::Combat);
     //SetGameMode(GameModes::Dungeon);

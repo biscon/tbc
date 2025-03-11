@@ -47,5 +47,14 @@
             "x": 51,
             "y": 4
         }
+    ],
+    "npcs": [
+        {
+            "group": "ninja1",
+            "characters": [
+                "MaleNinja"
+            ],
+            "spawnAt": [26,12]
+        }
     ]
 }
