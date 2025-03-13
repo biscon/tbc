@@ -15,6 +15,8 @@
 #include "ui/UI.h"
 #include "level/CombatAnimation.h"
 #include "audio/SoundEffect.h"
+#include "graphics/Animation.h"
+#include "Combat.h"
 #include <cassert>
 
 void CreateLevelScreen(LevelScreen &levelScreen, GameEventQueue* eventQueue) {

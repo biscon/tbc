@@ -8,6 +8,7 @@
 #include "CombatAnimation.h"
 #include "audio/SoundEffect.h"
 #include "Combat.h"
+#include "graphics/Animation.h"
 
 SkillResult ExecuteSkill(SpriteData& spriteData, CharacterData& charData, WeaponData& weaponData, Level& level, PlayField& playField) {
     SkillResult result;

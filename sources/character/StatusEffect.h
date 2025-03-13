@@ -5,26 +5,8 @@
 #ifndef SANDBOX_STATUSEFFECT_H
 #define SANDBOX_STATUSEFFECT_H
 
-#include <vector>
 #include <string>
-
-enum class StatusEffectType {
-    DamageReduction,
-    ThreatModifier,
-    Stun,
-    Poison,
-    Regeneration,
-    Bleed,
-    Confusion,
-    Fear,
-    Burning,
-};
-
-struct StatusEffect {
-    StatusEffectType type;
-    int roundsLeft; // How many rounds the effect lasts, -1 for infinite
-    float value;
-};
+#include "data/StatusEffectData.h"
 
 bool CheckStatusEffectByType(std::vector<StatusEffect>& statusEffects, StatusEffectType type);
 StatusEffect* GetStatusEffectByType(std::vector<StatusEffect>& statusEffects, StatusEffectType type);

@@ -14,7 +14,7 @@
 #include "util/GameEventQueue.h"
 #include "level/CombatEngine.h"
 
-static Game* game;
+static GameData* game;
 
 /*
 static std::vector<Character> enemyCharacters = {
@@ -79,7 +79,7 @@ static void processEvents() {
                 TraceLog(LOG_INFO, "ExitLevel: %s, spawnPoint: %s", event.exitLevelEvent.levelFile, event.exitLevelEvent.spawnPoint);
                 game->levelFileName = std::string(event.exitLevelEvent.levelFile);
                 ResetPlayField(playField);
-                LoadLevel(game->spriteData.sheet, level, game->levelFileName);
+                LoadLevel(game->npcTemplateData, game->charData, game->spriteData, game->weaponData, level, game->levelFileName);
                 std::string spawnPoint = std::string(event.exitLevelEvent.spawnPoint);
                 AddPartyToLevel(game->spriteData, game->charData, level, game->party, spawnPoint);
                 StartCameraPanToTargetCharTime(game->spriteData, game->charData, level.camera, game->party[0], 0.01f);
@@ -245,52 +245,34 @@ void LevelPause() {
 }
 
 static void createTestEnemies() {
-    int id = CreateCharacter(game->charData, CharacterClass::Warrior, CharacterFaction::Enemy, "Enemy1", "Fighter");
-    InitCharacterSprite(game->spriteData, game->charData.sprite[id], "MaleNinja", true);
-    GiveWeapon(game->spriteData, game->weaponData, game->charData, id, "Sword");
-    LevelUp(game->charData, id, true);
+    /*
+    int id = CreateCharacterFromTemplate(*game, "MaleNinja");
     enemyGroup1.emplace_back(id);
-
-    id = CreateCharacter(game->charData, CharacterClass::Warrior, CharacterFaction::Enemy, "Enemy2", "Fighter");
-    InitCharacterSprite(game->spriteData, game->charData.sprite[id], "MaleNinja", true);
-    GiveWeapon(game->spriteData, game->weaponData, game->charData, id, "Sword");
-    LevelUp(game->charData, id, true);
+    id = CreateCharacterFromTemplate(*game, "MaleNinja");
     enemyGroup1.emplace_back(id);
 
     AddEnemiesToLevel(game->spriteData, game->charData, level, enemyGroup1, "enemies");
 
     // Group 2
-    id = CreateCharacter(game->charData, CharacterClass::Warrior, CharacterFaction::Enemy, "Enemy3", "Fighter");
-    InitCharacterSprite(game->spriteData, game->charData.sprite[id], "MaleNinja", true);
-    GiveWeapon(game->spriteData, game->weaponData, game->charData, id, "Sword");
-    LevelUp(game->charData, id, true);
+    id = CreateCharacterFromTemplate(*game, "MaleNinja");
     enemyGroup2.emplace_back(id);
-
-    id = CreateCharacter(game->charData, CharacterClass::Warrior, CharacterFaction::Enemy, "Enemy4", "Fighter");
-    InitCharacterSprite(game->spriteData, game->charData.sprite[id], "MaleNinja", true);
-    GiveWeapon(game->spriteData, game->weaponData, game->charData, id, "Sword");
-    LevelUp(game->charData, id, true);
+    id = CreateCharacterFromTemplate(*game, "MaleNinja");
     enemyGroup2.emplace_back(id);
-
-    id = CreateCharacter(game->charData, CharacterClass::Warrior, CharacterFaction::Enemy, "Enemy5", "Fighter");
-    InitCharacterSprite(game->spriteData, game->charData.sprite[id], "MaleBase", true);
-    GiveWeapon(game->spriteData, game->weaponData, game->charData, id, "Staff");
-    LevelUp(game->charData, id, true);
+    id = CreateCharacterFromTemplate(*game, "MaleNinjaStaff");
     enemyGroup2.emplace_back(id);
-
-    id = CreateCharacter(game->charData, CharacterClass::Warrior, CharacterFaction::Enemy, "Enemy6", "Fighter");
-    InitCharacterSprite(game->spriteData, game->charData.sprite[id], "MaleBase", true);
-    GiveWeapon(game->spriteData, game->weaponData, game->charData, id, "Staff");
-    LevelUp(game->charData, id, true);
+    id = CreateCharacterFromTemplate(*game, "MaleNinjaStaff");
     enemyGroup2.emplace_back(id);
 
     AddEnemiesToLevel(game->spriteData, game->charData, level, enemyGroup2, "enemies2");
+     */
 }
+
+
 
 void LevelResume() {
     TraceLog(LOG_INFO, "LevelResume");
     if(game->state == GameState::LOAD_LEVEL) {
-        LoadLevel(game->spriteData.sheet, level, game->levelFileName);
+        LoadLevel(game->npcTemplateData, game->charData, game->spriteData, game->weaponData, level, game->levelFileName);
         AddPartyToLevel(game->spriteData, game->charData, level, game->party, "default");
         game->state = GameState::PLAY_LEVEL;
         playField.mode = PlayFieldMode::Move;
@@ -298,7 +280,7 @@ void LevelResume() {
     }
 }
 
-void SetupLevelGameMode(Game* gameState) {
+void SetupLevelGameMode(GameData* gameState) {
     game = gameState;
     CreateGameMode(GameModes::Level, LevelInit, LevelUpdate, LevelHandleInput, LevelRender, LevelPreRender, LevelDestroy, LevelPause, LevelResume);
 }

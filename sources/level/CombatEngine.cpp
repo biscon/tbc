@@ -12,6 +12,7 @@
 #include "ai/Ai.h"
 #include "util/Random.h"
 #include "ui/UI.h"
+#include "graphics/Animation.h"
 
 void UpdateCombat(SpriteData& spriteData, CharacterData& charData, WeaponData& weaponData, Level &level, PlayField& playField, float dt) {
     switch(level.turnState) {

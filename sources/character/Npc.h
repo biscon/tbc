@@ -8,23 +8,11 @@
 #include <string>
 #include <vector>
 #include "Character.h"
-
-struct NpcTemplateData {
-    std::vector<std::string> name;
-    std::vector<CharacterClass> characterClass;
-    std::vector<CharacterFaction> faction;
-    std::vector<std::string> ai;
-    std::vector<std::string> characterSprite;
-    std::vector<int> level;
-    std::vector<std::string> weaponTemplate;
-    // name to index lookup
-    std::unordered_map<std::string, int> npcTemplates;
-};
-
-struct NpcData {
-    NpcTemplateData templateData;
-};
+#include "data/NpcTemplateData.h"
 
 void InitNpcTemplateData(NpcTemplateData& data, const std::string& filename);
+int CreateCharacterFromTemplate(NpcTemplateData& tplData, CharacterData& charData, SpriteData& spriteData, WeaponData& weaponData, const std::string &name);
+
+
 
 #endif //SANDBOX_NPC_H

@@ -6,7 +6,8 @@
 #define SANDBOX_LEVELCAMERA_H
 
 #include "raylib.h"
-#include "character/Character.h"
+#include "data/GameData.h"
+#include "util/MathUtil.h"
 
 struct LevelCamera {
     Camera2D camera;

@@ -14,6 +14,7 @@
 #include "graphics/ParticleSystem.h"
 #include "audio/SoundEffect.h"
 #include "level/Combat.h"
+#include "graphics/TileMap.h"
 
 static bool IsCharacterVisible(Level &level, int character) {
     // Check if the character is visible (not blinking)

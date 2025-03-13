@@ -5,28 +5,8 @@
 #ifndef SANDBOX_TILEMAP_H
 #define SANDBOX_TILEMAP_H
 
-#include <vector>
-#include "SpriteAnimation.h"
-
-const int BOTTOM_LAYER = 0;
-const int MIDDLE_LAYER = 1;
-const int TOP_LAYER = 2;
-const int NAV_LAYER = 3;
-
-struct TileMapLayer {
-    int width;
-    int height;
-    int* data;
-};
-
-struct TileMap {
-    int width;
-    int height;
-    int tileWidth;
-    int tileHeight;
-    int tileSet;
-    std::vector<TileMapLayer> layers;
-};
+#include "data/SpriteData.h"
+#include "data/TileMapData.h"
 
 void LoadTileMap(TileMap &tileMap, const char* filename, int tileSet);
 void UnloadTileMap(TileMap &tileMap);

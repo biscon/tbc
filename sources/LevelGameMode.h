@@ -8,6 +8,6 @@
 #include "GameMode.h"
 #include "game/Game.h"
 
-void SetupLevelGameMode(Game* gameState);
+void SetupLevelGameMode(GameData* gameState);
 
 #endif //SANDBOX_LEVELGAMEMODE_H

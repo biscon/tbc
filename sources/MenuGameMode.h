@@ -8,6 +8,6 @@
 #include "GameMode.h"
 #include "game/Game.h"
 
-void SetupMenuGameMode(Game* gameState);
+void SetupMenuGameMode(GameData* gameState);
 
 #endif //SANDBOX_MENUGAMEMODE_H

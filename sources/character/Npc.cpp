@@ -23,7 +23,7 @@ void InitNpcTemplateData(NpcTemplateData &data, const std::string &filename) {
         data.characterSprite.emplace_back(sprite);
 
         std::string weapon = npcJson["weapon"].get<std::string>();
-        data.weaponTemplate.emplace_back(name);
+        data.weaponTemplate.emplace_back(weapon);
 
         int level = npcJson["level"].get<int>();
         data.level.emplace_back(level);
@@ -37,4 +37,26 @@ void InitNpcTemplateData(NpcTemplateData &data, const std::string &filename) {
         data.npcTemplates[name] = (int) data.name.size()-1;
     }
     TraceLog(LOG_INFO, "Loaded %i NPC templates.", data.name.size());
+}
+
+int CreateCharacterFromTemplate(NpcTemplateData& tplData, CharacterData& charData, SpriteData& spriteData, WeaponData& weaponData, const std::string &name) {
+    auto& npcTemplates = tplData.npcTemplates;
+    auto it = npcTemplates.find(name);
+    if(it != npcTemplates.end()) {
+        int templateIdx = it->second;
+        int charIdx = CreateCharacter(charData, tplData.characterClass[templateIdx],
+                                      tplData.faction[templateIdx], tplData.name[templateIdx],
+                                      tplData.ai[templateIdx]);
+
+        // level up character to desired level
+        for(int i = 1; i < tplData.level[templateIdx]; ++i) {
+            LevelUp(charData, charIdx, true);
+        }
+        InitCharacterSprite(spriteData, charData.sprite[charIdx], tplData.characterSprite[templateIdx], true);
+        GiveWeapon(spriteData, weaponData, charData, charIdx, tplData.weaponTemplate[templateIdx]);
+        return charIdx;
+    } else {
+        TraceLog(LOG_ERROR, "CreateCharacterFromTemplate: Npc template not found: %s", name.c_str());
+        std::abort();
+    }
 }

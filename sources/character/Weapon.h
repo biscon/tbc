@@ -5,46 +5,7 @@
 #ifndef SANDBOX_WEAPON_H
 #define SANDBOX_WEAPON_H
 
-#include <string>
-#include <unordered_map>
-#include <vector>
-
-enum class WeaponType {
-    Melee,
-    Ranged,
-};
-
-enum class ScalingStat {
-    Attack,
-    Speed,
-};
-
-struct WeaponStats {
-    int baseAttack;
-    int range;
-    float armorPenetration;  // Percentage of defender’s defense ignored
-    float attackMultiplier;
-    ScalingStat scalingStat;
-};
-
-struct WeaponTemplateData {
-    std::vector<std::string> name;
-    std::vector<WeaponType> type;
-    std::vector<WeaponStats> stats;
-    std::vector<std::string> animationTemplate;
-    std::vector<std::string> soundEffectType;
-    std::unordered_map<std::string, int> weaponTemplates;
-};
-
-struct WeaponInstanceData {
-    std::vector<std::string> name;
-    std::vector<int> weaponTemplateIdx;
-};
-
-struct WeaponData {
-    WeaponTemplateData templateData;
-    WeaponInstanceData instanceData;
-};
+#include "data/WeaponData.h"
 
 void InitWeaponTemplateData(WeaponTemplateData& weaponTemplateData, const std::string& filename);
 int CreateWeapon(WeaponData& weaponData, const std::string& templateName);

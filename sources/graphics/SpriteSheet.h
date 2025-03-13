@@ -8,18 +8,8 @@
 #include <vector>
 #include "raylib.h"
 #include "util/MathUtil.h"
+#include "data/SpriteData.h"
 
-struct SpriteSheetFrameSizeData {
-    int frameWidth;
-    int frameHeight;
-};
-
-struct SpriteSheetData {
-    std::vector<Texture2D> texture;
-    std::vector<SpriteSheetFrameSizeData> frameSizeData;
-    std::vector<std::vector<Rectangle>> frameRects;
-    std::vector<bool> loaded;
-};
 
 // Load a sprite sheet from a file and split it into frames
 int LoadSpriteSheet(SpriteSheetData& sheetData, const char* filename, int frameWidth, int frameHeight);

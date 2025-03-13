@@ -8,6 +8,7 @@
 #include "LevelGameMode.h"
 #include "MenuGameMode.h"
 #include "game/Game.h"
+#include "character/Npc.h"
 
 #define MAX(a, b) ((a)>(b)? (a) : (b))
 #define MIN(a, b) ((a)<(b)? (a) : (b))
@@ -17,7 +18,7 @@
 // Program main entry point
 //------------------------------------------------------------------------------------
 int main() {
-    Game game;
+    GameData game;
     CreateGame(game, "town_level.json");
     SetupMenuGameMode(&game);
     SetupLevelGameMode(&game);
@@ -57,7 +58,7 @@ int main() {
 
     InitSpriteAnimationData(game.spriteData, ASSETS_PATH"animations.json");
     InitWeaponTemplateData(game.weaponData.templateData, ASSETS_PATH"weapons.json");
-    InitNpcTemplateData(game.npcData.templateData, ASSETS_PATH"npcs.json");
+    InitNpcTemplateData(game.npcTemplateData, ASSETS_PATH"npcs.json");
 
     //SetGameMode(GameModes::Combat);
     //SetGameMode(GameModes::Dungeon);

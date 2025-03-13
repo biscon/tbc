@@ -5,8 +5,6 @@
 #ifndef SANDBOX_LEVELSCREEN_H
 #define SANDBOX_LEVELSCREEN_H
 
-#include "character/Character.h"
-#include "level/Combat.h"
 #include "PlayField.h"
 #include "graphics/ParticleSystem.h"
 #include "util/GameEventQueue.h"

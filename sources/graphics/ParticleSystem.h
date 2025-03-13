@@ -7,9 +7,6 @@
 
 #include "raylib.h"
 #include <vector>
-
-#include "raylib.h"
-#include <vector>
 #include <functional>
 
 enum EmissionType {

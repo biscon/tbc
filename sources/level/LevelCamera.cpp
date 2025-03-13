@@ -4,6 +4,7 @@
 
 #include "LevelCamera.h"
 #include "raymath.h"
+#include "graphics/CharacterSprite.h"
 
 void StartCameraPanToTargetPos(LevelCamera& cam, Vector2 target, float speed) {
     // if distance is less than 20 abort

@@ -7,26 +7,8 @@
 
 #include "SpriteAnimation.h"
 #include "util/MathUtil.h"
+#include "data/SpriteData.h"
 
-enum class SpriteAnimationType {
-    Idle,
-    WalkUp,
-    WalkDown,
-    WalkLeft,
-    WalkRight,
-    AttackUp,
-    AttackDown,
-    AttackLeft,
-    AttackRight,
-};
-
-struct CharacterSprite {
-    std::map<SpriteAnimationType, int> bodyAnimations;
-    std::map<SpriteAnimationType, int> weaponAnimations;
-    int bodyPlayer;
-    int weaponPlayer;
-    bool displayWeapon;
-};
 
 void InitCharacterSprite(SpriteData& spriteData, CharacterSprite &sprite, const std::string& bodyType, bool hasAttacks);
 void SetCharacterSpriteWeaponAnimation(SpriteData& spriteData, CharacterSprite &sprite, const std::string &weaponType);

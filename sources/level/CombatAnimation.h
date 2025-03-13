@@ -5,7 +5,6 @@
 #ifndef SANDBOX_COMBATANIMATION_H
 #define SANDBOX_COMBATANIMATION_H
 
-#include "character/Character.h"
 #include "Level.h"
 
 void PlayAttackAnimation(SpriteData& spriteData, CharacterData& charData, Level &level, int attacker, int defender);

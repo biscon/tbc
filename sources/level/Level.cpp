@@ -7,6 +7,9 @@
 #include "Level.h"
 #include "../util/json.hpp"
 #include "ai/PathFinding.h"
+#include "graphics/SpriteSheet.h"
+#include "graphics/TileMap.h"
+#include "graphics/CharacterSprite.h"
 
 using json = nlohmann::json;
 
@@ -26,7 +29,8 @@ static std::string GetFilePath(const std::string &filename) {
     return ASSETS_PATH + std::string("levels/") + filename;
 }
 
-void LoadLevel(SpriteSheetData& sheetData, Level &level, const std::string &filename) {
+
+void LoadLevel(NpcTemplateData& tplData, CharacterData& charData, SpriteData& spriteData, WeaponData& weaponData, Level &level, const std::string &filename) {
     level.animations.clear();
     level.partyCharacters.clear();
     level.allCharacters.clear();
@@ -51,9 +55,9 @@ void LoadLevel(SpriteSheetData& sheetData, Level &level, const std::string &file
     level.name = n;
     TraceLog(LOG_INFO, "Level name: %s", n.c_str());
     if(level.tileSet != -1) {
-        UnloadSpriteSheet(sheetData, level.tileSet);
+        UnloadSpriteSheet(spriteData.sheet, level.tileSet);
     }
-    level.tileSet = LoadSpriteSheet(sheetData, GetFilePath(j["tileset"].get<std::string>()).c_str(), 16, 16);
+    level.tileSet = LoadSpriteSheet(spriteData.sheet, GetFilePath(j["tileset"].get<std::string>()).c_str(), 16, 16);
     LoadTileMap(level.tileMap, GetFilePath(j["map"].get<std::string>()).c_str(), level.tileSet);
 
     level.spawnPoints.clear();

@@ -7,9 +7,7 @@
 
 #include <string>
 #include <unordered_map>
-#include "character/Character.h"
-#include "graphics/Animation.h"
-#include "graphics/TileMap.h"
+#include "data/GameData.h"
 #include "LevelCamera.h"
 
 enum class TurnState {
@@ -79,7 +77,7 @@ struct Level {
 };
 
 void CreateLevel(Level &level);
-void LoadLevel(SpriteSheetData& sheetData, Level &level, const std::string &filename);
+void LoadLevel(NpcTemplateData& tplData, CharacterData& charData, SpriteData& spriteData, WeaponData& weaponData, Level &level, const std::string &filename);
 void DestroyLevel(SpriteSheetData& sheetData, Level &level);
 void WaitTurnState(Level &level, TurnState state, float waitTime);
 void AddPartyToLevel(SpriteData& spriteData, CharacterData& charData, Level &level, std::vector<int> &party, const std::string& spawnPoint);

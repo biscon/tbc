@@ -104,6 +104,15 @@ add_executable(${PROJECT_NAME}
         sources/level/CombatEngine.h
         sources/character/Npc.cpp
         sources/character/Npc.h
+        sources/data/CharacterData.h
+        sources/data/SpriteData.h
+        sources/data/WeaponData.h
+        sources/data/NpcTemplateData.h
+        sources/data/GameData.h
+        sources/data/SkillData.h
+        sources/data/StatusEffectData.h
+        sources/data/TileMapData.h
+        sources/data/AnimationData.h
 )
 target_sources(${PROJECT_NAME} PRIVATE ${PROJECT_SOURCES})
 target_include_directories(${PROJECT_NAME} PRIVATE ${PROJECT_INCLUDE})

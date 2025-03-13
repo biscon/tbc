@@ -5,7 +5,6 @@
 #ifndef SANDBOX_BLOODPOOL_H
 #define SANDBOX_BLOODPOOL_H
 
-
 #include "level/Level.h"
 
 void InitBloodRendering();

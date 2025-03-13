@@ -48,13 +48,24 @@
             "y": 4
         }
     ],
-    "npcs": [
+    "enemies": [
         {
             "group": "ninja1",
             "characters": [
-                "MaleNinja"
+                "MaleNinja",
+                "MaleNinja",
+                "MaleNinjaStaff",
+                "MaleNinjaStaff"
             ],
             "spawnAt": [26,12]
+        },
+        {
+            "group": "ninja2",
+            "characters": [
+                "MaleNinja",
+                "MaleNinja"
+            ],
+            "spawnAt": [44,8]
         }
     ]
 }

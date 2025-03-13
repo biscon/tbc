@@ -8,7 +8,7 @@
 #include "raygui.h"
 #include "ui/UI.h"
 
-static Game* game;
+static GameData* game;
 
 void MenuInit() {
     TraceLog(LOG_INFO, "MenuInit");
@@ -88,7 +88,7 @@ void MenuResume() {
 
 }
 
-void SetupMenuGameMode(Game* gameState) {
+void SetupMenuGameMode(GameData* gameState) {
     game = gameState;
     CreateGameMode(GameModes::Menu, MenuInit, MenuUpdate, MenuHandleInput, MenuRender, MenuPreRender, MenuDestroy, MenuPause, MenuResume);
 }

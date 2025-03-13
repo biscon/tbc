@@ -7,5 +7,14 @@
         "sprite": "MaleNinja",
         "level": 1,
         "weapon": "Sword"
+    },
+    {
+        "name": "MaleNinjaStaff",
+        "class": "Warrior",
+        "faction": "Enemy",
+        "ai": "Fighter",
+        "sprite": "MaleNinja",
+        "level": 2,
+        "weapon": "Staff"
     }
 ]

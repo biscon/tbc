@@ -8,6 +8,7 @@
 #include "reasings.h"
 #include "raymath.h"
 #include "util/Random.h"
+#include "CharacterSprite.h"
 
 void SetupBlinkAnimation(Animation &animation, int character, float duration) {
     animation.type = AnimationType::Blink;

@@ -4,9 +4,12 @@
 
 #include "PathFinding.h"
 #include "raymath.h"
+#include "graphics/TileMap.h"
+#include "graphics/CharacterSprite.h"
 #include <queue>
 #include <functional>
 #include <algorithm>
+#include <iostream>
 
 #define NODE_POOL_SIZE 1024  // Pre-allocated node pool size
 

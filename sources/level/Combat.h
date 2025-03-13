@@ -6,8 +6,6 @@
 #define SANDBOX_COMBAT_H
 
 #include <map>
-#include "character/Character.h"
-#include "graphics/Animation.h"
 #include "Level.h"
 
 AttackResult Attack(CharacterData& charData, WeaponData& weaponData, Level& level, int attacker, int defender);

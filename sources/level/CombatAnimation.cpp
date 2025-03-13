@@ -4,6 +4,8 @@
 
 #include "CombatAnimation.h"
 #include "raymath.h"
+#include "graphics/Animation.h"
+#include "graphics/CharacterSprite.h"
 
 void PlayAttackAnimation(SpriteData& spriteData, CharacterData& charData, Level &level, int attacker, int defender) {
     float attackerX = GetCharacterSpritePosX(spriteData, charData.sprite[attacker]);
