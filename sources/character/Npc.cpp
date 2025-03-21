@@ -5,6 +5,7 @@
 #include <fstream>
 #include "Npc.h"
 #include "util/json.hpp"
+#include "Character.h"
 
 using json = nlohmann::json;
 
@@ -39,21 +40,22 @@ void InitNpcTemplateData(NpcTemplateData &data, const std::string &filename) {
     TraceLog(LOG_INFO, "Loaded %i NPC templates.", data.name.size());
 }
 
-int CreateCharacterFromTemplate(NpcTemplateData& tplData, CharacterData& charData, SpriteData& spriteData, WeaponData& weaponData, const std::string &name) {
-    auto& npcTemplates = tplData.npcTemplates;
+int CreateCharacterFromTemplate(GameData& data, const std::string &name) {
+    auto& npcTemplates = data.npcTemplateData.npcTemplates;
+    auto& tplData = data.npcTemplateData;
     auto it = npcTemplates.find(name);
     if(it != npcTemplates.end()) {
         int templateIdx = it->second;
-        int charIdx = CreateCharacter(charData, tplData.characterClass[templateIdx],
+        int charIdx = CreateCharacter(data.charData, tplData.characterClass[templateIdx],
                                       tplData.faction[templateIdx], tplData.name[templateIdx],
                                       tplData.ai[templateIdx]);
 
         // level up character to desired level
         for(int i = 1; i < tplData.level[templateIdx]; ++i) {
-            LevelUp(charData, charIdx, true);
+            LevelUp(data.charData, charIdx, true);
         }
-        InitCharacterSprite(spriteData, charData.sprite[charIdx], tplData.characterSprite[templateIdx], true);
-        GiveWeapon(spriteData, weaponData, charData, charIdx, tplData.weaponTemplate[templateIdx]);
+        InitCharacterSprite(data.spriteData, data.charData.sprite[charIdx], tplData.characterSprite[templateIdx], true);
+        GiveWeapon(data.spriteData, data.weaponData, data.charData, charIdx, tplData.weaponTemplate[templateIdx]);
         return charIdx;
     } else {
         TraceLog(LOG_ERROR, "CreateCharacterFromTemplate: Npc template not found: %s", name.c_str());

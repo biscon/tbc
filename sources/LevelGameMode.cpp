@@ -79,7 +79,7 @@ static void processEvents() {
                 TraceLog(LOG_INFO, "ExitLevel: %s, spawnPoint: %s", event.exitLevelEvent.levelFile, event.exitLevelEvent.spawnPoint);
                 game->levelFileName = std::string(event.exitLevelEvent.levelFile);
                 ResetPlayField(playField);
-                LoadLevel(game->npcTemplateData, game->charData, game->spriteData, game->weaponData, level, game->levelFileName);
+                LoadLevel(*game, level, game->levelFileName);
                 std::string spawnPoint = std::string(event.exitLevelEvent.spawnPoint);
                 AddPartyToLevel(game->spriteData, game->charData, level, game->party, spawnPoint);
                 StartCameraPanToTargetCharTime(game->spriteData, game->charData, level.camera, game->party[0], 0.01f);
@@ -272,7 +272,7 @@ static void createTestEnemies() {
 void LevelResume() {
     TraceLog(LOG_INFO, "LevelResume");
     if(game->state == GameState::LOAD_LEVEL) {
-        LoadLevel(game->npcTemplateData, game->charData, game->spriteData, game->weaponData, level, game->levelFileName);
+        LoadLevel(*game, level, game->levelFileName);
         AddPartyToLevel(game->spriteData, game->charData, level, game->party, "default");
         game->state = GameState::PLAY_LEVEL;
         playField.mode = PlayFieldMode::Move;

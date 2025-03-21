@@ -10,6 +10,7 @@
 #include "graphics/SpriteSheet.h"
 #include "graphics/TileMap.h"
 #include "graphics/CharacterSprite.h"
+#include "character/Npc.h"
 
 using json = nlohmann::json;
 
@@ -27,71 +28,6 @@ void CreateLevel(Level &level) {
 
 static std::string GetFilePath(const std::string &filename) {
     return ASSETS_PATH + std::string("levels/") + filename;
-}
-
-
-void LoadLevel(NpcTemplateData& tplData, CharacterData& charData, SpriteData& spriteData, WeaponData& weaponData, Level &level, const std::string &filename) {
-    level.animations.clear();
-    level.partyCharacters.clear();
-    level.allCharacters.clear();
-    level.enemyCharacters.clear();
-    level.currentCharacter = -1;
-    level.selectedCharacter = -1;
-    level.selectedSkill = nullptr;
-    level.turnState = TurnState::None;
-    std::string filePath = GetFilePath(filename);
-    TraceLog(LOG_INFO, "Loading level from %s", filePath.c_str());
-
-    std::ifstream file(filePath);
-    if (!file) {
-        TraceLog(LOG_ERROR, "Failed to open level file: %s", filePath.c_str());
-        std::abort();
-        return;
-    }
-
-    json j;
-    file >> j;
-    std::string n = j["name"].get<std::string>();
-    level.name = n;
-    TraceLog(LOG_INFO, "Level name: %s", n.c_str());
-    if(level.tileSet != -1) {
-        UnloadSpriteSheet(spriteData.sheet, level.tileSet);
-    }
-    level.tileSet = LoadSpriteSheet(spriteData.sheet, GetFilePath(j["tileset"].get<std::string>()).c_str(), 16, 16);
-    LoadTileMap(level.tileMap, GetFilePath(j["map"].get<std::string>()).c_str(), level.tileSet);
-
-    level.spawnPoints.clear();
-    // load spawn points
-    for (auto &spawn : j["spawnPoints"]) {
-        SpawnPoint sp;
-        std::string name = spawn["name"].get<std::string>();
-        sp.name = name;
-        sp.x = spawn["x"].get<int>();
-        sp.y = spawn["y"].get<int>();
-        sp.radius = spawn["radius"].get<int>();
-        level.spawnPoints[name] = sp;
-    }
-
-    // load exits
-    level.exits.clear();
-    for (auto &jExit : j["exits"]) {
-        LevelExit e;
-        std::string levelFile = jExit["level"].get<std::string>();
-        e.levelFile = levelFile;
-        std::string spawnPoint = jExit["spawnPoint"].get<std::string>();
-        e.spawnPoint = spawnPoint;
-        e.x = jExit["x"].get<int>();
-        e.y = jExit["y"].get<int>();
-        level.exits.emplace_back(e);
-    }
-
-    level.camera.worldWidth = level.tileMap.width * level.tileMap.tileWidth;
-    level.camera.worldHeight = level.tileMap.height * level.tileMap.tileHeight;
-}
-
-void DestroyLevel(SpriteSheetData& sheetData, Level &level) {
-    UnloadTileMap(level.tileMap);
-    UnloadSpriteSheet(sheetData, level.tileSet);
 }
 
 static void setInitialGridPositions(SpriteData& spriteData, CharacterData& charData, Level &level, SpawnPoint &sp, std::vector<int>& characters) {
@@ -132,3 +68,83 @@ void AddEnemiesToLevel(SpriteData& spriteData, CharacterData& charData, Level &l
     }
     setInitialGridPositions(spriteData, charData, level, sp, enemyCharacters);
 }
+
+void LoadLevel(GameData& data, Level &level, const std::string &filename) {
+    level.animations.clear();
+    level.partyCharacters.clear();
+    level.allCharacters.clear();
+    level.enemyCharacters.clear();
+    level.currentCharacter = -1;
+    level.selectedCharacter = -1;
+    level.selectedSkill = nullptr;
+    level.turnState = TurnState::None;
+    std::string filePath = GetFilePath(filename);
+    TraceLog(LOG_INFO, "Loading level from %s", filePath.c_str());
+
+    std::ifstream file(filePath);
+    if (!file) {
+        TraceLog(LOG_ERROR, "Failed to open level file: %s", filePath.c_str());
+        std::abort();
+        return;
+    }
+
+    json j;
+    file >> j;
+    std::string n = j["name"].get<std::string>();
+    level.name = n;
+    TraceLog(LOG_INFO, "Level name: %s", n.c_str());
+    if(level.tileSet != -1) {
+        UnloadSpriteSheet(data.spriteData.sheet, level.tileSet);
+    }
+    level.tileSet = LoadSpriteSheet(data.spriteData.sheet, GetFilePath(j["tileset"].get<std::string>()).c_str(), 16, 16);
+    LoadTileMap(level.tileMap, GetFilePath(j["map"].get<std::string>()).c_str(), level.tileSet);
+
+    level.spawnPoints.clear();
+    // load spawn points
+    for (auto &spawn : j["spawnPoints"]) {
+        SpawnPoint sp;
+        std::string name = spawn["name"].get<std::string>();
+        sp.name = name;
+        sp.x = spawn["x"].get<int>();
+        sp.y = spawn["y"].get<int>();
+        sp.radius = spawn["radius"].get<int>();
+        level.spawnPoints[name] = sp;
+    }
+
+    // load exits
+    level.exits.clear();
+    for (auto &jExit : j["exits"]) {
+        LevelExit e;
+        std::string levelFile = jExit["level"].get<std::string>();
+        e.levelFile = levelFile;
+        std::string spawnPoint = jExit["spawnPoint"].get<std::string>();
+        e.spawnPoint = spawnPoint;
+        e.x = jExit["x"].get<int>();
+        e.y = jExit["y"].get<int>();
+        level.exits.emplace_back(e);
+    }
+
+    // load enemies
+    for (auto &jGroup : j["enemies"]) {
+        std::vector<int> enemyGroup;
+        std::string group = jGroup["group"].get<std::string>();
+        std::string spawnAt = jGroup["spawnAt"].get<std::string>();
+        for (auto &jCharTplName : jGroup["characters"]) {
+            std::string charTplName = jCharTplName.get<std::string>();
+            TraceLog(LOG_INFO, "Spawning enemy npc from template %s at %s", charTplName.c_str(), spawnAt.c_str());
+            int id = CreateCharacterFromTemplate(data, charTplName);
+            enemyGroup.emplace_back(id);
+        }
+        AddEnemiesToLevel(data.spriteData, data.charData, level, enemyGroup, spawnAt);
+    }
+
+    level.camera.worldWidth = level.tileMap.width * level.tileMap.tileWidth;
+    level.camera.worldHeight = level.tileMap.height * level.tileMap.tileHeight;
+}
+
+void DestroyLevel(SpriteSheetData& sheetData, Level &level) {
+    UnloadTileMap(level.tileMap);
+    UnloadSpriteSheet(sheetData, level.tileSet);
+}
+
+

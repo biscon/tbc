@@ -77,7 +77,7 @@ struct Level {
 };
 
 void CreateLevel(Level &level);
-void LoadLevel(NpcTemplateData& tplData, CharacterData& charData, SpriteData& spriteData, WeaponData& weaponData, Level &level, const std::string &filename);
+void LoadLevel(GameData& data, Level &level, const std::string &filename);
 void DestroyLevel(SpriteSheetData& sheetData, Level &level);
 void WaitTurnState(Level &level, TurnState state, float waitTime);
 void AddPartyToLevel(SpriteData& spriteData, CharacterData& charData, Level &level, std::vector<int> &party, const std::string& spawnPoint);

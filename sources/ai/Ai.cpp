@@ -4,6 +4,7 @@
 
 #include <algorithm>
 #include "Ai.h"
+#include "PathFinding.h"
 
 static std::map<std::string, AiInterface> aiInterfaces;
 

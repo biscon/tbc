@@ -15,6 +15,7 @@
 #include "ui/UI.h"
 #include "LevelScreen.h"
 #include "audio/SoundEffect.h"
+#include "ai/PathFinding.h"
 
 void DecayThreat(CharacterData& charData, Level& level, int amount) {
     for (auto& entry : level.threatTable) {

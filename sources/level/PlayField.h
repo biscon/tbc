@@ -6,9 +6,10 @@
 #define SANDBOX_PLAYFIELD_H
 
 #include "util/MathUtil.h"
-#include "ai/PathFinding.h"
 #include "graphics/ParticleSystem.h"
 #include "util/GameEventQueue.h"
+#include "data/PathFindingData.h"
+#include "Level.h"
 
 enum class PlayFieldMode {
     None,

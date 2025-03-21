@@ -7,11 +7,10 @@
 
 #include <string>
 #include <vector>
-#include "Character.h"
-#include "data/NpcTemplateData.h"
+#include "data/GameData.h"
 
 void InitNpcTemplateData(NpcTemplateData& data, const std::string& filename);
-int CreateCharacterFromTemplate(NpcTemplateData& tplData, CharacterData& charData, SpriteData& spriteData, WeaponData& weaponData, const std::string &name);
+int CreateCharacterFromTemplate(GameData& data, const std::string &name);
 
 
 

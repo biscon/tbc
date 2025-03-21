@@ -113,6 +113,7 @@ add_executable(${PROJECT_NAME}
         sources/data/StatusEffectData.h
         sources/data/TileMapData.h
         sources/data/AnimationData.h
+        sources/data/PathFindingData.h
 )
 target_sources(${PROJECT_NAME} PRIVATE ${PROJECT_SOURCES})
 target_include_directories(${PROJECT_NAME} PRIVATE ${PROJECT_INCLUDE})

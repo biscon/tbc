@@ -7,17 +7,8 @@
 
 #define CHECK_TILE_FUNC bool (*checkTile)(SpriteData& spriteData, CharacterData& charData, Level &level, int x, int y, int exceptCharacter)
 
-#include <vector>
-#include "util/MathUtil.h"
 #include "level/Level.h"
-
-struct Path {
-    std::vector<Vector2i> path;
-    int cost; // cost of the path in distance travelled
-    int currentStep;
-    float moveTime;
-    float moveSpeed;
-};
+#include "data/PathFindingData.h"
 
 Vector2 PixelToGridPosition(float pixelX, float pixelY);
 Vector2i PixelToGridPositionI(int pixelX, int pixelY);

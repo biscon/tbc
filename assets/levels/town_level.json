@@ -57,7 +57,7 @@
                 "MaleNinjaStaff",
                 "MaleNinjaStaff"
             ],
-            "spawnAt": [26,12]
+            "spawnAt": "enemies2"
         },
         {
             "group": "ninja2",
@@ -65,7 +65,7 @@
                 "MaleNinja",
                 "MaleNinja"
             ],
-            "spawnAt": [44,8]
+            "spawnAt": "enemies"
         }
     ]
 }

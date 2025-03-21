@@ -103,7 +103,7 @@ void LevelUp(CharacterData &charData, int cid, bool autoDistributePoints) {
     // Automatic stat increases per level
     switch(charData.characterClass[cid]) {
         case CharacterClass::Warrior:
-            healthIncrease = 3;
+            healthIncrease = 6;
             attackIncrease = 1;
             defenseIncrease = 1;
             break;
@@ -113,7 +113,7 @@ void LevelUp(CharacterData &charData, int cid, bool autoDistributePoints) {
             speedIncrease = 1;
             break;
         case CharacterClass::Rogue:
-            healthIncrease = 2;
+            healthIncrease = 3;
             defenseIncrease = 1;
             speedIncrease = 1;
             break;
