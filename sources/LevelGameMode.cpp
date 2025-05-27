@@ -244,31 +244,6 @@ void LevelPause() {
 
 }
 
-static void createTestEnemies() {
-    /*
-    int id = CreateCharacterFromTemplate(*game, "MaleNinja");
-    enemyGroup1.emplace_back(id);
-    id = CreateCharacterFromTemplate(*game, "MaleNinja");
-    enemyGroup1.emplace_back(id);
-
-    AddEnemiesToLevel(game->spriteData, game->charData, level, enemyGroup1, "enemies");
-
-    // Group 2
-    id = CreateCharacterFromTemplate(*game, "MaleNinja");
-    enemyGroup2.emplace_back(id);
-    id = CreateCharacterFromTemplate(*game, "MaleNinja");
-    enemyGroup2.emplace_back(id);
-    id = CreateCharacterFromTemplate(*game, "MaleNinjaStaff");
-    enemyGroup2.emplace_back(id);
-    id = CreateCharacterFromTemplate(*game, "MaleNinjaStaff");
-    enemyGroup2.emplace_back(id);
-
-    AddEnemiesToLevel(game->spriteData, game->charData, level, enemyGroup2, "enemies2");
-     */
-}
-
-
-
 void LevelResume() {
     TraceLog(LOG_INFO, "LevelResume");
     if(game->state == GameState::LOAD_LEVEL) {
@@ -276,7 +251,6 @@ void LevelResume() {
         AddPartyToLevel(game->spriteData, game->charData, level, game->party, "default");
         game->state = GameState::PLAY_LEVEL;
         playField.mode = PlayFieldMode::Move;
-        createTestEnemies();
     }
 }
 

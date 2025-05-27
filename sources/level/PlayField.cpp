@@ -76,16 +76,14 @@ static void DrawPathSelection(SpriteData& spriteData, CharacterData& charData, P
                      target, level.currentCharacter, IsTileOccupied)) {
             Color pathColor = Fade(WHITE, playField.highlightAlpha);
             if (path.cost > stats.movePoints) {
-                DrawStatusText(TextFormat("Not enough movement points (%d)", stats.movePoints),
-                               WHITE, 220, 10);
+                playField.hintText = TextFormat("Not enough movement points (%d)", stats.movePoints);
                 pathColor = Fade(RED, playField.highlightAlpha);
                 // Draw cross
                 DrawLine(gridPos.x * 16, gridPos.y * 16 + 1, gridPos.x * 16 + 15, gridPos.y * 16 + 16, pathColor);
                 DrawLine(gridPos.x * 16 + 15, gridPos.y * 16 + 1, gridPos.x * 16, gridPos.y * 16 + 16, pathColor);
 
             } else {
-                DrawStatusText(TextFormat("Movement points %d/%d", path.cost, stats.movePoints),
-                               WHITE, 220, 10);
+                playField.hintText = TextFormat("Movement points %d/%d", path.cost, stats.movePoints);
             }
             for (int i = 0; i < path.path.size() - 1; i++) {
                 Vector2 start = GridToPixelPosition(path.path[i].x, path.path[i].y);
@@ -171,7 +169,7 @@ static void DrawSelectCharacter(SpriteData& spriteData, CharacterData& charData,
     playField.selectedCharacter = -1;
     DrawSelectCharacters(spriteData, charData, playField, level.allCharacters, RED, level.camera.camera, onlyEnemies);
     if (playField.selectedCharacter != -1) {
-        DrawStatusText(TextFormat("Selected: %s", charData.name[playField.selectedCharacter].c_str()), YELLOW, 220, 10);
+        playField.hintText = TextFormat("Selected: %s", charData.name[playField.selectedCharacter].c_str());
         int range = 1;
         if(level.selectedSkill != nullptr) {
             range = level.selectedSkill->range;
@@ -195,7 +193,7 @@ static void DrawSelectCharacter(SpriteData& spriteData, CharacterData& charData,
                     ResetGridState(playField);
                 }
             } else {
-                DrawStatusText(TextFormat("Too far away!"), WHITE, 240, 10);
+                playField.hintText = "Too far away!";
             }
         } else {
             // draw last line from player to selected character
@@ -218,14 +216,15 @@ static void DrawSelectCharacter(SpriteData& spriteData, CharacterData& charData,
                         ResetGridState(playField);
                     }
                 } else {
-                    DrawStatusText(TextFormat("Too far away!"), WHITE, 240, 10);
+                    playField.hintText = "Too far away!";
+
                 }
             } else {
-                DrawStatusText(TextFormat("No line of sight!"), WHITE, 240, 10);
+                playField.hintText = "No line of sight!";
             }
         }
     } else {
-        DrawStatusText("Select a character", WHITE, 220, 10);
+        playField.hintText = "Select a character";
     }
 }
 
@@ -575,11 +574,13 @@ void HandleInputPlayField(SpriteData& spriteData, CharacterData& charData, PlayF
 }
 
 void DrawPlayField(SpriteData& spriteData, CharacterData& charData, PlayField &playField, Level &level) {
+    // Bottom layer
     BeginMode2D(level.camera.camera);
-    // Draw tilemap layer 0
     DrawTileLayer(spriteData.sheet, level.tileMap, BOTTOM_LAYER, 0, 0);
     EndMode2D();
+
     DrawBloodPools();
+    // Middle layer
     BeginMode2D(level.camera.camera);
     DrawTileLayer(spriteData.sheet, level.tileMap, MIDDLE_LAYER, 0, 0);
 
@@ -592,9 +593,10 @@ void DrawPlayField(SpriteData& spriteData, CharacterData& charData, PlayField &p
     DrawGridCharacters(spriteData, charData, playField, level);
     EndMode2D();
     DrawParticleManager(*playField.particleManager);
+
+    // Top layer
     BeginMode2D(level.camera.camera);
     DrawTileLayer(spriteData.sheet, level.tileMap, TOP_LAYER, 0, 0);
-
     EndMode2D();
 }
 

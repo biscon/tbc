@@ -51,7 +51,6 @@ struct LevelExit {
     int y;
 };
 
-
 struct Level {
     std::string name;
     std::vector<std::string> log;

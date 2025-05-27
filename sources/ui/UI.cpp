@@ -9,6 +9,26 @@ void DrawStatusText(const char* text, Color color, int y, int size) {
     DrawText(text, 240 - (MeasureText(text, size) / 2), y, size, color);
 }
 
+void DrawStatusTextBg(const char* text, Color color, int y, int size) {
+    int textWidth = MeasureText(text, size);
+    int textHeight = size; // Approximate height as the font size
+
+    // Padding around the text
+    int padding = 8;
+
+    // Calculate the background rectangle
+    int rectX = 240 - (textWidth / 2) - padding;
+    int rectY = y - padding / 2;
+    int rectWidth = textWidth + padding * 2;
+    int rectHeight = textHeight + padding;
+
+    // Draw semi-transparent rounded black background
+    DrawRectangleRounded((Rectangle){ (float)rectX, (float)rectY, (float)rectWidth, (float)rectHeight }, 0.4f, 8, (Color){ 0, 0, 0, 128 });
+
+    // Draw the text
+    DrawText(text, 240 - (textWidth / 2), y, size, color);
+}
+
 void DisplayCharacterStatsFloating(CharacterData& charData, int character, int x, int y, bool isPlayer) {
     int statusEffectsHeight = (int)charData.statusEffects[character].size() * 12;
 

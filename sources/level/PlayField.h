@@ -38,6 +38,7 @@ struct PlayField {
     ParticleManager* particleManager;
     GameEventQueue* eventQueue;
     std::vector<CharacterMove> activeMoves;
+    std::string hintText;
 };
 
 void CreatePlayField(PlayField &playField, ParticleManager* particleManager, GameEventQueue* eventQueue);

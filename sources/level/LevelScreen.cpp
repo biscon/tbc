@@ -51,7 +51,7 @@ static bool DrawActionIcon(float x, float y, ActionIcon &actionIcon, LevelScreen
 
     if (CheckCollisionPointRec(mousePos, iconRect) && !actionIcon.disabled) {
         uiState.showActionBarTitle = false;
-        DrawText(actionIcon.description, 240 - (MeasureText(actionIcon.description, 10) / 2), 220, 10, WHITE);
+        DrawStatusTextBg(actionIcon.description, WHITE, 220, 10);
         DrawRectangleRec(iconRect, GRAY);
         DrawRectangleLinesEx(iconRect, 1, YELLOW);
 
@@ -203,7 +203,7 @@ static void DisplayActionUI(SpriteData& spriteData, CharacterData& charData, Lev
     }
 
     if (uiState.showActionBarTitle) {
-        DrawText("Select Action", 240 - (MeasureText("Select Action", 10) / 2), 220, 10, YELLOW);
+        DrawStatusTextBg("Select Action", WHITE, 10, 10);
     }
 
     if (CheckCollisionPointTriangle(GetMousePosition(), scrollRight[0], scrollRight[1], scrollRight[2]) &&
@@ -363,6 +363,11 @@ void DrawLevelScreen(SpriteData& spriteData, CharacterData& charData, Level &lev
         Vector2 screenPos = GetWorldToScreen2D(Vector2{x, y}, level.camera.camera);
         DisplayCharacterStatsFloating(charData, levelScreen.floatingStatsCharacter, (int) screenPos.x - 10, (int) screenPos.y + 12,
                                       IsPlayerCharacter(charData, levelScreen.floatingStatsCharacter));
+    }
+    // Display hint text
+    if(!playField.hintText.empty()) {
+        DrawStatusTextBg(playField.hintText.c_str(), WHITE, 10, 10);
+        playField.hintText = "";
     }
 }
 
