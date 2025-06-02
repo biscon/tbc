@@ -10,6 +10,7 @@
 #include "SpriteData.h"
 #include "SkillData.h"
 #include "StatusEffectData.h"
+#include "util/json.hpp"
 
 enum class Orientation {
     Up,
@@ -24,11 +25,18 @@ enum class CharacterClass {
     Rogue,
 };
 
+void to_json(nlohmann::json& j, const CharacterClass& c);
+void from_json(const nlohmann::json& j, CharacterClass& c);
+
+
 enum class CharacterFaction {
     Player,
     Npc,
     Enemy,
 };
+
+void to_json(nlohmann::json& j, const CharacterFaction& f);
+void from_json(const nlohmann::json& j, CharacterFaction& f);
 
 struct CharacterStats {
     int health;
@@ -41,6 +49,9 @@ struct CharacterStats {
     int movePoints;
     int level;
 };
+
+void to_json(nlohmann::json& j, const CharacterStats& m);
+void from_json(const nlohmann::json& j, CharacterStats& m);
 
 struct CharacterData {
     std::vector<CharacterClass> characterClass;
