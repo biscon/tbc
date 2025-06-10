@@ -67,5 +67,4 @@ struct CharacterData {
     std::vector<bool> isWeaponEquipped;
 };
 
-
 #endif //SANDBOX_CHARACTERDATA_H

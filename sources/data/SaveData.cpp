@@ -4,18 +4,22 @@
 #include <fstream>
 #include "SaveData.h"
 
-void to_json(nlohmann::json& j, const MapState& m) {
-    j = nlohmann::json{{"deadMobIds", m.deadMobIds}};
+void to_json(nlohmann::json& j, const LevelSaveState& m) {
+    j = nlohmann::json{{"defeatedGroups", m.defeatedGroups}};
 }
 
-void from_json(const nlohmann::json& j, MapState& m) {
-    j.at("deadMobIds").get_to(m.deadMobIds);
+void from_json(const nlohmann::json& j, LevelSaveState& m) {
+    j.at("defeatedGroups").get_to(m.defeatedGroups);
 }
 
 void to_json(nlohmann::json& j, const PartyCharacter& c) {
     j = nlohmann::json{
             {"name", c.name},
             {"ai", c.ai},
+            {"tilePosX", c.tilePosX},
+            {"tilePosY", c.tilePosY},
+            {"spriteTemplate", c.spriteTemplate},
+            {"weaponTemplate", c.weaponTemplate},
             {"characterClass", c.characterClass},
             {"faction", c.faction},
             {"stats", c.stats}
@@ -25,6 +29,10 @@ void to_json(nlohmann::json& j, const PartyCharacter& c) {
 void from_json(const nlohmann::json& j, PartyCharacter& c) {
     j.at("name").get_to(c.name);
     j.at("ai").get_to(c.ai);
+    j.at("tilePosX").get_to(c.tilePosX);
+    j.at("tilePosY").get_to(c.tilePosY);
+    j.at("weaponTemplate").get_to(c.weaponTemplate);
+    j.at("spriteTemplate").get_to(c.spriteTemplate);
     j.at("characterClass").get_to(c.characterClass);
     j.at("faction").get_to(c.faction);
     j.at("stats").get_to(c.stats);
@@ -32,9 +40,9 @@ void from_json(const nlohmann::json& j, PartyCharacter& c) {
 
 bool SaveGameData(SaveData& data, const std::string& filename) {
     nlohmann::json j;
-    j["currentMap"] = data.currentMap;
-    //j["party"] = data.party;
-    j["maps"] = data.maps;
+    j["currentMap"] = data.currentLevel;
+    j["party"] = data.party;
+    j["levels"] = data.levels;
 
     std::ofstream file(filename);
     if (!file) return false;
@@ -49,8 +57,8 @@ bool LoadGameData(SaveData& data, const std::string& filename) {
     nlohmann::json j;
     file >> j;
 
-    j.at("currentMap").get_to(data.currentMap);
-    //j.at("party").get_to(data.party);
-    j.at("maps").get_to(data.maps);
+    j.at("currentMap").get_to(data.currentLevel);
+    j.at("party").get_to(data.party);
+    j.at("levels").get_to(data.levels);
     return true;
 }

@@ -16,6 +16,7 @@
 
 
 int CreateCharacter(CharacterData &data, CharacterClass characterClass, CharacterFaction faction, const std::string& name, const std::string& ai);
+void ClearAllCharacters(CharacterData& data);
 bool IsAlive(CharacterData &data, int characterIdx);
 void GiveWeapon(SpriteData& spriteData, WeaponData& weaponData, CharacterData &data, int characterIdx, const std::string& weaponTemplate);
 Vector2 GetOrientationVector(Orientation orientation);

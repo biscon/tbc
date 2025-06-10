@@ -50,6 +50,19 @@ static void setInitialGridPositions(SpriteData& spriteData, CharacterData& charD
     }
 }
 
+void AddPartyToLevelNoPositioning(SpriteData& spriteData, CharacterData& charData, Level &level, std::vector<int> &party) {
+    for (auto &character : party) {
+        level.partyCharacters.push_back(character);
+        level.allCharacters.push_back(character);
+        // Set initial animation to paused
+        StartPausedCharacterSpriteAnim(spriteData, charData.sprite[character], SpriteAnimationType::WalkRight, true);
+        Vector2 charPos = GetCharacterSpritePos(spriteData, charData.sprite[character]);
+        Vector2i gridPos = GetCharacterGridPosI(spriteData, charData.sprite[character]);
+        TraceLog(LOG_INFO, "Placed character %s at %f,%f, grid: %i,%i", charData.name[character].c_str(), charPos.x, charPos.y, gridPos.x, gridPos.y);
+        charData.orientation[character] = Orientation::Right;
+    }
+}
+
 void AddPartyToLevel(SpriteData& spriteData, CharacterData& charData, Level &level, std::vector<int> &party, const std::string& spawnPoint) {
     SpawnPoint& sp = level.spawnPoints[spawnPoint];
     for (auto &character : party) {
@@ -124,15 +137,28 @@ void LoadLevel(GameData& data, Level &level, const std::string &filename) {
         level.exits.emplace_back(e);
     }
 
+    data.levelState[level.name]; // this line alone ensures the key exists with a default-constructed value
+    for(auto& grp : data.levelState[level.name].defeatedGroups) {
+        TraceLog(LOG_INFO, "Defeated group: %s", grp.c_str());
+    }
+
     // load enemies
+    level.enemyGroups.clear();
     for (auto &jGroup : j["enemies"]) {
         std::vector<int> enemyGroup;
         std::string group = jGroup["group"].get<std::string>();
+        if (data.levelState[level.name].defeatedGroups.count(group)) {
+            // skip creating defeated group
+            TraceLog(LOG_INFO, "Skipped creating defeated group: %s", group.c_str());
+            continue;
+        }
+
         std::string spawnAt = jGroup["spawnAt"].get<std::string>();
         for (auto &jCharTplName : jGroup["characters"]) {
             std::string charTplName = jCharTplName.get<std::string>();
             TraceLog(LOG_INFO, "Spawning enemy npc from template %s at %s", charTplName.c_str(), spawnAt.c_str());
             int id = CreateCharacterFromTemplate(data, charTplName);
+            level.enemyGroups[id] = group;
             enemyGroup.emplace_back(id);
         }
         AddEnemiesToLevel(data.spriteData, data.charData, level, enemyGroup, spawnAt);
@@ -140,6 +166,7 @@ void LoadLevel(GameData& data, Level &level, const std::string &filename) {
 
     level.camera.worldWidth = level.tileMap.width * level.tileMap.tileWidth;
     level.camera.worldHeight = level.tileMap.height * level.tileMap.tileHeight;
+
 }
 
 void DestroyLevel(SpriteSheetData& sheetData, Level &level) {

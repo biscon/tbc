@@ -70,6 +70,20 @@ int CreateCharacter(CharacterData &data, CharacterClass characterClass, Characte
     return (int) data.name.size()-1;
 }
 
+void ClearAllCharacters(CharacterData& data) {
+    data.stats.clear();
+    data.sprite.clear();
+    data.orientation.clear();
+    data.weaponIdx.clear();
+    data.characterClass.clear();
+    data.isWeaponEquipped.clear();
+    data.name.clear();
+    data.ai.clear();
+    data.faction.clear();
+    data.statusEffects.clear();
+    data.skills.clear();
+}
+
 void GiveWeapon(SpriteData& spriteData, WeaponData& weaponData, CharacterData &charData, int characterIdx, const std::string& weaponTemplate) {
     int weaponIdx = CreateWeapon(weaponData, weaponTemplate);
     charData.weaponIdx[characterIdx] = weaponIdx;

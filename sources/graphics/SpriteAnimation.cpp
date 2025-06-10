@@ -61,7 +61,7 @@ void DrawSpriteAnimation(SpriteData& sprite, int player, float x, float y) {
     int spriteSheetIdx = spriteData.spriteSheetIdx[animIdx];
 
     if(animIdx == -1 || spriteData.frames[animIdx].empty()) {
-        TraceLog(LOG_INFO, "Roaching about from drawing, empty frames or missing animation");
+        TraceLog(LOG_INFO, "Roaching out from drawing, empty frames or missing animation");
         return;
     }
 
@@ -70,7 +70,7 @@ void DrawSpriteAnimation(SpriteData& sprite, int player, float x, float y) {
     int frameIndex = spriteData.frames[animIdx][playerData.animData[player].currentFrame];
 
     if (frameIndex < 0 || frameIndex >= sheetData.frameRects[spriteSheetIdx].size()) {
-        TraceLog(LOG_INFO, "Roaching about from drawing, cannot find framerect");
+        TraceLog(LOG_INFO, "Roaching out from drawing, cannot find framerect");
         std::abort();
         return; // Invalid frame index, skip drawing
     }

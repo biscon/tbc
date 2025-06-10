@@ -24,9 +24,10 @@ static void LoadAnimType(SpriteData& spriteData, std::map<SpriteAnimationType, i
     }
 }
 
-void InitCharacterSprite(SpriteData& spriteData, CharacterSprite &sprite, const std::string& bodyType, bool hasAttacks) {
+void InitCharacterSprite(SpriteData& spriteData, CharacterSprite &sprite, const std::string& spriteTemplate, bool hasAttacks) {
+    sprite.spriteTemplate = spriteTemplate;
     sprite.displayWeapon = false;
-    LoadAnimType(spriteData, sprite.bodyAnimations, bodyType, hasAttacks);
+    LoadAnimType(spriteData, sprite.bodyAnimations, spriteTemplate, hasAttacks);
     /*
     if(sprite.displayWeapon) {
         LoadAnimType(sprite.weaponAnimations, weaponType, hasAttacks);

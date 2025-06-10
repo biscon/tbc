@@ -73,12 +73,15 @@ struct Level {
     LevelCamera camera;
     std::unordered_map<std::string, SpawnPoint> spawnPoints;
     std::vector<LevelExit> exits;
+    std::unordered_map<int, std::string> enemyGroups;
+    std::string currentEnemyGroup;
 };
 
 void CreateLevel(Level &level);
 void LoadLevel(GameData& data, Level &level, const std::string &filename);
 void DestroyLevel(SpriteSheetData& sheetData, Level &level);
 void WaitTurnState(Level &level, TurnState state, float waitTime);
+void AddPartyToLevelNoPositioning(SpriteData& spriteData, CharacterData& charData, Level &level, std::vector<int> &party);
 void AddPartyToLevel(SpriteData& spriteData, CharacterData& charData, Level &level, std::vector<int> &party, const std::string& spawnPoint);
 void AddEnemiesToLevel(SpriteData& spriteData, CharacterData& charData, Level &level, std::vector<int> &enemies, const std::string& spawnPoint);
 

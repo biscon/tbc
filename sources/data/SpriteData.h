@@ -24,6 +24,7 @@ enum class SpriteAnimationType {
 };
 
 struct CharacterSprite {
+    std::string spriteTemplate;
     std::map<SpriteAnimationType, int> bodyAnimations;
     std::map<SpriteAnimationType, int> weaponAnimations;
     int bodyPlayer;

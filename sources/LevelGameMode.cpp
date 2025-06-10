@@ -164,7 +164,7 @@ void LevelUpdate(float dt) {
         level.camera.camera.target.x = ceilf(level.camera.camera.target.x);
         level.camera.camera.target.y = ceilf(level.camera.camera.target.y);
     }
-    UpdateCombat(game->spriteData, game->charData, game->weaponData, level, playField, dt);
+    UpdateCombat(*game, level, playField, dt);
     UpdateParticleManager(particleManager, dt);
     UpdateLevelScreen(game->spriteData, game->charData, level, levelScreen, dt);
     UpdatePlayField(game->spriteData, game->charData, playField, level, dt);
@@ -249,6 +249,13 @@ void LevelResume() {
     if(game->state == GameState::LOAD_LEVEL) {
         LoadLevel(*game, level, game->levelFileName);
         AddPartyToLevel(game->spriteData, game->charData, level, game->party, "default");
+        game->state = GameState::PLAY_LEVEL;
+        playField.mode = PlayFieldMode::Move;
+    }
+    if(game->state == GameState::LOAD_LEVEL_FROM_SAVE) {
+        LoadLevel(*game, level, game->levelFileName);
+        AddPartyToLevelNoPositioning(game->spriteData, game->charData, level, game->party);
+        StartCameraPanToTargetCharTime(game->spriteData, game->charData, level.camera, game->party[0], 0.01f);
         game->state = GameState::PLAY_LEVEL;
         playField.mode = PlayFieldMode::Move;
     }

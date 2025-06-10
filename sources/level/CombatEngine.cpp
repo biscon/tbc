@@ -14,7 +14,10 @@
 #include "ui/UI.h"
 #include "graphics/Animation.h"
 
-void UpdateCombat(SpriteData& spriteData, CharacterData& charData, WeaponData& weaponData, Level &level, PlayField& playField, float dt) {
+void UpdateCombat(GameData &data, Level &level, PlayField& playField, float dt) {
+    SpriteData& spriteData = data.spriteData;
+    CharacterData& charData = data.charData;
+    WeaponData& weaponData = data.weaponData;
     switch(level.turnState) {
         case TurnState::StartRound: {
             TraceLog(LOG_INFO, "Start round");
@@ -217,7 +220,8 @@ void UpdateCombat(SpriteData& spriteData, CharacterData& charData, WeaponData& w
             //StopSoundEffect(SoundEffectType::Ambience);
             PlaySoundEffect(SoundEffectType::Victory, 0.5f);
             PlayPlayerVictoryAnimation(spriteData, charData, level);
-            //combat.animations.clear();
+            auto& levelState = data.levelState[level.name];
+            levelState.defeatedGroups.insert(level.currentEnemyGroup);
         }
         // check defeat condition, all players have zero health
         bool allPlayersDefeated = true;

@@ -13,10 +13,12 @@
 #include "SkillData.h"
 #include "StatusEffectData.h"
 #include "TileMapData.h"
+#include "SaveData.h"
 
 enum class GameState {
     START_NEW_GAME,
     LOAD_LEVEL,
+    LOAD_LEVEL_FROM_SAVE,
     PLAY_LEVEL
 };
 
@@ -28,6 +30,7 @@ struct GameData {
     CharacterData charData;
     SpriteData spriteData;
     NpcTemplateData npcTemplateData;
+    std::unordered_map<std::string, LevelSaveState> levelState;
 };
 
 #endif //SANDBOX_GAMEDATA_H

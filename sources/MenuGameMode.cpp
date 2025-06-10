@@ -7,6 +7,8 @@
 #include "raylib.h"
 #include "raygui.h"
 #include "ui/UI.h"
+#include "data/SaveData.h"
+#include "ai/PathFinding.h"
 
 static GameData* game;
 
@@ -46,23 +48,92 @@ static void StartNewGame() {
     PushGameMode(GameModes::Level);
 }
 
+static void loadGame() {
+    SaveData saveData;
+    if(!LoadGameData(saveData, "savegame.json")) {
+        TraceLog(LOG_DEBUG, "No existing savegame found");
+        return;
+    }
+    game->levelFileName = saveData.currentLevel;
+    game->state = GameState::LOAD_LEVEL_FROM_SAVE;
+    game->levelState = saveData.levels;
+
+    ClearAllCharacters(game->charData);
+    game->spriteData.player.animationIdx.clear();
+    game->spriteData.player.animData.clear();
+    game->spriteData.player.renderData.clear();
+    game->party.clear();
+    for(auto& ch : saveData.party) {
+        int id = CreateCharacter(game->charData, ch.characterClass, ch.faction, ch.name, ch.ai);
+        game->charData.stats[id] = ch.stats;
+        //AssignSkill(game->charData.skills[id], SkillType::Taunt, "Howling Scream", 1, false, true, 0, 3, 0);
+        InitCharacterSprite(game->spriteData, game->charData.sprite[id], ch.spriteTemplate, true);
+        Vector2 pos = GridToPixelPosition(ch.tilePosX, ch.tilePosY);
+        SetCharacterSpritePos(game->spriteData, game->charData.sprite[id], pos);
+        GiveWeapon(game->spriteData, game->weaponData, game->charData, id, ch.weaponTemplate);
+        game->party.emplace_back(id);
+    }
+
+
+    PushGameMode(GameModes::Level);
+}
+
+static void saveGame() {
+    SaveData saveData;
+    saveData.currentLevel = game->levelFileName;
+    saveData.levels = game->levelState;
+
+    for(auto& id : game->party) {
+        PartyCharacter pc;
+        pc.name = game->charData.name[id];
+        pc.faction = game->charData.faction[id];
+        pc.characterClass = game->charData.characterClass[id];
+        pc.ai = game->charData.ai[id];
+        pc.stats = game->charData.stats[id];
+        // save sprite template
+        pc.spriteTemplate = game->charData.sprite[id].spriteTemplate;
+
+        // save weapon template
+        auto weaponId = game->charData.weaponIdx[id];
+        auto weaponTplId = game->weaponData.instanceData.weaponTemplateIdx[weaponId];
+        pc.weaponTemplate = game->weaponData.templateData.name[weaponTplId];
+        // save position
+        Vector2i pos = GetCharacterGridPosI(game->spriteData, game->charData.sprite[id]);
+        pc.tilePosX = pos.x;
+        pc.tilePosY = pos.y;
+
+        saveData.party.push_back(pc);
+    }
+
+    SaveGameData(saveData, "savegame.json");
+}
+
 void MenuRender() {
     ClearBackground(DARKGRAY);
     DrawStatusText("Rule 34", WHITE, 10, 30);
+    float offsetY = 75.0f;
     if(game->state == GameState::START_NEW_GAME) {
-        if (GuiButton((Rectangle) {240 - 50, 50, 100, 20}, "Start New Game")) {
+        if (GuiButton((Rectangle) {240 - 50, offsetY, 100, 20}, "Start New Game")) {
             StartNewGame();
         }
     } else {
-        if (GuiButton((Rectangle) {240 - 50, 50, 100, 20}, "Resume Game")) {
+        if (GuiButton((Rectangle) {240 - 50, offsetY, 100, 20}, "Resume Game")) {
             PushGameMode(GameModes::Level);
         }
+        offsetY += 30.0f;
+        if (GuiButton((Rectangle) {240 - 50, offsetY, 100, 20}, "Save Game")) {
+            saveGame();
+        }
     }
-    if (GuiButton((Rectangle) {240 - 50, 80, 100, 20}, "Load Game")) {
+    offsetY += 30.0f;
+    if (GuiButton((Rectangle) {240 - 50, offsetY, 100, 20}, "Load Game")) {
+        loadGame();
     }
-    if (GuiButton((Rectangle) {240 - 50, 110, 100, 20}, "Options")) {
+    offsetY += 30.0f;
+    if (GuiButton((Rectangle) {240 - 50, offsetY, 100, 20}, "Options")) {
     }
-    if (GuiButton((Rectangle) {240 - 50, 140, 100, 20}, "Quit")) {
+    offsetY += 30.0f;
+    if (GuiButton((Rectangle) {240 - 50, offsetY, 100, 20}, "Quit")) {
         PopGameMode();
     }
 }

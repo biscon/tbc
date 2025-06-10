@@ -10,7 +10,7 @@
 #include "data/SpriteData.h"
 
 
-void InitCharacterSprite(SpriteData& spriteData, CharacterSprite &sprite, const std::string& bodyType, bool hasAttacks);
+void InitCharacterSprite(SpriteData& spriteData, CharacterSprite &sprite, const std::string& spriteTemplate, bool hasAttacks);
 void SetCharacterSpriteWeaponAnimation(SpriteData& spriteData, CharacterSprite &sprite, const std::string &weaponType);
 int GetCharacterAnimationBody(CharacterSprite& sprite, SpriteAnimationType type);
 int GetCharacterAnimationWeapon(CharacterSprite& sprite, SpriteAnimationType type);

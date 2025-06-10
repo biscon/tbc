@@ -408,26 +408,18 @@ static void InitializeThreatTable(Level& level) {
 void StartCombat(SpriteData& spriteData, CharacterData& charData, Level &level, int spotter, int maxDist) {
     level.turnOrder.clear();
     level.enemyCharacters.clear();
-    std::queue<int> queue;
     std::unordered_set<int> alertedEnemies;
 
-    queue.push(spotter);
     alertedEnemies.insert(spotter);
-
-    while (!queue.empty()) {
-        int current = queue.front();
-        queue.pop();
-        Vector2i currentGridPos = GetCharacterGridPosI(spriteData, charData.sprite[current]);
-
-        for (auto &enemy : level.allCharacters) {
-            if (enemy == current || alertedEnemies.count(enemy) || charData.faction[enemy] != CharacterFaction::Enemy) continue;
-            Vector2i enemyGridPos = GetCharacterGridPosI(spriteData, charData.sprite[enemy]);
-            if (HasLineOfSight(level, currentGridPos, enemyGridPos, maxDist)) {
-                alertedEnemies.insert(enemy);
-                queue.push(enemy);
-            }
+    std::string groupId = level.enemyGroups[spotter];
+    level.currentEnemyGroup = groupId;
+    for (int enemy : level.allCharacters) {
+        if (level.enemyGroups[enemy] == groupId && charData.faction[enemy] == CharacterFaction::Enemy && IsAlive(charData, enemy)) {
+            // add to encounter
+            alertedEnemies.insert(enemy);
         }
     }
+
     if(!alertedEnemies.empty()) {
         TraceLog(LOG_INFO, "%d enemies alerted.", alertedEnemies.size());
     }
