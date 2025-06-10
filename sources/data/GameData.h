@@ -14,6 +14,8 @@
 #include "StatusEffectData.h"
 #include "TileMapData.h"
 #include "SaveData.h"
+#include "DialogueData.h"
+#include "QuestData.h"
 
 enum class GameState {
     START_NEW_GAME,
@@ -30,7 +32,11 @@ struct GameData {
     CharacterData charData;
     SpriteData spriteData;
     NpcTemplateData npcTemplateData;
+
     std::unordered_map<std::string, LevelSaveState> levelState;
+    std::unordered_map<int, DialogueNode> dialogueNodes;
+    std::unordered_map<int, DialogueResponse> dialogueResponses;
+    std::unordered_map<std::string, QuestSaveState> quests;
 };
 
 #endif //SANDBOX_GAMEDATA_H
