@@ -1,0 +1,8 @@
+{
+    "quests": {
+        "help_farmer": {
+            "status": "NotStarted",
+            "stage": 0
+        }
+    }
+}

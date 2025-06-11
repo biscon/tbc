@@ -1,0 +1,30 @@
+{
+    "dialogueNodes": {
+        "1": {
+            "id": 1,
+            "text": "Hey stranger! Can you help me with something?",
+            "responseIds": [101, 102]
+        },
+        "2": {
+            "id": 2,
+            "text": "Thanks for helping! Here's your reward.",
+            "responseIds": []
+        }
+    },
+    "dialogueResponses": {
+        "101": {
+            "id": 101,
+            "text": "Sure, what do you need?",
+            "nextNodeId": 2,
+            "startQuestId": "help_farmer",
+            "completeQuestId": ""
+        },
+        "102": {
+            "id": 102,
+            "text": "Sorry, I'm busy.",
+            "nextNodeId": 0,
+            "startQuestId": "",
+            "completeQuestId": ""
+        }
+    }
+}

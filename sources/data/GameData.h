@@ -32,10 +32,9 @@ struct GameData {
     CharacterData charData;
     SpriteData spriteData;
     NpcTemplateData npcTemplateData;
+    DialogueData dialogueData;
 
     std::unordered_map<std::string, LevelSaveState> levelState;
-    std::unordered_map<int, DialogueNode> dialogueNodes;
-    std::unordered_map<int, DialogueResponse> dialogueResponses;
     std::unordered_map<std::string, QuestSaveState> quests;
 };
 

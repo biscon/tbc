@@ -9,6 +9,7 @@
 #include "MenuGameMode.h"
 #include "game/Game.h"
 #include "character/Npc.h"
+#include "game/Dialogue.h"
 
 #define MAX(a, b) ((a)>(b)? (a) : (b))
 #define MIN(a, b) ((a)<(b)? (a) : (b))
@@ -56,6 +57,7 @@ int main() {
     // Create AI
     CreateFighterAi("Fighter");
 
+    InitDialogueData(game.dialogueData, ASSETS_PATH"dialogue.json");
     InitSpriteAnimationData(game.spriteData, ASSETS_PATH"animations.json");
     InitWeaponTemplateData(game.weaponData.templateData, ASSETS_PATH"weapons.json");
     InitNpcTemplateData(game.npcTemplateData, ASSETS_PATH"npcs.json");
