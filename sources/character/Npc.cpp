@@ -7,13 +7,28 @@
 #include "util/json.hpp"
 #include "Character.h"
 
-using json = nlohmann::json;
+void to_json(nlohmann::json& j, const NpcInstance& npc) {
+    j = nlohmann::json{
+            { "template", npc.npcTemplate },
+            { "position", npc.position },
+            { "dialogueNode", npc.dialogueNodeId }
+    };
+}
+
+void from_json(const nlohmann::json& j, NpcInstance& npc) {
+    j.at("template").get_to(npc.npcTemplate);
+    j.at("position").get_to(npc.position);
+    j.at("dialogueNode").get_to(npc.dialogueNodeId);
+}
 
 void InitNpcTemplateData(NpcTemplateData &data, const std::string &filename) {
     std::ifstream file(filename);
-    json j;
+    nlohmann::json j;
     file >> j;
     for(auto& npcJson : j) {
+        std::string charName = npcJson["characterName"].get<std::string>();
+        data.charName.emplace_back(charName);
+
         std::string name = npcJson["name"].get<std::string>();
         data.name.emplace_back(name);
 
@@ -40,14 +55,14 @@ void InitNpcTemplateData(NpcTemplateData &data, const std::string &filename) {
     TraceLog(LOG_INFO, "Loaded %i NPC templates.", data.name.size());
 }
 
-int CreateCharacterFromTemplate(GameData& data, const std::string &name) {
+int CreateCharacterFromTemplate(GameData& data, const std::string &npcTemplate) {
     auto& npcTemplates = data.npcTemplateData.npcTemplates;
     auto& tplData = data.npcTemplateData;
-    auto it = npcTemplates.find(name);
+    auto it = npcTemplates.find(npcTemplate);
     if(it != npcTemplates.end()) {
         int templateIdx = it->second;
         int charIdx = CreateCharacter(data.charData, tplData.characterClass[templateIdx],
-                                      tplData.faction[templateIdx], tplData.name[templateIdx],
+                                      tplData.faction[templateIdx], tplData.charName[templateIdx],
                                       tplData.ai[templateIdx]);
 
         // level up character to desired level
@@ -58,7 +73,7 @@ int CreateCharacterFromTemplate(GameData& data, const std::string &name) {
         GiveWeapon(data.spriteData, data.weaponData, data.charData, charIdx, tplData.weaponTemplate[templateIdx]);
         return charIdx;
     } else {
-        TraceLog(LOG_ERROR, "CreateCharacterFromTemplate: Npc template not found: %s", name.c_str());
+        TraceLog(LOG_ERROR, "CreateCharacterFromTemplate: Npc template not found: %s", npcTemplate.c_str());
         std::abort();
     }
 }

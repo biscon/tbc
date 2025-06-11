@@ -74,6 +74,7 @@ static void loadGame() {
         game->party.emplace_back(id);
     }
 
+    game->quests = saveData.quests;
 
     PushGameMode(GameModes::Level);
 }
@@ -104,6 +105,8 @@ static void saveGame() {
 
         saveData.party.push_back(pc);
     }
+
+    saveData.quests = game->quests;
 
     SaveGameData(saveData, "savegame.json");
 }

@@ -56,6 +56,7 @@ struct Level {
     std::vector<std::string> log;
     std::vector<int> partyCharacters;
     std::vector<int> enemyCharacters;
+    std::vector<int> npcCharacters;
     std::vector<int> allCharacters;
     std::vector<int> turnOrder;
     int currentCharacter = -1;

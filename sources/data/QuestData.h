@@ -15,5 +15,6 @@ struct QuestSaveState {
 };
 
 void to_json(nlohmann::json& j, const QuestSaveState& quest);
+void from_json(const nlohmann::json& j, QuestSaveState& quest);
 
 #endif //SANDBOX_QUESTDATA_H

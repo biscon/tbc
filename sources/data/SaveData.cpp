@@ -44,6 +44,12 @@ bool SaveGameData(SaveData& data, const std::string& filename) {
     j["party"] = data.party;
     j["levels"] = data.levels;
 
+    nlohmann::json questsJson;
+    for (const auto& pair : data.quests) {
+        questsJson[pair.first] = pair.second;  // `to_json` will be called automatically
+    }
+    j["quests"] = questsJson;
+
     std::ofstream file(filename);
     if (!file) return false;
     file << j.dump(2); // pretty print
@@ -60,5 +66,12 @@ bool LoadGameData(SaveData& data, const std::string& filename) {
     j.at("currentMap").get_to(data.currentLevel);
     j.at("party").get_to(data.party);
     j.at("levels").get_to(data.levels);
+
+    // Handle QuestSaveState
+    const nlohmann::json& nodes = j.at("quests");
+    for (nlohmann::json::const_iterator it = nodes.begin(); it != nodes.end(); ++it) {
+        const std::string& questId = it.key();
+        data.quests[questId] = it.value().get<QuestSaveState>();
+    }
     return true;
 }

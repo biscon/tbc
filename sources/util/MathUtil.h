@@ -6,6 +6,7 @@
 #define SANDBOX_MATHUTIL_H
 
 #include "raylib.h"
+#include "json.hpp"
 
 struct Vector2i {
     int x, y;
@@ -13,6 +14,9 @@ struct Vector2i {
     bool operator==(const Vector2i& other) const { return x == other.x && y == other.y; }
     bool operator!=(const Vector2i& other) const { return !(*this == other); }
 };
+
+void to_json(nlohmann::json& j, const Vector2i& v);
+void from_json(const nlohmann::json& j, Vector2i& v);
 
 int DistanceSquared(Vector2i a, Vector2i b);
 float Distance(Vector2i start, Vector2i end);

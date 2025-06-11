@@ -1,5 +1,6 @@
 [
     {
+        "characterName": "Ninja Dumbass",
         "name": "MaleNinja",
         "class": "Warrior",
         "faction": "Enemy",
@@ -9,6 +10,7 @@
         "weapon": "Sword"
     },
     {
+        "characterName": "Ninja Staffhole",
         "name": "MaleNinjaStaff",
         "class": "Warrior",
         "faction": "Enemy",
@@ -16,5 +18,15 @@
         "sprite": "MaleNinja",
         "level": 2,
         "weapon": "Staff"
+    },
+    {
+        "characterName": "Ser Donald",
+        "name": "SerDonald",
+        "class": "Warrior",
+        "faction": "Npc",
+        "ai": "Fighter",
+        "sprite": "MaleBase",
+        "level": 10,
+        "weapon": "Sword"
     }
 ]

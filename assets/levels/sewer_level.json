@@ -47,5 +47,22 @@
             "x": 23,
             "y": 2
         }
+    ],
+    "npcs": [
+        {
+            "template": "SerDonald",
+            "position": [4, 9],
+            "dialogueNode": 1
+        }
+    ],
+    "enemies": [
+        {
+            "group": "ninja3",
+            "characters": [
+                "MaleNinja",
+                "MaleNinja"
+            ],
+            "spawnAt": "enemies2"
+        }
     ]
 }

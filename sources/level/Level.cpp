@@ -63,6 +63,17 @@ void AddPartyToLevelNoPositioning(SpriteData& spriteData, CharacterData& charDat
     }
 }
 
+void AddNpcToLevel(SpriteData& spriteData, CharacterData& charData, Level &level, int id) {
+    level.npcCharacters.push_back(id);
+    level.allCharacters.push_back(id);
+    // Set initial animation to paused
+    StartPausedCharacterSpriteAnim(spriteData, charData.sprite[id], SpriteAnimationType::WalkRight, true);
+    Vector2 charPos = GetCharacterSpritePos(spriteData, charData.sprite[id]);
+    Vector2i gridPos = GetCharacterGridPosI(spriteData, charData.sprite[id]);
+    TraceLog(LOG_INFO, "Placed npc %s at %f,%f, grid: %i,%i", charData.name[id].c_str(), charPos.x, charPos.y, gridPos.x, gridPos.y);
+    charData.orientation[id] = Orientation::Right;
+}
+
 void AddPartyToLevel(SpriteData& spriteData, CharacterData& charData, Level &level, std::vector<int> &party, const std::string& spawnPoint) {
     SpawnPoint& sp = level.spawnPoints[spawnPoint];
     for (auto &character : party) {
@@ -162,6 +173,18 @@ void LoadLevel(GameData& data, Level &level, const std::string &filename) {
             enemyGroup.emplace_back(id);
         }
         AddEnemiesToLevel(data.spriteData, data.charData, level, enemyGroup, spawnAt);
+    }
+
+    // load npcs
+    level.npcCharacters.clear();
+    for (auto &jNpc : j["npcs"]) {
+        NpcInstance npc;
+        jNpc.get_to(npc);
+        TraceLog(LOG_INFO, "Reading npc %s", npc.npcTemplate.c_str());
+        int id = CreateCharacterFromTemplate(data, npc.npcTemplate);
+        Vector2 pos = GridToPixelPosition(npc.position.x, npc.position.y);
+        SetCharacterSpritePos(data.spriteData, data.charData.sprite[id], pos);
+        AddNpcToLevel(data.spriteData, data.charData, level, id);
     }
 
     level.camera.worldWidth = level.tileMap.width * level.tileMap.tileWidth;

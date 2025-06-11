@@ -12,6 +12,7 @@
 #include <unordered_set>
 #include "util/json.hpp"
 #include "CharacterData.h"
+#include "QuestData.h"
 
 struct LevelSaveState {
     std::unordered_set<std::string> defeatedGroups;
@@ -37,8 +38,9 @@ void from_json(const nlohmann::json& j, PartyCharacter& c);
 
 struct SaveData {
     std::string currentLevel;
-    std::unordered_map<std::string, LevelSaveState> levels; // key = map name
+    std::unordered_map<std::string, LevelSaveState> levels;
     std::list<PartyCharacter> party;
+    std::unordered_map<std::string, QuestSaveState> quests;
 };
 
 bool SaveGameData(SaveData& data, const std::string& filename);

@@ -6,6 +6,18 @@
 #include "raymath.h"
 #include <cmath>
 
+void to_json(nlohmann::json& j, const Vector2i& v) {
+    j = nlohmann::json::array({ v.x, v.y });
+}
+
+void from_json(const nlohmann::json& j, Vector2i& v) {
+    if (!j.is_array() || j.size() != 2) {
+        throw std::invalid_argument("Vector2i JSON must be an array of 2 integers");
+    }
+    v.x = j.at(0).get<int>();
+    v.y = j.at(1).get<int>();
+}
+
 int DistanceSquared(Vector2i a, Vector2i b) {
     int dx = a.x - b.x;
     int dy = a.y - b.y;
