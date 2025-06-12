@@ -862,5 +862,77 @@
                 ]
             }
         ]
+    },
+    {
+        "group": "SerDonaldPortraitIdle",
+        "sheet": "ser_donald_idle.png",
+        "frameWidth": 128,
+        "frameHeight": 141,
+        "animations": [
+            {
+                "name": "Idle",
+                "origin": [
+                    0,
+                    0
+                ],
+                "frames": [
+                    0,
+                    1,
+                    2,
+                    3,
+                    4,
+                    5,
+                    6
+                ],
+                "delays": [
+                    0.15,
+                    0.15,
+                    0.15,
+                    0.15,
+                    0.15,
+                    0.15,
+                    0.15
+                ]
+            }
+        ]
+    },
+    {
+        "group": "SerDonaldPortraitTalk",
+        "sheet": "ser_donald_talk.png",
+        "frameWidth": 128,
+        "frameHeight": 141,
+        "animations": [
+            {
+                "name": "Talk",
+                "origin": [
+                    0,
+                    0
+                ],
+                "frames": [
+                    0,
+                    1,
+                    2,
+                    3,
+                    4,
+                    5,
+                    6,
+                    7,
+                    8,
+                    9
+                ],
+                "delays": [
+                    0.15,
+                    0.15,
+                    0.15,
+                    0.15,
+                    0.15,
+                    0.15,
+                    0.15,
+                    0.15,
+                    0.15,
+                    0.15
+                ]
+            }
+        ]
     }
 ]

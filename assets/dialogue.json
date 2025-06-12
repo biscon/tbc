@@ -7,8 +7,8 @@
         },
         "2": {
             "id": 2,
-            "text": "Thanks for helping! Here's your reward.",
-            "responseIds": []
+            "text": "Go kill some ninjas for me, you stupid asshole.",
+            "responseIds": [103]
         }
     },
     "dialogueResponses": {
@@ -22,7 +22,14 @@
         "102": {
             "id": 102,
             "text": "Sorry, I'm busy.",
-            "nextNodeId": 0,
+            "nextNodeId": -1,
+            "startQuestId": "",
+            "completeQuestId": ""
+        },
+        "103": {
+            "id": 103,
+            "text": "Later.",
+            "nextNodeId": -1,
             "startQuestId": "",
             "completeQuestId": ""
         }

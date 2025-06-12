@@ -310,10 +310,9 @@ static void DisplaySpeechBubbleAnimations(Level &combat) {
     }
 }
 
-
-// Function to display combat screen
-void DrawLevelScreen(SpriteData& spriteData, CharacterData& charData, Level &level, LevelScreen &levelScreen, PlayField &playField) {
-
+void DrawLevelScreen(GameData& data, Level &level, LevelScreen &levelScreen, PlayField &playField) {
+    SpriteData& spriteData = data.spriteData;
+    CharacterData& charData = data.charData;
     // Draw the dividing line in the middle of the screen
     //DrawLine(0, 125, 480, 125, LIGHTGRAY); // Horizontal dividing line
 
@@ -355,7 +354,7 @@ void DrawLevelScreen(SpriteData& spriteData, CharacterData& charData, Level &lev
 
     DisplayTextAnimations(level);
 
-    if (levelScreen.floatingStatsCharacter != -1 && (level.turnState == TurnState::None || level.turnState == TurnState::SelectAction ||
+    if (data.state != GameState::DIALOGUE && levelScreen.floatingStatsCharacter != -1 && (level.turnState == TurnState::None || level.turnState == TurnState::SelectAction ||
                                                         level.turnState == TurnState::SelectEnemy || level.turnState == TurnState::SelectDestination)) {
         float x = GetCharacterSpritePosX(spriteData, charData.sprite[levelScreen.floatingStatsCharacter]);
         float y = GetCharacterSpritePosY(spriteData, charData.sprite[levelScreen.floatingStatsCharacter]);

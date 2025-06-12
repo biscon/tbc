@@ -25,7 +25,7 @@ struct LevelScreen {
 
 void CreateLevelScreen(LevelScreen &levelScreen, GameEventQueue* eventQueue);
 void DestroyLevelScreen(LevelScreen &levelScreen);
-void DrawLevelScreen(SpriteData& spriteData, CharacterData& charData, Level &level, LevelScreen &levelScreen, PlayField &playField);
+void DrawLevelScreen(GameData& data, Level &level, LevelScreen &levelScreen, PlayField &playField);
 void UpdateLevelScreen(SpriteData& spriteData, CharacterData& charData, Level &level, LevelScreen &levelScreen, float dt);
 void HandleInputLevelScreen(SpriteData& spriteData, CharacterData& charData, LevelScreen &levelScreen, Level &level);
 //Character* SelectTargetBasedOnThreat(Level& level);

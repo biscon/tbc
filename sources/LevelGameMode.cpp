@@ -13,21 +13,9 @@
 #include "raymath.h"
 #include "util/GameEventQueue.h"
 #include "level/CombatEngine.h"
+#include "game/Dialogue.h"
 
 static GameData* game;
-
-/*
-static std::vector<Character> enemyCharacters = {
-        {CharacterClass::Warrior, CharacterFaction::Enemy, "Enemy1", "Fighter", 16,  16,  5, 3, 4, 0, 0, 0, 1, {}},
-        {CharacterClass::Warrior, CharacterFaction::Enemy, "Enemy2", "Fighter", 16,  16,  5, 3, 4, 0, 0, 0, 1, {}},
-        //{CharacterClass::Warrior, "Enemy3", "Fighter", 20,  20,  5, 3, 4, 0, 0, 0, 1, {}},
-        //{CharacterClass::Warrior, "Enemy4", "Fighter", 20,  20,  5, 3, 4, 0, 0, 0, 1, {}},
-};
-*/
-
-static std::vector<int> enemyGroup1;
-static std::vector<int> enemyGroup2;
-
 static Level level;
 static LevelScreen levelScreen;
 static ParticleManager particleManager;
@@ -61,7 +49,7 @@ static void processEvents() {
             }
             case GameEventType::EndCombat: {
                 level.turnState = TurnState::None;
-                playField.mode = PlayFieldMode::Move;
+                playField.mode = PlayFieldMode::Explore;
                 for(auto& c : level.partyCharacters) {
                     // Set initial animation to paused
                     CharacterSprite& sprite = game->charData.sprite[c];
@@ -84,11 +72,82 @@ static void processEvents() {
                 AddPartyToLevel(game->spriteData, game->charData, level, game->party, spawnPoint);
                 StartCameraPanToTargetCharTime(game->spriteData, game->charData, level.camera, game->party[0], 0.01f);
                 game->state = GameState::PLAY_LEVEL;
-                playField.mode = PlayFieldMode::Move;
+                playField.mode = PlayFieldMode::Explore;
+                break;
+            }
+            case GameEventType::InitiateDialogue: {
+                playField.mode = PlayFieldMode::None;
+                game->state = GameState::DIALOGUE;
+                TraceLog(LOG_INFO, "InitiateDialogue: npcId = %i, dialogueNodeId = %i", event.initiateDialogueEvent.npcId, event.initiateDialogueEvent.dialogueNodeId);
+                game->dialogueData.currentNpc = event.initiateDialogueEvent.npcId;
+                game->dialogueData.currentDialogueNode = event.initiateDialogueEvent.dialogueNodeId;
+                game->dialogueData.idleAnimPlayer = CreateSpriteAnimationPlayer(game->spriteData);
+                int idleAnim = GetSpriteAnimation(game->spriteData, "SerDonaldPortraitIdleIdle");
+                PlaySpriteAnimation(game->spriteData, game->dialogueData.idleAnimPlayer, idleAnim, true);
+                break;
+            }
+            case GameEventType::EndDialogue: {
+                TraceLog(LOG_INFO, "EndDialogue: npcId = %i", event.endDialogueEvent.npcId);
+                playField.mode = PlayFieldMode::Explore;
+                game->state = GameState::PLAY_LEVEL;
                 break;
             }
             default:
                 break;
+        }
+    }
+}
+
+static void handleCameraMovement() {
+    float dt = GetFrameTime();
+    float speed = 6.5f;
+    float accelerationTime = 0.5f; // Time to reach full speed
+    float decelerationTime = 0.5f; // Time to stop when no input
+
+    float acceleration = speed / accelerationTime;
+    float deceleration = speed / decelerationTime;
+
+    // Handle horizontal movement
+    if (IsKeyDown(KEY_A)) {
+        level.camera.cameraVelocity.x -= acceleration * dt;
+        if (level.camera.cameraVelocity.x < -speed) {
+            level.camera.cameraVelocity.x = -speed;
+        }
+    } else if (IsKeyDown(KEY_D)) {
+        level.camera.cameraVelocity.x += acceleration * dt;
+        if (level.camera.cameraVelocity.x > speed) {
+            level.camera.cameraVelocity.x = speed;
+        }
+    } else {
+        // Decelerate smoothly
+        if (level.camera.cameraVelocity.x > 0) {
+            level.camera.cameraVelocity.x -= deceleration * dt;
+            if (level.camera.cameraVelocity.x < 0) level.camera.cameraVelocity.x = 0;
+        } else if (level.camera.cameraVelocity.x < 0) {
+            level.camera.cameraVelocity.x += deceleration * dt;
+            if (level.camera.cameraVelocity.x > 0) level.camera.cameraVelocity.x = 0;
+        }
+    }
+
+    // Handle vertical movement
+    if (IsKeyDown(KEY_W)) {
+        level.camera.cameraVelocity.y -= acceleration * dt;
+        if (level.camera.cameraVelocity.y < -speed) {
+            level.camera.cameraVelocity.y = -speed;
+        }
+    } else if (IsKeyDown(KEY_S)) {
+        level.camera.cameraVelocity.y += acceleration * dt;
+        if (level.camera.cameraVelocity.y > speed) {
+            level.camera.cameraVelocity.y = speed;
+        }
+    } else {
+        // Decelerate smoothly
+        if (level.camera.cameraVelocity.y > 0) {
+            level.camera.cameraVelocity.y -= deceleration * dt;
+            if (level.camera.cameraVelocity.y < 0) level.camera.cameraVelocity.y = 0;
+        } else if (level.camera.cameraVelocity.y < 0) {
+            level.camera.cameraVelocity.y += deceleration * dt;
+            if (level.camera.cameraVelocity.y > 0) level.camera.cameraVelocity.y = 0;
         }
     }
 }
@@ -168,61 +227,15 @@ void LevelUpdate(float dt) {
     UpdateParticleManager(particleManager, dt);
     UpdateLevelScreen(game->spriteData, game->charData, level, levelScreen, dt);
     UpdatePlayField(game->spriteData, game->charData, playField, level, dt);
+    UpdateDialogue(*game, dt);
 }
 
 void LevelHandleInput() {
     processEvents();
-
-    float dt = GetFrameTime();
-    float speed = 6.5f;
-    float accelerationTime = 0.5f; // Time to reach full speed
-    float decelerationTime = 0.5f; // Time to stop when no input
-
-    float acceleration = speed / accelerationTime;
-    float deceleration = speed / decelerationTime;
-
-    // Handle horizontal movement
-    if (IsKeyDown(KEY_A)) {
-        level.camera.cameraVelocity.x -= acceleration * dt;
-        if (level.camera.cameraVelocity.x < -speed) {
-            level.camera.cameraVelocity.x = -speed;
-        }
-    } else if (IsKeyDown(KEY_D)) {
-        level.camera.cameraVelocity.x += acceleration * dt;
-        if (level.camera.cameraVelocity.x > speed) {
-            level.camera.cameraVelocity.x = speed;
-        }
+    if(game->state != GameState::DIALOGUE) {
+        handleCameraMovement();
     } else {
-        // Decelerate smoothly
-        if (level.camera.cameraVelocity.x > 0) {
-            level.camera.cameraVelocity.x -= deceleration * dt;
-            if (level.camera.cameraVelocity.x < 0) level.camera.cameraVelocity.x = 0;
-        } else if (level.camera.cameraVelocity.x < 0) {
-            level.camera.cameraVelocity.x += deceleration * dt;
-            if (level.camera.cameraVelocity.x > 0) level.camera.cameraVelocity.x = 0;
-        }
-    }
-
-    // Handle vertical movement
-    if (IsKeyDown(KEY_W)) {
-        level.camera.cameraVelocity.y -= acceleration * dt;
-        if (level.camera.cameraVelocity.y < -speed) {
-            level.camera.cameraVelocity.y = -speed;
-        }
-    } else if (IsKeyDown(KEY_S)) {
-        level.camera.cameraVelocity.y += acceleration * dt;
-        if (level.camera.cameraVelocity.y > speed) {
-            level.camera.cameraVelocity.y = speed;
-        }
-    } else {
-        // Decelerate smoothly
-        if (level.camera.cameraVelocity.y > 0) {
-            level.camera.cameraVelocity.y -= deceleration * dt;
-            if (level.camera.cameraVelocity.y < 0) level.camera.cameraVelocity.y = 0;
-        } else if (level.camera.cameraVelocity.y < 0) {
-            level.camera.cameraVelocity.y += deceleration * dt;
-            if (level.camera.cameraVelocity.y > 0) level.camera.cameraVelocity.y = 0;
-        }
+        HandleDialogueInput(*game, eventQueue);
     }
     HandleInputPlayField(game->spriteData, game->charData, playField, level);
     HandleInputLevelScreen(game->spriteData, game->charData, levelScreen, level);
@@ -232,7 +245,8 @@ void LevelRender() {
     // Clear screen with a background color (dark gray)
     ClearBackground(BACKGROUND_GREY);
     DrawPlayField(game->spriteData, game->charData, playField, level);
-    DrawLevelScreen(game->spriteData, game->charData, level, levelScreen, playField);
+    DrawLevelScreen(*game, level, levelScreen, playField);
+    RenderDialogueUI(*game);
 }
 
 void LevelPreRender() {
@@ -250,14 +264,14 @@ void LevelResume() {
         LoadLevel(*game, level, game->levelFileName);
         AddPartyToLevel(game->spriteData, game->charData, level, game->party, "default");
         game->state = GameState::PLAY_LEVEL;
-        playField.mode = PlayFieldMode::Move;
+        playField.mode = PlayFieldMode::Explore;
     }
     if(game->state == GameState::LOAD_LEVEL_FROM_SAVE) {
         LoadLevel(*game, level, game->levelFileName);
         AddPartyToLevelNoPositioning(game->spriteData, game->charData, level, game->party);
         StartCameraPanToTargetCharTime(game->spriteData, game->charData, level.camera, game->party[0], 0.01f);
         game->state = GameState::PLAY_LEVEL;
-        playField.mode = PlayFieldMode::Move;
+        playField.mode = PlayFieldMode::Explore;
     }
 }
 

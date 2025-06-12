@@ -543,22 +543,37 @@ static void handleInputPlayFieldSelectingEnemyTarget(PlayField &playField, Level
 
 }
 
-static void handleInputPlayFieldShowMove(SpriteData& spriteData, CharacterData& charData, PlayField &playField, Level &level) {
+static void handleInputPlayFieldExploration(SpriteData& spriteData, CharacterData& charData, PlayField &playField, Level &level) {
     // check if mouse is over tile
     playField.selectedTilePos = {-1, -1};
     Vector2 mousePos = GetScreenToWorld2D(GetMousePosition(), level.camera.camera);
     Vector2i gridPos = PixelToGridPositionI(mousePos.x, mousePos.y);
+    auto& playerChar = level.partyCharacters.front();
     if (!IsTileOccupied(spriteData, charData, level, gridPos.x, gridPos.y, -1)) {
         // calculate a path and draw it as lines
         Path path;
         Vector2i target = PixelToGridPositionI(static_cast<int>(mousePos.x), static_cast<int>(mousePos.y));
-        auto& playerChar = level.partyCharacters.front();
         if (CalcPath(spriteData, charData, level, path, PixelToGridPositionI((int) GetCharacterSpritePosX(spriteData, charData.sprite[playerChar]),
                                                        (int) GetCharacterSpritePosY(spriteData, charData.sprite[playerChar])),
                      target, playerChar, IsTileOccupiedEnemies)) {
             playField.selectedTilePos = gridPos;
             if(IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
                 PublishMovePartyEvent(*playField.eventQueue, gridPos);
+            }
+        }
+    } else {
+        Vector2i playerPos = GetCharacterGridPosI(spriteData, charData.sprite[playerChar]);
+        for(int npcId : level.npcCharacters) {
+            Vector2i npcPos = GetCharacterGridPosI(spriteData, charData.sprite[npcId]);
+            if(npcPos == gridPos) {
+                if(Distance(playerPos, npcPos) < 2) {
+                    playField.hintText = "Talk to " + charData.name[npcId];
+                    if(IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
+                        PublishInitiateDialogueEvent(*playField.eventQueue, npcId, level.npcDialogueNodeIds[npcId]);
+                    }
+                } else {
+                    playField.hintText = "Too far away!";
+                }
             }
         }
     }
@@ -569,7 +584,8 @@ void HandleInputPlayField(SpriteData& spriteData, CharacterData& charData, PlayF
         case PlayFieldMode::None:handleInputPlayFieldNormal(playField, level);break;
         case PlayFieldMode::SelectingTile:handleInputPlayFieldSelectingTile(playField, level);break;
         case PlayFieldMode::SelectingEnemyTarget:handleInputPlayFieldSelectingEnemyTarget(playField, level);break;
-        case PlayFieldMode::Move:handleInputPlayFieldShowMove(spriteData, charData, playField, level);break;
+        case PlayFieldMode::Explore:
+            handleInputPlayFieldExploration(spriteData, charData, playField, level);break;
     }
 }
 
@@ -584,7 +600,7 @@ void DrawPlayField(SpriteData& spriteData, CharacterData& charData, PlayField &p
     BeginMode2D(level.camera.camera);
     DrawTileLayer(spriteData.sheet, level.tileMap, MIDDLE_LAYER, 0, 0);
 
-    if(playField.mode == PlayFieldMode::Move) {
+    if(playField.mode == PlayFieldMode::Explore) {
         DrawTileSelection(playField, level);
     } else {
         DrawPathAndSelection(spriteData, charData, playField, level);

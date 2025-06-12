@@ -46,3 +46,18 @@ void PublishExitLevelEvent(GameEventQueue &eventQueue, const std::string &levelF
     strncpy(event.exitLevelEvent.spawnPoint, spawnPoint.c_str(), sizeof(event.exitLevelEvent.spawnPoint));
     PublishEvent(eventQueue, event);
 }
+
+void PublishInitiateDialogueEvent(GameEventQueue &eventQueue, int npcId, int dialogueNodeId) {
+    GameEvent event{};
+    event.type = GameEventType::InitiateDialogue;
+    event.initiateDialogueEvent.npcId = npcId;
+    event.initiateDialogueEvent.dialogueNodeId = dialogueNodeId;
+    PublishEvent(eventQueue, event);
+}
+
+void PublishEndDialogueEvent(GameEventQueue &eventQueue, int npcId) {
+    GameEvent event{};
+    event.type = GameEventType::EndDialogue;
+    event.endDialogueEvent.npcId = npcId;
+    PublishEvent(eventQueue, event);
+}

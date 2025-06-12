@@ -21,7 +21,8 @@ enum class GameState {
     START_NEW_GAME,
     LOAD_LEVEL,
     LOAD_LEVEL_FROM_SAVE,
-    PLAY_LEVEL
+    PLAY_LEVEL,
+    DIALOGUE,
 };
 
 struct GameData {

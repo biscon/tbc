@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 #include "util/json.hpp"
+#include "raylib.h"
 
 enum class ConditionType { QuestStatusEquals, HasItem, FlagIsSet };
 struct Condition { ConditionType type; std::string param; int value; };
@@ -38,6 +39,13 @@ void from_json(const nlohmann::json& j, DialogueResponse& resp);
 struct DialogueData {
     std::unordered_map<int, DialogueNode> dialogueNodes;
     std::unordered_map<int, DialogueResponse> dialogueResponses;
+    int currentDialogueNode = -1;
+    int currentNpc = -1;
+    std::vector<Rectangle> responseRects;
+    float dialogueFade = 0.0f; // 0 = fully transparent, 1 = full opacity
+    bool fadingOut = false;
+    int idleAnimPlayer = -1;
+    int talkAnimPlayer = -1;
 };
 
 #endif //SANDBOX_DIALOGUEDATA_H

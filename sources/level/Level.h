@@ -76,6 +76,7 @@ struct Level {
     std::vector<LevelExit> exits;
     std::unordered_map<int, std::string> enemyGroups;
     std::string currentEnemyGroup;
+    std::unordered_map<int, int> npcDialogueNodeIds;
 };
 
 void CreateLevel(Level &level);

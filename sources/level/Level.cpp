@@ -177,6 +177,7 @@ void LoadLevel(GameData& data, Level &level, const std::string &filename) {
 
     // load npcs
     level.npcCharacters.clear();
+    level.npcDialogueNodeIds.clear();
     for (auto &jNpc : j["npcs"]) {
         NpcInstance npc;
         jNpc.get_to(npc);
@@ -185,6 +186,7 @@ void LoadLevel(GameData& data, Level &level, const std::string &filename) {
         Vector2 pos = GridToPixelPosition(npc.position.x, npc.position.y);
         SetCharacterSpritePos(data.spriteData, data.charData.sprite[id], pos);
         AddNpcToLevel(data.spriteData, data.charData, level, id);
+        level.npcDialogueNodeIds[id] = npc.dialogueNodeId;
     }
 
     level.camera.worldWidth = level.tileMap.width * level.tileMap.tileWidth;

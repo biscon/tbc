@@ -15,7 +15,7 @@ enum class PlayFieldMode {
     None,
     SelectingTile,
     SelectingEnemyTarget,
-    Move,
+    Explore,
 };
 
 struct CharacterMove {
