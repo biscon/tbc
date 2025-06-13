@@ -289,8 +289,11 @@ static void DrawGridCharacters(SpriteData& spriteData, CharacterData& charData, 
         }
         CharacterStats& stats = charData.stats[character];
         // Draw health bar
-        if(stats.health > 0 && level.turnState != TurnState::Victory && level.turnState != TurnState::Defeat)
+        if(stats.health > 0 && level.turnState != TurnState::Victory && level.turnState != TurnState::Defeat && level.turnState != TurnState::None) {
             DrawHealthBar(charPos.x - 8, charPos.y - 21, 15, (float) stats.health, (float) stats.maxHealth);
+        } else if(std::count(level.partyCharacters.begin(), level.partyCharacters.end(), character)) {
+            DrawHealthBar(charPos.x - 8, charPos.y - 21, 15, (float) stats.health, (float) stats.maxHealth);
+        }
     }
 }
 
