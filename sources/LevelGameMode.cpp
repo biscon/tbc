@@ -82,7 +82,7 @@ static void processEvents() {
                 game->dialogueData.currentNpc = event.initiateDialogueEvent.npcId;
                 game->dialogueData.currentDialogueNode = event.initiateDialogueEvent.dialogueNodeId;
                 game->dialogueData.idleAnimPlayer = CreateSpriteAnimationPlayer(game->spriteData);
-                int idleAnim = GetSpriteAnimation(game->spriteData, "SerDonaldPortraitIdleIdle");
+                int idleAnim = GetSpriteAnimation(game->spriteData, "SerDonaldPortraitTalkTalk");
                 PlaySpriteAnimation(game->spriteData, game->dialogueData.idleAnimPlayer, idleAnim, true);
                 break;
             }
