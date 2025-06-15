@@ -239,6 +239,11 @@ void LevelHandleInput() {
     }
     HandleInputPlayField(game->spriteData, game->charData, playField, level);
     HandleInputLevelScreen(game->spriteData, game->charData, levelScreen, level);
+
+    if (IsKeyPressed(KEY_ESCAPE)) {
+        PopGameMode();
+        return;
+    }
 }
 
 void LevelRender() {

@@ -111,11 +111,6 @@ void UpdateGameMode(float dt) {
 }
 
 void HandleInputGameMode() {
-    if (IsKeyPressed(KEY_ESCAPE)) {
-        TraceLog(LOG_INFO, "Escape key pressed, popping game mode.");
-        PopGameMode();
-        return;
-    }
     if (!gameModeStack.empty()) {
         gameModeStack.top()->HandleInput();
     }

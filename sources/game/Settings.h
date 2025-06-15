@@ -9,9 +9,8 @@
 #include "data/GameData.h"
 #include "util/GameEventQueue.h"
 
+void ApplySettings(SettingsData& settings);
+void SaveSettings(const SettingsData& settings);
 void InitSettings(SettingsData& data, const std::string &filename);
-void RenderSettingsUI(GameData& data);
-void UpdateSettings(GameData& data, float dt);
-void HandleSettingsInput(GameData& data, GameEventQueue& eventQueue);
 
 #endif //SANDBOX_SETTINGS_H

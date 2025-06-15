@@ -6,6 +6,7 @@
 #define SANDBOX_SETTINGSDATA_H
 
 #include <vector>
+#include <string>
 
 enum class DisplayMode {
     Windowed,
@@ -28,6 +29,7 @@ struct SettingsData {
 
     std::string filename;
     bool needsApply = false;
+    bool showFPS = false;
 };
 
 
