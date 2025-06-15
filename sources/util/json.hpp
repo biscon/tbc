@@ -3081,7 +3081,7 @@ using enable_if_t = typename std::enable_if<B, T>::type;
 // The following code is taken from https://github.com/abseil/abseil-cpp/blob/10cb35e459f5ecca5b2ff107635da0bfa41011b4/absl/utility/utility.h
 // which is part of Google Abseil (https://github.com/abseil/abseil-cpp), licensed under the Apache License 2.0.
 
-//// START OF CODE FROM GOOGLE ABSEIL
+//// MAIN OF CODE FROM GOOGLE ABSEIL
 
 // integer_sequence
 //

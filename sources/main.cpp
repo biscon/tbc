@@ -11,10 +11,10 @@
 #include "character/Npc.h"
 #include "game/Dialogue.h"
 #include "game/Quest.h"
+#include "game/Settings.h"
 
 #define MAX(a, b) ((a)>(b)? (a) : (b))
 #define MIN(a, b) ((a)<(b)? (a) : (b))
-
 
 //------------------------------------------------------------------------------------
 // Program main entry point
@@ -25,14 +25,44 @@ int main() {
     SetupMenuGameMode(&game);
     SetupLevelGameMode(&game);
 
-    int windowWidth = 1920;
-    int windowHeight = 1080;
+    int windowWidth = 960;
+    int windowHeight = 540;
 
+    SetConfigFlags(FLAG_WINDOW_UNDECORATED);
+    //SetConfigFlags(FLAG_BORDERLESS_WINDOWED_MODE);
     // Enable config flags for resizable window and vertical synchro
-    SetConfigFlags(FLAG_WINDOW_RESIZABLE | FLAG_VSYNC_HINT);
+    //SetConfigFlags(FLAG_VSYNC_HINT);
     InitWindow(windowWidth, windowHeight, "RPG");
-    SetWindowMinSize(320, 240);
+
+    // Get monitor size in points (not pixels!)
+    int monitor = GetCurrentMonitor();
+    int monitorWidth = GetMonitorWidth(monitor);
+    int monitorHeight = GetMonitorHeight(monitor);
+    TraceLog(LOG_INFO, "Monitor res: %i x %i", monitorWidth, monitorHeight);
+    TraceLog(LOG_INFO, "Screen res: %i x %i", GetScreenWidth(), GetScreenHeight());
+    TraceLog(LOG_INFO, "Render res: %i x %i", GetRenderWidth(), GetRenderHeight());
+    /*
+    Vector2 dpi = GetWindowScaleDPI();
+    TraceLog(LOG_INFO, "WindowScaleDPI = %f,%f", dpi.x, dpi.y);
+
+    float scaledWidth = dpi.x * (float) windowWidth;
+    float scaledHeight = dpi.y * (float) windowHeight;
+    TraceLog(LOG_INFO, "Scaled res: %i x %i", (int) scaledWidth, (int) scaledHeight);
+    SetWindowSize((int) scaledWidth, (int) scaledHeight);
+    SetWindowPosition(0, 0);
+
+    // Important: put window on top so macOS puts it over the dock/menu bar
+    SetWindowState(FLAG_WINDOW_TOPMOST);
+    */
+
+
+    //ToggleBorderlessWindowed();
+
+
+    //SetWindowMinSize(320, 240);
     SetExitKey(0);
+
+    InitSettings(game.settingsData, "settings.json");
 
     InitAudioDevice();      // Initialize audio device
 

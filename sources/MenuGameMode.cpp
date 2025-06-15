@@ -9,8 +9,11 @@
 #include "ui/UI.h"
 #include "data/SaveData.h"
 #include "ai/PathFinding.h"
+#include "game/Settings.h"
 
 static GameData* game;
+enum class SubMenu { MAIN, SETTINGS };
+static SubMenu currentMenu = SubMenu::MAIN;
 
 void MenuInit() {
     TraceLog(LOG_INFO, "MenuInit");
@@ -111,8 +114,7 @@ static void saveGame() {
     SaveGameData(saveData, "savegame.json");
 }
 
-void MenuRender() {
-    ClearBackground(DARKGRAY);
+static void renderMainMenu() {
     DrawStatusText("Rule 34", WHITE, 10, 30);
     float offsetY = 75.0f;
     if(game->state == GameState::START_NEW_GAME) {
@@ -133,11 +135,24 @@ void MenuRender() {
         loadGame();
     }
     offsetY += 30.0f;
-    if (GuiButton((Rectangle) {240 - 50, offsetY, 100, 20}, "Options")) {
+    if (GuiButton((Rectangle) {240 - 50, offsetY, 100, 20}, "Settings")) {
+        currentMenu = SubMenu::SETTINGS;
     }
     offsetY += 30.0f;
     if (GuiButton((Rectangle) {240 - 50, offsetY, 100, 20}, "Quit")) {
         PopGameMode();
+    }
+}
+
+void MenuRender() {
+    ClearBackground(DARKGRAY);
+    switch(currentMenu) {
+        case SubMenu::MAIN:
+            renderMainMenu();
+            break;
+        case SubMenu::SETTINGS:
+            RenderSettingsUI(*game);
+            break;
     }
 }
 

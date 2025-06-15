@@ -16,6 +16,7 @@
 #include "SaveData.h"
 #include "DialogueData.h"
 #include "QuestData.h"
+#include "SettingsData.h"
 
 enum class GameState {
     START_NEW_GAME,
@@ -34,6 +35,7 @@ struct GameData {
     SpriteData spriteData;
     NpcTemplateData npcTemplateData;
     DialogueData dialogueData;
+    SettingsData settingsData;
 
     std::unordered_map<std::string, LevelSaveState> levelState;
     std::unordered_map<std::string, QuestSaveState> quests;

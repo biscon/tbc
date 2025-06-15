@@ -125,6 +125,10 @@ add_executable(${PROJECT_NAME}
         sources/game/Dialogue.h
         sources/game/Quest.cpp
         sources/game/Quest.h
+        sources/game/Settings.cpp
+        sources/game/Settings.h
+        sources/data/SettingsData.cpp
+        sources/data/SettingsData.h
 )
 target_sources(${PROJECT_NAME} PRIVATE ${PROJECT_SOURCES})
 target_include_directories(${PROJECT_NAME} PRIVATE ${PROJECT_INCLUDE})

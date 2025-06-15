@@ -63,7 +63,7 @@ int CreateCharacter(CharacterData &data, CharacterClass characterClass, Characte
     data.characterClass.emplace_back(characterClass);
     data.orientation.emplace_back(Orientation::Right);
     data.weaponIdx.emplace_back(-1);
-    data.isWeaponEquipped.emplace_back(false);
+    data.isWeaponEquipped.push_back(false);
     data.statusEffects.emplace_back();
     data.skills.emplace_back();
     data.sprite.emplace_back();
