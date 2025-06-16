@@ -9,6 +9,7 @@
 #include <unordered_map>
 #include "data/GameData.h"
 #include "LevelCamera.h"
+#include "graphics/Lighting.h"
 
 enum class TurnState {
     None,
@@ -77,6 +78,9 @@ struct Level {
     std::unordered_map<int, std::string> enemyGroups;
     std::string currentEnemyGroup;
     std::unordered_map<int, int> npcDialogueNodeIds;
+
+    // lighting
+    LightingData lighting;
 };
 
 void CreateLevel(Level &level);

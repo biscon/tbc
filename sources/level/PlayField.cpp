@@ -599,9 +599,13 @@ void DrawPlayField(SpriteData& spriteData, CharacterData& charData, PlayField &p
     EndMode2D();
 
     DrawBloodPools();
+
+    RenderLighting(level.lighting, level.camera.camera);
+
     // Middle layer
     BeginMode2D(level.camera.camera);
     DrawTileLayer(spriteData.sheet, level.tileMap, MIDDLE_LAYER, 0, 0);
+
 
     if(playField.mode == PlayFieldMode::Explore) {
         DrawTileSelection(playField, level);
@@ -611,6 +615,7 @@ void DrawPlayField(SpriteData& spriteData, CharacterData& charData, PlayField &p
 
     DrawGridCharacters(spriteData, charData, playField, level);
     EndMode2D();
+
     DrawParticleManager(*playField.particleManager);
 
     // Top layer

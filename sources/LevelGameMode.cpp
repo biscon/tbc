@@ -252,9 +252,16 @@ void LevelHandleInput() {
 }
 
 void LevelRender() {
+    int charId = game->party[0];
+    Vector2 pos = GetCharacterSpritePos(game->spriteData, game->charData.sprite[charId]);
+    MoveLight(level.lighting.lights[0], pos.x, pos.y);
+
     // Clear screen with a background color (dark gray)
     ClearBackground(BACKGROUND_GREY);
     DrawPlayField(game->spriteData, game->charData, playField, level);
+
+    //RenderLighting(level.lighting, level.camera.camera);
+
     DrawLevelScreen(*game, level, levelScreen, playField);
     RenderDialogueUI(*game);
 }
@@ -262,6 +269,7 @@ void LevelRender() {
 void LevelPreRender() {
     PreRenderBloodPools(level);
     PreRenderParticleManager(particleManager, level.camera.camera);
+    UpdateLighting(level.lighting, level.camera.camera);
 }
 
 void LevelPause() {

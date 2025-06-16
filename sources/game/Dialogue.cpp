@@ -106,10 +106,10 @@ void RenderDialogueUI(GameData& data) {
     float imgHeight = fi.srcRect.height;
     float boxPad = 4.0f;
     float halfBoxPad = boxPad / 2.0f;
-    Rectangle imgRect = {(gameScreenWidthF/2.0f - imgWidth/2.0f)-halfBoxPad, 45 - halfBoxPad, imgWidth+boxPad, imgHeight+boxPad};
+    Rectangle imgRect = {(gameScreenWidthF/2.0f - imgWidth/2.0f)-halfBoxPad, 50 - halfBoxPad, imgWidth+boxPad, imgHeight+boxPad};
     //DrawRectangleRec(imgRect, BLACK);
     DrawRectangleRounded(imgRect, 0.1f, 16, BLACK);
-    DrawSpriteAnimation(data.spriteData, dlg.idleAnimPlayer, gameScreenWidthF/2.0f - imgWidth/2.0f, 45 + halfBoxPad);
+    DrawSpriteAnimation(data.spriteData, dlg.idleAnimPlayer, gameScreenWidthF/2.0f - imgWidth/2.0f, 50 + halfBoxPad);
     //DrawRectangleLinesEx(imgRect, halfBoxPad, DARKGRAY);
     DrawRectangleRoundedLinesEx(imgRect, 0.1f, 16, halfBoxPad, DARKGRAY);
 

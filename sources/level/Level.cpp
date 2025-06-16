@@ -194,6 +194,9 @@ void LoadLevel(GameData& data, Level &level, const std::string &filename) {
 
     level.camera.cameraLockX = (level.camera.worldWidth <= gameScreenWidth);
     level.camera.cameraLockY = (level.camera.worldHeight <= gameScreenHeight);
+
+    InitLightingData(level.lighting);
+    BuildShadowBoxes(level.lighting, level.tileMap);
 }
 
 void DestroyLevel(SpriteSheetData& sheetData, Level &level) {
