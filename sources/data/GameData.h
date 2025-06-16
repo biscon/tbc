@@ -18,6 +18,15 @@
 #include "QuestData.h"
 #include "SettingsData.h"
 
+const int gameScreenWidth = 640;
+const int gameScreenHeight = 360;
+const int gameScreenWidthF = 640.0f;
+const int gameScreenHeightF = 360.0f;
+const int gameScreenHalfWidth = gameScreenWidth/2;
+const int gameScreenHalfHeight = gameScreenHeight/2;
+const float gameScreenHalfWidthF = gameScreenWidthF/2.0f;
+const float gameScreenHalfHeightF = gameScreenHeightF/2.0f;
+
 enum class GameState {
     START_NEW_GAME,
     LOAD_LEVEL,

@@ -90,11 +90,11 @@ void RenderDialogueUI(GameData& data) {
     auto& dlg = data.dialogueData;
     if (dlg.dialogueFade <= 0.0f) return;
 
-    const int screenWidth = 480;
-    const int screenHeight = 270;
+    //const int screenWidth = 480;
+    //const int screenHeight = 270;
 
     const Color overlay = Color{0, 0, 0, (unsigned char)(dlg.dialogueFade * 255 * 0.4f)};
-    DrawRectangle(0, 0, screenWidth, screenHeight, overlay);
+    DrawRectangle(0, 0, gameScreenWidth, gameScreenHeight, overlay);
 
     if (dlg.currentDialogueNode == -1) return;
 
@@ -106,10 +106,10 @@ void RenderDialogueUI(GameData& data) {
     float imgHeight = fi.srcRect.height;
     float boxPad = 4.0f;
     float halfBoxPad = boxPad / 2.0f;
-    Rectangle imgRect = {(screenWidth/2.0f - imgWidth/2.0f)-halfBoxPad, 35 - halfBoxPad, imgWidth+boxPad, imgHeight+boxPad};
+    Rectangle imgRect = {(gameScreenWidthF/2.0f - imgWidth/2.0f)-halfBoxPad, 45 - halfBoxPad, imgWidth+boxPad, imgHeight+boxPad};
     //DrawRectangleRec(imgRect, BLACK);
     DrawRectangleRounded(imgRect, 0.1f, 16, BLACK);
-    DrawSpriteAnimation(data.spriteData, dlg.idleAnimPlayer, screenWidth/2.0f - imgWidth/2.0f, 35 + halfBoxPad);
+    DrawSpriteAnimation(data.spriteData, dlg.idleAnimPlayer, gameScreenWidthF/2.0f - imgWidth/2.0f, 45 + halfBoxPad);
     //DrawRectangleLinesEx(imgRect, halfBoxPad, DARKGRAY);
     DrawRectangleRoundedLinesEx(imgRect, 0.1f, 16, halfBoxPad, DARKGRAY);
 
@@ -117,17 +117,17 @@ void RenderDialogueUI(GameData& data) {
     std::string npcName = data.charData.name[dlg.currentNpc];
     int nameFontSize = 20;
     int nameWidth = MeasureText(npcName.c_str(), nameFontSize);
-    DrawText(npcName.c_str(), screenWidth / 2 - nameWidth / 2, 8, nameFontSize, WHITE);
+    DrawText(npcName.c_str(), gameScreenWidth / 2 - nameWidth / 2, 16, nameFontSize, WHITE);
 
     // Wrap and center dialogue text
-    float dlgTextWidth = screenWidth - 40;
+    float dlgTextWidth = gameScreenWidth - 40;
     std::string wrappedText = WrapText(node.text, dlgTextWidth, 10);
     Vector2 textSize = MeasureMultilineText(wrappedText.c_str(), 10, dlgTextWidth);
-    DrawTextRec(wrappedText, screenWidth / 2 - textSize.x / 2, imgRect.y + imgRect.height + 10, 10, YELLOW);
+    DrawTextRec(wrappedText, gameScreenWidth / 2 - textSize.x / 2, imgRect.y + imgRect.height + 20, 10, YELLOW);
 
     // Render responses from bottom-up
     dlg.responseRects.clear();
-    float maxWidth = screenWidth - 40;
+    float maxWidth = gameScreenWidth - 40;
     int fontSize = 10;
     float spacing = 2.0f;
 
@@ -147,7 +147,7 @@ void RenderDialogueUI(GameData& data) {
         totalHeight += size.y + padY * 2 + spacing;
     }
 
-    float startY = screenHeight - totalHeight - 2;
+    float startY = gameScreenHeight - totalHeight - 16;
     Vector2 mouse = GetMousePosition();
 
     for (size_t i = 0; i < node.responseIds.size(); ++i) {

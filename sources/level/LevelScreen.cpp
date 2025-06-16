@@ -95,7 +95,7 @@ static void DisplayActionUI(SpriteData& spriteData, CharacterData& charData, Lev
     int visibleIcons = 14;
 
     float offsetX = 0;
-    float offsetY = 236;
+    float offsetY = 326;
     Vector2 scrollLeft[3] = {{offsetX + 15, offsetY + 1},
                              {offsetX + 1,  offsetY + 16},
                              {offsetX + 15, offsetY + 31}};
@@ -105,7 +105,7 @@ static void DisplayActionUI(SpriteData& spriteData, CharacterData& charData, Lev
 
     DrawTriangle(scrollLeft[0], scrollLeft[1], scrollLeft[2], mouseOverScrollLeft ? WHITE : GRAY);
 
-    offsetX = 480 - 16;
+    offsetX = gameScreenWidthF - 16;
     Vector2 scrollRight[3] = {{offsetX + 1,  offsetY + 1},
                               {offsetX + 1,  offsetY + 31},
                               {offsetX + 15, offsetY + 16}};
@@ -146,7 +146,7 @@ static void DisplayActionUI(SpriteData& spriteData, CharacterData& charData, Lev
             break;
         }
         float iconX = 16 + i * iconWidth;
-        float iconY = 236;
+        float iconY = 326;
         if (DrawActionIcon(iconX, iconY, actionIcons[uiState.actionIconScrollIndex + i], uiState)) {
             PlaySoundEffect(SoundEffectType::Select);
             // action icon clicked
@@ -226,39 +226,6 @@ static void DisplayActionUI(SpriteData& spriteData, CharacterData& charData, Lev
     }
 }
 
-void DisplayCombatLog(Level &combat) {
-    // Display Combat Log (at the bottom of the screen)
-    int logStartY = 220;
-    int logHeight = 40;
-    int logLineHeight = 10;
-
-    // Create a string for the last 5 lines of the combat log
-    int logSize = (int) combat.log.size();
-    int startIdx = (logSize > 4) ? logSize - 4 : 0;  // Correct calculation for the last 5 lines
-    // Draw the background for the log area (lighter gray)
-    //DrawRectangle(5, logStartY-5, 470, logHeight+10, DARKGRAY);
-    DrawRectangleRounded((Rectangle) {5, (float) logStartY - 5, 470, (float) logHeight + 10}, 0.1f, 16, DARKGRAY);
-    //DrawRectangleRoundedLinesEx((Rectangle) {5, (float) logStartY-5, 470, (float) logHeight+10}, 0.1f, 16, 1.0f, DARKGRAY);
-
-    //std::string lines = "";
-    for (int i = startIdx; i < logSize; ++i) {
-        //lines += combat.log[i] + "\n";
-        // Draw the text for the combat log entry
-        int textWidth = MeasureText(combat.log[i].c_str(), 10);
-        DrawText(combat.log[i].c_str(), 240 - textWidth / 2, logStartY + (i - startIdx) * logLineHeight, 10, LIGHTGRAY);
-    }
-    //GuiDrawText(lines.c_str(), (Rectangle) {0, (float) logStartY, 480, (float) logHeight}, TEXT_ALIGN_CENTER, DARKGRAY);
-
-    // Draw each line of the log in the designated area
-    /*
-    for (int i = startIdx; i < logSize; ++i) {
-        // Draw the text for the combat log entry
-        int textWidth = MeasureText(combat.log[i].c_str(), 10);
-        DrawText(combat.log[i].c_str(), 240 - textWidth / 2, logStartY + (i - startIdx) * logLineHeight, 10, DARKGRAY);
-    }
-    */
-}
-
 static void DisplayDamageNumbers(Level &combat) {
     for (auto &animation: combat.animations) {
         if (animation.type == AnimationType::DamageNumber) {
@@ -294,8 +261,8 @@ static void DisplayTextAnimations(Level &combat) {
     for (auto &animation: combat.animations) {
         if (animation.type == AnimationType::Text) {
             // Draw veil
-            DrawRectangle(0, 0, 480, 270, Fade(BLACK, animation.state.text.veilAlpha));
-            DrawText(animation.state.text.text, 240 - (MeasureText(animation.state.text.text, 20) / 2),
+            DrawRectangle(0, 0, gameScreenWidth, gameScreenHeight, Fade(BLACK, animation.state.text.veilAlpha));
+            DrawText(animation.state.text.text, gameScreenHalfWidth - (MeasureText(animation.state.text.text, 20) / 2),
                      (int) animation.state.text.y, 20, Fade(WHITE, animation.state.text.alpha));
         }
     }
@@ -338,16 +305,16 @@ void DrawLevelScreen(GameData& data, Level &level, LevelScreen &levelScreen, Pla
     if (level.turnState == TurnState::Victory) {
         std::string text = "Victory!";
         // Draw the enemy selection UI
-        DrawText(text.c_str(), 240 - (MeasureText(text.c_str(), 20) / 2), 10, 20, WHITE);
-        if (GuiButton((Rectangle) {240 - 50, 245, 100, 20}, "End Battle")) {
+        DrawText(text.c_str(), gameScreenHalfWidth - (MeasureText(text.c_str(), 20) / 2), 10, 20, WHITE);
+        if (GuiButton((Rectangle) {gameScreenHalfWidthF - 50, 340, 100, 20}, "End Battle")) {
             PublishEndCombatEvent(*levelScreen.eventQueue, true);
         }
     }
     if (level.turnState == TurnState::Defeat) {
         std::string text = "Defeat!";
         // Draw the enemy selection UI
-        DrawText(text.c_str(), 240 - (MeasureText(text.c_str(), 20) / 2), 10, 20, WHITE);
-        if (GuiButton((Rectangle) {240 - 50, 245, 100, 20}, "End Battle")) {
+        DrawText(text.c_str(), gameScreenHalfWidth - (MeasureText(text.c_str(), 20) / 2), 10, 20, WHITE);
+        if (GuiButton((Rectangle) {gameScreenHalfWidthF - 50, 340, 100, 20}, "End Battle")) {
             PublishEndCombatEvent(*levelScreen.eventQueue, false);
         }
     }

@@ -19,6 +19,8 @@ struct LevelCamera {
     float cameraPanElapsed;
     int worldWidth;
     int worldHeight;
+    bool cameraLockX;
+    bool cameraLockY;
 };
 
 void InitLevelCamera(LevelCamera& cam);

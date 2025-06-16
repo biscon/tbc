@@ -13,7 +13,7 @@ static RenderTexture2D bloodTexture;
 
 // Initialize the blood texture
 void InitBloodRendering() {
-    bloodTexture = LoadRenderTexture(480, 270); // Assuming the screen size
+    bloodTexture = LoadRenderTexture(gameScreenWidth, gameScreenHeight); // Assuming the screen size
 }
 
 // Clean up when done

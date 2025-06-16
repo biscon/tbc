@@ -196,7 +196,7 @@ void UpdateCombat(GameData &data, Level &level, PlayField& playField, float dt) 
         }
         case TurnState::EndRound: {
             Animation textAnim{};
-            SetupTextAnimation(textAnim, "Next round!", 125, 1.0f, 1.0f);
+            SetupTextAnimation(textAnim, "Next round!", 150, 1.0f, 1.0f);
             level.animations.push_back(textAnim);
             WaitTurnState(level, TurnState::StartRound, 0.2f);
             UpdateStatusEffects(charData, level);

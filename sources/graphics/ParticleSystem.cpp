@@ -1,5 +1,6 @@
 #include "ParticleSystem.h"
 #include "raymath.h"
+#include "data/GameData.h"
 #include <cmath>
 #include <cstdlib>
 
@@ -128,7 +129,7 @@ void DrawParticleManager(ParticleManager &manager) {
     DrawTexturePro(
             manager.renderTexture.texture,
             { 0, 0, (float)manager.renderTexture.texture.width, -(float)manager.renderTexture.texture.height },
-            { 0, 0, 480, 270 },
+            { 0, 0, gameScreenWidthF, gameScreenHeightF },
             { 0, 0 },
             0,
             WHITE

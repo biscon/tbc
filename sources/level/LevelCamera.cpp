@@ -7,8 +7,10 @@
 #include "graphics/CharacterSprite.h"
 
 void StartCameraPanToTargetPos(LevelCamera& cam, Vector2 target, float speed) {
+    float halfWidth = gameScreenWidthF/2.0f;
+    float halfHeight = gameScreenHeightF/2.0f;
     // if distance is less than 20 abort
-    if (Vector2Distance(Vector2Add(cam.camera.target, {240, 135}), target) < 32) {
+    if (Vector2Distance(Vector2Add(cam.camera.target, {halfWidth, halfHeight}), target) < 32) {
         TraceLog(LOG_INFO, "Camera distance less than threshold, aborting camera pan");
         return;
     }
@@ -18,8 +20,8 @@ void StartCameraPanToTargetPos(LevelCamera& cam, Vector2 target, float speed) {
     cam.cameraVelocity = Vector2{0, 0};
     cam.cameraPanning = true;
     cam.cameraPanTarget = target;
-    cam.cameraPanTarget.x -= 240;
-    cam.cameraPanTarget.y -= 135;
+    cam.cameraPanTarget.x -= halfWidth;
+    cam.cameraPanTarget.y -= halfHeight;
     cam.cameraStartPos = cam.camera.target;
 
     // Calculate duration based on speed
@@ -34,17 +36,19 @@ void StartCameraPanToTilePos(LevelCamera& cam, Vector2i target, float speed) {
 }
 
 void StartCameraPanToTargetChar(SpriteData& spriteData, CharacterData& charData, LevelCamera& cam, int target, float speed) {
+    float halfWidth = gameScreenWidthF/2.0f;
+    float halfHeight = gameScreenHeightF/2.0f;
     CharacterSprite& sprite = charData.sprite[target];
     // if distance is less than 20 abort
-    if (Vector2Distance(Vector2Add(cam.camera.target, {240, 135}), GetCharacterSpritePos(spriteData, sprite)) < 32) {
+    if (Vector2Distance(Vector2Add(cam.camera.target, {halfWidth, halfHeight}), GetCharacterSpritePos(spriteData, sprite)) < 32) {
         TraceLog(LOG_INFO, "Camera distance less than threshold, aborting camera pan");
         return;
     }
     cam.cameraVelocity = Vector2{0, 0};
     cam.cameraPanning = true;
     cam.cameraPanTarget = GetCharacterSpritePos(spriteData, sprite);
-    cam.cameraPanTarget.x -= 240;
-    cam.cameraPanTarget.y -= 135;
+    cam.cameraPanTarget.x -= halfWidth;
+    cam.cameraPanTarget.y -= halfHeight;
     cam.cameraStartPos = cam.camera.target;
 
     // Calculate duration based on speed
@@ -57,8 +61,8 @@ void StartCameraPanToTargetCharTime(SpriteData& spriteData, CharacterData& charD
     cam.cameraVelocity = Vector2{0, 0};
     cam.cameraPanning = true;
     cam.cameraPanTarget = GetCharacterSpritePos(spriteData, charData.sprite[target]);
-    cam.cameraPanTarget.x -= 240;
-    cam.cameraPanTarget.y -= 135;
+    cam.cameraPanTarget.x -= gameScreenWidthF/2.0f;
+    cam.cameraPanTarget.y -= gameScreenHeightF/2.0f;
     cam.cameraStartPos = cam.camera.target;
     cam.cameraPanDuration = duration;
     cam.cameraPanElapsed = 0.0f;
@@ -94,6 +98,7 @@ void UpdateCameraUnbounded(LevelCamera& cam, float dt) {
 }
 
 void UpdateCamera(LevelCamera& cam, float dt) {
+    // Handle camera panning animation
     if (cam.cameraPanning) {
         cam.cameraPanElapsed += dt;
 
@@ -102,44 +107,56 @@ void UpdateCamera(LevelCamera& cam, float dt) {
             cam.camera.target = cam.cameraPanTarget;
         } else {
             float t = cam.cameraPanElapsed / cam.cameraPanDuration;
-            t = Smootherstep(t);  // Use a better interpolation function
-            //t = EaseOutExpo(t);
+            t = Smootherstep(t);
             cam.camera.target = Vector2Lerp(cam.cameraStartPos, cam.cameraPanTarget, t);
-            // Ceil camera target to prevent jittering
+
+            // Ceil to avoid jitter
             cam.camera.target.x = ceilf(cam.camera.target.x);
             cam.camera.target.y = ceilf(cam.camera.target.y);
         }
+    } else {
+        cam.camera.target = Vector2Add(cam.camera.target, cam.cameraVelocity);
+        // Ceil camera target to prevent jittering
+        cam.camera.target.x = ceilf(cam.camera.target.x);
+        cam.camera.target.y = ceilf(cam.camera.target.y);
     }
 
+    // Calculate max scrollable area
+    float maxX = (float)cam.worldWidth - gameScreenWidthF;
+    float maxY = (float)cam.worldHeight - gameScreenHeightF;
+    float minX = 0.0f;
+    float minY = 0.0f;
 
-    float border = 0;
-    // Ensure the camera does not scroll more than border pixels outside the visible area
-    float maxX = (float) cam.worldWidth - 480 + border;
-    float maxY = (float) cam.worldHeight - 270 + border;
-    if(cam.worldHeight < 270) {
-        maxY = 0;
+    // Handle X-axis
+    if (cam.cameraLockX) {
+        cam.camera.target.x = ((float) cam.worldWidth - gameScreenWidthF) / 2.0f;
+    } else {
+        cam.camera.target.x = Clamp(cam.camera.target.x, minX, maxX);
+        cam.camera.target.x = ceilf(cam.camera.target.x); // Optional: keep integer alignment
     }
-    float minX = -border;
-    float minY = -border;
 
-    if (cam.camera.target.x < minX) {
-        cam.camera.target.x = minX;
+    // Handle Y-axis
+    if (cam.cameraLockY) {
+        cam.camera.target.y = ((float) cam.worldHeight - gameScreenHeightF) / 2.0f;
+    } else {
+        cam.camera.target.y = Clamp(cam.camera.target.y, minY, maxY);
+        cam.camera.target.y = ceilf(cam.camera.target.y);
+    }
+
+    if (cam.camera.target.x <= minX && cam.cameraVelocity.x < 0.0f) {
         cam.cameraVelocity.x = 0.0f;
     }
-    if (cam.camera.target.y < minY) {
-        cam.camera.target.y = minY;
-        cam.cameraVelocity.y = 0.0f;
-    }
-    if (cam.camera.target.x > maxX) {
-        cam.camera.target.x = maxX;
+    if (cam.camera.target.x >= maxX && cam.cameraVelocity.x > 0.0f) {
         cam.cameraVelocity.x = 0.0f;
     }
-    if (cam.camera.target.y > maxY) {
-        cam.camera.target.y = maxY;
+    if (cam.camera.target.y <= minY && cam.cameraVelocity.y < 0.0f) {
         cam.cameraVelocity.y = 0.0f;
     }
+    if (cam.camera.target.y >= maxY && cam.cameraVelocity.y > 0.0f) {
+        cam.cameraVelocity.y = 0.0f;
+    }
+
 }
-
 
 void InitLevelCamera(LevelCamera &cam) {
     cam.camera = {0};
@@ -153,5 +170,6 @@ void InitLevelCamera(LevelCamera &cam) {
     cam.cameraPanning = false;
     cam.cameraPanDuration = 0.0f;
     cam.cameraPanElapsed = 0.0f;
-
+    cam.cameraLockX = false;
+    cam.cameraLockY = false;
 }

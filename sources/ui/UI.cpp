@@ -4,9 +4,10 @@
 
 #include "UI.h"
 #include "raymath.h"
+#include "data/GameData.h"
 
 void DrawStatusText(const char* text, Color color, int y, int size) {
-    DrawText(text, 240 - (MeasureText(text, size) / 2), y, size, color);
+    DrawText(text, gameScreenHalfWidth - (MeasureText(text, size) / 2), y, size, color);
 }
 
 void DrawStatusTextBg(const char* text, Color color, int y, int size) {
@@ -17,7 +18,7 @@ void DrawStatusTextBg(const char* text, Color color, int y, int size) {
     int padding = 8;
 
     // Calculate the background rectangle
-    int rectX = 240 - (textWidth / 2) - padding;
+    int rectX = gameScreenHalfWidth - (textWidth / 2) - padding;
     int rectY = y - padding / 2;
     int rectWidth = textWidth + padding * 2;
     int rectHeight = textHeight + padding;
@@ -26,7 +27,7 @@ void DrawStatusTextBg(const char* text, Color color, int y, int size) {
     DrawRectangleRounded((Rectangle){ (float)rectX, (float)rectY, (float)rectWidth, (float)rectHeight }, 0.4f, 8, (Color){ 0, 0, 0, 128 });
 
     // Draw the text
-    DrawText(text, 240 - (textWidth / 2), y, size, color);
+    DrawText(text, gameScreenHalfWidth - (textWidth / 2), y, size, color);
 }
 
 void DisplayCharacterStatsFloating(CharacterData& charData, int character, int x, int y, bool isPlayer) {
@@ -36,14 +37,14 @@ void DisplayCharacterStatsFloating(CharacterData& charData, int character, int x
     auto backgroundRect = (Rectangle){(float)x, (float)y, 82, 76 + (float)statusEffectsHeight + 4}; // Adjusted height for level
 
     // Adjust the rectangle position to fit within the screen boundaries
-    if (backgroundRect.x + backgroundRect.width > 480) {
-        backgroundRect.x = 480 - backgroundRect.width - 2; // Push left
+    if (backgroundRect.x + backgroundRect.width > gameScreenWidth) {
+        backgroundRect.x = gameScreenWidth - backgroundRect.width - 2; // Push left
     }
     if (backgroundRect.x < 0) {
         backgroundRect.x = 0; // Push right
     }
-    if (backgroundRect.y + backgroundRect.height > 270) {
-        backgroundRect.y = 270 - backgroundRect.height - 2; // Push up
+    if (backgroundRect.y + backgroundRect.height > gameScreenHeight) {
+        backgroundRect.y = gameScreenHeight - backgroundRect.height - 2; // Push up
     }
     if (backgroundRect.y < 0) {
         backgroundRect.y = 0; // Push down

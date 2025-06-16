@@ -20,7 +20,7 @@ static Level level;
 static LevelScreen levelScreen;
 static ParticleManager particleManager;
 static PlayField playField{};
-const Color BACKGROUND_GREY = Color{25, 25, 25, 255};
+const Color BACKGROUND_GREY = Color{15, 15, 15, 255};
 static GameEventQueue eventQueue;
 
 static void moveParty(Vector2i target) {
@@ -100,57 +100,68 @@ static void processEvents() {
 
 static void handleCameraMovement() {
     float dt = GetFrameTime();
-    float speed = 6.5f;
-    float accelerationTime = 0.5f; // Time to reach full speed
-    float decelerationTime = 0.5f; // Time to stop when no input
+    float speed = 8.0f;
+    float accelerationTime = 0.75f;
+    float decelerationTime = 0.75f;
 
     float acceleration = speed / accelerationTime;
     float deceleration = speed / decelerationTime;
 
-    // Handle horizontal movement
-    if (IsKeyDown(KEY_A)) {
-        level.camera.cameraVelocity.x -= acceleration * dt;
-        if (level.camera.cameraVelocity.x < -speed) {
-            level.camera.cameraVelocity.x = -speed;
-        }
-    } else if (IsKeyDown(KEY_D)) {
-        level.camera.cameraVelocity.x += acceleration * dt;
-        if (level.camera.cameraVelocity.x > speed) {
-            level.camera.cameraVelocity.x = speed;
+    // X-axis movement (A/D)
+    if (!level.camera.cameraLockX) {
+        if (IsKeyDown(KEY_A)) {
+            level.camera.cameraVelocity.x -= acceleration * dt;
+            if (level.camera.cameraVelocity.x < -speed) {
+                level.camera.cameraVelocity.x = -speed;
+            }
+        } else if (IsKeyDown(KEY_D)) {
+            level.camera.cameraVelocity.x += acceleration * dt;
+            if (level.camera.cameraVelocity.x > speed) {
+                level.camera.cameraVelocity.x = speed;
+            }
+        } else {
+            // Decelerate when no input
+            if (level.camera.cameraVelocity.x > 0.0f) {
+                level.camera.cameraVelocity.x -= deceleration * dt;
+                if (level.camera.cameraVelocity.x < 0.0f) level.camera.cameraVelocity.x = 0.0f;
+            } else if (level.camera.cameraVelocity.x < 0.0f) {
+                level.camera.cameraVelocity.x += deceleration * dt;
+                if (level.camera.cameraVelocity.x > 0.0f) level.camera.cameraVelocity.x = 0.0f;
+            }
         }
     } else {
-        // Decelerate smoothly
-        if (level.camera.cameraVelocity.x > 0) {
-            level.camera.cameraVelocity.x -= deceleration * dt;
-            if (level.camera.cameraVelocity.x < 0) level.camera.cameraVelocity.x = 0;
-        } else if (level.camera.cameraVelocity.x < 0) {
-            level.camera.cameraVelocity.x += deceleration * dt;
-            if (level.camera.cameraVelocity.x > 0) level.camera.cameraVelocity.x = 0;
-        }
+        // Reset velocity if axis is locked
+        level.camera.cameraVelocity.x = 0.0f;
     }
 
-    // Handle vertical movement
-    if (IsKeyDown(KEY_W)) {
-        level.camera.cameraVelocity.y -= acceleration * dt;
-        if (level.camera.cameraVelocity.y < -speed) {
-            level.camera.cameraVelocity.y = -speed;
-        }
-    } else if (IsKeyDown(KEY_S)) {
-        level.camera.cameraVelocity.y += acceleration * dt;
-        if (level.camera.cameraVelocity.y > speed) {
-            level.camera.cameraVelocity.y = speed;
+    // Y-axis movement (W/S)
+    if (!level.camera.cameraLockY) {
+        if (IsKeyDown(KEY_W)) {
+            level.camera.cameraVelocity.y -= acceleration * dt;
+            if (level.camera.cameraVelocity.y < -speed) {
+                level.camera.cameraVelocity.y = -speed;
+            }
+        } else if (IsKeyDown(KEY_S)) {
+            level.camera.cameraVelocity.y += acceleration * dt;
+            if (level.camera.cameraVelocity.y > speed) {
+                level.camera.cameraVelocity.y = speed;
+            }
+        } else {
+            // Decelerate when no input
+            if (level.camera.cameraVelocity.y > 0.0f) {
+                level.camera.cameraVelocity.y -= deceleration * dt;
+                if (level.camera.cameraVelocity.y < 0.0f) level.camera.cameraVelocity.y = 0.0f;
+            } else if (level.camera.cameraVelocity.y < 0.0f) {
+                level.camera.cameraVelocity.y += deceleration * dt;
+                if (level.camera.cameraVelocity.y > 0.0f) level.camera.cameraVelocity.y = 0.0f;
+            }
         }
     } else {
-        // Decelerate smoothly
-        if (level.camera.cameraVelocity.y > 0) {
-            level.camera.cameraVelocity.y -= deceleration * dt;
-            if (level.camera.cameraVelocity.y < 0) level.camera.cameraVelocity.y = 0;
-        } else if (level.camera.cameraVelocity.y < 0) {
-            level.camera.cameraVelocity.y += deceleration * dt;
-            if (level.camera.cameraVelocity.y > 0) level.camera.cameraVelocity.y = 0;
-        }
+        // Reset velocity if axis is locked
+        level.camera.cameraVelocity.y = 0.0f;
     }
 }
+
 
 void LevelInit() {
     //LoadSoundEffect(SoundEffectType::Ambience, ASSETS_PATH"music/ambience_cave.ogg", true);
@@ -187,10 +198,9 @@ void LevelInit() {
 
     CreateLevel(level);
     CreateLevelScreen(levelScreen, &eventQueue);
-    CreateParticleManager(particleManager, {0, 0}, 480, 270);
+    CreateParticleManager(particleManager, {0, 0}, gameScreenWidth, gameScreenHeight);
 
     CreatePlayField(playField, &particleManager, &eventQueue);
-    //SetInitialGridPositions(playField, level);
 
     InitBloodRendering();
 
@@ -217,12 +227,7 @@ void LevelDestroy() {
 
 void LevelUpdate(float dt) {
     UpdateCamera(level.camera, dt);
-    if (!level.camera.cameraPanning) {
-        level.camera.camera.target = Vector2Add(level.camera.camera.target, level.camera.cameraVelocity);
-        // Ceil camera target to prevent jittering
-        level.camera.camera.target.x = ceilf(level.camera.camera.target.x);
-        level.camera.camera.target.y = ceilf(level.camera.camera.target.y);
-    }
+
     UpdateCombat(*game, level, playField, dt);
     UpdateParticleManager(particleManager, dt);
     UpdateLevelScreen(game->spriteData, game->charData, level, levelScreen, dt);

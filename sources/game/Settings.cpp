@@ -75,10 +75,10 @@ void InitSettings(SettingsData& data, const std::string &filename) {
     data.originalResolutionIndex = data.selectedResolutionIndex;
     data.originalDisplayMode = data.displayMode;
 
-    // Populate available resolutions (multiples of 480x270)
+    // Populate available resolutions
     data.availableResolutions.clear();
-    const int baseW = 480, baseH = 270;
-    const int scales[] = {1, 2, 3, 4, 6, 8};
+    const int baseW = gameScreenWidth, baseH = gameScreenHeight;
+    const int scales[] = {1, 2, 3, 4, 6};
 
     for (int scale : scales) {
         int w = baseW * scale;

@@ -29,7 +29,7 @@ int main() {
     //SetConfigFlags(FLAG_BORDERLESS_WINDOWED_MODE);
     // Enable config flags for resizable window and vertical synchro
     SetConfigFlags(FLAG_VSYNC_HINT);
-    InitWindow(480, 270, "RPG");
+    InitWindow(gameScreenWidth, gameScreenHeight, "RPG");
 
     SetExitKey(0);
 
@@ -40,8 +40,7 @@ int main() {
     InitAudioDevice();      // Initialize audio device
     InitSoundEffectManager();
 
-    int gameScreenWidth = 480;
-    int gameScreenHeight = 270;
+
 
     // Render texture initialization, used to hold the rendering result so we can easily resize it
     RenderTexture2D target = LoadRenderTexture(gameScreenWidth, gameScreenHeight);
@@ -87,12 +86,14 @@ int main() {
         //float scaleX = (float)renderWidth / 480.0f;
         //float scaleY = (float)renderHeight / 270.0f;
 
-        float finalX = (windowWidth - renderWidth) * 0.5f;
-        float finalY = (windowHeight - renderHeight) * 0.5f;
+        float finalX = (float) (windowWidth - renderWidth) * 0.5f;
+        float finalY = (float) (windowHeight - renderHeight) * 0.5f;
 
 
-        SetMouseOffset(-finalX, -finalY);
-        SetMouseScale(480.0f / renderWidth, 270.0f / renderHeight);
+        SetMouseOffset((int) -finalX, (int) -finalY);
+        float mouseScaleX = gameScreenWidthF / (float) renderWidth;
+        float mouseScaleY = gameScreenHeightF / (float) renderHeight;
+        SetMouseScale(mouseScaleX, mouseScaleY);
 
         // handle input
         HandleInputGameMode();
@@ -111,6 +112,9 @@ int main() {
             DrawTextEx(font2, TextFormat("FPS: %i", GetFPS()), (Vector2) {1, 1}, 5, 1, GREEN);
             DrawTextEx(font2, TextFormat("ScreenWidth: %i", GetScreenWidth()), (Vector2) {1, 10}, 5, 1, YELLOW);
             DrawTextEx(font2, TextFormat("ScreenHeight: %i", GetScreenHeight()), (Vector2) {1, 16}, 5, 1, YELLOW);
+            DrawTextEx(font2, TextFormat("Mouse: %i,%i", GetMouseX(), GetMouseY()), (Vector2) {1, 22}, 5, 1, YELLOW);
+            //DrawTextEx(font2, TextFormat("MouseOff: %f,%f", finalX, finalY), (Vector2) {1, 28}, 5, 1, YELLOW);
+            //DrawTextEx(font2, TextFormat("MouseScale: %f,%f", mouseScaleX, mouseScaleY), (Vector2) {1, 36}, 5, 1, YELLOW);
         }
         EndTextureMode();
 
@@ -120,7 +124,7 @@ int main() {
 
         DrawTexturePro(
                 target.texture,
-                (Rectangle){ 0, 0, 480, -270 },   // Render texture source (Y flipped)
+                (Rectangle){ 0, 0, gameScreenWidth, -gameScreenHeight },   // Render texture source (Y flipped)
                 (Rectangle){ finalX, finalY, (float) renderWidth, (float) renderHeight }, // Upscaled target rectangle
                 (Vector2){ 0, 0 },
                 0.0f,

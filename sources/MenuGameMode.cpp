@@ -336,8 +336,8 @@ void MenuRender() {
 
     //auto& menu = *menuStack.top();
     std::shared_ptr<Menu> menu = menuStack.top()(); // call the builder
-    float menuX = 480.0f / 2.0f;
-    float menuY = 270.0f / 2.0f;
+    float menuX = gameScreenWidthF / 2.0f;
+    float menuY = gameScreenHeightF / 2.0f;
     float spacing = 20.0f;
     float itemWidth = 200;
     float itemHeight = 18;

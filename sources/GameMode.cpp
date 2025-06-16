@@ -6,6 +6,7 @@
 #include <stack>
 #include "GameMode.h"
 #include "raylib.h"
+#include "data/GameData.h"
 
 static std::unordered_map<GameModes, GameMode> gameModes;
 static std::stack<GameMode*> gameModeStack;
@@ -123,7 +124,7 @@ void RenderGameMode() {
 
     // Render fade effect
     if (fading || fadeAlpha > 0.0f) {
-        DrawRectangle(0, 0, 480, 270, Fade(BLACK, fadeAlpha));
+        DrawRectangle(0, 0, gameScreenWidth, gameScreenHeight, Fade(BLACK, fadeAlpha));
     }
 }
 

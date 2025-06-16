@@ -454,6 +454,6 @@ void StartCombat(SpriteData& spriteData, CharacterData& charData, Level &level, 
     level.waitTime = 1.0f;
     level.turnState = TurnState::Waiting;
     Animation textAnim{};
-    SetupTextAnimation(textAnim, "Entering Combat", 125, 2.0f, 0.0f);
+    SetupTextAnimation(textAnim, "Entering Combat", 150, 2.0f, 0.0f);
     level.animations.push_back(textAnim);
 }
