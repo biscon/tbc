@@ -7,11 +7,42 @@
 #include "util/MathUtil.h"
 #include "ai/PathFinding.h"
 
-// Draw the light and shadows to the mask for a light
-static void DrawLightMask(LightInfo& light, Camera2D camera) {
-    // Use the light mask
-    BeginTextureMode(light.mask);
+static void drawOvalLight(Texture2D lightTexture, Vector2 center, float outerRadius) {
+    // Size (oval radii)
+    float radiusX = outerRadius;
+    float radiusY = outerRadius * 0.5f; // squash factor
 
+    // Destination rectangle where we stretch the texture
+    Rectangle dest = {
+            center.x,
+            center.y,
+            radiusX * 2,
+            radiusY * 2
+    };
+
+    // Source is the full texture
+    Rectangle source = {
+            0, 0,
+            (float)lightTexture.width,
+            (float)lightTexture.height
+    };
+
+    // Origin is center
+    Vector2 origin = {
+            (float) lightTexture.width,
+            (float) lightTexture.height
+    };
+    origin.x *= 0.5f;
+    origin.y *= 0.5f;
+
+    DrawTexturePro(lightTexture, source, dest, origin, 0.0f, WHITE);
+}
+
+// Draw the light and shadows to the mask for a light
+static void DrawLightMask(LightingData& data, LightInfo& light, Camera2D camera) {
+    // Render light
+
+    BeginTextureMode(light.mask);
     ClearBackground(WHITE);
 
     // Force the blend mode to only set the alpha of the destination
@@ -23,6 +54,7 @@ static void DrawLightMask(LightInfo& light, Camera2D camera) {
 
     // If we are valid, then draw the light radius to the alpha mask
     if (light.valid) DrawCircleGradient((int) screenLightPos.x, (int) screenLightPos.y, light.outerRadius, ColorAlpha(WHITE, 0), WHITE);
+    //if (light.valid) drawOvalLight(data.ovalTexture, screenLightPos, light.outerRadius);
 
     rlDrawRenderBatchActive();
 
@@ -47,7 +79,22 @@ static void DrawLightMask(LightInfo& light, Camera2D camera) {
 
     // Go back to normal blend mode
     rlSetBlendMode(BLEND_ALPHA);
+    EndTextureMode();
 
+    // render shadow
+    BeginTextureMode(light.shadow);
+    ClearBackground(WHITE);
+    // Force the blend mode to only set the alpha of the destination
+    rlSetBlendFactors(RLGL_SRC_ALPHA, RLGL_SRC_ALPHA, RLGL_MIN);
+    rlSetBlendMode(BLEND_CUSTOM);
+
+    // If we are valid, then draw the light radius to the alpha mask
+    if (light.valid) DrawCircleGradient((int) screenLightPos.x, (int) screenLightPos.y, light.outerRadius, ColorAlpha(WHITE, 0), WHITE);
+    //if (light.valid) drawOvalLight(data.ovalTexture, screenLightPos, light.outerRadius);
+
+    rlDrawRenderBatchActive();
+    // Go back to normal blend mode
+    rlSetBlendMode(BLEND_ALPHA);
     EndTextureMode();
 }
 
@@ -65,15 +112,13 @@ void AddLight(LightingData& data, float x, float y, float radius) {
     light.active = true;
     light.valid = false;  // The light must prove it is valid
     light.mask = LoadRenderTexture(gameScreenWidth, gameScreenHeight);
+    light.shadow = LoadRenderTexture(gameScreenWidth, gameScreenHeight);
     light.outerRadius = radius;
     light.bounds.width = radius * 2;
     light.bounds.height = radius * 2;
 
     MoveLight(light, x, y);
     data.lights.push_back(light);
-
-    // Force the render texture to have something in it
-    //DrawLightMask(light);
 }
 
 // Compute a shadow volume for the edge
@@ -142,22 +187,38 @@ void UpdateLight(LightingData& data, LightInfo& light, Camera2D camera) {
         light.shadowCount++;
     }
     light.valid = true;
-    DrawLightMask(light, camera);
+    DrawLightMask(data, light, camera);
 }
 
 void InitLightingData(LightingData &data) {
+    if(IsTextureValid(data.ovalTexture)) {
+        UnloadTexture(data.ovalTexture);
+    }
+    Image img = GenImageGradientRadial(256, 256, 1.0f, BLANK, WHITE);
+    data.ovalTexture = LoadTextureFromImage(img);
+    UnloadImage(img);
+
     for(auto& light : data.lights) {
         if(IsRenderTextureValid(light.mask)) {
             UnloadRenderTexture(light.mask);
+        }
+        if(IsRenderTextureValid(light.shadow)) {
+            UnloadRenderTexture(light.shadow);
         }
     }
     if(IsRenderTextureValid(data.lightMask)) {
         UnloadRenderTexture(data.lightMask);
     }
     data.lightMask = LoadRenderTexture(gameScreenWidth, gameScreenHeight);
+
+    if(IsRenderTextureValid(data.shadowMask)) {
+        UnloadRenderTexture(data.shadowMask);
+    }
+    data.shadowMask = LoadRenderTexture(gameScreenWidth, gameScreenHeight);
+
     data.lights.clear();
-    AddLight(data, 100, 100, 100);
-    //AddLight(data, 200, 200, 100);
+    AddLight(data, 100, 100, 128);
+    AddLight(data, 800, 90, 75);
 
     data.boxes.clear();
     //data.boxes.push_back((Rectangle){ 150, 80, 40, 40 });
@@ -170,27 +231,40 @@ void UpdateLighting(LightingData& data, Camera2D camera) {
     }
     // Build up the light mask
     BeginTextureMode(data.lightMask);
-
     ClearBackground(BLACK);
 
     // Force the blend mode to only set the alpha of the destination
     rlSetBlendFactors(RLGL_SRC_ALPHA, RLGL_SRC_ALPHA, RLGL_MIN);
     rlSetBlendMode(BLEND_CUSTOM);
     //rlSetBlendMode(BLEND_ADDITIVE);
-
     // Merge in all the light masks
     for (int i = 0; i < data.lights.size(); i++) {
         if (data.lights[i].active) DrawTextureRec(data.lights[i].mask.texture, (Rectangle){ 0, 0, gameScreenWidthF, -gameScreenHeightF }, Vector2Zero(), WHITE);
     }
-
     rlDrawRenderBatchActive();
+    // Go back to normal blend
+    rlSetBlendMode(BLEND_ALPHA);
+    EndTextureMode();
 
+    // Build up the shadow mask
+    BeginTextureMode(data.shadowMask);
+    ClearBackground(BLACK);
+
+    // Force the blend mode to only set the alpha of the destination
+    rlSetBlendFactors(RLGL_SRC_ALPHA, RLGL_SRC_ALPHA, RLGL_MIN);
+    rlSetBlendMode(BLEND_CUSTOM);
+    //rlSetBlendMode(BLEND_ADDITIVE);
+    // Merge in all the light masks
+    for (int i = 0; i < data.lights.size(); i++) {
+        if (data.lights[i].active) DrawTextureRec(data.lights[i].shadow.texture, (Rectangle){ 0, 0, gameScreenWidthF, -gameScreenHeightF }, Vector2Zero(), WHITE);
+    }
+    rlDrawRenderBatchActive();
     // Go back to normal blend
     rlSetBlendMode(BLEND_ALPHA);
     EndTextureMode();
 }
 
-void RenderLighting(LightingData& data, Camera2D camera) {
+void RenderGroundShadows(LightingData& data, Camera2D camera) {
     // Overlay the shadows from all the lights
 
     DrawTexturePro(
@@ -199,16 +273,30 @@ void RenderLighting(LightingData& data, Camera2D camera) {
             { 0, 0, gameScreenWidthF, gameScreenHeightF },
             { 0, 0 },
             0,
-            Fade(BLACK, 0.65f)
+            Fade(BLACK, 0.7f)
     );
 
     // Draw the lights
+    /*
     for (int i = 0; i < data.lights.size(); i++)
     {
         Vector2 screenPos = GetWorldToScreen2D(data.lights[i].position, camera);
         screenPos = ceilv(screenPos); // Round to nearest pixel
         if (data.lights[i].active) DrawCircle((int) screenPos.x, (int) screenPos.y, 5, (i == 0)? YELLOW : WHITE);
     }
+     */
+}
+
+void RenderLighting(LightingData& data) {
+    // Overlay the shadows from all the lights
+    DrawTexturePro(
+            data.shadowMask.texture,
+            { 0, 0, (float) data.shadowMask.texture.width, -(float) data.shadowMask.texture.height },
+            { 0, 0, gameScreenWidthF, gameScreenHeightF },
+            { 0, 0 },
+            0,
+            Fade(BLACK, 0.8f)
+    );
 }
 
 void BuildShadowBoxes(LightingData &data, TileMap &tileMap) {
@@ -219,7 +307,7 @@ void BuildShadowBoxes(LightingData &data, TileMap &tileMap) {
     // Step 1: Build solid mask
     for (int ty = 0; ty < h; ty++) {
         for (int tx = 0; tx < w; tx++) {
-            int tileIndex = GetTileAt(tileMap, NAV_LAYER, tx, ty);
+            int tileIndex = GetTileAt(tileMap, SHADOW_LAYER, tx, ty);
             solid[ty][tx] = (tileIndex > 0);
         }
     }

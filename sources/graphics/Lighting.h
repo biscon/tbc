@@ -28,11 +28,11 @@ struct ShadowGeometry {
 // Light info type
 struct LightInfo {
     bool active;                // Is this light slot active?
-    //bool dirty;                 // Does this light need to be updated?
     bool valid;                 // Is this light in a valid position?
 
     Vector2 position;           // Light position
     RenderTexture mask;         // Alpha mask for the light
+    RenderTexture shadow;       // Alpha mask for the shadow
     float outerRadius;          // The distance the light touches
     Rectangle bounds;           // A cached rectangle of the light bounds to help with culling
 
@@ -44,12 +44,15 @@ struct LightingData {
     std::vector<LightInfo> lights;
     std::vector<Rectangle> boxes;
     RenderTexture lightMask;
+    RenderTexture shadowMask;
+    Texture2D ovalTexture;
 };
 
 void MoveLight(LightInfo& light, float x, float y);
 void InitLightingData(LightingData& data);
 void UpdateLighting(LightingData& data, Camera2D camera);
-void RenderLighting(LightingData& data, Camera2D camera);
+void RenderGroundShadows(LightingData& data, Camera2D camera);
+void RenderLighting(LightingData& data);
 void BuildShadowBoxes(LightingData& data, TileMap& tileMap);
 
 #endif //SANDBOX_LIGHTING_H

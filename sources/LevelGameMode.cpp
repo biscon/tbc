@@ -256,11 +256,48 @@ void LevelRender() {
     Vector2 pos = GetCharacterSpritePos(game->spriteData, game->charData.sprite[charId]);
     MoveLight(level.lighting.lights[0], pos.x, pos.y);
 
-    // Clear screen with a background color (dark gray)
-    ClearBackground(BACKGROUND_GREY);
-    DrawPlayField(game->spriteData, game->charData, playField, level);
+    ClearBackground(BLACK);
 
-    //RenderLighting(level.lighting, level.camera.camera);
+    Vector2 topLeftWorld = { 0, 0 };
+    Vector2 bottomRightWorld = {
+            (float)level.camera.worldWidth,
+            (float)level.camera.worldHeight
+    };
+
+// Convert world bounds to screen coordinates using the camera
+    Vector2 topLeftScreen = GetWorldToScreen2D(topLeftWorld, level.camera.camera);
+    Vector2 bottomRightScreen = GetWorldToScreen2D(bottomRightWorld, level.camera.camera);
+
+// Compute screen-space rectangle
+    int scissorX = (int)topLeftScreen.x;
+    int scissorY = (int)topLeftScreen.y;
+    int scissorW = (int)(bottomRightScreen.x - topLeftScreen.x);
+    int scissorH = (int)(bottomRightScreen.y - topLeftScreen.y);
+
+// Clamp to stay within screen bounds
+    if (scissorX < 0) {
+        scissorW += scissorX;
+        scissorX = 0;
+    }
+    if (scissorY < 0) {
+        scissorH += scissorY;
+        scissorY = 0;
+    }
+    if (scissorX + scissorW > gameScreenWidth) {
+        scissorW = gameScreenWidth - scissorX;
+    }
+    if (scissorY + scissorH > gameScreenHeight) {
+        scissorH = gameScreenHeight - scissorY;
+    }
+
+    // Only apply scissor if there's a valid area
+    if (scissorW > 0 && scissorH > 0) {
+        BeginScissorMode(scissorX, scissorY, scissorW, scissorH);
+
+        DrawPlayField(game->spriteData, game->charData, playField, level);
+
+        EndScissorMode();
+    }
 
     DrawLevelScreen(*game, level, levelScreen, playField);
     RenderDialogueUI(*game);

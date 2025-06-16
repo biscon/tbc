@@ -600,21 +600,24 @@ void DrawPlayField(SpriteData& spriteData, CharacterData& charData, PlayField &p
 
     DrawBloodPools();
 
-    RenderLighting(level.lighting, level.camera.camera);
+
+    RenderGroundShadows(level.lighting, level.camera.camera);
 
     // Middle layer
     BeginMode2D(level.camera.camera);
     DrawTileLayer(spriteData.sheet, level.tileMap, MIDDLE_LAYER, 0, 0);
+    EndMode2D();
 
 
+    BeginMode2D(level.camera.camera);
     if(playField.mode == PlayFieldMode::Explore) {
         DrawTileSelection(playField, level);
     } else {
         DrawPathAndSelection(spriteData, charData, playField, level);
     }
-
     DrawGridCharacters(spriteData, charData, playField, level);
     EndMode2D();
+
 
     DrawParticleManager(*playField.particleManager);
 
@@ -622,6 +625,8 @@ void DrawPlayField(SpriteData& spriteData, CharacterData& charData, PlayField &p
     BeginMode2D(level.camera.camera);
     DrawTileLayer(spriteData.sheet, level.tileMap, TOP_LAYER, 0, 0);
     EndMode2D();
+
+    RenderLighting(level.lighting);
 }
 
 void MoveCharacter(SpriteData& spriteData, CharacterData& charData, PlayField &playField, Level &level, int character, Vector2i target) {
