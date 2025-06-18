@@ -21,7 +21,7 @@
 //------------------------------------------------------------------------------------
 int main() {
     GameData game;
-    CreateGame(game, "town_level.json");
+    CreateGame(game, "indoor_level.json");
     SetupMenuGameMode(&game);
     SetupLevelGameMode(&game);
 

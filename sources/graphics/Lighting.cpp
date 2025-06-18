@@ -53,7 +53,11 @@ static void DrawLightMask(LightingData& data, LightInfo& light, Camera2D camera)
     screenLightPos = ceilv(screenLightPos); // Round to nearest pixel
 
     // If we are valid, then draw the light radius to the alpha mask
-    if (light.valid) DrawCircleGradient((int) screenLightPos.x, (int) screenLightPos.y, light.outerRadius, ColorAlpha(WHITE, 0), WHITE);
+    if (light.valid) {
+        DrawCircleGradient((int) screenLightPos.x, (int) screenLightPos.y, light.outerRadius, ColorAlpha(WHITE, 0), WHITE);
+    }
+
+
     //if (light.valid) drawOvalLight(data.ovalTexture, screenLightPos, light.outerRadius);
 
     rlDrawRenderBatchActive();
@@ -88,8 +92,9 @@ static void DrawLightMask(LightingData& data, LightInfo& light, Camera2D camera)
     rlSetBlendFactors(RLGL_SRC_ALPHA, RLGL_SRC_ALPHA, RLGL_MIN);
     rlSetBlendMode(BLEND_CUSTOM);
 
-    // If we are valid, then draw the light radius to the alpha mask
-    if (light.valid) DrawCircleGradient((int) screenLightPos.x, (int) screenLightPos.y, light.outerRadius, ColorAlpha(WHITE, 0), WHITE);
+    if (light.valid) {
+        DrawCircleGradient((int) screenLightPos.x, (int) screenLightPos.y, light.outerRadius, ColorAlpha(WHITE, 0), WHITE);
+    }
     //if (light.valid) drawOvalLight(data.ovalTexture, screenLightPos, light.outerRadius);
 
     rlDrawRenderBatchActive();
@@ -107,8 +112,9 @@ void MoveLight(LightInfo& light, float x, float y) {
     light.bounds.y = y - light.outerRadius;
 }
 
-void AddLight(LightingData& data, float x, float y, float radius) {
+void AddLight(LightingData& data, float x, float y, float radius, float intensity) {
     LightInfo light{};
+    light.intensity = intensity;
     light.active = true;
     light.valid = false;  // The light must prove it is valid
     light.mask = LoadRenderTexture(gameScreenWidth, gameScreenHeight);
@@ -217,8 +223,8 @@ void InitLightingData(LightingData &data) {
     data.shadowMask = LoadRenderTexture(gameScreenWidth, gameScreenHeight);
 
     data.lights.clear();
-    AddLight(data, 100, 100, 128);
-    AddLight(data, 800, 90, 75);
+    AddLight(data, 100, 100, 128, 0.85f);
+    AddLight(data, 800, 140, 75, 1.0f);
 
     data.boxes.clear();
     //data.boxes.push_back((Rectangle){ 150, 80, 40, 40 });
@@ -265,8 +271,6 @@ void UpdateLighting(LightingData& data, Camera2D camera) {
 }
 
 void RenderGroundShadows(LightingData& data, Camera2D camera) {
-    // Overlay the shadows from all the lights
-
     DrawTexturePro(
             data.lightMask.texture,
             { 0, 0, (float) data.lightMask.texture.width, -(float) data.lightMask.texture.height },
@@ -275,20 +279,10 @@ void RenderGroundShadows(LightingData& data, Camera2D camera) {
             0,
             Fade(BLACK, 0.7f)
     );
-
-    // Draw the lights
-    /*
-    for (int i = 0; i < data.lights.size(); i++)
-    {
-        Vector2 screenPos = GetWorldToScreen2D(data.lights[i].position, camera);
-        screenPos = ceilv(screenPos); // Round to nearest pixel
-        if (data.lights[i].active) DrawCircle((int) screenPos.x, (int) screenPos.y, 5, (i == 0)? YELLOW : WHITE);
-    }
-     */
 }
 
 void RenderLighting(LightingData& data) {
-    // Overlay the shadows from all the lights
+    //rlSetBlendMode(BLEND_MULTIPLIED);
     DrawTexturePro(
             data.shadowMask.texture,
             { 0, 0, (float) data.shadowMask.texture.width, -(float) data.shadowMask.texture.height },
@@ -297,6 +291,7 @@ void RenderLighting(LightingData& data) {
             0,
             Fade(BLACK, 0.8f)
     );
+    rlSetBlendMode(BLEND_ALPHA);
 }
 
 void BuildShadowBoxes(LightingData &data, TileMap &tileMap) {

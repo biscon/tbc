@@ -11,6 +11,7 @@
 #include "graphics/TileMap.h"
 #include "graphics/CharacterSprite.h"
 #include "character/Npc.h"
+#include "character/Character.h"
 
 using json = nlohmann::json;
 
@@ -97,7 +98,6 @@ void LoadLevel(GameData& data, Level &level, const std::string &filename) {
     level.animations.clear();
     level.partyCharacters.clear();
     level.allCharacters.clear();
-    level.enemyCharacters.clear();
     level.currentCharacter = -1;
     level.selectedCharacter = -1;
     level.selectedSkill = nullptr;
@@ -154,6 +154,7 @@ void LoadLevel(GameData& data, Level &level, const std::string &filename) {
     }
 
     // load enemies
+    level.enemyCharacters.clear();
     level.enemyGroups.clear();
     for (auto &jGroup : j["enemies"]) {
         std::vector<int> enemyGroup;
@@ -175,7 +176,7 @@ void LoadLevel(GameData& data, Level &level, const std::string &filename) {
         AddEnemiesToLevel(data.spriteData, data.charData, level, enemyGroup, spawnAt);
     }
 
-    // load npcs
+
     level.npcCharacters.clear();
     level.npcDialogueNodeIds.clear();
     for (auto &jNpc : j["npcs"]) {

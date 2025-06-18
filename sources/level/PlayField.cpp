@@ -600,12 +600,12 @@ void DrawPlayField(SpriteData& spriteData, CharacterData& charData, PlayField &p
 
     DrawBloodPools();
 
-
     RenderGroundShadows(level.lighting, level.camera.camera);
 
     // Middle layer
     BeginMode2D(level.camera.camera);
     DrawTileLayer(spriteData.sheet, level.tileMap, MIDDLE_LAYER, 0, 0);
+    DrawTileLayer(spriteData.sheet, level.tileMap, LIGHT_LAYER, 0, 0);
     EndMode2D();
 
 

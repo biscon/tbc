@@ -9,9 +9,10 @@
 
 const int BOTTOM_LAYER = 0;
 const int MIDDLE_LAYER = 1;
-const int TOP_LAYER = 2;
-const int NAV_LAYER = 3;
-const int SHADOW_LAYER = 4;
+const int LIGHT_LAYER = 2;
+const int TOP_LAYER = 3;
+const int NAV_LAYER = 4;
+const int SHADOW_LAYER = 5;
 
 struct TileMapLayer {
     int width;

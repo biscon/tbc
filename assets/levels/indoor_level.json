@@ -1,0 +1,13 @@
+{
+    "name": "Indoor",
+    "map": "indoor_map.json",
+    "tileset": "indoor_tiles.png",
+    "spawnPoints": [
+        {
+            "name": "default",
+            "x": 11,
+            "y": 12,
+            "radius": 5
+        }
+    ]
+}

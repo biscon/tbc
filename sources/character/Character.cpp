@@ -70,6 +70,20 @@ int CreateCharacter(CharacterData &data, CharacterClass characterClass, Characte
     return (int) data.name.size()-1;
 }
 
+void DeleteCharacter(CharacterData& data, int id) {
+    data.stats.erase(data.stats.begin() + id);
+    data.sprite.erase(data.sprite.begin() + id);
+    data.orientation.erase(data.orientation.begin() + id);
+    data.weaponIdx.erase(data.weaponIdx.begin() + id);
+    data.characterClass.erase(data.characterClass.begin() + id);
+    data.isWeaponEquipped.erase(data.isWeaponEquipped.begin() + id);
+    data.name.erase(data.name.begin() + id);
+    data.ai.erase(data.ai.begin() + id);
+    data.faction.erase(data.faction.begin() + id);
+    data.statusEffects.erase(data.statusEffects.begin() + id);
+    data.skills.erase(data.skills.begin() + id);
+}
+
 void ClearAllCharacters(CharacterData& data) {
     data.stats.clear();
     data.sprite.clear();

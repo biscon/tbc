@@ -27,6 +27,7 @@ struct ShadowGeometry {
 
 // Light info type
 struct LightInfo {
+    float intensity;
     bool active;                // Is this light slot active?
     bool valid;                 // Is this light in a valid position?
 
