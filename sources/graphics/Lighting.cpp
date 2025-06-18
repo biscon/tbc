@@ -282,7 +282,7 @@ void RenderGroundShadows(LightingData& data, Camera2D camera) {
 }
 
 void RenderLighting(LightingData& data) {
-    //rlSetBlendMode(BLEND_MULTIPLIED);
+    rlSetBlendMode(BLEND_MULTIPLIED);
     DrawTexturePro(
             data.shadowMask.texture,
             { 0, 0, (float) data.shadowMask.texture.width, -(float) data.shadowMask.texture.height },
