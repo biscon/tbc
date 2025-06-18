@@ -4,11 +4,29 @@
 
 #include "SpriteSheet.h"
 
+
+
+
 // Load a sprite sheet from a file and split it into frames
 int LoadSpriteSheet(SpriteSheetData& sheetData, const char* filename, int frameWidth, int frameHeight) {
+    Texture2D texture;
+
+    Image img = LoadImage(filename);
+    Color* pixels = LoadImageColors(img);
+
+    for (int i = 0; i < img.width * img.height; i++) {
+        unsigned char a = pixels[i].a;
+        pixels[i].r = (pixels[i].r * a) / 255;
+        pixels[i].g = (pixels[i].g * a) / 255;
+        pixels[i].b = (pixels[i].b * a) / 255;
+    }
+
+    Image updated = img;
+    updated.data = pixels;
+    texture = LoadTextureFromImage(updated);
 
     // Load the texture
-    Texture2D texture = LoadTexture(filename);
+    //texture = LoadTexture(filename);
     sheetData.texture.emplace_back(texture);
     sheetData.frameSizeData.push_back({ frameWidth, frameHeight});
 
