@@ -70,23 +70,6 @@ int GetTileAt(const TileMap &tileMap, int layer, int x, int y) {
     return tileMap.layers[layer].data[y * tileMap.width + x];
 }
 
-void DrawTileLayerOld(SpriteSheetData& sheetData, TileMap &tileMap, int layer, int x, int y) {
-    if(layer < 0 || layer >= tileMap.layers.size()) {
-        return;
-    }
-    for(int ty = 0; ty < tileMap.height; ty++) {
-        for(int tx = 0; tx < tileMap.width; tx++) {
-            int tileIndex = GetTileAt(tileMap, layer, tx, ty);
-            if(tileIndex > 0) {
-                //Color tint = ColorBrightness(WHITE, 0.0f);
-                //tint.a = 255;
-                Color tint = WHITE;
-                DrawTextureRec(sheetData.texture[tileMap.tileSet], sheetData.frameRects[tileMap.tileSet][tileIndex-1], Vector2{(float)(x + tx * tileMap.tileWidth), (float)(y + ty * tileMap.tileHeight)}, tint);
-            }
-        }
-    }
-}
-
 void DrawTexturedQuadWithVertexColors(Texture2D tex, Rectangle src, Rectangle dest, Color c1, Color c2, Color c3, Color c4) {
     // Enable texture
     rlSetTexture(tex.id);
@@ -132,14 +115,18 @@ void DrawTileLayer(LightingData& lightData, SpriteSheetData& sheetData, TileMap 
                 auto& texRect = sheetData.frameRects[tileMap.tileSet][tileIndex-1];
                 auto dstRect = Rectangle{(float)(x + tx * tileMap.tileWidth), (float)(y + ty * tileMap.tileHeight), 16, 16};
 
-                //float factor = ((float) lightData.lightMap[tx][ty] / 15.0f) * 2.0f - 1.0f;
-                //Color color = ColorBrightness(WHITE, factor);
 
+                Color v1 = GetVertexLight(lightData, tileMap, tx, ty);     // top-left corner
+                Color v2 = GetVertexLight(lightData, tileMap, tx+1, ty);   // top-right
+                Color v3 = GetVertexLight(lightData, tileMap, tx+1, ty+1); // bottom-right
+                Color v4 = GetVertexLight(lightData, tileMap, tx, ty+1);   // bottom-left
 
-                Color v1 = GetVertexLight(lightData, tx, ty);     // top-left corner
-                Color v2 = GetVertexLight(lightData, tx+1, ty);   // top-right
-                Color v3 = GetVertexLight(lightData, tx+1, ty+1); // bottom-right
-                Color v4 = GetVertexLight(lightData, tx, ty+1);   // bottom-left
+                /*
+                Color v1 = GetVertexLightWeighted(lightData, tx, ty);     // top-left corner
+                Color v2 = GetVertexLightWeighted(lightData, tx+1, ty);   // top-right
+                Color v3 = GetVertexLightWeighted(lightData, tx+1, ty+1); // bottom-right
+                Color v4 = GetVertexLightWeighted(lightData, tx, ty+1);   // bottom-left
+                */
                 DrawTexturedQuadWithVertexColors(texture, texRect, dstRect, v1, v2, v3, v4);
 
                 //DrawTexturedQuadWithVertexColors(texture, texRect, dstRect, color, color, color, color);

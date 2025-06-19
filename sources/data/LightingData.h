@@ -14,13 +14,17 @@ struct LightSource {
     bool active;                // Is this light slot active?
     int x, y;
     float falloff;
+    Color color;
 };
 
 struct LightingData {
     std::vector<LightSource> lights;
-    std::vector<std::vector<uint8_t>> lightMap; // 0–15, like Minecraft
+    float** lightMapR = nullptr;
+    float** lightMapG = nullptr;
+    float** lightMapB = nullptr;
     int mapWidth;
     int mapHeight;
+    Color ambient;
 };
 
 #endif //SANDBOX_LIGHTINGDATA_H
