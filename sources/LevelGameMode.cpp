@@ -234,7 +234,7 @@ void LevelUpdate(float dt) {
     UpdatePlayField(game->spriteData, game->charData, playField, level, dt);
     UpdateDialogue(*game, dt);
 
-    UpdateLighting(level.lighting, level.camera.camera, level.tileMap);
+    //UpdateLighting(level.lighting, level.camera.camera, level.tileMap);
 }
 
 void LevelHandleInput() {
@@ -307,7 +307,7 @@ void LevelRender() {
 
 void LevelPreRender() {
     PreRenderBloodPools(level);
-    PreRenderParticleManager(particleManager, level.camera.camera);
+    PreRenderParticleManager(level.lighting, particleManager, level.camera.camera);
 }
 
 void LevelPause() {

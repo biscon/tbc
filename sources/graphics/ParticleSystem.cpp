@@ -1,6 +1,7 @@
 #include "ParticleSystem.h"
 #include "raymath.h"
 #include "data/GameData.h"
+#include "ai/PathFinding.h"
 #include <cmath>
 #include <cstdlib>
 
@@ -34,12 +35,13 @@ void DestroyParticleEmitter(ParticleEmitter* emitter) {
 }
 
 void EmitParticles(ParticleEmitter &emitter, int count, Vector2 direction, float spread, Color color,
-                   float size, float lifetime, EmissionType emissionType) {
+                   float size, float lifetime, EmissionType emissionType, bool lit) {
     for (int i = 0; i < count; i++) {
         for (auto &particle : emitter.particles) {
             if (!particle.active) {
                 particle.active = true;
                 particle.position = emitter.position;
+                particle.lit = lit;
 
                 float speed = Vector2Length(direction);
 
@@ -105,7 +107,7 @@ void UpdateParticleManager(ParticleManager &manager, float deltaTime) {
 }
 
 
-void PreRenderParticleManager(ParticleManager &manager, Camera2D& camera) {
+void PreRenderParticleManager(const LightingData& lighting, ParticleManager &manager, Camera2D& camera) {
     BeginTextureMode(manager.renderTexture);
     ClearBackground(BLANK);
     for (const auto &emitter : manager.emitters) {
@@ -117,7 +119,10 @@ void PreRenderParticleManager(ParticleManager &manager, Camera2D& camera) {
                                     static_cast<unsigned char>(particle.color.a * lifeRatio) };
                 Vector2 screenPos = GetWorldToScreen2D(particle.position, camera);
                 //TraceLog(LOG_INFO, "ScreenPos: %f,%f", screenPos.x, screenPos.y);
-                DrawCircleV(screenPos, particle.size * lifeRatio, fadeColor);
+                Vector2i gridPos = PixelToGridPositionI(particle.position.x, particle.position.y);
+                Color light = GetVertexLight(lighting, gridPos.x, gridPos.y);
+                Color tint = ColorTint(fadeColor, light);
+                DrawCircleV(screenPos, particle.size * lifeRatio, particle.lit ? tint : fadeColor);
             }
         }
         if(emitter->blendAdditive) EndBlendMode();
@@ -154,7 +159,7 @@ void CreateFireEffect(ParticleManager &manager, Vector2 position, Vector2 direct
     ParticleEmitter* emitter = CreateParticleEmitter(manager, 100, position, duration);
     emitter->emitCallback = [intensity, direction](ParticleEmitter &emitter) {
         const Color FIRE_RED = Color{255, 69, 0, 255};   // Fire red (#FF4500)
-        EmitParticles(emitter, intensity, direction, 0.3f, FIRE_RED, 2.0f, 1.0f);
+        EmitParticles(emitter, intensity, direction, 0.3f, FIRE_RED, 2.0f, 1.0f, EMIT_DIRECTIONAL, false);
     };
     emitter->blendAdditive = true;
 }
@@ -172,9 +177,9 @@ void CreateExplosionEffect(ParticleManager &manager, Vector2 position, int count
     ParticleEmitter* emitter = CreateParticleEmitter(manager, count * 3, position);
     emitter->emitCallback = [power](ParticleEmitter &emitter) {
         const Color FIRE_RED = Color{255, 69, 0, 255};   // Fire red (#FF4500)
-        EmitParticles(emitter, emitter.maxParticles/2, { power, 0 }, 0.0f, FIRE_RED, 3.0f, 0.75f, EMIT_RADIAL);
-        EmitParticles(emitter, emitter.maxParticles/4, { power, 0 }, 0.0f, FIRE_RED, 2.0f, 0.75f, EMIT_RADIAL);
-        EmitParticles(emitter, emitter.maxParticles/4, { power, 0 }, 0.0f, FIRE_RED, 1.0f, 0.75f, EMIT_RADIAL);
+        EmitParticles(emitter, emitter.maxParticles/2, { power, 0 }, 0.0f, FIRE_RED, 3.0f, 0.75f, EMIT_RADIAL, false);
+        EmitParticles(emitter, emitter.maxParticles/4, { power, 0 }, 0.0f, FIRE_RED, 2.0f, 0.75f, EMIT_RADIAL, false);
+        EmitParticles(emitter, emitter.maxParticles/4, { power, 0 }, 0.0f, FIRE_RED, 1.0f, 0.75f, EMIT_RADIAL, false);
     };
     emitter->duration = duration; // Quick burst
     emitter->blendAdditive = true;

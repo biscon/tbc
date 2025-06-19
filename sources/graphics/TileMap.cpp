@@ -8,6 +8,7 @@
 #include "util/cute_tiled.h"
 #include "rlgl.h"
 #include "Lighting.h"
+#include "Rendering.h"
 
 void LoadTileMap(TileMap &tileMap, const char *filename, int tileSet) {
     tileMap.layers.clear();
@@ -70,38 +71,6 @@ int GetTileAt(const TileMap &tileMap, int layer, int x, int y) {
     return tileMap.layers[layer].data[y * tileMap.width + x];
 }
 
-void DrawTexturedQuadWithVertexColors(Texture2D tex, Rectangle src, Rectangle dest, Color c1, Color c2, Color c3, Color c4) {
-    // Enable texture
-    rlSetTexture(tex.id);
-
-
-    rlBegin(RL_QUADS);
-
-    // Top-left (v1)
-    rlColor4ub(c1.r, c1.g, c1.b, c1.a);
-    rlTexCoord2f(src.x / tex.width, src.y / tex.height);
-    rlVertex2f(dest.x, dest.y);
-
-    // Bottom-left (v4)
-    rlColor4ub(c4.r, c4.g, c4.b, c4.a);
-    rlTexCoord2f(src.x / tex.width, (src.y + src.height) / tex.height);
-    rlVertex2f(dest.x, dest.y + dest.height);
-
-    // Bottom-right (v3)
-    rlColor4ub(c3.r, c3.g, c3.b, c3.a);
-    rlTexCoord2f((src.x + src.width) / tex.width, (src.y + src.height) / tex.height);
-    rlVertex2f(dest.x + dest.width, dest.y + dest.height);
-
-    // Top-right (v2)
-    rlColor4ub(c2.r, c2.g, c2.b, c2.a);
-    rlTexCoord2f((src.x + src.width) / tex.width, src.y / tex.height);
-    rlVertex2f(dest.x + dest.width, dest.y);
-
-
-    rlEnd();
-
-    rlSetTexture(0); // disable texture
-}
 
 void DrawTileLayer(LightingData& lightData, SpriteSheetData& sheetData, TileMap &tileMap, int layer, int x, int y) {
     if(layer < 0 || layer >= tileMap.layers.size()) {
@@ -116,17 +85,18 @@ void DrawTileLayer(LightingData& lightData, SpriteSheetData& sheetData, TileMap 
                 auto dstRect = Rectangle{(float)(x + tx * tileMap.tileWidth), (float)(y + ty * tileMap.tileHeight), 16, 16};
 
 
+                /*
                 Color v1 = GetVertexLight(lightData, tileMap, tx, ty);     // top-left corner
                 Color v2 = GetVertexLight(lightData, tileMap, tx+1, ty);   // top-right
                 Color v3 = GetVertexLight(lightData, tileMap, tx+1, ty+1); // bottom-right
                 Color v4 = GetVertexLight(lightData, tileMap, tx, ty+1);   // bottom-left
+                */
 
-                /*
                 Color v1 = GetVertexLightWeighted(lightData, tx, ty);     // top-left corner
                 Color v2 = GetVertexLightWeighted(lightData, tx+1, ty);   // top-right
                 Color v3 = GetVertexLightWeighted(lightData, tx+1, ty+1); // bottom-right
                 Color v4 = GetVertexLightWeighted(lightData, tx, ty+1);   // bottom-left
-                */
+
                 DrawTexturedQuadWithVertexColors(texture, texRect, dstRect, v1, v2, v3, v4);
 
                 //DrawTexturedQuadWithVertexColors(texture, texRect, dstRect, color, color, color, color);

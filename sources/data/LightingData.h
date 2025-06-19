@@ -7,9 +7,11 @@
 
 #include <cstdint>
 #include <vector>
+#include <string>
 
 // Light info type
 struct LightSource {
+    std::string id;
     uint8_t intensity;          // max 15
     bool active;                // Is this light slot active?
     int x, y;

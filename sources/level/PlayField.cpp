@@ -281,7 +281,13 @@ static void DrawGridCharacters(SpriteData& spriteData, CharacterData& charData, 
 
         CharacterSprite& charSprite = charData.sprite[character];
         if (IsCharacterVisible(level, character)) {
-            DrawCharacterSprite(spriteData, charSprite, charPos.x, charPos.y);
+            Vector2i t = GetCharacterGridPosI(spriteData, charSprite);
+            Color v1 = GetVertexLight(level.lighting, level.tileMap, t.x, t.y);     // top-left corner
+            Color v2 = GetVertexLight(level.lighting, level.tileMap, t.x+1, t.y);   // top-right
+            Color v3 = GetVertexLight(level.lighting, level.tileMap, t.x+1, t.y+1); // bottom-right
+            Color v4 = GetVertexLight(level.lighting, level.tileMap, t.x, t.y+1);   // bottom-left
+
+            DrawCharacterSpriteColors(spriteData, charSprite, charPos.x, charPos.y, v1, v2, v3, v4);
         } else {
             SetCharacterSpriteTint(spriteData, charSprite, {255, 255, 255, 64});
             DrawCharacterSprite(spriteData, charSprite, charPos.x, charPos.y);
@@ -599,8 +605,6 @@ void DrawPlayField(SpriteData& spriteData, CharacterData& charData, PlayField &p
     EndMode2D();
 
     DrawBloodPools();
-
-    //RenderGroundShadows(level.lighting, level.camera.camera);
 
     // Middle layer
     BeginMode2D(level.camera.camera);

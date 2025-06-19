@@ -4,6 +4,7 @@
 
 #include "BloodPool.h"
 #include "raylib.h"
+#include "ai/PathFinding.h"
 
 const Color DARK_BLOOD_RED = Color{139, 0, 0, 255};   // Dark blood red (#8B0000)
 const Color MEDIUM_BLOOD_RED = Color{178, 34, 34, 255};  // Medium blood red (#B22222)
@@ -32,21 +33,28 @@ void PreRenderBloodPools(Level &level) {
         if (animation.type == AnimationType::BloodPool) {
             int posX = (int)animation.state.bloodPool.position.x + (int)animation.state.bloodPool.offset1.x;
             int posY = (int)animation.state.bloodPool.position.y + (int)animation.state.bloodPool.offset1.y;
+            Vector2i gridPos = PixelToGridPositionI(posX, posY);
+            Color light = GetVertexLight(level.lighting, gridPos.x, gridPos.y);
+
             Vector2 screenPos = GetWorldToScreen2D({(float)posX, (float)posY}, level.camera.camera);
             screenPos = ceilv(screenPos); // Round to nearest pixel
-            DrawEllipse((int) screenPos.x, (int) screenPos.y, animation.state.bloodPool.radius1, 0.65f * animation.state.bloodPool.radius1, Fade(DARK_BLOOD_RED, 0.85f));
+            Color tint1 = ColorTint(Fade(DARK_BLOOD_RED, 0.85f), light);
+            DrawEllipse((int) screenPos.x, (int) screenPos.y, animation.state.bloodPool.radius1, 0.65f * animation.state.bloodPool.radius1, tint1);
 
             posX = (int)animation.state.bloodPool.position.x + (int)animation.state.bloodPool.offset2.x;
             posY = (int)animation.state.bloodPool.position.y + (int)animation.state.bloodPool.offset2.y;
             screenPos = GetWorldToScreen2D({(float)posX, (float)posY}, level.camera.camera);
             screenPos = ceilv(screenPos); // Round to nearest pixel
-            DrawEllipse((int) screenPos.x, (int) screenPos.y, animation.state.bloodPool.radius2, 0.70f * animation.state.bloodPool.radius2, Fade(DARK_BLOOD_RED, 0.75f));
+            Color tint2 = ColorTint(Fade(DARK_BLOOD_RED, 0.75f), light);
+            DrawEllipse((int) screenPos.x, (int) screenPos.y, animation.state.bloodPool.radius2, 0.70f * animation.state.bloodPool.radius2, tint2);
 
             posX = (int)animation.state.bloodPool.position.x + (int)animation.state.bloodPool.offset3.x;
             posY = (int)animation.state.bloodPool.position.y + (int)animation.state.bloodPool.offset3.y;
             screenPos = GetWorldToScreen2D({(float)posX, (float)posY}, level.camera.camera);
             screenPos = ceilv(screenPos); // Round to nearest pixel
-            DrawCircle((int) screenPos.x, (int) screenPos.y, animation.state.bloodPool.radius3, Fade(DARK_BLOOD_RED, 0.65f));
+
+            Color tint3 = ColorTint(Fade(DARK_BLOOD_RED, 0.65f), light);
+            DrawCircle((int) screenPos.x, (int) screenPos.y, animation.state.bloodPool.radius3, tint3);
         }
     }
     EndBlendMode();

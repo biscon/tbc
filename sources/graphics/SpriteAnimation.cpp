@@ -6,6 +6,8 @@
 #include "SpriteSheet.h"
 #include <fstream>
 #include "../util/json.hpp"
+#include "Rendering.h"
+
 using json = nlohmann::json;
 
 void UpdateSpriteAnimation(SpriteData& sprite, int player, float dt) {
@@ -245,6 +247,68 @@ void DestroySpriteAnimationData(SpriteData& spriteData) {
     sheetData.texture.clear();
     sheetData.frameRects.clear();
     sheetData.frameSizeData.clear();
+}
+
+void DrawSpriteAnimationColors(SpriteData& sprite, int player, float x, float y, Color c1, Color c2, Color c3, Color c4) {
+    SpriteSheetData& sheetData = sprite.sheet;
+    SpriteAnimationData& spriteData = sprite.anim;
+    SpriteAnimationPlayerData& playerData = sprite.player;
+
+    int animIdx = playerData.animationIdx[player];
+    /*
+    for(auto& item: spriteData.nameIndexMap) {
+        if(item.second == animIdx) {
+            TraceLog(LOG_INFO, "Attempting to draw anim: %s", item.first.c_str());
+        }
+    }
+    */
+    int spriteSheetIdx = spriteData.spriteSheetIdx[animIdx];
+
+    if(animIdx == -1 || spriteData.frames[animIdx].empty()) {
+        TraceLog(LOG_INFO, "Roaching out from drawing, empty frames or missing animation");
+        return;
+    }
+
+
+    // Get the current frame index
+    int frameIndex = spriteData.frames[animIdx][playerData.animData[player].currentFrame];
+
+    if (frameIndex < 0 || frameIndex >= sheetData.frameRects[spriteSheetIdx].size()) {
+        TraceLog(LOG_INFO, "Roaching out from drawing, cannot find framerect");
+        std::abort();
+        return; // Invalid frame index, skip drawing
+    }
+    Rectangle sourceRect = sheetData.frameRects[spriteSheetIdx][frameIndex];
+    SpriteAnimationPlayerRenderData& renderData = playerData.renderData[player];
+
+    // Define the rotation origin relative to the sprite space
+    Vector2 scaledOrigin = {
+            spriteData.origin[animIdx].x * renderData.scale.x, // Scaled x origin
+            spriteData.origin[animIdx].y * renderData.scale.y  // Scaled y origin
+    };
+
+    Rectangle destRect = {
+            x - scaledOrigin.x,
+            y - scaledOrigin.y,
+            sourceRect.width * renderData.scale.x, // Scaled width
+            sourceRect.height * renderData.scale.y // Scaled height
+    };
+
+
+
+    // Draw the texture with rotation, scale, and tint
+    /*
+    DrawTexturePro(
+            sheetData.texture[spriteSheetIdx], // The texture
+            sourceRect,           // The source rectangle
+            destRect,             // The destination rectangle
+            rotationOrigin,       // Rotation origin relative to destRect
+            renderData.rotation,      // The rotation in degrees
+            renderData.tint           // The color tint
+    );
+    */
+
+    DrawTexturedQuadWithVertexColorsRotated(sheetData.texture[spriteSheetIdx], sourceRect, destRect, c1, c2, c3, c4, scaledOrigin, renderData.rotation);
 }
 
 

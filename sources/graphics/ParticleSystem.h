@@ -6,6 +6,7 @@
 #define SANDBOX_PARTICLESYSTEM_H
 
 #include "raylib.h"
+#include "data/LightingData.h"
 #include <vector>
 #include <functional>
 
@@ -22,6 +23,7 @@ struct Particle {
     float lifeTime;
     float maxLifeTime;
     bool active;
+    bool lit;
 };
 
 struct ParticleEmitter {
@@ -46,10 +48,10 @@ void DestroyParticleManager(ParticleManager &manager);
 ParticleEmitter* CreateParticleEmitter(ParticleManager &manager, int maxParticles, Vector2 position, float duration = 0);
 void DestroyParticleEmitter(ParticleEmitter* emitter);
 
-void EmitParticles(ParticleEmitter &emitter, int count, Vector2 velocity, float spread, Color color, float size, float lifeTime, EmissionType emissionType = EMIT_DIRECTIONAL);
+void EmitParticles(ParticleEmitter &emitter, int count, Vector2 velocity, float spread, Color color, float size, float lifeTime, EmissionType emissionType = EMIT_DIRECTIONAL, bool lit = true);
 
 void UpdateParticleManager(ParticleManager &manager, float deltaTime);
-void PreRenderParticleManager(ParticleManager &manager, Camera2D& camera);
+void PreRenderParticleManager(const LightingData& lighting, ParticleManager &manager, Camera2D& camera);
 void DrawParticleManager(ParticleManager &manager);
 
 // Effect-specific functions

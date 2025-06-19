@@ -16,6 +16,7 @@ int CreateSpriteAnimationPlayer(SpriteData& sprite);
 void UpdateSpriteAnimation(SpriteData& sprite, int player, float dt);
 void DrawSpriteAnimation(SpriteData& sprite, int player);
 void DrawSpriteAnimation(SpriteData& sprite, int player, float x, float y);
+void DrawSpriteAnimationColors(SpriteData& sprite, int player, float x, float y, Color c1, Color c2, Color c3, Color c4);
 FrameInfo GetFrameInfo(SpriteData& sprite, int player);
 void PlaySpriteAnimation(SpriteData& sprite, int player, int animation, bool loop = true);
 void PlaySpriteAnimationRestart(SpriteData& sprite, int player, int animation, bool loop);

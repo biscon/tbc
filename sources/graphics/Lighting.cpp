@@ -13,12 +13,13 @@ void MoveLight(LightSource& light, int x, int y) {
     light.y = y;
 }
 
-void AddLight(LightingData& data, int x, int y, uint8_t intensity, float falloff, Color color) {
+void AddLight(LightingData& data, std::string id, int x, int y, uint8_t intensity, float falloff, Color color, bool active) {
     LightSource light{};
     light.intensity = intensity;
-    light.active = true;
+    light.active = active;
     light.falloff = falloff;
     light.color = color;
+    light.id = id;
 
     MoveLight(light, x, y);
     data.lights.push_back(light);
@@ -78,6 +79,9 @@ void PropagateLight(LightingData& data, const TileMap& map) {
     // Seed queue with lights
     for (const LightSource& light : data.lights) {
         if (light.x < 0 || light.y < 0 || light.x >= data.mapWidth || light.y >= data.mapHeight)
+            continue;
+
+        if(!light.active)
             continue;
 
         float intensity = static_cast<float>(light.intensity);
@@ -143,11 +147,6 @@ void PropagateLight(LightingData& data, const TileMap& map) {
         }
     }
 }
-
-void UpdateLighting(LightingData& data, Camera2D camera, const TileMap& map) {
-    //PropagateLight(data, map);
-}
-
 
 Color GetVertexLight(const LightingData& data, int vx, int vy) {
     float r = 0.0f, g = 0.0f, b = 0.0f;
@@ -269,9 +268,10 @@ void InitLightingData(LightingData &data, const TileMap& map) {
     data.ambient = { 5, 10, 30, 255 };
     data.lights.clear();
     ResizeTileLighting(data, map.width, map.height);
+    /*
     AddLight(data, 11, 12, 15, 2.5f, torchLightWarm1);
     AddLight(data, 51, 12, 15, 2.0f, torchLightWarm2);
     AddLight(data, 31, 32, 15, 1.0f, torchLightWarm3);
-    PropagateLight(data, map);
+     */
 }
 

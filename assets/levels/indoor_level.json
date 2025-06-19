@@ -2,12 +2,110 @@
     "name": "Indoor",
     "map": "indoor_map.json",
     "tileset": "indoor_tiles.png",
+    "ambientLight": "050A1E",
     "spawnPoints": [
         {
             "name": "default",
             "x": 11,
             "y": 12,
             "radius": 5
+        },
+        {
+            "name": "enemies",
+            "x": 18,
+            "y": 25,
+            "radius": 5
+        }
+    ],
+    "npcs": [
+        {
+            "template": "SerDonald",
+            "position": [52, 10],
+            "dialogueNode": 1
+        }
+    ],
+    "enemies": [
+        {
+            "group": "ninja1",
+            "characters": [
+                "MaleNinja",
+                "MaleNinja"
+            ],
+            "spawnAt": "enemies"
+        }
+    ],
+    "lights": [
+        {
+            "id": "light1",
+            "intensity": "15",
+            "active": false,
+            "x": 12,
+            "y": 12,
+            "falloff": 4.0,
+            "color": "FFE6B4"
+        },
+        {
+            "id": "light2",
+            "intensity": "15",
+            "active": true,
+            "x": 27,
+            "y": 12,
+            "falloff": 1.5,
+            "color": "FFE6B4"
+        },
+        {
+            "id": "light3",
+            "intensity": "15",
+            "active": true,
+            "x": 35,
+            "y": 12,
+            "falloff": 1.5,
+            "color": "FFE6B4"
+        },
+        {
+            "id": "light4",
+            "intensity": "15",
+            "active": true,
+            "x": 52,
+            "y": 12,
+            "falloff": 1.25,
+            "color": "FFFFFF"
+        },
+        {
+            "id": "light5",
+            "intensity": "15",
+            "active": true,
+            "x": 32,
+            "y": 32,
+            "falloff": 0.9,
+            "color": "FFF0C8"
+        },
+        {
+            "id": "cornerlight1",
+            "intensity": "15",
+            "active": true,
+            "x": 18,
+            "y": 25,
+            "falloff": 2.5,
+            "color": "1133FF"
+        },
+        {
+            "id": "cornerlight2",
+            "intensity": "15",
+            "active": true,
+            "x": 18,
+            "y": 37,
+            "falloff": 2.5,
+            "color": "FF3311"
+        },
+        {
+            "id": "cornerlight3",
+            "intensity": "15",
+            "active": true,
+            "x": 45,
+            "y": 37,
+            "falloff": 2.5,
+            "color": "11FF33"
         }
     ]
 }

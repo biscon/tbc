@@ -36,6 +36,8 @@ Color GetCharacterSpriteTint(SpriteData& spriteData, CharacterSprite& sprite);
 void SetCharacterSpriteFrame(SpriteData& spriteData, CharacterSprite& sprite, int frame);
 void UpdateCharacterSprite(SpriteData& spriteData, CharacterSprite& sprite, float deltaTime);
 
+void DrawCharacterSpriteColors(SpriteData& spriteData, CharacterSprite &sprite, float x, float y, Color c1, Color c2, Color c3, Color c4);
+
 
 
 #endif //SANDBOX_CHARACTERSPRITE_H

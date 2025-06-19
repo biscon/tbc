@@ -12,6 +12,7 @@
 #include "graphics/CharacterSprite.h"
 #include "character/Npc.h"
 #include "character/Character.h"
+#include "util/StringUtil.h"
 
 using json = nlohmann::json;
 
@@ -197,6 +198,27 @@ void LoadLevel(GameData& data, Level &level, const std::string &filename) {
     level.camera.cameraLockY = (level.camera.worldHeight <= gameScreenHeight);
 
     InitLightingData(level.lighting, level.tileMap);
+
+    // Load ambient light
+    if (j.contains("ambientLight")) {
+        level.lighting.ambient = HexToColor(j["ambientLight"]);
+    }
+
+    // Load lights
+    if (j.contains("lights") && j["lights"].is_array()) {
+        for (const auto& light : j["lights"]) {
+            std::string id = light.value("id", "");
+            int x = light.value("x", 0);
+            int y = light.value("y", 0);
+            uint8_t intensity = static_cast<uint8_t>(std::stoi(light.value("intensity", "15")));
+            float falloff = light.value("falloff", 1.0f);
+            Color color = HexToColor(light.value("color", "FFFFFF"));
+            bool active = light.value("active", true);
+
+            AddLight(level.lighting, id, x, y, intensity, falloff, color, active);
+        }
+    }
+    PropagateLight(level.lighting, level.tileMap);
 }
 
 void DestroyLevel(SpriteSheetData& sheetData, Level &level) {
