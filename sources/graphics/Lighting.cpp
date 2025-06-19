@@ -6,355 +6,130 @@
 #include "data/GameData.h"
 #include "util/MathUtil.h"
 #include "ai/PathFinding.h"
+#include <queue>
 
-static void drawOvalLight(Texture2D lightTexture, Vector2 center, float outerRadius) {
-    // Size (oval radii)
-    float radiusX = outerRadius;
-    float radiusY = outerRadius * 0.5f; // squash factor
-
-    // Destination rectangle where we stretch the texture
-    Rectangle dest = {
-            center.x,
-            center.y,
-            radiusX * 2,
-            radiusY * 2
-    };
-
-    // Source is the full texture
-    Rectangle source = {
-            0, 0,
-            (float)lightTexture.width,
-            (float)lightTexture.height
-    };
-
-    // Origin is center
-    Vector2 origin = {
-            (float) lightTexture.width,
-            (float) lightTexture.height
-    };
-    origin.x *= 0.5f;
-    origin.y *= 0.5f;
-
-    DrawTexturePro(lightTexture, source, dest, origin, 0.0f, WHITE);
+void MoveLight(LightSource& light, int x, int y) {
+    light.x = x;
+    light.y = y;
 }
 
-// Draw the light and shadows to the mask for a light
-static void DrawLightMask(LightingData& data, LightInfo& light, Camera2D camera) {
-    // Render light
-
-    BeginTextureMode(light.mask);
-    ClearBackground(WHITE);
-
-    // Force the blend mode to only set the alpha of the destination
-    rlSetBlendFactors(RLGL_SRC_ALPHA, RLGL_SRC_ALPHA, RLGL_MIN);
-    rlSetBlendMode(BLEND_CUSTOM);
-
-    Vector2 screenLightPos = GetWorldToScreen2D(light.position, camera);
-    screenLightPos = ceilv(screenLightPos); // Round to nearest pixel
-
-    // If we are valid, then draw the light radius to the alpha mask
-    if (light.valid) {
-        DrawCircleGradient((int) screenLightPos.x, (int) screenLightPos.y, light.outerRadius, ColorAlpha(WHITE, 0), WHITE);
-    }
-
-
-    //if (light.valid) drawOvalLight(data.ovalTexture, screenLightPos, light.outerRadius);
-
-    rlDrawRenderBatchActive();
-
-    // Cut out the shadows from the light radius by forcing the alpha to maximum
-    rlSetBlendMode(BLEND_ALPHA);
-    rlSetBlendFactors(RLGL_SRC_ALPHA, RLGL_SRC_ALPHA, RLGL_MAX);
-    rlSetBlendMode(BLEND_CUSTOM);
-
-    Vector2 vertices[4];
-
-    // Draw the shadows to the alpha mask
-    for (int i = 0; i < light.shadowCount; i++) {
-        // convert vertices to screen space
-        vertices[0] = GetWorldToScreen2D(light.shadows[i].vertices[0], camera);
-        vertices[1] = GetWorldToScreen2D(light.shadows[i].vertices[1], camera);
-        vertices[2] = GetWorldToScreen2D(light.shadows[i].vertices[2], camera);
-        vertices[3] = GetWorldToScreen2D(light.shadows[i].vertices[3], camera);
-        DrawTriangleFan(vertices, 4, WHITE);
-    }
-
-    rlDrawRenderBatchActive();
-
-    // Go back to normal blend mode
-    rlSetBlendMode(BLEND_ALPHA);
-    EndTextureMode();
-
-    // render shadow
-    BeginTextureMode(light.shadow);
-    ClearBackground(WHITE);
-    // Force the blend mode to only set the alpha of the destination
-    rlSetBlendFactors(RLGL_SRC_ALPHA, RLGL_SRC_ALPHA, RLGL_MIN);
-    rlSetBlendMode(BLEND_CUSTOM);
-
-    if (light.valid) {
-        DrawCircleGradient((int) screenLightPos.x, (int) screenLightPos.y, light.outerRadius, ColorAlpha(WHITE, 0), WHITE);
-    }
-    //if (light.valid) drawOvalLight(data.ovalTexture, screenLightPos, light.outerRadius);
-
-    rlDrawRenderBatchActive();
-    // Go back to normal blend mode
-    rlSetBlendMode(BLEND_ALPHA);
-    EndTextureMode();
-}
-
-void MoveLight(LightInfo& light, float x, float y) {
-    light.position.x = x;
-    light.position.y = y;
-
-    // update the cached bounds
-    light.bounds.x = x - light.outerRadius;
-    light.bounds.y = y - light.outerRadius;
-}
-
-void AddLight(LightingData& data, float x, float y, float radius, float intensity) {
-    LightInfo light{};
+void AddLight(LightingData& data, int x, int y, uint8_t intensity, float falloff) {
+    LightSource light{};
     light.intensity = intensity;
     light.active = true;
-    light.valid = false;  // The light must prove it is valid
-    light.mask = LoadRenderTexture(gameScreenWidth, gameScreenHeight);
-    light.shadow = LoadRenderTexture(gameScreenWidth, gameScreenHeight);
-    light.outerRadius = radius;
-    light.bounds.width = radius * 2;
-    light.bounds.height = radius * 2;
+    light.falloff = falloff;
 
     MoveLight(light, x, y);
     data.lights.push_back(light);
 }
 
-// Compute a shadow volume for the edge
-// It takes the edge and projects it back by the light radius and turns it into a quad
-static void ComputeShadowVolumeForEdge(LightInfo& light, Vector2 sp, Vector2 ep) {
-    if (light.shadowCount >= MAX_SHADOWS) return;
 
-    float extension = light.outerRadius*2;
+static void ResizeTileLighting(LightingData &data, int newWidth, int newHeight) {
+    data.mapWidth = newWidth;
+    data.mapHeight = newHeight;
 
-    Vector2 spVector = Vector2Normalize(Vector2Subtract(sp, light.position));
-    Vector2 spProjection = Vector2Add(sp, Vector2Scale(spVector, extension));
+    data.lightMap.resize(data.mapWidth);
 
-    Vector2 epVector = Vector2Normalize(Vector2Subtract(ep, light.position));
-    Vector2 epProjection = Vector2Add(ep, Vector2Scale(epVector, extension));
-
-    light.shadows[light.shadowCount].vertices[0] = sp;
-    light.shadows[light.shadowCount].vertices[1] = ep;
-    light.shadows[light.shadowCount].vertices[2] = epProjection;
-    light.shadows[light.shadowCount].vertices[3] = spProjection;
-
-    light.shadowCount++;
+    for (int x = 0; x < data.mapWidth; x++) {
+        data.lightMap[x].resize(data.mapHeight, 0);
+    }
 }
 
-void UpdateLight(LightingData& data, LightInfo& light, Camera2D camera) {
-    if (!light.active) return;
+void PropagateLight(LightingData& data, const TileMap& map) {
+    struct LightNode {
+        int x;
+        int y;
+        float level;
+        float falloff;
+    };
 
-    light.shadowCount = 0;
-    light.valid = false;
+    std::queue<LightNode> queue;
 
-    for (int i = 0; i < data.boxes.size(); i++)
-    {
-        // Are we in a box? if so we are not valid
-        if (CheckCollisionPointRec(light.position, data.boxes[i])) return;
-
-        // If this box is outside our bounds, we can skip it
-        if (!CheckCollisionRecs(light.bounds, data.boxes[i])) continue;
-
-        // Check the edges that are on the same side we are, and cast shadow volumes out from them
-
-        // Top
-        Vector2 sp = (Vector2){ data.boxes[i].x, data.boxes[i].y };
-        Vector2 ep = (Vector2){ data.boxes[i].x + data.boxes[i].width, data.boxes[i].y };
-
-        if (light.position.y > ep.y) ComputeShadowVolumeForEdge(light, sp, ep);
-
-        // Right
-        sp = ep;
-        ep.y += data.boxes[i].height;
-        if (light.position.x < ep.x) ComputeShadowVolumeForEdge(light, sp, ep);
-
-        // Bottom
-        sp = ep;
-        ep.x -= data.boxes[i].width;
-        if (light.position.y < ep.y) ComputeShadowVolumeForEdge(light, sp, ep);
-
-        // Left
-        sp = ep;
-        ep.y -= data.boxes[i].height;
-        if (light.position.x > ep.x) ComputeShadowVolumeForEdge(light, sp, ep);
-
-        // The box itself
-        light.shadows[light.shadowCount].vertices[0] = (Vector2){ data.boxes[i].x, data.boxes[i].y };
-        light.shadows[light.shadowCount].vertices[1] = (Vector2){ data.boxes[i].x, data.boxes[i].y + data.boxes[i].height };
-        light.shadows[light.shadowCount].vertices[2] = (Vector2){ data.boxes[i].x + data.boxes[i].width, data.boxes[i].y + data.boxes[i].height };
-        light.shadows[light.shadowCount].vertices[3] = (Vector2){ data.boxes[i].x + data.boxes[i].width, data.boxes[i].y };
-        light.shadowCount++;
+    // Reset lightmap
+    for (int y = 0; y < data.mapHeight; y++) {
+        for (int x = 0; x < data.mapWidth; x++) {
+            data.lightMap[x][y] = 0;
+        }
     }
-    light.valid = true;
-    DrawLightMask(data, light, camera);
+
+    // Seed queue with lights
+    for (size_t i = 0; i < data.lights.size(); i++) {
+        const LightSource& light = data.lights[i];
+        if (light.x >= 0 && light.y >= 0 && light.x < data.mapWidth && light.y < data.mapHeight) {
+            data.lightMap[light.x][light.y] = light.intensity;
+            queue.push({ light.x, light.y, (float)light.intensity, light.falloff });
+        }
+    }
+
+    // 8-directional propagation
+    const int dx[8] = { 0, 1, 1, 1, 0, -1, -1, -1 };
+    const int dy[8] = { -1, -1, 0, 1, 1, 1, 0, -1 };
+
+    while (!queue.empty()) {
+        LightNode node = queue.front();
+        queue.pop();
+
+        if (node.level <= 1.0f)
+            continue;
+
+        for (int i = 0; i < 8; i++) {
+            int nx = node.x + dx[i];
+            int ny = node.y + dy[i];
+
+            if (nx < 0 || ny < 0 || nx >= data.mapWidth || ny >= data.mapHeight)
+                continue;
+            if (GetTileAt(map, SHADOW_LAYER, nx, ny) > 0)
+                continue;
+
+            float stepCost = (dx[i] == 0 || dy[i] == 0) ? node.falloff : node.falloff * 1.41f;
+            float nextLevel = node.level - stepCost;
+
+            if (nextLevel > data.lightMap[nx][ny]) {
+                data.lightMap[nx][ny] = nextLevel;
+                queue.push({ nx, ny, nextLevel, node.falloff });
+            }
+        }
+    }
 }
 
-void InitLightingData(LightingData &data) {
-    if(IsTextureValid(data.ovalTexture)) {
-        UnloadTexture(data.ovalTexture);
-    }
-    Image img = GenImageGradientRadial(256, 256, 1.0f, BLANK, WHITE);
-    data.ovalTexture = LoadTextureFromImage(img);
-    UnloadImage(img);
 
-    for(auto& light : data.lights) {
-        if(IsRenderTextureValid(light.mask)) {
-            UnloadRenderTexture(light.mask);
+void UpdateLighting(LightingData& data, Camera2D camera, const TileMap& map) {
+    PropagateLight(data, map);
+}
+
+Color GetVertexLight(const LightingData& data, int vx, int vy) {
+    float sum = 0.0f;
+    int count = 0;
+
+    // Sample the 4 surrounding tiles (bottom-right quadrant)
+    const int offsets[4][2] = {
+            { vx - 1, vy - 1 }, // top-left
+            { vx,     vy - 1 }, // top-right
+            { vx - 1, vy     }, // bottom-left
+            { vx,     vy     }  // bottom-right
+    };
+
+    for (int i = 0; i < 4; i++) {
+        int tx = offsets[i][0];
+        int ty = offsets[i][1];
+
+        if (tx >= 0 && ty >= 0 && tx < data.mapWidth && ty < data.mapHeight) {
+            sum += (float)data.lightMap[tx][ty] / 15.0f; // normalize
+            count++;
         }
-        if(IsRenderTextureValid(light.shadow)) {
-            UnloadRenderTexture(light.shadow);
-        }
     }
-    if(IsRenderTextureValid(data.lightMask)) {
-        UnloadRenderTexture(data.lightMask);
-    }
-    data.lightMask = LoadRenderTexture(gameScreenWidth, gameScreenHeight);
 
-    if(IsRenderTextureValid(data.shadowMask)) {
-        UnloadRenderTexture(data.shadowMask);
-    }
-    data.shadowMask = LoadRenderTexture(gameScreenWidth, gameScreenHeight);
+    float avg = (count > 0) ? (sum / count) : 0.0f;
+    unsigned char brightness = (unsigned char)(avg * 255.0f);
+    return (Color){ brightness, brightness, brightness, 255 };
+}
 
+
+void InitLightingData(LightingData &data, const TileMap& map) {
     data.lights.clear();
-    AddLight(data, 100, 100, 128, 0.85f);
-    AddLight(data, 800, 140, 75, 1.0f);
-
-    data.boxes.clear();
-    //data.boxes.push_back((Rectangle){ 150, 80, 40, 40 });
-    //data.boxes.push_back((Rectangle){ 450, 80, 40, 40 });
-}
-
-void UpdateLighting(LightingData& data, Camera2D camera) {
-    for(auto& light : data.lights) {
-        UpdateLight(data, light, camera);
-    }
-    // Build up the light mask
-    BeginTextureMode(data.lightMask);
-    ClearBackground(BLACK);
-
-    // Force the blend mode to only set the alpha of the destination
-    rlSetBlendFactors(RLGL_SRC_ALPHA, RLGL_SRC_ALPHA, RLGL_MIN);
-    rlSetBlendMode(BLEND_CUSTOM);
-    //rlSetBlendMode(BLEND_ADDITIVE);
-    // Merge in all the light masks
-    for (int i = 0; i < data.lights.size(); i++) {
-        if (data.lights[i].active) DrawTextureRec(data.lights[i].mask.texture, (Rectangle){ 0, 0, gameScreenWidthF, -gameScreenHeightF }, Vector2Zero(), WHITE);
-    }
-    rlDrawRenderBatchActive();
-    // Go back to normal blend
-    rlSetBlendMode(BLEND_ALPHA);
-    EndTextureMode();
-
-    // Build up the shadow mask
-    BeginTextureMode(data.shadowMask);
-    ClearBackground(BLACK);
-
-    // Force the blend mode to only set the alpha of the destination
-    rlSetBlendFactors(RLGL_SRC_ALPHA, RLGL_SRC_ALPHA, RLGL_MIN);
-    rlSetBlendMode(BLEND_CUSTOM);
-    //rlSetBlendMode(BLEND_ADDITIVE);
-    // Merge in all the light masks
-    for (int i = 0; i < data.lights.size(); i++) {
-        if (data.lights[i].active) DrawTextureRec(data.lights[i].shadow.texture, (Rectangle){ 0, 0, gameScreenWidthF, -gameScreenHeightF }, Vector2Zero(), WHITE);
-    }
-    rlDrawRenderBatchActive();
-    // Go back to normal blend
-    rlSetBlendMode(BLEND_ALPHA);
-    EndTextureMode();
-}
-
-void RenderGroundShadows(LightingData& data, Camera2D camera) {
-    DrawTexturePro(
-            data.lightMask.texture,
-            { 0, 0, (float) data.lightMask.texture.width, -(float) data.lightMask.texture.height },
-            { 0, 0, gameScreenWidthF, gameScreenHeightF },
-            { 0, 0 },
-            0,
-            Fade(BLACK, 0.7f)
-    );
-}
-
-void RenderLighting(LightingData& data) {
-    rlSetBlendMode(BLEND_MULTIPLIED);
-    DrawTexturePro(
-            data.shadowMask.texture,
-            { 0, 0, (float) data.shadowMask.texture.width, -(float) data.shadowMask.texture.height },
-            { 0, 0, gameScreenWidthF, gameScreenHeightF },
-            { 0, 0 },
-            0,
-            Fade(BLACK, 0.8f)
-    );
-    rlSetBlendMode(BLEND_ALPHA);
-}
-
-void BuildShadowBoxes(LightingData &data, TileMap &tileMap) {
-    const int w = tileMap.width;
-    const int h = tileMap.height;
-    std::vector<std::vector<bool>> solid(h, std::vector<bool>(w, false));
-
-    // Step 1: Build solid mask
-    for (int ty = 0; ty < h; ty++) {
-        for (int tx = 0; tx < w; tx++) {
-            int tileIndex = GetTileAt(tileMap, SHADOW_LAYER, tx, ty);
-            solid[ty][tx] = (tileIndex > 0);
-        }
-    }
-
-    std::vector<std::vector<bool>> visited(h, std::vector<bool>(w, false));
-    data.boxes.clear();
-
-    // Step 2: Scan for rectangles
-    for (int y = 0; y < h; y++) {
-        for (int x = 0; x < w; x++) {
-            if (!solid[y][x] || visited[y][x]) continue;
-
-            // Find width
-            int xEnd = x;
-            while (xEnd < w && solid[y][xEnd] && !visited[y][xEnd]) {
-                xEnd++;
-            }
-
-            // Find height
-            int yEnd = y + 1;
-            bool done = false;
-            while (yEnd < h && !done) {
-                for (int i = x; i < xEnd; i++) {
-                    if (!solid[yEnd][i] || visited[yEnd][i]) {
-                        done = true;
-                        break;
-                    }
-                }
-                if (!done) yEnd++;
-            }
-
-            // Mark visited
-            for (int iy = y; iy < yEnd; iy++) {
-                for (int ix = x; ix < xEnd; ix++) {
-                    visited[iy][ix] = true;
-                }
-            }
-
-            // Create rectangle
-            Vector2 topLeft = GridToPixelPosition(x, y);
-            Rectangle rect = {
-                    topLeft.x - 8,
-                    topLeft.y - 8,
-                    (float)(xEnd - x) * 16.0f,
-                    (float)(yEnd - y) * 16.0f
-            };
-
-            data.boxes.push_back(rect);
-            if (data.boxes.size() >= MAX_BOXES)
-                return;
-        }
-    }
-    TraceLog(LOG_INFO, "Generated %i shadow boxes.", data.boxes.size());
+    ResizeTileLighting(data, map.width, map.height);
+    AddLight(data, 11, 12, 15, 2.5f);
+    AddLight(data, 51, 12, 15, 1.0f);
+    PropagateLight(data, map);
 }
 

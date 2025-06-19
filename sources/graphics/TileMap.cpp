@@ -6,6 +6,8 @@
 
 #define CUTE_TILED_IMPLEMENTATION
 #include "util/cute_tiled.h"
+#include "rlgl.h"
+#include "Lighting.h"
 
 void LoadTileMap(TileMap &tileMap, const char *filename, int tileSet) {
     tileMap.layers.clear();
@@ -58,7 +60,7 @@ void UnloadTileMap(TileMap &tileMap) {
     }
 }
 
-int GetTileAt(TileMap &tileMap, int layer, int x, int y) {
+int GetTileAt(const TileMap &tileMap, int layer, int x, int y) {
     if(layer < 0 || layer >= tileMap.layers.size()) {
         return -1;
     }
@@ -68,7 +70,7 @@ int GetTileAt(TileMap &tileMap, int layer, int x, int y) {
     return tileMap.layers[layer].data[y * tileMap.width + x];
 }
 
-void DrawTileLayer(SpriteSheetData& sheetData, TileMap &tileMap, int layer, int x, int y) {
+void DrawTileLayerOld(SpriteSheetData& sheetData, TileMap &tileMap, int layer, int x, int y) {
     if(layer < 0 || layer >= tileMap.layers.size()) {
         return;
     }
@@ -76,9 +78,73 @@ void DrawTileLayer(SpriteSheetData& sheetData, TileMap &tileMap, int layer, int 
         for(int tx = 0; tx < tileMap.width; tx++) {
             int tileIndex = GetTileAt(tileMap, layer, tx, ty);
             if(tileIndex > 0) {
-                DrawTextureRec(sheetData.texture[tileMap.tileSet], sheetData.frameRects[tileMap.tileSet][tileIndex-1], Vector2{(float)(x + tx * tileMap.tileWidth), (float)(y + ty * tileMap.tileHeight)}, WHITE);
+                //Color tint = ColorBrightness(WHITE, 0.0f);
+                //tint.a = 255;
+                Color tint = WHITE;
+                DrawTextureRec(sheetData.texture[tileMap.tileSet], sheetData.frameRects[tileMap.tileSet][tileIndex-1], Vector2{(float)(x + tx * tileMap.tileWidth), (float)(y + ty * tileMap.tileHeight)}, tint);
             }
         }
     }
+}
 
+void DrawTexturedQuadWithVertexColors(Texture2D tex, Rectangle src, Rectangle dest, Color c1, Color c2, Color c3, Color c4) {
+    // Enable texture
+    rlSetTexture(tex.id);
+
+
+    rlBegin(RL_QUADS);
+
+    // Top-left (v1)
+    rlColor4ub(c1.r, c1.g, c1.b, c1.a);
+    rlTexCoord2f(src.x / tex.width, src.y / tex.height);
+    rlVertex2f(dest.x, dest.y);
+
+    // Bottom-left (v4)
+    rlColor4ub(c4.r, c4.g, c4.b, c4.a);
+    rlTexCoord2f(src.x / tex.width, (src.y + src.height) / tex.height);
+    rlVertex2f(dest.x, dest.y + dest.height);
+
+    // Bottom-right (v3)
+    rlColor4ub(c3.r, c3.g, c3.b, c3.a);
+    rlTexCoord2f((src.x + src.width) / tex.width, (src.y + src.height) / tex.height);
+    rlVertex2f(dest.x + dest.width, dest.y + dest.height);
+
+    // Top-right (v2)
+    rlColor4ub(c2.r, c2.g, c2.b, c2.a);
+    rlTexCoord2f((src.x + src.width) / tex.width, src.y / tex.height);
+    rlVertex2f(dest.x + dest.width, dest.y);
+
+
+    rlEnd();
+
+    rlSetTexture(0); // disable texture
+}
+
+void DrawTileLayer(LightingData& lightData, SpriteSheetData& sheetData, TileMap &tileMap, int layer, int x, int y) {
+    if(layer < 0 || layer >= tileMap.layers.size()) {
+        return;
+    }
+    for(int ty = 0; ty < tileMap.height; ty++) {
+        for(int tx = 0; tx < tileMap.width; tx++) {
+            int tileIndex = GetTileAt(tileMap, layer, tx, ty);
+            if(tileIndex > 0) {
+                auto& texture = sheetData.texture[tileMap.tileSet];
+                auto& texRect = sheetData.frameRects[tileMap.tileSet][tileIndex-1];
+                auto dstRect = Rectangle{(float)(x + tx * tileMap.tileWidth), (float)(y + ty * tileMap.tileHeight), 16, 16};
+
+                //float factor = ((float) lightData.lightMap[tx][ty] / 15.0f) * 2.0f - 1.0f;
+                //Color color = ColorBrightness(WHITE, factor);
+
+
+                Color v1 = GetVertexLight(lightData, tx, ty);     // top-left corner
+                Color v2 = GetVertexLight(lightData, tx+1, ty);   // top-right
+                Color v3 = GetVertexLight(lightData, tx+1, ty+1); // bottom-right
+                Color v4 = GetVertexLight(lightData, tx, ty+1);   // bottom-left
+                DrawTexturedQuadWithVertexColors(texture, texRect, dstRect, v1, v2, v3, v4);
+
+                //DrawTexturedQuadWithVertexColors(texture, texRect, dstRect, color, color, color, color);
+                //DrawTextureRec(sheetData.texture[tileMap.tileSet], sheetData.frameRects[tileMap.tileSet][tileIndex-1], Vector2{(float)(x + tx * tileMap.tileWidth), (float)(y + ty * tileMap.tileHeight)}, tint);
+            }
+        }
+    }
 }

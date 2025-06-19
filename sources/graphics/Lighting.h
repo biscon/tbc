@@ -10,50 +10,12 @@
 #include "raymath.h"
 #include "rlgl.h"
 #include "TileMap.h"
+#include "util/MathUtil.h"
+#include "data/LightingData.h"
 
-// Custom Blend Modes
-#define RLGL_SRC_ALPHA 0x0302
-#define RLGL_MIN 0x8007
-#define RLGL_MAX 0x8008
-
-#define MAX_BOXES     128
-#define MAX_SHADOWS   MAX_BOXES*3         // MAX_BOXES *3. Each box can cast up to two shadow volumes for the edges it is away from, and one for the box itself
-
-
-// Shadow geometry type
-struct ShadowGeometry {
-    Vector2 vertices[4];
-};
-
-// Light info type
-struct LightInfo {
-    float intensity;
-    bool active;                // Is this light slot active?
-    bool valid;                 // Is this light in a valid position?
-
-    Vector2 position;           // Light position
-    RenderTexture mask;         // Alpha mask for the light
-    RenderTexture shadow;       // Alpha mask for the shadow
-    float outerRadius;          // The distance the light touches
-    Rectangle bounds;           // A cached rectangle of the light bounds to help with culling
-
-    ShadowGeometry shadows[MAX_SHADOWS];
-    int shadowCount;
-};
-
-struct LightingData {
-    std::vector<LightInfo> lights;
-    std::vector<Rectangle> boxes;
-    RenderTexture lightMask;
-    RenderTexture shadowMask;
-    Texture2D ovalTexture;
-};
-
-void MoveLight(LightInfo& light, float x, float y);
-void InitLightingData(LightingData& data);
-void UpdateLighting(LightingData& data, Camera2D camera);
-void RenderGroundShadows(LightingData& data, Camera2D camera);
-void RenderLighting(LightingData& data);
-void BuildShadowBoxes(LightingData& data, TileMap& tileMap);
+void MoveLight(LightSource& light, int x, int y);
+void InitLightingData(LightingData& data, const TileMap& map);
+void UpdateLighting(LightingData& data, Camera2D camera, const TileMap& map);
+Color GetVertexLight(const LightingData& data, int vx, int vy);
 
 #endif //SANDBOX_LIGHTING_H

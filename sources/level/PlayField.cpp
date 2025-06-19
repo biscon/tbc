@@ -595,7 +595,7 @@ void HandleInputPlayField(SpriteData& spriteData, CharacterData& charData, PlayF
 void DrawPlayField(SpriteData& spriteData, CharacterData& charData, PlayField &playField, Level &level) {
     // Bottom layer
     BeginMode2D(level.camera.camera);
-    DrawTileLayer(spriteData.sheet, level.tileMap, BOTTOM_LAYER, 0, 0);
+    DrawTileLayer(level.lighting, spriteData.sheet, level.tileMap, BOTTOM_LAYER, 0, 0);
     EndMode2D();
 
     DrawBloodPools();
@@ -604,8 +604,8 @@ void DrawPlayField(SpriteData& spriteData, CharacterData& charData, PlayField &p
 
     // Middle layer
     BeginMode2D(level.camera.camera);
-    DrawTileLayer(spriteData.sheet, level.tileMap, MIDDLE_LAYER, 0, 0);
-    DrawTileLayer(spriteData.sheet, level.tileMap, LIGHT_LAYER, 0, 0);
+    DrawTileLayer(level.lighting, spriteData.sheet, level.tileMap, MIDDLE_LAYER, 0, 0);
+    DrawTileLayer(level.lighting, spriteData.sheet, level.tileMap, LIGHT_LAYER, 0, 0);
     EndMode2D();
 
 
@@ -623,10 +623,10 @@ void DrawPlayField(SpriteData& spriteData, CharacterData& charData, PlayField &p
 
     // Top layer
     BeginMode2D(level.camera.camera);
-    DrawTileLayer(spriteData.sheet, level.tileMap, TOP_LAYER, 0, 0);
+    DrawTileLayer(level.lighting, spriteData.sheet, level.tileMap, TOP_LAYER, 0, 0);
     EndMode2D();
 
-    RenderLighting(level.lighting);
+    //RenderLighting(level.lighting);
 }
 
 void MoveCharacter(SpriteData& spriteData, CharacterData& charData, PlayField &playField, Level &level, int character, Vector2i target) {

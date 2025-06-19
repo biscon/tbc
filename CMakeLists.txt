@@ -131,6 +131,7 @@ add_executable(${PROJECT_NAME}
         sources/data/SettingsData.h
         sources/graphics/Lighting.cpp
         sources/graphics/Lighting.h
+        sources/data/LightingData.h
 )
 target_sources(${PROJECT_NAME} PRIVATE ${PROJECT_SOURCES})
 target_include_directories(${PROJECT_NAME} PRIVATE ${PROJECT_INCLUDE})

@@ -233,6 +233,8 @@ void LevelUpdate(float dt) {
     UpdateLevelScreen(game->spriteData, game->charData, level, levelScreen, dt);
     UpdatePlayField(game->spriteData, game->charData, playField, level, dt);
     UpdateDialogue(*game, dt);
+
+    UpdateLighting(level.lighting, level.camera.camera, level.tileMap);
 }
 
 void LevelHandleInput() {
@@ -253,7 +255,7 @@ void LevelHandleInput() {
 
 void LevelRender() {
     int charId = game->party[0];
-    Vector2 pos = GetCharacterSpritePos(game->spriteData, game->charData.sprite[charId]);
+    Vector2i pos = GetCharacterGridPosI(game->spriteData, game->charData.sprite[charId]);
     MoveLight(level.lighting.lights[0], pos.x, pos.y);
 
     ClearBackground(BLACK);
@@ -306,7 +308,6 @@ void LevelRender() {
 void LevelPreRender() {
     PreRenderBloodPools(level);
     PreRenderParticleManager(particleManager, level.camera.camera);
-    UpdateLighting(level.lighting, level.camera.camera);
 }
 
 void LevelPause() {
