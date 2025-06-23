@@ -40,6 +40,8 @@ static void processEvents() {
             case GameEventType::MoveParty: {
                 StartCameraPanToTilePos(level.camera, event.moveParty.target, 250.0f);
                 moveParty(event.moveParty.target);
+                PlaySoundEffect(SoundEffectType::Select);
+                PlaySoundEffect(SoundEffectType::Footstep);
                 break;
             }
             case GameEventType::PartySpotted: {
@@ -164,8 +166,8 @@ static void handleCameraMovement() {
 
 
 void LevelInit() {
-    //LoadSoundEffect(SoundEffectType::Ambience, ASSETS_PATH"music/ambience_cave.ogg", true);
-    LoadSoundEffect(SoundEffectType::Ambience, ASSETS_PATH"sound/ambient_forest_01.ogg", true);
+    LoadSoundEffect(SoundEffectType::Ambience, ASSETS_PATH"music/ambience_cave.ogg", true);
+    //LoadSoundEffect(SoundEffectType::Ambience, ASSETS_PATH"sound/ambient_forest_01.ogg", true);
     SetVolumeSoundEffect(SoundEffectType::Ambience, 0.75f);
     LoadSoundEffect(SoundEffectType::Footstep, ASSETS_PATH"sound/footstep_dirt_03.wav", true, 0.075f);
     SetVolumeSoundEffect(SoundEffectType::Footstep, 0.75f);
@@ -194,7 +196,7 @@ void LevelInit() {
     LoadSoundEffect(SoundEffectType::StartRound, ASSETS_PATH"sound/start_round.wav", false);
     SetVolumeSoundEffect(SoundEffectType::StartRound, 0.75f);
     LoadSoundEffect(SoundEffectType::Burning, ASSETS_PATH"sound/burning_01.ogg", false);
-    //PlaySoundEffect(SoundEffectType::Ambience);
+    PlaySoundEffect(SoundEffectType::Ambience);
 
     CreateLevel(level);
     CreateLevelScreen(levelScreen, &eventQueue);

@@ -95,7 +95,7 @@
             "active": true,
             "x": 32,
             "y": 32,
-            "falloff": 0.9,
+            "falloff": 1.2,
             "color": "FFF0C8"
         },
         {
@@ -152,7 +152,7 @@
     "doors": [
         {
             "id": "door1",
-            "sprite": "HorizDoorOpen",
+            "sprite": "HorizDoorOpenLeft",
             "position": [23, 10],
             "open": false,
             "locked": false,
@@ -167,6 +167,15 @@
             "locked": false,
             "blockedTiles": [[31,16],[32,16],[31,17],[32,17]],
             "shadowTiles": [[28,17],[29,17],[30,17],[31,17],[32,17],[33,17],[34,17],[35,17]]
+        },
+        {
+            "id": "door3",
+            "sprite": "HorizDoorOpenRight",
+            "position": [39, 10],
+            "open": false,
+            "locked": false,
+            "blockedTiles": [[39,12], [39,13]],
+            "shadowTiles": [[39,8],[39,9],[39,10],[39,11],[39,12],[39,13],[39,14],[39,15],[39,16]]
         }
     ]
 }

@@ -966,8 +966,24 @@
         "frameHeight": 64,
         "animations": [
             {
-                "name": "Open",
+                "name": "OpenLeft",
                 "origin": [0, 0],
+                "frames": [
+                    0,
+                    1,
+                    2,
+                    3
+                ],
+                "delays": [
+                    0.10,
+                    0.10,
+                    0.10,
+                    0.10
+                ]
+            },
+            {
+                "name": "OpenRight",
+                "origin": [-8, 0],
                 "frames": [
                     0,
                     1,

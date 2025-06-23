@@ -256,7 +256,7 @@ static void updateActiveMovement(SpriteData& spriteData, CharacterData& charData
 
                 // If the last step is reached, stop moving
                 if (move.path.currentStep >= move.path.path.size() - 1) {
-                    //StopSoundEffect(SoundEffectType::Footstep);
+                    StopSoundEffect(SoundEffectType::Footstep);
                     PauseCharacterSpriteAnim(spriteData, sprite);
                     SetCharacterSpriteFrame(spriteData, sprite, 0);
                     // set final position
@@ -354,11 +354,11 @@ static void handleInputPlayFieldSelectingEnemyTarget(PlayField &playField, Level
 
 }
 
-static bool handleDoors(SpriteData& spriteData, PlayField &playField, Level &level, Vector2i gridPos) {
+static bool handleDoors(SpriteData& spriteData, PlayField &playField, Level &level, Vector2i gridPos, Vector2i playerPos) {
     for(auto& entry : level.doors){
         auto& door = entry.second;
         for(auto& doorTile : door.blockedTiles) {
-            if(gridPos == doorTile && IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
+            if(gridPos == doorTile && IsMouseButtonReleased(MOUSE_BUTTON_LEFT) && Distance(playerPos, gridPos) < 3 && playerPos != doorTile) {
                 if(!door.open) {
                     TraceLog(LOG_INFO, "Opening door %s", door.id.c_str());
                     door.open = true;
@@ -390,9 +390,9 @@ static void handleInputPlayFieldExploration(SpriteData& spriteData, CharacterDat
     Vector2 mousePos = GetScreenToWorld2D(GetMousePosition(), level.camera.camera);
     Vector2i gridPos = PixelToGridPositionI(mousePos.x, mousePos.y);
     auto& playerChar = level.partyCharacters.front();
+    Vector2i playerPos = GetCharacterGridPosI(spriteData, charData.sprite[playerChar]);
 
-
-    if(handleDoors(spriteData, playField, level, gridPos)) {
+    if(handleDoors(spriteData, playField, level, gridPos, playerPos)) {
         return;
     }
 
@@ -409,11 +409,11 @@ static void handleInputPlayFieldExploration(SpriteData& spriteData, CharacterDat
             }
         }
     } else {
-        Vector2i playerPos = GetCharacterGridPosI(spriteData, charData.sprite[playerChar]);
+
         for(int npcId : level.npcCharacters) {
             Vector2i npcPos = GetCharacterGridPosI(spriteData, charData.sprite[npcId]);
             if(npcPos == gridPos) {
-                if(Distance(playerPos, npcPos) < 2) {
+                if(Distance(playerPos, npcPos) < 3) {
                     playField.hintText = "Talk to " + charData.name[npcId];
                     if(IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
                         PublishInitiateDialogueEvent(*playField.eventQueue, npcId, level.npcDialogueNodeIds[npcId]);
