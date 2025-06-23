@@ -21,7 +21,9 @@ FrameInfo GetFrameInfo(SpriteData& sprite, int player);
 void PlaySpriteAnimation(SpriteData& sprite, int player, int animation, bool loop = true);
 void PlaySpriteAnimationRestart(SpriteData& sprite, int player, int animation, bool loop);
 void SetFrame(SpriteData& sprite, int player, int frame);
-
+void PauseSpriteAnimation(SpriteData& sprite, int player);
+void ResumeSpriteAnimation(SpriteData& sprite, int player);
+void SetReverseSpriteAnimation(SpriteData& sprite, int player, bool reverse);
 
 void InitSpriteAnimationData(SpriteData& spriteData, const std::string &filename);
 void DestroySpriteAnimationData(SpriteData& spriteData);

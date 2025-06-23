@@ -105,7 +105,38 @@ static void DrawGridCharacters(SpriteData& spriteData, CharacterData& charData, 
     }
 }
 
+static void DrawLevelObjects(SpriteData& spriteData, Level &level) {
+    for(auto& entry : level.objects) {
+        auto& obj = entry.second;
+        Vector2 pos = GridToPixelPosition(obj.gridPos.x, obj.gridPos.y);
+        if(obj.lit) {
+            Vector2i& t = obj.gridPos;
+            // NOTE: should really sample at all 4 corners if sprite is bigger than a tile
+            Color v1 = GetVertexLight(level.lighting, level.tileMap, t.x, t.y);     // top-left corner
+            Color v2 = GetVertexLight(level.lighting, level.tileMap, t.x+1, t.y);   // top-right
+            Color v3 = GetVertexLight(level.lighting, level.tileMap, t.x+1, t.y+1); // bottom-right
+            Color v4 = GetVertexLight(level.lighting, level.tileMap, t.x, t.y+1);   // bottom-left
+            DrawSpriteAnimationColors(spriteData, obj.animPlayer, pos.x - 8.0f, pos.y - 8.0f, v1, v2, v3, v4);
+        } else {
+            DrawSpriteAnimation(spriteData, obj.animPlayer, pos.x - 8.0f, pos.y - 8.0f);
+        }
 
+    }
+}
+
+static void DrawDoors(SpriteData& spriteData, Level &level) {
+    for(auto& entry : level.doors) {
+        auto& door = entry.second;
+        Vector2 pos = GridToPixelPosition(door.gridPos.x, door.gridPos.y);
+        Vector2i& t = door.gridPos;
+        // NOTE: should really sample at all 4 corners if sprite is bigger than a tile
+        Color v1 = GetVertexLight(level.lighting, level.tileMap, t.x, t.y);     // top-left corner
+        Color v2 = GetVertexLight(level.lighting, level.tileMap, t.x+1, t.y);   // top-right
+        Color v3 = GetVertexLight(level.lighting, level.tileMap, t.x+1, t.y+1); // bottom-right
+        Color v4 = GetVertexLight(level.lighting, level.tileMap, t.x, t.y+1);   // bottom-left
+        DrawSpriteAnimationColors(spriteData, door.animPlayer, pos.x - 8.0f, pos.y - 8.0f, v1, v2, v3, v4);
+    }
+}
 
 static void updateTurnBasedMove(SpriteData& spriteData, CharacterData& charData, PlayField &playField, Level &level, float dt) {
     if (playField.moving) {
@@ -301,6 +332,14 @@ void UpdatePlayField(SpriteData& spriteData, CharacterData& charData, PlayField 
         checkIfPartySpotted(spriteData, charData, playField, level);
         checkLevelExits(spriteData, charData, playField, level);
     }
+    for(auto& entry : level.objects) {
+        auto& obj = entry.second;
+        UpdateSpriteAnimation(spriteData, obj.animPlayer, dt);
+    }
+    for(auto& entry : level.doors) {
+        auto& door = entry.second;
+        UpdateSpriteAnimation(spriteData, door.animPlayer, dt);
+    }
 }
 
 static void handleInputPlayFieldNormal(PlayField &playField, Level &level) {
@@ -315,12 +354,48 @@ static void handleInputPlayFieldSelectingEnemyTarget(PlayField &playField, Level
 
 }
 
+static bool handleDoors(SpriteData& spriteData, PlayField &playField, Level &level, Vector2i gridPos) {
+    for(auto& entry : level.doors){
+        auto& door = entry.second;
+        for(auto& doorTile : door.blockedTiles) {
+            if(gridPos == doorTile && IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
+                if(!door.open) {
+                    TraceLog(LOG_INFO, "Opening door %s", door.id.c_str());
+                    door.open = true;
+                    SetReverseSpriteAnimation(spriteData, door.animPlayer, false);
+                    ResumeSpriteAnimation(spriteData, door.animPlayer);
+                    SetFrame(spriteData, door.animPlayer, 0);
+                } else {
+                    TraceLog(LOG_INFO, "Closing door %s", door.id.c_str());
+                    door.open = false;
+                    SetReverseSpriteAnimation(spriteData, door.animPlayer, true);
+                    int anim = spriteData.player.animationIdx[door.animPlayer];
+                    int frames = (int) spriteData.anim.frames[anim].size();
+                    SetFrame(spriteData, door.animPlayer, frames-1);
+                    ResumeSpriteAnimation(spriteData, door.animPlayer);
+                }
+                SetTiles(level.tileMap, door.blockedTiles, NAV_LAYER, door.open ? 0 : 1);
+                SetTiles(level.tileMap, door.shadowTiles, SHADOW_LAYER, door.open ? 0 : 1);
+                PropagateLight(level.lighting, level.tileMap);
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
 static void handleInputPlayFieldExploration(SpriteData& spriteData, CharacterData& charData, PlayField &playField, Level &level) {
     // check if mouse is over tile
     playField.selectedTilePos = {-1, -1};
     Vector2 mousePos = GetScreenToWorld2D(GetMousePosition(), level.camera.camera);
     Vector2i gridPos = PixelToGridPositionI(mousePos.x, mousePos.y);
     auto& playerChar = level.partyCharacters.front();
+
+
+    if(handleDoors(spriteData, playField, level, gridPos)) {
+        return;
+    }
+
     if (!IsTileOccupied(spriteData, charData, level, gridPos.x, gridPos.y, -1)) {
         // calculate a path and draw it as lines
         Path path;
@@ -372,12 +447,13 @@ void DrawPlayField(SpriteData& spriteData, CharacterData& charData, PlayField &p
     // Middle layer
     BeginMode2D(level.camera.camera);
     DrawTileLayer(level.lighting, spriteData.sheet, level.tileMap, MIDDLE_LAYER, 0, 0);
+    DrawLevelObjects(spriteData, level);
     DrawTileLayer(level.lighting, spriteData.sheet, level.tileMap, LIGHT_LAYER, 0, 0);
+    DrawDoors(spriteData, level);
     EndMode2D();
 
 
     BeginMode2D(level.camera.camera);
-
     DrawGridCharacters(spriteData, charData, playField, level);
     EndMode2D();
 

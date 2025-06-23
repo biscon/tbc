@@ -11,38 +11,44 @@
 using json = nlohmann::json;
 
 void UpdateSpriteAnimation(SpriteData& sprite, int player, float dt) {
-    SpriteSheetData& sheetData = sprite.sheet;
     SpriteAnimationData& spriteData = sprite.anim;
     SpriteAnimationPlayerData& playerData = sprite.player;
 
     if (!playerData.animData[player].playing || playerData.animationIdx[player] == -1) {
         return;
     }
+
     int animIdx = playerData.animationIdx[player];
-    if(spriteData.frames[animIdx].empty()) {
+    if (spriteData.frames[animIdx].empty()) {
         return;
     }
 
     SpriteAnimationPlayerAnimData& animData = playerData.animData[player];
-    // Update the frame time
     animData.frameTime += dt;
 
-    // Get the current frame's delay
     float currentDelay = spriteData.frameDelays[animIdx][animData.currentFrame];
 
-    // Check if it's time to move to the next frame
     if (animData.frameTime >= currentDelay) {
-        animData.frameTime -= currentDelay; // Subtract the delay to handle leftover time
+        animData.frameTime -= currentDelay;
 
-        if (animData.currentFrame + 1 < spriteData.frames[animIdx].size()) {
-            // Move to the next frame
-            animData.currentFrame++;
-        } else if (animData.loop) {
-            // Loop back to the first frame if looping is enabled
-            animData.currentFrame = 0;
+        if (!animData.reverse) {
+            // Playing forward
+            if (animData.currentFrame + 1 < spriteData.frames[animIdx].size()) {
+                animData.currentFrame++;
+            } else if (animData.loop) {
+                animData.currentFrame = 0;
+            } else {
+                animData.playing = false;
+            }
         } else {
-            // Stop the animation at the last frame
-            animData.playing = false;
+            // Playing in reverse
+            if (animData.currentFrame > 0) {
+                animData.currentFrame--;
+            } else if (animData.loop) {
+                animData.currentFrame = (int)spriteData.frames[animIdx].size() - 1;
+            } else {
+                animData.playing = false;
+            }
         }
     }
 }
@@ -117,6 +123,7 @@ int CreateSpriteAnimationPlayer(SpriteData& sprite) {
     animData.currentFrame = 0;
     animData.frameTime = 0;
     animData.loop = true;
+    animData.reverse = false;
     playerData.animData.push_back(animData);
 
     SpriteAnimationPlayerRenderData renderData{};
@@ -154,6 +161,21 @@ void PlaySpriteAnimationRestart(SpriteData& sprite, int player, int animation, b
     animData.frameTime = 0;
     animData.loop = loop;
     animData.playing = true;
+}
+
+void PauseSpriteAnimation(SpriteData& sprite, int player) {
+    SpriteAnimationPlayerAnimData& animData = sprite.player.animData[player];
+    animData.playing = false;
+}
+
+void ResumeSpriteAnimation(SpriteData& sprite, int player) {
+    SpriteAnimationPlayerAnimData& animData = sprite.player.animData[player];
+    animData.playing = true;
+}
+
+void SetReverseSpriteAnimation(SpriteData& sprite, int player, bool reverse) {
+    SpriteAnimationPlayerAnimData& animData = sprite.player.animData[player];
+    animData.reverse = reverse;
 }
 
 void SetFrame(SpriteData& sprite, int player, int frame) {

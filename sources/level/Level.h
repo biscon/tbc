@@ -52,6 +52,26 @@ struct LevelExit {
     int y;
 };
 
+struct LevelObject {
+    std::string id;
+    std::string spriteTemplate;
+    Vector2i gridPos;
+    bool loop;
+    bool lit;
+    int animPlayer;
+};
+
+struct LevelDoor {
+    std::string id;
+    std::string spriteTemplate;
+    Vector2i gridPos;
+    bool open;
+    bool locked;
+    std::vector<Vector2i> blockedTiles;
+    std::vector<Vector2i> shadowTiles;
+    int animPlayer;
+};
+
 struct Level {
     std::string name;
     std::vector<std::string> log;
@@ -78,7 +98,8 @@ struct Level {
     std::unordered_map<int, std::string> enemyGroups;
     std::string currentEnemyGroup;
     std::unordered_map<int, int> npcDialogueNodeIds;
-
+    std::unordered_map<std::string, LevelObject> objects;
+    std::unordered_map<std::string, LevelDoor> doors;
     // lighting
     LightingData lighting;
 };

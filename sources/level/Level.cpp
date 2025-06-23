@@ -197,8 +197,63 @@ void LoadLevel(GameData& data, Level &level, const std::string &filename) {
     level.camera.cameraLockX = (level.camera.worldWidth <= gameScreenWidth);
     level.camera.cameraLockY = (level.camera.worldHeight <= gameScreenHeight);
 
-    InitLightingData(level.lighting, level.tileMap);
+    // Load objects
+    level.objects.clear();
+    if (j.contains("objects") && j["objects"].is_array()) {
+        for (const auto &obj: j["objects"]) {
+            LevelObject levelObj;
+            levelObj.id = obj.value("id", "");
+            levelObj.spriteTemplate = obj.value("sprite", "");
+            levelObj.loop = obj.value("loop", true);
+            levelObj.lit = obj.value("lit", true);
+            obj["position"].get_to(levelObj.gridPos);
+            levelObj.animPlayer = CreateSpriteAnimationPlayer(data.spriteData);
+            int anim = GetSpriteAnimation(data.spriteData, levelObj.spriteTemplate);
+            PlaySpriteAnimation(data.spriteData, levelObj.animPlayer, anim, levelObj.loop);
+            level.objects[levelObj.id] = levelObj;
+        }
+    }
 
+
+    // Load doors
+    level.doors.clear();
+    if (j.contains("doors") && j["doors"].is_array()) {
+        for (const auto &doorJson: j["doors"]) {
+            LevelDoor door;
+            door.id = doorJson.value("id", "");
+            door.spriteTemplate = doorJson.value("sprite", "");
+            door.open = doorJson.value("open", false);
+            door.locked = doorJson.value("locked", false);
+            doorJson["position"].get_to(door.gridPos);
+            if (doorJson.contains("blockedTiles") && doorJson["blockedTiles"].is_array()) {
+                for (const auto& item : doorJson["blockedTiles"]) {
+                    door.blockedTiles.push_back(item.get<Vector2i>());
+                }
+            }
+            SetTiles(level.tileMap, door.blockedTiles, NAV_LAYER, door.open ? 0 : 1);
+
+            if (doorJson.contains("shadowTiles") && doorJson["shadowTiles"].is_array()) {
+                for (const auto& item : doorJson["shadowTiles"]) {
+                    door.shadowTiles.push_back(item.get<Vector2i>());
+                }
+            }
+            SetTiles(level.tileMap, door.shadowTiles, SHADOW_LAYER, door.open ? 0 : 1);
+
+            door.animPlayer = CreateSpriteAnimationPlayer(data.spriteData);
+            int anim = GetSpriteAnimation(data.spriteData, door.spriteTemplate);
+            PlaySpriteAnimation(data.spriteData, door.animPlayer, anim, false);
+            PauseSpriteAnimation(data.spriteData, door.animPlayer);
+            int frames = (int) data.spriteData.anim.frames[anim].size();
+            if(door.open) {
+                SetFrame(data.spriteData, door.animPlayer, frames-1);
+            }
+
+            level.doors[door.id] = door;
+        }
+    }
+
+
+    InitLightingData(level.lighting, level.tileMap);
     // Load ambient light
     if (j.contains("ambientLight")) {
         level.lighting.ambient = HexToColor(j["ambientLight"]);

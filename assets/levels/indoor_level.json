@@ -39,8 +39,8 @@
             "id": "light1",
             "intensity": "15",
             "active": true,
-            "x": 12,
-            "y": 12,
+            "x": 11,
+            "y": 7,
             "falloff": 2.0,
             "color": "FFE6B4"
         },
@@ -48,8 +48,8 @@
             "id": "light2",
             "intensity": "15",
             "active": true,
-            "x": 27,
-            "y": 12,
+            "x": 26,
+            "y": 7,
             "falloff": 1.5,
             "color": "FFE6B4"
         },
@@ -57,8 +57,26 @@
             "id": "light3",
             "intensity": "15",
             "active": true,
-            "x": 35,
-            "y": 12,
+            "x": 36,
+            "y": 7,
+            "falloff": 1.5,
+            "color": "FFE6B4"
+        },
+        {
+            "id": "light2_2",
+            "intensity": "15",
+            "active": true,
+            "x": 26,
+            "y": 17,
+            "falloff": 1.5,
+            "color": "FFE6B4"
+        },
+        {
+            "id": "light3_2",
+            "intensity": "15",
+            "active": true,
+            "x": 36,
+            "y": 17,
             "falloff": 1.5,
             "color": "FFE6B4"
         },
@@ -106,6 +124,49 @@
             "y": 37,
             "falloff": 2.5,
             "color": "11FF33"
+        }
+    ],
+    "objects": [
+        {
+            "id": "walltorch1",
+            "sprite": "WallTorchFront",
+            "loop": true,
+            "lit": false,
+            "position": [11, 7]
+        },
+        {
+            "id": "walltorch2",
+            "sprite": "WallTorchFront",
+            "loop": true,
+            "lit": false,
+            "position": [26, 7]
+        },
+        {
+            "id": "walltorch3",
+            "sprite": "WallTorchFront",
+            "loop": true,
+            "lit": false,
+            "position": [36, 7]
+        }
+    ],
+    "doors": [
+        {
+            "id": "door1",
+            "sprite": "HorizDoorOpen",
+            "position": [23, 10],
+            "open": false,
+            "locked": false,
+            "blockedTiles": [[23,12], [23,13]],
+            "shadowTiles": [[23,8],[23,9],[23,10],[23,11],[23,12],[23,13],[23,14],[23,15],[23,16]]
+        },
+        {
+            "id": "door2",
+            "sprite": "VertDoorOpen",
+            "position": [31, 16],
+            "open": false,
+            "locked": false,
+            "blockedTiles": [[31,16],[32,16],[31,17],[32,17]],
+            "shadowTiles": [[28,17],[29,17],[30,17],[31,17],[32,17],[33,17],[34,17],[35,17]]
         }
     ]
 }

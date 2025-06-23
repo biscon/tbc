@@ -105,3 +105,17 @@ void DrawTileLayer(LightingData& lightData, SpriteSheetData& sheetData, TileMap 
         }
     }
 }
+
+void SetTiles(TileMap &tileMap, const std::vector<Vector2i> &positions, int layer, int value) {
+    for(const auto& pos : positions) {
+        if(layer < 0 || layer >= tileMap.layers.size()) {
+            TraceLog(LOG_ERROR, "Tilemap layer %i is out of bounds", layer);
+            return;
+        }
+        if(pos.x < 0 || pos.x >= tileMap.width || pos.y < 0 || pos.y >= tileMap.height) {
+            TraceLog(LOG_ERROR, "Tilemap %i,%i is out of bounds", pos.x, pos.y);
+            return;
+        }
+        tileMap.layers[layer].data[pos.y * tileMap.width + pos.x] = value;
+    }
+}

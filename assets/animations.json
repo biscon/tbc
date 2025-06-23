@@ -934,5 +934,77 @@
                 ]
             }
         ]
+    },
+    {
+        "group": "WallTorch",
+        "sheet": "wall_torch_front.png",
+        "frameWidth": 16,
+        "frameHeight": 16,
+        "animations": [
+            {
+                "name": "Front",
+                "origin": [0, 0],
+                "frames": [
+                    0,
+                    1,
+                    2,
+                    3
+                ],
+                "delays": [
+                    0.10,
+                    0.10,
+                    0.10,
+                    0.10
+                ]
+            }
+        ]
+    },
+    {
+        "group": "HorizDoor",
+        "sheet": "horiz_door.png",
+        "frameWidth": 16,
+        "frameHeight": 64,
+        "animations": [
+            {
+                "name": "Open",
+                "origin": [0, 0],
+                "frames": [
+                    0,
+                    1,
+                    2,
+                    3
+                ],
+                "delays": [
+                    0.10,
+                    0.10,
+                    0.10,
+                    0.10
+                ]
+            }
+        ]
+    },
+    {
+        "group": "VertDoor",
+        "sheet": "vert_door.png",
+        "frameWidth": 32,
+        "frameHeight": 32,
+        "animations": [
+            {
+                "name": "Open",
+                "origin": [0, 0],
+                "frames": [
+                    0,
+                    1,
+                    2,
+                    3
+                ],
+                "delays": [
+                    0.10,
+                    0.10,
+                    0.10,
+                    0.10
+                ]
+            }
+        ]
     }
 ]

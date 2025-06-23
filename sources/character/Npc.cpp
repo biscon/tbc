@@ -70,7 +70,10 @@ int CreateCharacterFromTemplate(GameData& data, const std::string &npcTemplate) 
             LevelUp(data.charData, charIdx, true);
         }
         InitCharacterSprite(data.spriteData, data.charData.sprite[charIdx], tplData.characterSprite[templateIdx], true);
-        GiveWeapon(data.spriteData, data.weaponData, data.charData, charIdx, tplData.weaponTemplate[templateIdx]);
+        std::string weaponTemplate = tplData.weaponTemplate[templateIdx];
+        if(!weaponTemplate.empty()) {
+            GiveWeapon(data.spriteData, data.weaponData, data.charData, charIdx, weaponTemplate);
+        }
         return charIdx;
     } else {
         TraceLog(LOG_ERROR, "CreateCharacterFromTemplate: Npc template not found: %s", npcTemplate.c_str());

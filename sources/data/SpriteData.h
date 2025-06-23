@@ -71,6 +71,7 @@ struct SpriteAnimationPlayerAnimData {
     float frameTime;
     bool loop; // if false, the animation stops at the last frame
     bool playing; // if false, the animation is paused
+    bool reverse;
 };
 
 struct SpriteAnimationPlayerData {
