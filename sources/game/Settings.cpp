@@ -41,6 +41,15 @@ void ApplySettings(SettingsData& settings) {
 
     settings.originalResolutionIndex = settings.selectedResolutionIndex;
     settings.originalDisplayMode = settings.displayMode;
+
+    if(settings.fpsLock) {
+        TraceLog(LOG_INFO, "Enabling fps lock!!!!!!!!!!!!!!!!!!!!!!!!!!");
+        SetTargetFPS(60);                   // Set our game to run at 60 frames-per-second
+    } else {
+        TraceLog(LOG_INFO, "Disabling fps lock!!!!!!!!!!!!!!!!!!!!!!!!!!");
+        SetTargetFPS(0);
+    }
+
     settings.needsApply = false;
 }
 
@@ -49,6 +58,7 @@ void SaveSettings(const SettingsData& settings) {
     j["resolutionIndex"] = settings.selectedResolutionIndex;
     j["displayMode"] = static_cast<int>(settings.displayMode);
     j["showFPS"] = settings.showFPS;
+    j["lockFPS"] = settings.fpsLock;
 
     std::ofstream file(settings.filename);
     if (file) {
@@ -69,6 +79,9 @@ void InitSettings(SettingsData& data, const std::string &filename) {
         data.displayMode = static_cast<DisplayMode>(j.value("displayMode", 0));
         if(j["showFPS"] != nullptr) {
             j["showFPS"].get_to(data.showFPS);
+        }
+        if(j.contains("lockFPS")) {
+            j["lockFPS"].get_to(data.fpsLock);
         }
     }
 

@@ -65,6 +65,11 @@ Vector2i GetCharacterGridPosI(SpriteData& spriteData, CharacterSprite &sprite) {
     return PixelToGridPositionI((int) renderData.position.x, (int) renderData.position.y);
 }
 
+void SetCharacterGridPosI(SpriteData& spriteData, CharacterSprite& sprite, Vector2i pos) {
+    Vector2 spritePos = GridToPixelPosition(pos.x, pos.y);
+    SetCharacterSpritePos(spriteData, sprite, spritePos);
+}
+
 float GetCharacterSpritePosX(SpriteData& spriteData, CharacterSprite &sprite) {
     SpriteAnimationPlayerRenderData& renderData = spriteData.player.renderData[sprite.bodyPlayer];
     return renderData.position.x;

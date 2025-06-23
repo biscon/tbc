@@ -31,13 +31,14 @@ void StartFadeIn() {
     fadeAlpha = 1.0f;
 }
 
-void CreateGameMode(GameModes gm, void (*Init)(), void (*Update)(float), void (*HandleInput)(), void (*Render)(),
+void CreateGameMode(GameModes gm, void (*Init)(), void (*Update)(float), void (*HandleInput)(), void (*RenderLevel)(), void (*RenderUi)(),
                     void (*PreRender)(), void (*Shutdown)(), void (*Pause)(), void (*Resume)()) {
     GameMode mode{};
     mode.Init = Init;
     mode.Update = Update;
     mode.HandleInput = HandleInput;
-    mode.Render = Render;
+    mode.RenderLevel = RenderLevel;
+    mode.RenderUi = RenderUi;
     mode.PreRender = PreRender;
     mode.Destroy = Shutdown;
     mode.Pause = Pause;
@@ -117,9 +118,20 @@ void HandleInputGameMode() {
     }
 }
 
-void RenderGameMode() {
+void RenderLevelGameMode() {
     if (!gameModeStack.empty()) {
-        gameModeStack.top()->Render();
+        gameModeStack.top()->RenderLevel();
+    }
+
+    // Render fade effect
+    if (fading || fadeAlpha > 0.0f) {
+        DrawRectangle(0, 0, gameScreenWidth, gameScreenHeight, Fade(BLACK, fadeAlpha));
+    }
+}
+
+void RenderUiGameMode() {
+    if (!gameModeStack.empty()) {
+        gameModeStack.top()->RenderUi();
     }
 
     // Render fade effect

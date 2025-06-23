@@ -17,6 +17,7 @@ int GetCharacterAnimationWeapon(CharacterSprite& sprite, SpriteAnimationType typ
 Vector2 GetCharacterSpritePos(SpriteData& spriteData, CharacterSprite &sprite);
 Vector2i GetCharacterSpritePosI(SpriteData& spriteData, CharacterSprite& sprite);
 Vector2i GetCharacterGridPosI(SpriteData& spriteData, CharacterSprite &sprite);
+void SetCharacterGridPosI(SpriteData& spriteData, CharacterSprite& sprite, Vector2i pos);
 float GetCharacterSpritePosX(SpriteData& spriteData, CharacterSprite& sprite);
 float GetCharacterSpritePosY(SpriteData& spriteData, CharacterSprite& sprite);
 void SetCharacterSpritePos(SpriteData& spriteData, CharacterSprite& sprite, Vector2 pos);

@@ -15,7 +15,8 @@ struct GameMode {
     void (*Init)();
     void (*Update)(float dt);
     void (*HandleInput)();
-    void (*Render)();
+    void (*RenderLevel)();
+    void (*RenderUi)();
     void (*PreRender)();
     void (*Destroy)();
     void (*Pause)();
@@ -27,14 +28,15 @@ struct GameModeFlags {
 };
 
 void InitGameMode();
-void CreateGameMode(GameModes gm, void (*Init)(), void (*Update)(float dt), void (*HandleInput)(),
-                    void (*Render)(), void (*PreRender)(), void (*Shutdown)(), void (*Pause)(), void (*Resume)());
+void CreateGameMode(GameModes gm, void (*Init)(), void (*Update)(float), void (*HandleInput)(), void (*RenderLevel)(), void (*RenderUi)(),
+                    void (*PreRender)(), void (*Shutdown)(), void (*Pause)(), void (*Resume)());
 GameMode* GetGameMode(GameModes gm);
 void PopGameMode();
 void PushGameMode(GameModes gm);
 void UpdateGameMode(float dt);
 void HandleInputGameMode();
-void RenderGameMode();
+void RenderLevelGameMode();
+void RenderUiGameMode();
 void PreRenderGameMode();
 void DestroyGameMode();
 void RequestQuitGame();

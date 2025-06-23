@@ -36,22 +36,20 @@ int main() {
     InitSettings(game.settingsData, "settings.json");
     ApplySettings(game.settingsData);
 
-
     InitAudioDevice();      // Initialize audio device
     InitSoundEffectManager();
 
-
-
     // Render texture initialization, used to hold the rendering result so we can easily resize it
-    RenderTexture2D target = LoadRenderTexture(gameScreenWidth, gameScreenHeight);
-    SetTextureFilter(target.texture, TEXTURE_FILTER_POINT);  // Texture scale filter to use
+    game.levelTarget = LoadRenderTexture(gameScreenWidth, gameScreenHeight);
+    SetTextureFilter(game.levelTarget.texture, TEXTURE_FILTER_POINT);  // Texture scale filter to use
+
+    game.uiTarget = LoadRenderTexture(gameScreenWidth, gameScreenHeight);
+    SetTextureFilter(game.uiTarget.texture, TEXTURE_FILTER_POINT);  // Texture scale filter to use
 
     //Font font = LoadFont(ASSETS_PATH"small.fnt");
 
     Font font2 = LoadFontEx(ASSETS_PATH"pixel-3x5.ttf", 5, nullptr, 0);
 
-
-    SetTargetFPS(60);                   // Set our game to run at 60 frames-per-second
     //--------------------------------------------------------------------------------------
 
     // Create AI
@@ -106,30 +104,44 @@ int main() {
 
         PreRenderGameMode();
 
-        BeginTextureMode(target);
-        RenderGameMode();
-        if(game.settingsData.showFPS) {
-            DrawTextEx(font2, TextFormat("FPS: %i", GetFPS()), (Vector2) {1, 1}, 5, 1, GREEN);
-            DrawTextEx(font2, TextFormat("ScreenWidth: %i", GetScreenWidth()), (Vector2) {1, 10}, 5, 1, YELLOW);
-            DrawTextEx(font2, TextFormat("ScreenHeight: %i", GetScreenHeight()), (Vector2) {1, 16}, 5, 1, YELLOW);
-            DrawTextEx(font2, TextFormat("Mouse: %i,%i", GetMouseX(), GetMouseY()), (Vector2) {1, 22}, 5, 1, YELLOW);
-            //DrawTextEx(font2, TextFormat("MouseOff: %f,%f", finalX, finalY), (Vector2) {1, 28}, 5, 1, YELLOW);
-            //DrawTextEx(font2, TextFormat("MouseScale: %f,%f", mouseScaleX, mouseScaleY), (Vector2) {1, 36}, 5, 1, YELLOW);
-        }
+        // Render level to level target
+        BeginTextureMode(game.levelTarget);
+            RenderLevelGameMode();
+        EndTextureMode();
+
+        // Render to UI target
+        BeginTextureMode(game.uiTarget);
+            ClearBackground(BLANK);
+            RenderUiGameMode();
+            if(game.settingsData.showFPS) {
+                DrawTextEx(font2, TextFormat("FPS: %i", GetFPS()), (Vector2) {1, 1}, 5, 1, GREEN);
+                DrawTextEx(font2, TextFormat("ScreenWidth: %i", GetScreenWidth()), (Vector2) {1, 10}, 5, 1, YELLOW);
+                DrawTextEx(font2, TextFormat("ScreenHeight: %i", GetScreenHeight()), (Vector2) {1, 16}, 5, 1, YELLOW);
+                DrawTextEx(font2, TextFormat("Mouse: %i,%i", GetMouseX(), GetMouseY()), (Vector2) {1, 22}, 5, 1, YELLOW);
+                //DrawTextEx(font2, TextFormat("MouseOff: %f,%f", finalX, finalY), (Vector2) {1, 28}, 5, 1, YELLOW);
+                //DrawTextEx(font2, TextFormat("MouseScale: %f,%f", mouseScaleX, mouseScaleY), (Vector2) {1, 36}, 5, 1, YELLOW);
+            }
         EndTextureMode();
 
         BeginDrawing();
+            ClearBackground(BLACK);     // Clear screen background
+            DrawTexturePro(
+                    game.levelTarget.texture,
+                    (Rectangle){ 0, 0, gameScreenWidth, -gameScreenHeight },   // Render texture source (Y flipped)
+                    (Rectangle){ finalX, finalY, (float) renderWidth, (float) renderHeight }, // Upscaled target rectangle
+                    (Vector2){ 0, 0 },
+                    0.0f,
+                    WHITE
+            );
 
-        ClearBackground(BLACK);     // Clear screen background
-
-        DrawTexturePro(
-                target.texture,
-                (Rectangle){ 0, 0, gameScreenWidth, -gameScreenHeight },   // Render texture source (Y flipped)
-                (Rectangle){ finalX, finalY, (float) renderWidth, (float) renderHeight }, // Upscaled target rectangle
-                (Vector2){ 0, 0 },
-                0.0f,
-                WHITE
-        );
+            DrawTexturePro(
+                    game.uiTarget.texture,
+                    (Rectangle){ 0, 0, gameScreenWidth, -gameScreenHeight },   // Render texture source (Y flipped)
+                    (Rectangle){ finalX, finalY, (float) renderWidth, (float) renderHeight }, // Upscaled target rectangle
+                    (Vector2){ 0, 0 },
+                    0.0f,
+                    WHITE
+            );
         EndDrawing();
         //--------------------------------------------------------------------------------------
     }
@@ -138,7 +150,8 @@ int main() {
 
     // De-Initialization
     //--------------------------------------------------------------------------------------
-    UnloadRenderTexture(target);        // Unload render texture
+    UnloadRenderTexture(game.levelTarget);
+    UnloadRenderTexture(game.uiTarget);
 
     //UnloadFont(font);                   // Unload custom font
     UnloadFont(font2);                   // Unload custom font

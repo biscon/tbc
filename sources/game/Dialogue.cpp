@@ -226,7 +226,7 @@ void HandleDialogueInput(GameData& data, GameEventQueue& eventQueue) {
     auto& dlg = data.dialogueData;
     if (dlg.currentDialogueNode == -1) return;
 
-    if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+    if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) {
         Vector2 mouse = GetMousePosition();
 
         for (size_t i = 0; i < dlg.responseRects.size(); ++i) {

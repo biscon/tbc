@@ -204,18 +204,6 @@ void LevelInit() {
 
     InitBloodRendering();
 
-    // Create effects
-
-    //CreateBloodSplatter(particleManager, {100, 150}, 10, 20.0f);
-    //CreateSmokeEffect(particleManager, {380, 150}, -1, 50);      // Longer smoke, fewer particles
-    //CreateExplosionEffect(particleManager, {100, 30}, 10, 50.0f);
-
-
-    /*
-    Animation bloodAnim{};
-    SetupBloodPoolAnimation(bloodAnim, {75,120}, 5.0f);
-    combat.animations.push_back(bloodAnim);
-    */
 }
 
 void LevelDestroy() {
@@ -234,7 +222,7 @@ void LevelUpdate(float dt) {
     UpdatePlayField(game->spriteData, game->charData, playField, level, dt);
     UpdateDialogue(*game, dt);
 
-    //UpdateLighting(level.lighting, level.camera.camera, level.tileMap);
+    //PropagateLight(level.lighting, level.tileMap);
 }
 
 void LevelHandleInput() {
@@ -253,10 +241,12 @@ void LevelHandleInput() {
     }
 }
 
-void LevelRender() {
+void LevelRenderLevel() {
+    /*
     int charId = game->party[0];
     Vector2i pos = GetCharacterGridPosI(game->spriteData, game->charData.sprite[charId]);
     MoveLight(level.lighting.lights[0], pos.x, pos.y);
+     */
 
     ClearBackground(BLACK);
 
@@ -295,12 +285,12 @@ void LevelRender() {
     // Only apply scissor if there's a valid area
     if (scissorW > 0 && scissorH > 0) {
         BeginScissorMode(scissorX, scissorY, scissorW, scissorH);
-
         DrawPlayField(game->spriteData, game->charData, playField, level);
-
         EndScissorMode();
     }
+}
 
+void LevelRenderUi() {
     DrawLevelScreen(*game, level, levelScreen, playField);
     RenderDialogueUI(*game);
 }
@@ -333,5 +323,5 @@ void LevelResume() {
 
 void SetupLevelGameMode(GameData* gameState) {
     game = gameState;
-    CreateGameMode(GameModes::Level, LevelInit, LevelUpdate, LevelHandleInput, LevelRender, LevelPreRender, LevelDestroy, LevelPause, LevelResume);
+    CreateGameMode(GameModes::Level, LevelInit, LevelUpdate, LevelHandleInput, LevelRenderLevel, LevelRenderUi, LevelPreRender, LevelDestroy, LevelPause, LevelResume);
 }

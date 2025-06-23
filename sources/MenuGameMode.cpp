@@ -73,7 +73,7 @@ static void loadGame() {
         return;
     }
     game->levelFileName = saveData.currentLevel;
-    game->state = GameState::LOAD_LEVEL;
+    game->state = GameState::LOAD_LEVEL_FROM_SAVE;
     game->levelState = saveData.levels;
 
     ClearAllCharacters(game->charData);
@@ -86,10 +86,15 @@ static void loadGame() {
         //AssignSkill(game->charData.skills[id], SkillType::Taunt, "Howling Scream", 1, false, true, 0, 3, 0);
         InitCharacterSprite(game->spriteData, game->charData.sprite[id], ch.spriteTemplate, true);
         GiveWeapon(game->spriteData, game->weaponData, game->charData, id, ch.weaponTemplate);
+        game->charData.stats[id] = ch.stats;
+        Vector2i savedPos = { ch.tilePosX, ch.tilePosY};
+        SetCharacterGridPosI(game->spriteData, game->charData.sprite[id], savedPos);
+        /*
         LevelUp(game->charData, id, true);
         LevelUp(game->charData, id, true);
         LevelUp(game->charData, id, true);
         LevelUp(game->charData, id, true);
+         */
         game->party.emplace_back(id);
     }
 
@@ -101,6 +106,7 @@ static void saveGame() {
     SaveData saveData;
     saveData.currentLevel = game->levelFileName;
     saveData.levels = game->levelState;
+    saveData.quests = game->quests;
 
     for(auto& id : game->party) {
         PartyCharacter pc;
@@ -262,6 +268,22 @@ static std::shared_ptr<Menu> createSettingsMenu() {
     debugOptions.submenuBuilder = createDebugMenu;
     settingsMenu->items.push_back(debugOptions);
 
+
+    MenuItem toggleFPSLock;
+    if(game->settingsData.fpsLock) {
+        toggleFPSLock.text = "Unlock FPS";
+    } else {
+        toggleFPSLock.text = "Lock FPS (60)";
+    }
+    toggleFPSLock.isSubmenu = false;
+    toggleFPSLock.action = [] {
+        game->settingsData.fpsLock = !game->settingsData.fpsLock;
+        ApplySettings(game->settingsData);
+        SaveSettings(game->settingsData);
+    };
+    settingsMenu->items.push_back(toggleFPSLock);
+
+
     MenuItem back;
     back.text = "Back";
     back.isSubmenu = false;
@@ -330,7 +352,7 @@ void MenuInit() {
 void MenuUpdate(float dt) {
 }
 
-void MenuRender() {
+void MenuRenderUi() {
     ClearBackground(MENU_BG_COLOR);
     if (menuStack.empty()) return;
 
@@ -379,6 +401,10 @@ void MenuRender() {
     }
 }
 
+void MenuRenderLevel() {
+
+}
+
 void MenuHandleInput() {
     if (IsKeyPressed(KEY_ESCAPE)) {
         if (menuStack.size() > 1) {
@@ -396,5 +422,5 @@ void MenuResume() { }
 
 void SetupMenuGameMode(GameData* gameState) {
     game = gameState;
-    CreateGameMode(GameModes::Menu, MenuInit, MenuUpdate, MenuHandleInput, MenuRender, MenuPreRender, MenuDestroy, MenuPause, MenuResume);
+    CreateGameMode(GameModes::Menu, MenuInit, MenuUpdate, MenuHandleInput, MenuRenderLevel, MenuRenderUi, MenuPreRender, MenuDestroy, MenuPause, MenuResume);
 }

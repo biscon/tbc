@@ -30,6 +30,7 @@ struct SettingsData {
     std::string filename;
     bool needsApply = false;
     bool showFPS = false;
+    bool fpsLock = true;
 };
 
 

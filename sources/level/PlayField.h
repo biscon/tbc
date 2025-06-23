@@ -48,5 +48,6 @@ void DrawPlayField(SpriteData& spriteData, CharacterData& charData, PlayField &p
 void MoveCharacter(SpriteData& spriteData, CharacterData& charData, PlayField &playField, Level &level, int character, Vector2i target);
 void MoveCharacterPartial(SpriteData& spriteData, CharacterData& charData, PlayField &playField, Level &level, int character, Vector2i target);
 void ResetPlayField(PlayField &playField);
+Vector2 GetAnimatedCharPos(SpriteData& spriteData, CharacterData& charData, Level &level, int character);
 
 #endif //SANDBOX_PLAYFIELD_H

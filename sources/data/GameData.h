@@ -48,6 +48,9 @@ struct GameData {
 
     std::unordered_map<std::string, LevelSaveState> levelState;
     std::unordered_map<std::string, QuestSaveState> quests;
+
+    RenderTexture2D levelTarget;
+    RenderTexture2D uiTarget;
 };
 
 #endif //SANDBOX_GAMEDATA_H

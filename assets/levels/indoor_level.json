@@ -38,10 +38,10 @@
         {
             "id": "light1",
             "intensity": "15",
-            "active": false,
+            "active": true,
             "x": 12,
             "y": 12,
-            "falloff": 4.0,
+            "falloff": 2.0,
             "color": "FFE6B4"
         },
         {
