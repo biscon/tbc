@@ -1,8 +1,12 @@
 {
     "quests": {
         "kill_ninjas": {
-            "status": "NotStarted",
-            "stage": 0
+            "title": "Put an end to the ninja menace",
+            "description": "Kill ninjas for Ser Donald.",
+            "initialState": {
+                "status": "NotStarted",
+                "stage": 0
+            }
         }
     }
 }

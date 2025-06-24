@@ -257,13 +257,35 @@ static void DisplayDamageNumbers(Level &combat) {
     }
 }
 
-static void DisplayTextAnimations(Level &combat) {
-    for (auto &animation: combat.animations) {
-        if (animation.type == AnimationType::Text) {
-            // Draw veil
-            DrawRectangle(0, 0, gameScreenWidth, gameScreenHeight, Fade(BLACK, animation.state.text.veilAlpha));
-            DrawText(animation.state.text.text, gameScreenHalfWidth - (MeasureText(animation.state.text.text, 20) / 2),
-                     (int) animation.state.text.y, 20, Fade(WHITE, animation.state.text.alpha));
+static void DisplayTextAnimations(Level &level) {
+    for (auto &animation: level.animations) {
+        switch (animation.type) {
+            case AnimationType::Text: {
+                // Draw veil
+                DrawRectangle(0, 0, gameScreenWidth, gameScreenHeight, Fade(BLACK, animation.state.text.veilAlpha));
+                DrawText(animation.state.text.text,
+                         gameScreenHalfWidth - (MeasureText(animation.state.text.text, 20) / 2),
+                         (int) animation.state.text.y, 20,
+                         Fade(WHITE, animation.state.text.alpha));
+                break;
+            }
+            case AnimationType::FancyText: {
+                const char* fullText = animation.state.fancyText.text;
+                int visibleChars = animation.state.fancyText.visibleChars;
+                float alpha = animation.state.fancyText.alpha;
+
+                char visibleText[129] = {0};
+                strncpy(visibleText, fullText, visibleChars);
+                visibleText[visibleChars] = '\0';
+
+                DrawText(visibleText,
+                         gameScreenHalfWidth - (MeasureText(visibleText, 20) / 2),
+                         (int) animation.state.fancyText.y, 20,
+                         Fade(WHITE, alpha));
+                break;
+            }
+            default:
+                break;
         }
     }
 }

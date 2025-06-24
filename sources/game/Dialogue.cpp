@@ -189,7 +189,7 @@ void UpdateDialogue(GameData& data, float dt) {
 static bool EvaluateQuestStatusEquals(GameData& data, const Condition& condition) {
     const std::string& questId = condition.param;
     QuestStatus status = QuestStatusFromString(condition.value);
-    if(data.quests[questId].status == status) {
+    if(data.questState[questId].status == status) {
         return true;
     }
     return false;
@@ -251,15 +251,15 @@ static void ExecuteEffects(GameData& data, const std::vector<Effect>& effects, G
     for(const auto& effect : effects) {
         switch(effect.type) {
             case EffectType::StartQuest: {
-                data.quests[effect.param].status = QuestStatus::Active;
-                data.quests[effect.param].stage = 0;
+                data.questState[effect.param].status = QuestStatus::Active;
+                data.questState[effect.param].stage = 0;
                 TraceLog(LOG_INFO, "Quest id '%s' started.", effect.param.c_str());
                 PublishStartQuestEvent(eventQueue, effect.param);
                 break;
             }
             case EffectType::CompleteQuest: {
-                data.quests[effect.param].status = QuestStatus::Completed;
-                data.quests[effect.param].stage = 0;
+                data.questState[effect.param].status = QuestStatus::Completed;
+                data.questState[effect.param].stage = 0;
                 TraceLog(LOG_INFO, "Quest id '%s' completed.", effect.param.c_str());
                 break;
             }

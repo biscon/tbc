@@ -45,9 +45,11 @@ struct GameData {
     NpcTemplateData npcTemplateData;
     DialogueData dialogueData;
     SettingsData settingsData;
+    QuestData questData;
 
+    // global save state
     std::unordered_map<std::string, LevelSaveState> levelState;
-    std::unordered_map<std::string, QuestSaveState> quests;
+    std::unordered_map<std::string, QuestSaveState> questState;
 
     RenderTexture2D levelTarget;
     RenderTexture2D uiTarget;

@@ -126,6 +126,36 @@ void SetupVictoryAnimation(SpriteData& spriteData, CharacterData& charData, Anim
     state.movingUp = true;
 }
 
+void SetupFancyTextAnimation(Animation &animation, const char *text, float y, float holdDuration, float initialDelay, float letterPause, float fadeOutDuration) {
+    animation.type = AnimationType::FancyText;
+    animation.time = 0.0f;
+    animation.stay = false;
+
+    FancyTextAnimationState &state = animation.state.fancyText;
+    strncpy(state.text, text, sizeof(state.text));
+    state.text[sizeof(state.text) - 1] = '\0'; // Safety null terminator
+
+    int textLen = (int) strlen(state.text);
+
+    state.y = y;
+    state.initialDelay = initialDelay;
+    state.letterPause = letterPause;
+    state.visibleChars = 0;
+    state.revealTime = 0.0f;
+    state.doneRevealing = false;
+    state.alpha = 1.0f;
+    state.fadeOutDuration = fadeOutDuration;
+
+    // Total animation duration includes all stages
+    animation.duration = initialDelay
+                         + (textLen * letterPause)
+                         + holdDuration
+                         + fadeOutDuration;
+
+    TraceLog(LOG_INFO, "SetupFancyTextAnimation: \"%s\" | total duration: %.2f", text, animation.duration);
+}
+
+
 void UpdateAnimation(SpriteData& spriteData, CharacterData& charData, Animation &animation, float dt) {
     animation.time += dt;
     switch(animation.type) {
@@ -276,6 +306,46 @@ void UpdateAnimation(SpriteData& spriteData, CharacterData& charData, Animation 
 
             // Update character's position
             SetCharacterSpritePosY(spriteData, charData.sprite[state.character], state.currentY);
+            break;
+        }
+        case AnimationType::FancyText: {
+            FancyTextAnimationState &state = animation.state.fancyText;
+            float t = animation.time;
+
+            float revealStart = state.initialDelay;
+            float letterRevealEnd = revealStart + (strlen(state.text) * state.letterPause);
+            float fadeOutStart = animation.duration - state.fadeOutDuration;
+
+            // During initial delay
+            if (t < state.initialDelay) {
+                state.visibleChars = 0;
+                state.alpha = 1.0f;
+                break;
+            }
+
+            // During reveal
+            if (t < letterRevealEnd) {
+                int charsToShow = (int)((t - state.initialDelay) / state.letterPause);
+                int maxLen = (int) strlen(state.text);
+                if (charsToShow > maxLen)
+                    charsToShow = maxLen;
+                state.visibleChars = charsToShow;
+                state.alpha = 1.0f;
+            }
+
+            // After reveal: all characters visible
+            if (t >= letterRevealEnd) {
+                state.visibleChars = (int) strlen(state.text);
+            }
+
+            // Handle fade-out
+            if (t >= fadeOutStart) {
+                float progress = (t - fadeOutStart) / state.fadeOutDuration;
+                if (progress > 1.0f)
+                    progress = 1.0f;
+                state.alpha = 1.0f - progress;
+            }
+
             break;
         }
     }

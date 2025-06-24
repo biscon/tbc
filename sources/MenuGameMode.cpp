@@ -75,7 +75,7 @@ static void loadGame() {
     game->levelFileName = saveData.currentLevel;
     game->state = GameState::LOAD_LEVEL_FROM_SAVE;
     game->levelState = saveData.levels;
-    game->quests = saveData.quests;
+    game->questState = saveData.quests;
 
     ClearAllCharacters(game->charData);
     game->spriteData.player.animationIdx.clear();
@@ -100,7 +100,7 @@ static void saveGame() {
     SaveData saveData;
     saveData.currentLevel = game->levelFileName;
     saveData.levels = game->levelState;
-    saveData.quests = game->quests;
+    saveData.quests = game->questState;
 
     for(auto& id : game->party) {
         PartyCharacter pc;

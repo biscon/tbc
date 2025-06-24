@@ -92,8 +92,9 @@ static void processEvents() {
                 break;
             }
             case GameEventType::StartQuest: {
+                const Quest& quest = game->questData.quests[event.startQuestEvent.questId];
                 Animation textAnim{};
-                SetupTextAnimation(textAnim, TextFormat("Started quest '%s'", event.startQuestEvent.questId), 150, 2.0f, 1.0f);
+                SetupFancyTextAnimation(textAnim, TextFormat("'%s' started", quest.title.c_str()), 150, 1.5f, 0.5f, 0.075f, 0.65f);
                 level.animations.push_back(textAnim);
                 break;
             }

@@ -16,6 +16,7 @@ enum class AnimationType {
     BloodPool,
     SpeechBubble,
     Victory,
+    FancyText,
 };
 
 struct BlinkAnimationState {
@@ -93,6 +94,18 @@ struct VictoryAnimationState {
     bool movingUp;
 };
 
+struct FancyTextAnimationState {
+    char text[128];
+    float y;
+    float initialDelay;
+    float letterPause;
+    int visibleChars;
+    float revealTime;
+    bool doneRevealing;
+    float alpha;
+    float fadeOutDuration;
+};
+
 struct Animation {
     AnimationType type;
     float duration;
@@ -108,6 +121,7 @@ struct Animation {
         BloodPoolAnimationState bloodPool;
         SpeechBubbleAnimationState speechBubble;
         VictoryAnimationState victory;
+        FancyTextAnimationState fancyText;
     } state;
 
     bool IsDone() const {

@@ -15,12 +15,17 @@ void InitQuestData(GameData& data, const std::string &filename) {
     nlohmann::json j;
     file >> j;
     // Clear existing data
-    data.quests.clear();
+    data.questState.clear();
 
     // Handle QuestSaveState
     const nlohmann::json& nodes = j.at("quests");
     for (nlohmann::json::const_iterator it = nodes.begin(); it != nodes.end(); ++it) {
         const std::string& questId = it.key();
-        data.quests[questId] = it.value().get<QuestSaveState>();
+        Quest quest;
+        quest.id = questId;
+        quest.title = it.value().at("title").get<std::string>();
+        quest.description = it.value().at("title").get<std::string>();
+        data.questData.quests[questId] = quest;
+        data.questState[questId] = it.value().at("initialState").get<QuestSaveState>();
     }
 }
