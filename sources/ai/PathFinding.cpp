@@ -525,6 +525,19 @@ bool HasLineOfSight(Level &level, Vector2i start, Vector2i end, int maxDist) {
     return false; // Max distance reached without reaching the target
 }
 
+bool HasLineOfSightToParty(SpriteData& spriteData, CharacterData& charData, Level &level, int charId) {
+    if (std::find(level.partyCharacters.begin(), level.partyCharacters.end(), charId) != level.partyCharacters.end()) {
+        return true;
+    }
+    Vector2i charPos = GetCharacterGridPosI(spriteData, charData.sprite[charId]);
+    for(auto& partyCharId : level.partyCharacters) {
+        Vector2i partyCharPos = GetCharacterGridPosI(spriteData, charData.sprite[partyCharId]);
+        if(HasLineOfSight(level, partyCharPos, charPos, 50))
+            return true;
+    }
+    return false;
+}
+
 std::vector<Vector2i> FindFreePositionsCircular(Level& level, int x, int y, int radius) {
     std::vector<Vector2i> freePositions;
 

@@ -133,26 +133,27 @@ void SetupFancyTextAnimation(Animation &animation, const char *text, float y, fl
 
     FancyTextAnimationState &state = animation.state.fancyText;
     strncpy(state.text, text, sizeof(state.text));
-    state.text[sizeof(state.text) - 1] = '\0'; // Safety null terminator
+    state.text[sizeof(state.text) - 1] = '\0';
 
     int textLen = (int) strlen(state.text);
 
     state.y = y;
     state.initialDelay = initialDelay;
     state.letterPause = letterPause;
-    state.visibleChars = 0;
-    state.revealTime = 0.0f;
-    state.doneRevealing = false;
-    state.alpha = 1.0f;
     state.fadeOutDuration = fadeOutDuration;
+    state.alpha = 1.0f;
 
-    // Total animation duration includes all stages
-    animation.duration = initialDelay
-                         + (textLen * letterPause)
-                         + holdDuration
-                         + fadeOutDuration;
+    state.scrambleLength = 0;
+    state.finalRevealLength = 0;
+    state.timeSinceLastScramble = 0.0f;
+    state.doneScrambling = false;
 
-    TraceLog(LOG_INFO, "SetupFancyTextAnimation: \"%s\" | total duration: %.2f", text, animation.duration);
+    float scrambleDuration = textLen * letterPause;
+    float descrambleDuration = textLen * letterPause;
+
+    animation.duration = initialDelay + scrambleDuration + descrambleDuration + holdDuration + fadeOutDuration;
+
+    TraceLog(LOG_INFO, "FancyText setup: total duration = %.2f", animation.duration);
 }
 
 
@@ -312,38 +313,57 @@ void UpdateAnimation(SpriteData& spriteData, CharacterData& charData, Animation 
             FancyTextAnimationState &state = animation.state.fancyText;
             float t = animation.time;
 
-            float revealStart = state.initialDelay;
-            float letterRevealEnd = revealStart + (strlen(state.text) * state.letterPause);
+            const char* sourceText = state.text;
+            int totalLen = (int) strlen(sourceText);
+
+            float scrambleStart = state.initialDelay;
+            float scrambleEnd = scrambleStart + (totalLen * state.letterPause);
+            float decodeStart = scrambleEnd;
+            float decodeEnd = decodeStart + (totalLen * state.letterPause);
             float fadeOutStart = animation.duration - state.fadeOutDuration;
 
-            // During initial delay
-            if (t < state.initialDelay) {
-                state.visibleChars = 0;
-                state.alpha = 1.0f;
+            // Full opacity unless fading
+            state.alpha = 1.0f;
+
+            if (t < scrambleStart) {
+                state.scrambleLength = 0;
+                state.finalRevealLength = 0;
                 break;
             }
 
-            // During reveal
-            if (t < letterRevealEnd) {
-                int charsToShow = (int)((t - state.initialDelay) / state.letterPause);
-                int maxLen = (int) strlen(state.text);
-                if (charsToShow > maxLen)
-                    charsToShow = maxLen;
-                state.visibleChars = charsToShow;
-                state.alpha = 1.0f;
+            // Scramble phase (random letters appear)
+            if (t < scrambleEnd) {
+                float progress = (t - scrambleStart) / (totalLen * state.letterPause);
+                state.scrambleLength = (int)(progress * totalLen);
+                if (state.scrambleLength > totalLen)
+                    state.scrambleLength = totalLen;
+
+                // Throttle randomness to 10 updates per second
+                state.timeSinceLastScramble += dt;
+                if (state.timeSinceLastScramble >= 0.1f) {
+                    state.timeSinceLastScramble = 0.0f;
+                }
+            } else {
+                state.scrambleLength = totalLen;
             }
 
-            // After reveal: all characters visible
-            if (t >= letterRevealEnd) {
-                state.visibleChars = (int) strlen(state.text);
+            // Decode phase (revealing final characters)
+            if (t >= decodeStart && t < decodeEnd) {
+                float progress = (t - decodeStart) / (totalLen * state.letterPause);
+                state.finalRevealLength = (int)(progress * totalLen);
+                if (state.finalRevealLength > totalLen)
+                    state.finalRevealLength = totalLen;
+            } else if (t >= decodeEnd) {
+                state.finalRevealLength = totalLen;
+                state.doneScrambling = true;
             }
 
-            // Handle fade-out
+            // Fade-out phase
             if (t >= fadeOutStart) {
-                float progress = (t - fadeOutStart) / state.fadeOutDuration;
-                if (progress > 1.0f)
-                    progress = 1.0f;
-                state.alpha = 1.0f - progress;
+                float fadeProgress = (t - fadeOutStart) / state.fadeOutDuration;
+                if (fadeProgress > 1.0f)
+                    fadeProgress = 1.0f;
+                state.alpha = 1.0f - fadeProgress;
             }
 
             break;

@@ -43,6 +43,17 @@ static void processEvents() {
                 moveParty(event.moveParty.target);
                 PlaySoundEffect(SoundEffectType::Select);
                 PlaySoundEffect(SoundEffectType::Footstep);
+                /*
+                Animation anim{};
+                SetupFancyTextAnimation(anim,
+                                        "The system is compromised!",
+                                        300,
+                                        2.0f,   // holdDuration
+                                        0.5f,     // initialDelay
+                                        0.05f,    // letterPause (reveal speed)
+                                        1.0f);    // fadeOut
+                level.animations.push_back(anim);
+                 */
                 break;
             }
             case GameEventType::PartySpotted: {
@@ -94,7 +105,7 @@ static void processEvents() {
             case GameEventType::StartQuest: {
                 const Quest& quest = game->questData.quests[event.startQuestEvent.questId];
                 Animation textAnim{};
-                SetupFancyTextAnimation(textAnim, TextFormat("'%s' started", quest.title.c_str()), 150, 1.5f, 0.5f, 0.075f, 0.65f);
+                SetupFancyTextAnimation(textAnim, TextFormat("'%s' started", quest.title.c_str()), 300, 2.0f, 0.5f, 0.05f, 1.0f);
                 level.animations.push_back(textAnim);
                 break;
             }

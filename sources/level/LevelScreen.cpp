@@ -270,18 +270,30 @@ static void DisplayTextAnimations(Level &level) {
                 break;
             }
             case AnimationType::FancyText: {
-                const char* fullText = animation.state.fancyText.text;
-                int visibleChars = animation.state.fancyText.visibleChars;
-                float alpha = animation.state.fancyText.alpha;
+                const FancyTextAnimationState& state = animation.state.fancyText;
+                const char* src = state.text;
+                int totalLen = (int) strlen(src);
 
-                char visibleText[129] = {0};
-                strncpy(visibleText, fullText, visibleChars);
-                visibleText[visibleChars] = '\0';
+                char displayText[129] = {0};
 
-                DrawText(visibleText,
-                         gameScreenHalfWidth - (MeasureText(visibleText, 20) / 2),
-                         (int) animation.state.fancyText.y, 20,
-                         Fade(WHITE, alpha));
+                for (int i = 0; i < totalLen; ++i) {
+                    if (i < state.finalRevealLength) {
+                        // Fully revealed
+                        displayText[i] = src[i];
+                    } else if (i < state.scrambleLength) {
+                        // Scrambled
+                        displayText[i] = (char) GetRandomValue(33, 126); // printable ASCII
+                    } else {
+                        // Not yet shown
+                        displayText[i] = '\0';
+                        break; // stop here
+                    }
+                }
+
+                DrawText(displayText,
+                         50,
+                         (int) state.y, 20,
+                         Fade(WHITE, state.alpha));
                 break;
             }
             default:
@@ -610,6 +622,11 @@ void HandleInputLevelScreen(SpriteData& spriteData, CharacterData& charData, Lev
         if (charData.stats[character].health <= 0) {
             continue;
         }
+
+        // don't show floating stats for characters out of LoS
+        if(!HasLineOfSightToParty(spriteData, charData, level, character))
+            continue;
+
         Vector2 gridPosCharacter = PixelToGridPosition(GetCharacterSpritePosX(spriteData, charData.sprite[character]),
                                                        GetCharacterSpritePosY(spriteData, charData.sprite[character]));
         if ((int) gridPosCharacter.x == (int) gridPos.x && (int) gridPosCharacter.y == (int) gridPos.y) {

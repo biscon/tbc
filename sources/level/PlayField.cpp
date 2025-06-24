@@ -61,7 +61,6 @@ void DrawHealthBar(float x, float y, float width, float health, float maxHealth)
     DrawRectangle(x, y, width * (health / maxHealth), 2, GREEN);
 }
 
-
 static void DrawGridCharacters(SpriteData& spriteData, CharacterData& charData, PlayField &playField, Level &level) {
     // Sort characters by y position
     std::vector<int> sortedCharacters;
@@ -76,6 +75,8 @@ static void DrawGridCharacters(SpriteData& spriteData, CharacterData& charData, 
 
     // Draw characters
     for (auto &character: sortedCharacters) {
+        if(!HasLineOfSightToParty(spriteData, charData, level, character))
+            continue;
         Vector2 charPos = GetAnimatedCharPos(spriteData, charData, level, character);
         // Draw oval shadow underneath
         if(charData.stats[character].health > 0 && level.turnState != TurnState::Victory && level.turnState != TurnState::Defeat)
@@ -444,7 +445,7 @@ void DrawPlayField(SpriteData& spriteData, CharacterData& charData, PlayField &p
     // Bottom layer
     BeginMode2D(level.camera.camera);
     DrawTileLayer(level.lighting, spriteData.sheet, level.tileMap, BOTTOM_LAYER, 0, 0);
-    //DrawTileLayer(level.lighting, spriteData.sheet, level.tileMap, LIGHT_LAYER, 0, 0);
+    DrawTileLayer(level.lighting, spriteData.sheet, level.tileMap, LIGHT_LAYER, 0, 0);
     EndMode2D();
 
     DrawBloodPools();

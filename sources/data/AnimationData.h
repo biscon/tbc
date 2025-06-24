@@ -99,12 +99,15 @@ struct FancyTextAnimationState {
     float y;
     float initialDelay;
     float letterPause;
-    int visibleChars;
-    float revealTime;
-    bool doneRevealing;
-    float alpha;
     float fadeOutDuration;
+    float alpha;
+
+    int scrambleLength;     // How many characters are currently "scrambled"
+    int finalRevealLength;  // How many characters are now real
+    float timeSinceLastScramble;
+    bool doneScrambling;
 };
+
 
 struct Animation {
     AnimationType type;

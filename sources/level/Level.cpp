@@ -13,6 +13,7 @@
 #include "character/Npc.h"
 #include "character/Character.h"
 #include "util/StringUtil.h"
+#include "graphics/Animation.h"
 
 using json = nlohmann::json;
 
@@ -291,6 +292,16 @@ void LoadLevel(GameData& data, Level &level, const std::string &filename) {
         }
     }
     PropagateLight(level.lighting, level.tileMap);
+
+    Animation anim{};
+    SetupFancyTextAnimation(anim,
+                            TextFormat("Location: %s", level.name.c_str()),
+                            300,
+                            2.0f,   // holdDuration
+                            1.5f,     // initialDelay
+                            0.05f,    // letterPause (reveal speed)
+                            1.5f);    // fadeOut
+    level.animations.push_back(anim);
 }
 
 void DestroyLevel(SpriteSheetData& sheetData, Level &level) {
