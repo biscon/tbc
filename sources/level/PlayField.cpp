@@ -354,28 +354,30 @@ static void handleInputPlayFieldSelectingEnemyTarget(PlayField &playField, Level
 
 }
 
-static bool handleDoors(SpriteData& spriteData, PlayField &playField, Level &level, Vector2i gridPos, Vector2i playerPos) {
+static bool handleDoors(GameData& data, Level &level, Vector2i gridPos, Vector2i playerPos) {
+    SpriteData& spriteData = data.spriteData;
     for(auto& entry : level.doors){
         auto& door = entry.second;
         for(auto& doorTile : door.blockedTiles) {
             if(gridPos == doorTile && IsMouseButtonReleased(MOUSE_BUTTON_LEFT) && Distance(playerPos, gridPos) < 3 && playerPos != doorTile) {
-                if(!door.open) {
+                DoorSaveState& doorState = data.levelState[level.name].doors[door.id];
+                if(!doorState.open) {
                     TraceLog(LOG_INFO, "Opening door %s", door.id.c_str());
-                    door.open = true;
+                    doorState.open = true;
                     SetReverseSpriteAnimation(spriteData, door.animPlayer, false);
                     ResumeSpriteAnimation(spriteData, door.animPlayer);
                     SetFrame(spriteData, door.animPlayer, 0);
                 } else {
                     TraceLog(LOG_INFO, "Closing door %s", door.id.c_str());
-                    door.open = false;
+                    doorState.open = false;
                     SetReverseSpriteAnimation(spriteData, door.animPlayer, true);
                     int anim = spriteData.player.animationIdx[door.animPlayer];
                     int frames = (int) spriteData.anim.frames[anim].size();
                     SetFrame(spriteData, door.animPlayer, frames-1);
                     ResumeSpriteAnimation(spriteData, door.animPlayer);
                 }
-                SetTiles(level.tileMap, door.blockedTiles, NAV_LAYER, door.open ? 0 : 1);
-                SetTiles(level.tileMap, door.shadowTiles, SHADOW_LAYER, door.open ? 0 : 1);
+                SetTiles(level.tileMap, door.blockedTiles, NAV_LAYER, doorState.open ? 0 : 1);
+                SetTiles(level.tileMap, door.shadowTiles, SHADOW_LAYER, doorState.open ? 0 : 1);
                 PropagateLight(level.lighting, level.tileMap);
                 return true;
             }
@@ -384,7 +386,9 @@ static bool handleDoors(SpriteData& spriteData, PlayField &playField, Level &lev
     return false;
 }
 
-static void handleInputPlayFieldExploration(SpriteData& spriteData, CharacterData& charData, PlayField &playField, Level &level) {
+static void handleInputPlayFieldExploration(GameData& data, PlayField &playField, Level &level) {
+    SpriteData& spriteData = data.spriteData;
+    CharacterData& charData = data.charData;
     // check if mouse is over tile
     playField.selectedTilePos = {-1, -1};
     Vector2 mousePos = GetScreenToWorld2D(GetMousePosition(), level.camera.camera);
@@ -392,7 +396,7 @@ static void handleInputPlayFieldExploration(SpriteData& spriteData, CharacterDat
     auto& playerChar = level.partyCharacters.front();
     Vector2i playerPos = GetCharacterGridPosI(spriteData, charData.sprite[playerChar]);
 
-    if(handleDoors(spriteData, playField, level, gridPos, playerPos)) {
+    if(handleDoors(data, level, gridPos, playerPos)) {
         return;
     }
 
@@ -426,13 +430,13 @@ static void handleInputPlayFieldExploration(SpriteData& spriteData, CharacterDat
     }
 }
 
-void HandleInputPlayField(SpriteData& spriteData, CharacterData& charData, PlayField &playField, Level &level) {
+void HandleInputPlayField(GameData& data, PlayField &playField, Level &level) {
     switch(playField.mode) {
         case PlayFieldMode::None:handleInputPlayFieldNormal(playField, level);break;
         case PlayFieldMode::SelectingTile:handleInputPlayFieldSelectingTile(playField, level);break;
         case PlayFieldMode::SelectingEnemyTarget:handleInputPlayFieldSelectingEnemyTarget(playField, level);break;
         case PlayFieldMode::Explore:
-            handleInputPlayFieldExploration(spriteData, charData, playField, level);break;
+            handleInputPlayFieldExploration(data, playField, level);break;
     }
 }
 
@@ -440,6 +444,7 @@ void DrawPlayField(SpriteData& spriteData, CharacterData& charData, PlayField &p
     // Bottom layer
     BeginMode2D(level.camera.camera);
     DrawTileLayer(level.lighting, spriteData.sheet, level.tileMap, BOTTOM_LAYER, 0, 0);
+    //DrawTileLayer(level.lighting, spriteData.sheet, level.tileMap, LIGHT_LAYER, 0, 0);
     EndMode2D();
 
     DrawBloodPools();
@@ -448,7 +453,6 @@ void DrawPlayField(SpriteData& spriteData, CharacterData& charData, PlayField &p
     BeginMode2D(level.camera.camera);
     DrawTileLayer(level.lighting, spriteData.sheet, level.tileMap, MIDDLE_LAYER, 0, 0);
     DrawLevelObjects(spriteData, level);
-    DrawTileLayer(level.lighting, spriteData.sheet, level.tileMap, LIGHT_LAYER, 0, 0);
     DrawDoors(spriteData, level);
     EndMode2D();
 

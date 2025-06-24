@@ -14,6 +14,7 @@
 #include "util/GameEventQueue.h"
 #include "level/CombatEngine.h"
 #include "game/Dialogue.h"
+#include "graphics/Animation.h"
 
 static GameData* game;
 static Level level;
@@ -81,17 +82,19 @@ static void processEvents() {
                 playField.mode = PlayFieldMode::None;
                 game->state = GameState::DIALOGUE;
                 TraceLog(LOG_INFO, "InitiateDialogue: npcId = %i, dialogueNodeId = %i", event.initiateDialogueEvent.npcId, event.initiateDialogueEvent.dialogueNodeId);
-                game->dialogueData.currentNpc = event.initiateDialogueEvent.npcId;
-                game->dialogueData.currentDialogueNode = event.initiateDialogueEvent.dialogueNodeId;
-                game->dialogueData.idleAnimPlayer = CreateSpriteAnimationPlayer(game->spriteData);
-                int idleAnim = GetSpriteAnimation(game->spriteData, "SerDonaldPortraitTalkTalk");
-                PlaySpriteAnimation(game->spriteData, game->dialogueData.idleAnimPlayer, idleAnim, true);
+                InitiateDialogue(*game, event.initiateDialogueEvent.dialogueNodeId, event.initiateDialogueEvent.npcId, eventQueue);
                 break;
             }
             case GameEventType::EndDialogue: {
                 TraceLog(LOG_INFO, "EndDialogue: npcId = %i", event.endDialogueEvent.npcId);
                 playField.mode = PlayFieldMode::Explore;
                 game->state = GameState::PLAY_LEVEL;
+                break;
+            }
+            case GameEventType::StartQuest: {
+                Animation textAnim{};
+                SetupTextAnimation(textAnim, TextFormat("Started quest '%s'", event.startQuestEvent.questId), 150, 2.0f, 1.0f);
+                level.animations.push_back(textAnim);
                 break;
             }
             default:
@@ -196,7 +199,7 @@ void LevelInit() {
     LoadSoundEffect(SoundEffectType::StartRound, ASSETS_PATH"sound/start_round.wav", false);
     SetVolumeSoundEffect(SoundEffectType::StartRound, 0.75f);
     LoadSoundEffect(SoundEffectType::Burning, ASSETS_PATH"sound/burning_01.ogg", false);
-    PlaySoundEffect(SoundEffectType::Ambience);
+    //PlaySoundEffect(SoundEffectType::Ambience);
 
     CreateLevel(level);
     CreateLevelScreen(levelScreen, &eventQueue);
@@ -234,7 +237,7 @@ void LevelHandleInput() {
     } else {
         HandleDialogueInput(*game, eventQueue);
     }
-    HandleInputPlayField(game->spriteData, game->charData, playField, level);
+    HandleInputPlayField(*game, playField, level);
     HandleInputLevelScreen(game->spriteData, game->charData, levelScreen, level);
 
     if (IsKeyPressed(KEY_ESCAPE)) {

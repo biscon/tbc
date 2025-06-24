@@ -1,6 +1,6 @@
 {
     "quests": {
-        "help_farmer": {
+        "kill_ninjas": {
             "status": "NotStarted",
             "stage": 0
         }

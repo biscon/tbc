@@ -4,12 +4,32 @@
 #include <fstream>
 #include "SaveData.h"
 
+void to_json(nlohmann::json& j, const DoorSaveState& s) {
+    j = nlohmann::json{
+            {"id", s.id},
+            {"open", s.open},
+            {"locked", s.locked}
+    };
+}
+
+void from_json(const nlohmann::json& j, DoorSaveState& s) {
+    j.at("id").get_to(s.id);
+    j.at("open").get_to(s.open);
+    j.at("locked").get_to(s.locked);
+}
+
 void to_json(nlohmann::json& j, const LevelSaveState& m) {
-    j = nlohmann::json{{"defeatedGroups", m.defeatedGroups}};
+    j = nlohmann::json{
+        {"defeatedGroups", m.defeatedGroups},
+        {"doors", m.doors},
+        {"flags", m.flags}
+    };
 }
 
 void from_json(const nlohmann::json& j, LevelSaveState& m) {
     j.at("defeatedGroups").get_to(m.defeatedGroups);
+    j.at("doors").get_to(m.doors);
+    j.at("flags").get_to(m.flags);
 }
 
 void to_json(nlohmann::json& j, const PartyCharacter& c) {

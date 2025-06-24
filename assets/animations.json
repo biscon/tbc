@@ -1022,5 +1022,23 @@
                 ]
             }
         ]
+    },
+    {
+        "group": "Locker",
+        "sheet": "locker.png",
+        "frameWidth": 16,
+        "frameHeight": 48,
+        "animations": [
+            {
+                "name": "Idle",
+                "origin": [0, 0],
+                "frames": [
+                    0
+                ],
+                "delays": [
+                    0.10
+                ]
+            }
+        ]
     }
 ]

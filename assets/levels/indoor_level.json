@@ -17,10 +17,16 @@
             "radius": 5
         }
     ],
+    "flags": [
+        {
+            "id": "testFlag",
+            "value": false
+        }
+    ],
     "npcs": [
         {
             "template": "SerDonald",
-            "position": [52, 10],
+            "position": [14, 15],
             "dialogueNode": 1
         }
     ],
@@ -147,6 +153,27 @@
             "loop": true,
             "lit": false,
             "position": [36, 7]
+        },
+        {
+            "id": "locker1",
+            "sprite": "LockerIdle",
+            "loop": false,
+            "lit": true,
+            "position": [29, 6]
+        },
+        {
+            "id": "locker2",
+            "sprite": "LockerIdle",
+            "loop": false,
+            "lit": true,
+            "position": [30, 6]
+        },
+        {
+            "id": "locker3",
+            "sprite": "LockerIdle",
+            "loop": false,
+            "lit": true,
+            "position": [31, 6]
         }
     ],
     "doors": [

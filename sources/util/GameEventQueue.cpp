@@ -61,3 +61,10 @@ void PublishEndDialogueEvent(GameEventQueue &eventQueue, int npcId) {
     event.endDialogueEvent.npcId = npcId;
     PublishEvent(eventQueue, event);
 }
+
+void PublishStartQuestEvent(GameEventQueue &eventQueue, const std::string& questId) {
+    GameEvent event{};
+    event.type = GameEventType::StartQuest;
+    strncpy(event.startQuestEvent.questId, questId.c_str(), sizeof(event.startQuestEvent.questId));
+    PublishEvent(eventQueue, event);
+}

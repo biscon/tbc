@@ -65,8 +65,6 @@ struct LevelDoor {
     std::string id;
     std::string spriteTemplate;
     Vector2i gridPos;
-    bool open;
-    bool locked;
     std::vector<Vector2i> blockedTiles;
     std::vector<Vector2i> shadowTiles;
     int animPlayer;

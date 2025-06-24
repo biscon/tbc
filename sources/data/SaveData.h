@@ -14,8 +14,19 @@
 #include "CharacterData.h"
 #include "QuestData.h"
 
+struct DoorSaveState {
+    std::string id;
+    bool open;
+    bool locked;
+};
+
+void to_json(nlohmann::json& j, const DoorSaveState& m);
+void from_json(const nlohmann::json& j, DoorSaveState& m);
+
 struct LevelSaveState {
     std::unordered_set<std::string> defeatedGroups;
+    std::unordered_map<std::string, DoorSaveState> doors;
+    std::unordered_map<std::string, bool> flags;
 };
 
 void to_json(nlohmann::json& j, const LevelSaveState& m);

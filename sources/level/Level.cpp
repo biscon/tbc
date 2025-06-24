@@ -214,7 +214,6 @@ void LoadLevel(GameData& data, Level &level, const std::string &filename) {
         }
     }
 
-
     // Load doors
     level.doors.clear();
     if (j.contains("doors") && j["doors"].is_array()) {
@@ -222,29 +221,34 @@ void LoadLevel(GameData& data, Level &level, const std::string &filename) {
             LevelDoor door;
             door.id = doorJson.value("id", "");
             door.spriteTemplate = doorJson.value("sprite", "");
-            door.open = doorJson.value("open", false);
-            door.locked = doorJson.value("locked", false);
+            // create state entry with defaults from level file, if we have not loaded a saved game
+            if(data.state != GameState::LOAD_LEVEL_FROM_SAVE) {
+                bool open = doorJson.value("open", false);
+                bool locked = doorJson.value("locked", false);
+                data.levelState[level.name].doors[door.id] = DoorSaveState{door.id, open, locked};
+            }
+            DoorSaveState& doorState = data.levelState[level.name].doors[door.id];
             doorJson["position"].get_to(door.gridPos);
             if (doorJson.contains("blockedTiles") && doorJson["blockedTiles"].is_array()) {
                 for (const auto& item : doorJson["blockedTiles"]) {
                     door.blockedTiles.push_back(item.get<Vector2i>());
                 }
             }
-            SetTiles(level.tileMap, door.blockedTiles, NAV_LAYER, door.open ? 0 : 1);
+            SetTiles(level.tileMap, door.blockedTiles, NAV_LAYER, doorState.open ? 0 : 1);
 
             if (doorJson.contains("shadowTiles") && doorJson["shadowTiles"].is_array()) {
                 for (const auto& item : doorJson["shadowTiles"]) {
                     door.shadowTiles.push_back(item.get<Vector2i>());
                 }
             }
-            SetTiles(level.tileMap, door.shadowTiles, SHADOW_LAYER, door.open ? 0 : 1);
+            SetTiles(level.tileMap, door.shadowTiles, SHADOW_LAYER, doorState.open ? 0 : 1);
 
             door.animPlayer = CreateSpriteAnimationPlayer(data.spriteData);
             int anim = GetSpriteAnimation(data.spriteData, door.spriteTemplate);
             PlaySpriteAnimation(data.spriteData, door.animPlayer, anim, false);
             PauseSpriteAnimation(data.spriteData, door.animPlayer);
             int frames = (int) data.spriteData.anim.frames[anim].size();
-            if(door.open) {
+            if(doorState.open) {
                 SetFrame(data.spriteData, door.animPlayer, frames-1);
             }
 
@@ -252,6 +256,19 @@ void LoadLevel(GameData& data, Level &level, const std::string &filename) {
         }
     }
 
+    // Load flags
+    if (j.contains("flags") && j["flags"].is_array()) {
+        for (const auto &flagJson: j["flags"]) {
+            std::string id = flagJson.value("id", "");
+            if(id.empty()) {
+                TraceLog(LOG_WARNING, "Warning: flag entry in level file %s is missing id field.", filename.c_str());
+            }
+            // only set if it doesn't already exist
+            if(data.levelState[level.name].flags.count(id) == 0) {
+                data.levelState[level.name].flags[id] = flagJson.value("value", false);
+            }
+        }
+    }
 
     InitLightingData(level.lighting, level.tileMap);
     // Load ambient light

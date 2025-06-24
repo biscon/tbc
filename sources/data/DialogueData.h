@@ -10,16 +10,28 @@
 #include "util/json.hpp"
 #include "raylib.h"
 
-enum class ConditionType { QuestStatusEquals, HasItem, FlagIsSet };
-struct Condition { ConditionType type; std::string param; int value; };
+enum class ConditionType { QuestStatusEquals, HasItem, FlagIsSet, GroupDefeated };
+struct Condition { ConditionType type; std::string param; std::string value; };
 
 enum class EffectType { StartQuest, CompleteQuest, SetFlag, GiveItem };
-struct Effect { EffectType type; std::string param; int value; };
+struct Effect { EffectType type; std::string param; std::string value; };
+
+EffectType EffectTypeFromString(const std::string& s);
+std::string ToString(EffectType type);
+
+void to_json(nlohmann::json& j, const Condition& c);
+void from_json(const nlohmann::json& j, Condition& c);
+
+void to_json(nlohmann::json& j, const Effect& e);
+void from_json(const nlohmann::json& j, Effect& e);
 
 struct DialogueNode {
     int id;
     std::string text;
     std::vector<int> responseIds; // links to DialogueResponses
+    std::vector<Condition> conditions;
+    std::vector<Effect> effects;
+    std::vector<int> conditionalNextNodes; // for router logic
 };
 
 void to_json(nlohmann::json& j, const DialogueNode& node);
@@ -29,8 +41,8 @@ struct DialogueResponse {
     int id;
     std::string text;
     int nextNodeId;
-    std::string startQuestId;      // optional quest to start
-    std::string completeQuestId;   // optional quest to complete
+    std::vector<Condition> conditions;
+    std::vector<Effect> effects;
 };
 
 void to_json(nlohmann::json& j, const DialogueResponse& resp);

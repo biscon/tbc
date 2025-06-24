@@ -2,36 +2,67 @@
     "dialogueNodes": {
         "1": {
             "id": 1,
-            "text": "Hey stranger! Can you help me with something?",
-            "responseIds": [101, 102]
+            "text": "",
+            "conditionalNextNodes": [2, 3]
         },
         "2": {
             "id": 2,
-            "text": "Go kill some ninjas for me, you stupid asshole.",
-            "responseIds": [103]
+            "text": "How's the ninja killing coming along?",
+            "conditions": [
+                {
+                    "type": "QuestStatusEquals",
+                    "param": "kill_ninjas",
+                    "value": "Active"
+                }
+            ],
+            "responseIds": [197]
+        },
+        "3": {
+            "id": 3,
+            "text": "Hey stranger! Can you help me with something?",
+            "conditions": [],
+            "responseIds": [101, 198]
+        },
+        "4": {
+            "id": 4,
+            "text": "Can you kill some ninjas for me and collect their stupid little headbands?\nFor like, trophies.",
+            "conditions": [],
+            "responseIds": [102, 198]
         }
     },
     "dialogueResponses": {
         "101": {
             "id": 101,
             "text": "Sure, what do you need?",
-            "nextNodeId": 2,
-            "startQuestId": "help_farmer",
-            "completeQuestId": ""
+            "nextNodeId": 4
         },
+
         "102": {
             "id": 102,
-            "text": "Sorry, I'm busy.",
+            "text": "Okay, ill be back, soaked in ninja blood.",
             "nextNodeId": -1,
-            "startQuestId": "",
-            "completeQuestId": ""
+            "effects": [
+                {
+                    "type": "StartQuest",
+                    "param": "kill_ninjas",
+                    "value": ""
+                }
+            ]
         },
-        "103": {
-            "id": 103,
+        "197": {
+            "id": 197,
+            "text": "Im on it, you fat bastard.",
+            "nextNodeId": -1
+        },
+        "198": {
+            "id": 198,
+            "text": "Sorry, I'm busy.",
+            "nextNodeId": -1
+        },
+        "199": {
+            "id": 199,
             "text": "Later.",
-            "nextNodeId": -1,
-            "startQuestId": "",
-            "completeQuestId": ""
+            "nextNodeId": -1
         }
     }
 }

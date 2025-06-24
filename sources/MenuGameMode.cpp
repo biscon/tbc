@@ -75,6 +75,7 @@ static void loadGame() {
     game->levelFileName = saveData.currentLevel;
     game->state = GameState::LOAD_LEVEL_FROM_SAVE;
     game->levelState = saveData.levels;
+    game->quests = saveData.quests;
 
     ClearAllCharacters(game->charData);
     game->spriteData.player.animationIdx.clear();
@@ -89,15 +90,8 @@ static void loadGame() {
         game->charData.stats[id] = ch.stats;
         Vector2i savedPos = { ch.tilePosX, ch.tilePosY};
         SetCharacterGridPosI(game->spriteData, game->charData.sprite[id], savedPos);
-        /*
-        LevelUp(game->charData, id, true);
-        LevelUp(game->charData, id, true);
-        LevelUp(game->charData, id, true);
-        LevelUp(game->charData, id, true);
-         */
         game->party.emplace_back(id);
     }
-
 
     PushGameMode(GameModes::Level);
 }

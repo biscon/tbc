@@ -186,39 +186,100 @@ void UpdateDialogue(GameData& data, float dt) {
     }
 }
 
+static bool EvaluateQuestStatusEquals(GameData& data, const Condition& condition) {
+    const std::string& questId = condition.param;
+    QuestStatus status = QuestStatusFromString(condition.value);
+    if(data.quests[questId].status == status) {
+        return true;
+    }
+    return false;
+}
+
+static bool AllConditionsPass(GameData& data, const std::vector<Condition>& conditions) {
+    for(const auto& condition : conditions) {
+        switch(condition.type) {
+            case ConditionType::QuestStatusEquals: {
+                if(!EvaluateQuestStatusEquals(data, condition)) {
+                    return false;
+                }
+                break;
+            }
+            case ConditionType::HasItem: {
+                break;
+            }
+            case ConditionType::FlagIsSet: {
+                break;
+            }
+            case ConditionType::GroupDefeated: {
+                break;
+            }
+        }
+    }
+    return true;
+}
+
+static int ResolveEntryNode(GameData& data, int nodeId) {
+    if(nodeId == -1)
+        return -1;
+
+    const DialogueNode& node = data.dialogueData.dialogueNodes.at(nodeId);
+    // If it's a conditional router node
+    if (!node.conditionalNextNodes.empty()) {
+        for (int nextId : node.conditionalNextNodes) {
+            const DialogueNode& candidate = data.dialogueData.dialogueNodes.at(nextId);
+            if (AllConditionsPass(data, candidate.conditions)) {
+                return nextId;
+            }
+        }
+        return -1; // Nothing valid
+    }
+
+    return nodeId; // Regular node
+}
+
+static void AdvanceDialogue(GameData& data, int virtualNodeId, GameEventQueue& eventQueue) {
+    int nodeId = ResolveEntryNode(data, virtualNodeId);
+    data.dialogueData.currentDialogueNode = nodeId;
+    if(nodeId == -1) {
+        TraceLog(LOG_ERROR, "Could not resolve a dialogue node for virtual node id: %i. Aborting dialogue.", virtualNodeId);
+        PublishEndDialogueEvent(eventQueue, data.dialogueData.currentNpc);
+        data.dialogueData.currentNpc = -1; // Exit dialogue mode
+    }
+}
+
+static void ExecuteEffects(GameData& data, const std::vector<Effect>& effects, GameEventQueue& eventQueue) {
+    for(const auto& effect : effects) {
+        switch(effect.type) {
+            case EffectType::StartQuest: {
+                data.quests[effect.param].status = QuestStatus::Active;
+                data.quests[effect.param].stage = 0;
+                TraceLog(LOG_INFO, "Quest id '%s' started.", effect.param.c_str());
+                PublishStartQuestEvent(eventQueue, effect.param);
+                break;
+            }
+            case EffectType::CompleteQuest: {
+                data.quests[effect.param].status = QuestStatus::Completed;
+                data.quests[effect.param].stage = 0;
+                TraceLog(LOG_INFO, "Quest id '%s' completed.", effect.param.c_str());
+                break;
+            }
+            case EffectType::SetFlag: {
+                break;
+            }
+            case EffectType::GiveItem: {
+                break;
+            }
+        }
+    }
+}
+
 static void handlePlayerResponse(GameData& data, int responseId, GameEventQueue& eventQueue) {
     auto& dlg = data.dialogueData;
     auto& response = dlg.dialogueResponses[responseId];
 
-    // Start quest if needed
-    if (!response.startQuestId.empty()) {
-        auto& quest = data.quests[response.startQuestId];
-        if (quest.status == QuestStatus::NotStarted) {
-            quest.status = QuestStatus::Active;
-            quest.stage = 0;
-            // You could log or notify the player here
-            printf("Quest started: %s\n", response.startQuestId.c_str());
-        }
-    }
-
-    // Complete quest if needed
-    if (!response.completeQuestId.empty()) {
-        auto& quest = data.quests[response.completeQuestId];
-        if (quest.status == QuestStatus::Active) {
-            quest.status = QuestStatus::Completed;
-            // Notify player or reward here
-            printf("Quest completed: %s\n", response.completeQuestId.c_str());
-        }
-    }
-
-    // Advance dialogue or end
-    dlg.currentDialogueNode = response.nextNodeId;
-    if (dlg.currentDialogueNode == -1) {
-        PublishEndDialogueEvent(eventQueue, dlg.currentNpc);
-        dlg.currentNpc = -1; // Exit dialogue mode
-        //dlg.dialogueFade = 0.0f;
-        //dlg.fadingOut = true;
-    }
+    // execute effects
+    ExecuteEffects(data, response.effects, eventQueue);
+    AdvanceDialogue(data, response.nextNodeId, eventQueue);
 }
 
 
@@ -238,4 +299,13 @@ void HandleDialogueInput(GameData& data, GameEventQueue& eventQueue) {
             }
         }
     }
+}
+
+void InitiateDialogue(GameData &data, int nodeId, int npcId, GameEventQueue& eventQueue) {
+    data.dialogueData.currentNpc = npcId;
+    data.dialogueData.currentDialogueNode = nodeId;
+    data.dialogueData.idleAnimPlayer = CreateSpriteAnimationPlayer(data.spriteData);
+    int idleAnim = GetSpriteAnimation(data.spriteData, "SerDonaldPortraitTalkTalk");
+    PlaySpriteAnimation(data.spriteData, data.dialogueData.idleAnimPlayer, idleAnim, true);
+    AdvanceDialogue(data, nodeId, eventQueue);
 }
