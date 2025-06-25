@@ -72,7 +72,7 @@ int CreateCharacterFromTemplate(GameData& data, const std::string &npcTemplate) 
         InitCharacterSprite(data.spriteData, data.charData.sprite[charIdx], tplData.characterSprite[templateIdx], true);
         std::string weaponTemplate = tplData.weaponTemplate[templateIdx];
         if(!weaponTemplate.empty()) {
-            GiveWeapon(data, charIdx, weaponTemplate);
+            GiveWeapon(data, charIdx, weaponTemplate, ItemEquipSlot::Weapon1);
         }
         return charIdx;
     } else {

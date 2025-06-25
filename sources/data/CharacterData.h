@@ -24,7 +24,6 @@ enum class CharacterClass {
     Mage,
     Rogue,
 };
-
 void to_json(nlohmann::json& j, const CharacterClass& c);
 void from_json(const nlohmann::json& j, CharacterClass& c);
 
@@ -34,7 +33,6 @@ enum class CharacterFaction {
     Npc,
     Enemy,
 };
-
 void to_json(nlohmann::json& j, const CharacterFaction& f);
 void from_json(const nlohmann::json& j, CharacterFaction& f);
 
@@ -49,9 +47,17 @@ struct CharacterStats {
     int movePoints;
     int level;
 };
-
 void to_json(nlohmann::json& j, const CharacterStats& m);
 void from_json(const nlohmann::json& j, CharacterStats& m);
+
+enum class ItemEquipSlot {
+    Weapon1,
+    Weapon2,
+    Armor,
+    // Add more later
+    COUNT
+};
+
 
 struct CharacterData {
     std::vector<CharacterClass> characterClass;
@@ -63,8 +69,7 @@ struct CharacterData {
     std::vector<std::vector<Skill>> skills;  // List of skills the character possesses
     std::vector<std::vector<StatusEffect>> statusEffects;
     std::vector<Orientation> orientation;
-    std::vector<int> weaponIdx;
-    std::vector<bool> isWeaponEquipped;
+    std::vector<std::array<int, static_cast<size_t>(ItemEquipSlot::COUNT)>> equippedItemIdx;
 };
 
 #endif //SANDBOX_CHARACTERDATA_H

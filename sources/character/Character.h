@@ -20,12 +20,14 @@ int CreateCharacter(CharacterData &data, CharacterClass characterClass, Characte
 void ClearAllCharacters(CharacterData& data);
 void DeleteCharacter(CharacterData& data, int id);
 bool IsAlive(CharacterData &data, int characterIdx);
-void GiveWeapon(GameData& data, int characterIdx, const std::string& itemTemplate);
+void GiveWeapon(GameData& data, int characterIdx, const std::string& itemTemplate, ItemEquipSlot slot);
 Vector2 GetOrientationVector(Orientation orientation);
 void LevelUp(CharacterData &charData, int cid, bool autoDistributePoints);
 int GetAttack(GameData& data, int cid);
 void FaceCharacter(SpriteData& spriteData, CharacterData &charData, int attackerId, int defenderId);
 CharacterClass StringToClass(const std::string& className);
 CharacterFaction StringToFaction(const std::string& factionName);
+int GetEquippedItem(const CharacterData& data, int charIdx, ItemEquipSlot slot);
+void SetEquippedItem(CharacterData& data, int charIdx, ItemEquipSlot slot, int itemIdx);
 
 #endif //SANDBOX_CHARACTER_H

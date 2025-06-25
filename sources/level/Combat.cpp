@@ -193,11 +193,11 @@ static void CalculateDamage(GameData& data, Level& combat, int attacker, int def
     // Base baseAttack calculation
     float totalAttack = (float) atkStats.attack;
     int effectiveDefense = defStats.defense;
-
-    if (charData.isWeaponEquipped[attacker] && charData.weaponIdx[attacker] != -1) {
+    int weaponItemId = GetEquippedItem(charData, attacker, ItemEquipSlot::Weapon1);
+    if (weaponItemId != -1) {
         int scalingStatValue = 0;
-        int tplIdx = GetItemTypeTemplateId(data, charData.weaponIdx[attacker]);
-        //int tplIdx = weaponData.instanceData.weaponTemplateIdx[charData.weaponIdx[attacker]];
+        int tplIdx = GetItemTypeTemplateId(data, weaponItemId);
+
         switch (weaponData.templateData.stats[tplIdx].scalingStat) {
             case ScalingStat::Attack: scalingStatValue = atkStats.attack; break;
             case ScalingStat::Speed: scalingStatValue = atkStats.speed; break;

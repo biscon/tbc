@@ -63,8 +63,8 @@ int CreateCharacter(CharacterData &data, CharacterClass characterClass, Characte
     data.stats.emplace_back(stats);
     data.characterClass.emplace_back(characterClass);
     data.orientation.emplace_back(Orientation::Right);
-    data.weaponIdx.emplace_back(-1);
-    data.isWeaponEquipped.push_back(false);
+    data.equippedItemIdx.emplace_back();
+    data.equippedItemIdx.back().fill(-1);
     data.statusEffects.emplace_back();
     data.skills.emplace_back();
     data.sprite.emplace_back();
@@ -75,9 +75,8 @@ void DeleteCharacter(CharacterData& data, int id) {
     data.stats.erase(data.stats.begin() + id);
     data.sprite.erase(data.sprite.begin() + id);
     data.orientation.erase(data.orientation.begin() + id);
-    data.weaponIdx.erase(data.weaponIdx.begin() + id);
+    data.equippedItemIdx.erase(data.equippedItemIdx.begin() + id);
     data.characterClass.erase(data.characterClass.begin() + id);
-    data.isWeaponEquipped.erase(data.isWeaponEquipped.begin() + id);
     data.name.erase(data.name.begin() + id);
     data.ai.erase(data.ai.begin() + id);
     data.faction.erase(data.faction.begin() + id);
@@ -89,9 +88,8 @@ void ClearAllCharacters(CharacterData& data) {
     data.stats.clear();
     data.sprite.clear();
     data.orientation.clear();
-    data.weaponIdx.clear();
+    data.equippedItemIdx.clear();
     data.characterClass.clear();
-    data.isWeaponEquipped.clear();
     data.name.clear();
     data.ai.clear();
     data.faction.clear();
@@ -99,10 +97,9 @@ void ClearAllCharacters(CharacterData& data) {
     data.skills.clear();
 }
 
-void GiveWeapon(GameData& data, int characterIdx, const std::string& itemTemplate) {
+void GiveWeapon(GameData& data, int characterIdx, const std::string& itemTemplate, ItemEquipSlot slot) {
     int weaponId = CreateItem(data, itemTemplate, 1);
-    data.charData.weaponIdx[characterIdx] = weaponId;
-    data.charData.isWeaponEquipped[characterIdx] = true;
+    SetEquippedItem(data.charData, characterIdx, slot, weaponId);
     int tplIdx = GetItemTypeTemplateId(data, weaponId);
     SetCharacterSpriteWeaponAnimation(data.spriteData, data.charData.sprite[characterIdx], data.weaponData.templateData.animationTemplate[tplIdx]);
 }
@@ -227,8 +224,8 @@ void LevelUp(CharacterData &charData, int cid, bool autoDistributePoints) {
 }
 
 int GetAttack(GameData& data, int cid) {
-    if(data.charData.isWeaponEquipped[cid]) {
-        int weaponItemId = data.charData.weaponIdx[cid];
+    int weaponItemId = GetEquippedItem(data.charData, cid, ItemEquipSlot::Weapon1);
+    if(weaponItemId != -1) {
         int tplIdx = GetItemTypeTemplateId(data, weaponItemId);
         return data.charData.stats[cid].attack + data.weaponData.templateData.stats[tplIdx].baseAttack;
     }
@@ -268,4 +265,12 @@ CharacterFaction StringToFaction(const std::string &factionName) {
     if(factionName == "Player") return CharacterFaction::Player;
     if(factionName == "Npc") return CharacterFaction::Npc;
     return CharacterFaction::Enemy;
+}
+
+int GetEquippedItem(const CharacterData& data, int charIdx, ItemEquipSlot slot) {
+    return data.equippedItemIdx[charIdx][static_cast<size_t>(slot)];
+}
+
+void SetEquippedItem(CharacterData& data, int charIdx, ItemEquipSlot slot, int itemIdx) {
+    data.equippedItemIdx[charIdx][static_cast<size_t>(slot)] = itemIdx;
 }
