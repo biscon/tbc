@@ -468,6 +468,7 @@ void DrawPlayField(SpriteData& spriteData, CharacterData& charData, PlayField &p
     // Top layer
     BeginMode2D(level.camera.camera);
     DrawTileLayer(level.lighting, spriteData.sheet, level.tileMap, TOP_LAYER, 0, 0);
+    RenderVisibilityMap(level.lighting);
     EndMode2D();
 
     //RenderLighting(level.lighting);

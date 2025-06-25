@@ -7,8 +7,14 @@
 // Load a sprite sheet from a file and split it into frames
 int LoadSpriteSheet(SpriteSheetData& sheetData, const char* filename, int frameWidth, int frameHeight) {
 
+    Image img = LoadImage(filename);
+    ImageAlphaPremultiply(&img);
+
     // Load the texture
-    Texture2D texture = LoadTexture(filename);
+    //Texture2D texture = LoadTexture(filename);
+    Texture2D texture = LoadTextureFromImage(img);
+    UnloadImage(img);
+
     sheetData.texture.emplace_back(texture);
     sheetData.frameSizeData.push_back({ frameWidth, frameHeight});
 

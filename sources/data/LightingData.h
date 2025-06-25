@@ -24,9 +24,12 @@ struct LightingData {
     float** lightMapR = nullptr;
     float** lightMapG = nullptr;
     float** lightMapB = nullptr;
+    bool** visibilityMap = nullptr;
+    Color* pixels = nullptr;
     int mapWidth;
     int mapHeight;
     Color ambient;
+    Texture2D visTexture;
 };
 
 #endif //SANDBOX_LIGHTINGDATA_H

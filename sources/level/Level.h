@@ -109,5 +109,7 @@ void WaitTurnState(Level &level, TurnState state, float waitTime);
 void AddPartyToLevelNoPositioning(SpriteData& spriteData, CharacterData& charData, Level &level, std::vector<int> &party);
 void AddPartyToLevel(SpriteData& spriteData, CharacterData& charData, Level &level, std::vector<int> &party, const std::string& spawnPoint);
 void AddEnemiesToLevel(SpriteData& spriteData, CharacterData& charData, Level &level, std::vector<int> &enemies, const std::string& spawnPoint);
+void UpdateVisibilityMap(GameData& data, Level& level);
+
 
 #endif //SANDBOX_LEVEL_H

@@ -3,7 +3,7 @@
         "1": {
             "id": 1,
             "text": "",
-            "conditionalNextNodes": [2, 3]
+            "conditionalNextNodes": [2, 5, 3]
         },
         "2": {
             "id": 2,
@@ -15,7 +15,7 @@
                     "value": "Active"
                 }
             ],
-            "responseIds": [197]
+            "responseIds": [196, 197]
         },
         "3": {
             "id": 3,
@@ -28,6 +28,18 @@
             "text": "Can you kill some ninjas for me and collect their stupid little headbands?\nFor like, trophies.",
             "conditions": [],
             "responseIds": [102, 198]
+        },
+        "5": {
+            "id": 5,
+            "text": "Thanks for taking care of those ninjas.",
+            "conditions": [
+                {
+                    "type": "QuestStatusEquals",
+                    "param": "kill_ninjas",
+                    "value": "Completed"
+                }
+            ],
+            "responseIds": [199]
         }
     },
     "dialogueResponses": {
@@ -45,6 +57,25 @@
                 {
                     "type": "StartQuest",
                     "param": "kill_ninjas",
+                    "value": ""
+                }
+            ]
+        },
+        "196": {
+            "id": 196,
+            "text": "I have killed all of them!.",
+            "nextNodeId": 5,
+            "effects": [
+                {
+                    "type": "CompleteQuest",
+                    "param": "kill_ninjas",
+                    "value": ""
+                }
+            ],
+            "conditions": [
+                {
+                    "type": "GroupDefeated",
+                    "param": "ninja1",
                     "value": ""
                 }
             ]

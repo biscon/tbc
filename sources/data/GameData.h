@@ -38,6 +38,7 @@ enum class GameState {
 struct GameData {
     std::vector<int> party;
     std::string levelFileName;
+    std::string currentLevelId;
     GameState state;
     WeaponData weaponData;
     CharacterData charData;

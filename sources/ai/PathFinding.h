@@ -22,7 +22,9 @@ bool CalcPathWithRangePartial(SpriteData& spriteData, CharacterData& charData, L
 bool CalcPathIgnoreOccupied(Level &level, Path &path, Vector2i start, Vector2i end);
 bool HasLineOfSight(Level &level, Vector2i start, Vector2i end);
 bool HasLineOfSight(Level &level, Vector2i start, Vector2i end, int maxDist);
+bool HasLineOfSightLight(Level &level, Vector2i start, Vector2i end, int maxDist);
 bool HasLineOfSightToParty(SpriteData& spriteData, CharacterData& charData, Level &level, int charId);
+bool HasLineOfSightToPartyLight(SpriteData& spriteData, CharacterData& charData, Level &level, const Vector2i& pos);
 bool IsCharacterAdjacentToPlayer(SpriteData& spriteData, CharacterData& charData, int player, int character);
 std::vector<Vector2i> FindFreePositionsCircular(Level &level, int x, int y, int radius);
 std::vector<int> GetTargetsInLine(SpriteData& spriteData, CharacterData& charData, Level &level, Vector2i start, Vector2 direction, int range, int exceptCharacter);

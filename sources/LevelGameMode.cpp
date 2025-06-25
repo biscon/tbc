@@ -239,6 +239,8 @@ void LevelUpdate(float dt) {
     UpdatePlayField(game->spriteData, game->charData, playField, level, dt);
     UpdateDialogue(*game, dt);
 
+    UpdateVisibilityMap(*game, level);
+    UpdateVisibilityTexture(level.lighting);
     //PropagateLight(level.lighting, level.tileMap);
 }
 

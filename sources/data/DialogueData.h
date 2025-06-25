@@ -53,7 +53,7 @@ struct DialogueData {
     std::unordered_map<int, DialogueResponse> dialogueResponses;
     int currentDialogueNode = -1;
     int currentNpc = -1;
-    std::vector<Rectangle> responseRects;
+    std::vector<std::pair<Rectangle, int>> responseClickTargets;
     float dialogueFade = 0.0f; // 0 = fully transparent, 1 = full opacity
     bool fadingOut = false;
     int idleAnimPlayer = -1;

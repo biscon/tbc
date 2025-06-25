@@ -20,5 +20,7 @@ void PropagateLight(LightingData& data, const TileMap& map);
 Color GetVertexLight(const LightingData& data, int vx, int vy);
 Color GetVertexLight(const LightingData& data, const TileMap& map, int vx, int vy);
 Color GetVertexLightWeighted(const LightingData& data, int vx, int vy);
+void RenderVisibilityMap(LightingData &data);
+void UpdateVisibilityTexture(LightingData& data);
 
 #endif //SANDBOX_LIGHTING_H

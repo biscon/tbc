@@ -8,6 +8,77 @@
 #include "raylib.h"
 #include "util/GameEventQueue.h"
 
+static bool EvaluateQuestStatusEquals(GameData& data, const Condition& condition) {
+    const std::string& questId = condition.param;
+    QuestStatus status = QuestStatusFromString(condition.value);
+    if(data.questState[questId].status == status) {
+        return true;
+    }
+    return false;
+}
+
+static bool EvaluateGroupDefeated(GameData& data, const Condition& condition) {
+    const std::string& group = condition.param;
+    const auto& defeatedGroups = data.levelState[data.currentLevelId].defeatedGroups;
+    if (std::find(defeatedGroups.begin(), defeatedGroups.end(), group) != defeatedGroups.end()) {
+        return true;
+    }
+
+    return false;
+}
+
+static bool AllConditionsPass(GameData& data, const std::vector<Condition>& conditions) {
+    for(const auto& condition : conditions) {
+        switch(condition.type) {
+            case ConditionType::QuestStatusEquals: {
+                if(!EvaluateQuestStatusEquals(data, condition)) {
+                    return false;
+                }
+                break;
+            }
+            case ConditionType::HasItem: {
+                break;
+            }
+            case ConditionType::FlagIsSet: {
+                break;
+            }
+            case ConditionType::GroupDefeated: {
+                if(!EvaluateGroupDefeated(data, condition)) {
+                    return false;
+                }
+                break;
+            }
+        }
+    }
+    return true;
+}
+
+static void ExecuteEffects(GameData& data, const std::vector<Effect>& effects, GameEventQueue& eventQueue) {
+    for(const auto& effect : effects) {
+        switch(effect.type) {
+            case EffectType::StartQuest: {
+                data.questState[effect.param].status = QuestStatus::Active;
+                data.questState[effect.param].stage = 0;
+                TraceLog(LOG_INFO, "Quest id '%s' started.", effect.param.c_str());
+                PublishStartQuestEvent(eventQueue, effect.param);
+                break;
+            }
+            case EffectType::CompleteQuest: {
+                data.questState[effect.param].status = QuestStatus::Completed;
+                data.questState[effect.param].stage = 0;
+                TraceLog(LOG_INFO, "Quest id '%s' completed.", effect.param.c_str());
+                break;
+            }
+            case EffectType::SetFlag: {
+                break;
+            }
+            case EffectType::GiveItem: {
+                break;
+            }
+        }
+    }
+}
+
 void InitDialogueData(DialogueData& data, const std::string &filename) {
     std::ifstream file(filename);
     if (!file) {
@@ -90,9 +161,6 @@ void RenderDialogueUI(GameData& data) {
     auto& dlg = data.dialogueData;
     if (dlg.dialogueFade <= 0.0f) return;
 
-    //const int screenWidth = 480;
-    //const int screenHeight = 270;
-
     const Color overlay = Color{0, 0, 0, (unsigned char)(dlg.dialogueFade * 255 * 0.4f)};
     DrawRectangle(0, 0, gameScreenWidth, gameScreenHeight, overlay);
 
@@ -107,10 +175,8 @@ void RenderDialogueUI(GameData& data) {
     float boxPad = 4.0f;
     float halfBoxPad = boxPad / 2.0f;
     Rectangle imgRect = {(gameScreenWidthF/2.0f - imgWidth/2.0f)-halfBoxPad, 50 - halfBoxPad, imgWidth+boxPad, imgHeight+boxPad};
-    //DrawRectangleRec(imgRect, BLACK);
     DrawRectangleRounded(imgRect, 0.1f, 16, BLACK);
     DrawSpriteAnimation(data.spriteData, dlg.idleAnimPlayer, gameScreenWidthF/2.0f - imgWidth/2.0f, 50 + halfBoxPad);
-    //DrawRectangleLinesEx(imgRect, halfBoxPad, DARKGRAY);
     DrawRectangleRoundedLinesEx(imgRect, 0.1f, 16, halfBoxPad, DARKGRAY);
 
     // Draw NPC name centered above
@@ -125,23 +191,28 @@ void RenderDialogueUI(GameData& data) {
     Vector2 textSize = MeasureMultilineText(wrappedText.c_str(), 10, dlgTextWidth);
     DrawTextRec(wrappedText, gameScreenWidth / 2 - textSize.x / 2, imgRect.y + imgRect.height + 20, 10, YELLOW);
 
-    // Render responses from bottom-up
-    dlg.responseRects.clear();
+    // Render valid responses from bottom-up
+    dlg.responseClickTargets.clear();
     float maxWidth = gameScreenWidth - 40;
     int fontSize = 10;
     float spacing = 2.0f;
-
     const float padX = 4.0f;
     const float padY = 2.0f;
 
     float totalHeight = 0;
+    std::vector<int> validResponseIds;
     std::vector<Vector2> responseSizes;
     std::vector<std::string> responseText;
 
     for (int responseId : node.responseIds) {
+        if (!AllConditionsPass(data, dlg.dialogueResponses[responseId].conditions)) {
+            continue;
+        }
         const std::string& text = dlg.dialogueResponses[responseId].text;
         std::string wrapped = WrapText(text, maxWidth - padX * 2, fontSize);
         Vector2 size = MeasureMultilineText(wrapped.c_str(), fontSize, maxWidth - padX * 2);
+
+        validResponseIds.push_back(responseId);
         responseText.push_back(wrapped);
         responseSizes.push_back(size);
         totalHeight += size.y + padY * 2 + spacing;
@@ -150,14 +221,15 @@ void RenderDialogueUI(GameData& data) {
     float startY = gameScreenHeight - totalHeight - 16;
     Vector2 mouse = GetMousePosition();
 
-    for (size_t i = 0; i < node.responseIds.size(); ++i) {
+    for (size_t i = 0; i < validResponseIds.size(); ++i) {
+        int responseId = validResponseIds[i];
         float y = startY;
         float x = 20;
         float w = maxWidth;
         float h = responseSizes[i].y + padY * 2;
 
         Rectangle rect = {x, y, w, h};
-        dlg.responseRects.push_back(rect);
+        dlg.responseClickTargets.emplace_back(rect, responseId);
 
         bool hovered = CheckCollisionPointRec(mouse, rect);
         DrawRectangleRec(rect, Color{0, 0, 0, 100});
@@ -167,7 +239,6 @@ void RenderDialogueUI(GameData& data) {
         startY += h + spacing;
     }
 }
-
 
 void UpdateDialogue(GameData& data, float dt) {
     auto& dlg = data.dialogueData;
@@ -186,37 +257,6 @@ void UpdateDialogue(GameData& data, float dt) {
     }
 }
 
-static bool EvaluateQuestStatusEquals(GameData& data, const Condition& condition) {
-    const std::string& questId = condition.param;
-    QuestStatus status = QuestStatusFromString(condition.value);
-    if(data.questState[questId].status == status) {
-        return true;
-    }
-    return false;
-}
-
-static bool AllConditionsPass(GameData& data, const std::vector<Condition>& conditions) {
-    for(const auto& condition : conditions) {
-        switch(condition.type) {
-            case ConditionType::QuestStatusEquals: {
-                if(!EvaluateQuestStatusEquals(data, condition)) {
-                    return false;
-                }
-                break;
-            }
-            case ConditionType::HasItem: {
-                break;
-            }
-            case ConditionType::FlagIsSet: {
-                break;
-            }
-            case ConditionType::GroupDefeated: {
-                break;
-            }
-        }
-    }
-    return true;
-}
 
 static int ResolveEntryNode(GameData& data, int nodeId) {
     if(nodeId == -1)
@@ -247,32 +287,6 @@ static void AdvanceDialogue(GameData& data, int virtualNodeId, GameEventQueue& e
     }
 }
 
-static void ExecuteEffects(GameData& data, const std::vector<Effect>& effects, GameEventQueue& eventQueue) {
-    for(const auto& effect : effects) {
-        switch(effect.type) {
-            case EffectType::StartQuest: {
-                data.questState[effect.param].status = QuestStatus::Active;
-                data.questState[effect.param].stage = 0;
-                TraceLog(LOG_INFO, "Quest id '%s' started.", effect.param.c_str());
-                PublishStartQuestEvent(eventQueue, effect.param);
-                break;
-            }
-            case EffectType::CompleteQuest: {
-                data.questState[effect.param].status = QuestStatus::Completed;
-                data.questState[effect.param].stage = 0;
-                TraceLog(LOG_INFO, "Quest id '%s' completed.", effect.param.c_str());
-                break;
-            }
-            case EffectType::SetFlag: {
-                break;
-            }
-            case EffectType::GiveItem: {
-                break;
-            }
-        }
-    }
-}
-
 static void handlePlayerResponse(GameData& data, int responseId, GameEventQueue& eventQueue) {
     auto& dlg = data.dialogueData;
     auto& response = dlg.dialogueResponses[responseId];
@@ -282,7 +296,6 @@ static void handlePlayerResponse(GameData& data, int responseId, GameEventQueue&
     AdvanceDialogue(data, response.nextNodeId, eventQueue);
 }
 
-
 void HandleDialogueInput(GameData& data, GameEventQueue& eventQueue) {
     auto& dlg = data.dialogueData;
     if (dlg.currentDialogueNode == -1) return;
@@ -290,10 +303,8 @@ void HandleDialogueInput(GameData& data, GameEventQueue& eventQueue) {
     if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) {
         Vector2 mouse = GetMousePosition();
 
-        for (size_t i = 0; i < dlg.responseRects.size(); ++i) {
-            if (CheckCollisionPointRec(mouse, dlg.responseRects[i])) {
-                const DialogueNode& node = dlg.dialogueNodes.at(dlg.currentDialogueNode);
-                int responseId = node.responseIds[i];
+        for (const auto& [rect, responseId] : dlg.responseClickTargets) {
+            if (CheckCollisionPointRec(mouse, rect)) {
                 handlePlayerResponse(data, responseId, eventQueue);
                 break;
             }

@@ -31,10 +31,12 @@ static void ResizeTileLighting(LightingData &data, int newWidth, int newHeight) 
         if(data.lightMapR != nullptr) delete[] data.lightMapR[x];
         if(data.lightMapG != nullptr) delete[] data.lightMapG[x];
         if(data.lightMapB != nullptr) delete[] data.lightMapB[x];
+        if(data.visibilityMap != nullptr) delete[] data.visibilityMap[x];
     }
     if(data.lightMapR != nullptr) delete[] data.lightMapR;
     if(data.lightMapG != nullptr) delete[] data.lightMapG;
     if(data.lightMapB != nullptr) delete[] data.lightMapB;
+    if(data.visibilityMap != nullptr) delete[] data.visibilityMap;
 
     data.mapWidth = newWidth;
     data.mapHeight = newHeight;
@@ -42,10 +44,12 @@ static void ResizeTileLighting(LightingData &data, int newWidth, int newHeight) 
     data.lightMapR = new float*[newWidth];
     data.lightMapG = new float*[newWidth];
     data.lightMapB = new float*[newWidth];
+    data.visibilityMap = new bool*[newWidth];
     for (int x = 0; x < newWidth; x++) {
         data.lightMapR[x] = new float[newHeight]();
         data.lightMapG[x] = new float[newHeight]();
         data.lightMapB[x] = new float[newHeight]();
+        data.visibilityMap[x] = new bool[newHeight]();
     }
 }
 
@@ -163,6 +167,7 @@ Color GetVertexLight(const LightingData& data, int vx, int vy) {
             r += data.lightMapR[tx][ty] / 15.0f;
             g += data.lightMapG[tx][ty] / 15.0f;
             b += data.lightMapB[tx][ty] / 15.0f;
+
             count++;
         }
     }
@@ -227,9 +232,11 @@ Color GetVertexLightWeighted(const LightingData& data, int vx, int vy) {
         int ty = vy + offsets[i][1];
 
         if (tx >= 0 && ty >= 0 && tx < data.mapWidth && ty < data.mapHeight) {
-            float r = data.lightMapR[tx][ty] / 15.0f;
-            float g = data.lightMapG[tx][ty] / 15.0f;
-            float b = data.lightMapB[tx][ty] / 15.0f;
+            float r,g,b;
+            r = data.lightMapR[tx][ty] / 15.0f;
+            g = data.lightMapG[tx][ty] / 15.0f;
+            b = data.lightMapB[tx][ty] / 15.0f;
+
 
             // Use the brightness as weight (or optionally max(r, g, b))
             float weight = (r + g + b) / 3.0f;
@@ -258,6 +265,58 @@ Color GetVertexLightWeighted(const LightingData& data, int vx, int vy) {
     };
 }
 
+static float SmoothVisibilityAlpha(LightingData &data, int x, int y) {
+    int visibleCount = 0;
+    int total = 0;
+
+    for (int dy = -1; dy <= 1; dy++) {
+        for (int dx = -1; dx <= 1; dx++) {
+            int nx = x + dx;
+            int ny = y + dy;
+            if (nx >= 0 && ny >= 0 && nx < data.mapWidth && ny < data.mapHeight) {
+                total++;
+                if (data.visibilityMap[nx][ny])
+                    visibleCount++;
+            }
+        }
+    }
+
+    return 1.0f - (float)visibleCount / (float)total;
+}
+
+void UpdateVisibilityTexture(LightingData& data) {
+    for (int y = 0; y < data.mapHeight; y++) {
+        for (int x = 0; x < data.mapWidth; x++) {
+            bool visible = data.visibilityMap[x][y];
+            data.pixels[y * data.mapWidth + x] = visible
+                                    ? (Color){ 0, 0, 0, 0 }       // fully transparent
+                                    : (Color){ 0, 0, 0, 255 };    // fully opaque black
+        }
+    }
+
+    UpdateTexture(data.visTexture, data.pixels);
+}
+
+
+void RenderVisibilityMap(LightingData &data) {
+    float tileSize = 16.0f;
+    DrawTexturePro(
+            data.visTexture,
+            (Rectangle){ 0, 0, (float) data.mapWidth, (float) data.mapHeight },
+            (Rectangle){ 0, 0, data.mapWidth * tileSize, data.mapHeight * tileSize },
+            (Vector2){ 0, 0 },
+            0.0f,
+            ColorAlpha(WHITE, 1.0f) // color tint, no alpha applied here
+    );
+}
+
+
+Texture2D GenerateVisibilityTexture(int width, int height) {
+    Image img = GenImageColor(width, height, BLANK); // Just to get format/dimensions
+    Texture2D tex = LoadTextureFromImage(img);
+    UnloadImage(img); // no longer needed
+    return tex;
+}
 
 void InitLightingData(LightingData &data, const TileMap& map) {
     //data.ambient = DARKBLUE;
@@ -273,5 +332,15 @@ void InitLightingData(LightingData &data, const TileMap& map) {
     AddLight(data, 51, 12, 15, 2.0f, torchLightWarm2);
     AddLight(data, 31, 32, 15, 1.0f, torchLightWarm3);
      */
+
+    if(IsTextureValid(data.visTexture)) {
+        UnloadTexture(data.visTexture);
+    }
+    data.visTexture = GenerateVisibilityTexture(data.mapWidth, data.mapHeight);
+    SetTextureFilter(data.visTexture, TEXTURE_FILTER_TRILINEAR);
+    if(data.pixels != nullptr) {
+        MemFree(data.pixels);
+    }
+    data.pixels = (Color*)MemAlloc(data.mapWidth * data.mapHeight * sizeof(Color));
 }
 

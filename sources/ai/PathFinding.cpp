@@ -525,6 +525,50 @@ bool HasLineOfSight(Level &level, Vector2i start, Vector2i end, int maxDist) {
     return false; // Max distance reached without reaching the target
 }
 
+bool HasLineOfSightLight(Level &level, Vector2i start, Vector2i end, int maxDist) {
+    int x0 = start.x;
+    int y0 = start.y;
+    int x1 = end.x;
+    int y1 = end.y;
+
+    int dx = std::abs(x1 - x0);
+    int dy = std::abs(y1 - y0);
+
+    int sx = (x0 < x1) ? 1 : -1;
+    int sy = (y0 < y1) ? 1 : -1;
+
+    int err = dx - dy;
+    int dist = 0;
+
+    while (dist <= maxDist) {
+        // Check if the current tile blocks line of sight
+        int tileIndex = GetTileAt(level.tileMap, SHADOW_LAYER, x0, y0);
+        if(tileIndex != 0) {
+            return false;
+        }
+
+        // If we reach the end position, return true
+        if (x0 == x1 && y0 == y1) {
+            return true;
+        }
+
+        int e2 = 2 * err;
+        if (e2 > -dy) {
+            err -= dy;
+            x0 += sx;
+        }
+        if (e2 < dx) {
+            err += dx;
+            y0 += sy;
+        }
+
+        dist++;
+    }
+
+    return false; // Max distance reached without reaching the target
+}
+
+
 bool HasLineOfSightToParty(SpriteData& spriteData, CharacterData& charData, Level &level, int charId) {
     if (std::find(level.partyCharacters.begin(), level.partyCharacters.end(), charId) != level.partyCharacters.end()) {
         return true;
@@ -533,6 +577,15 @@ bool HasLineOfSightToParty(SpriteData& spriteData, CharacterData& charData, Leve
     for(auto& partyCharId : level.partyCharacters) {
         Vector2i partyCharPos = GetCharacterGridPosI(spriteData, charData.sprite[partyCharId]);
         if(HasLineOfSight(level, partyCharPos, charPos, 50))
+            return true;
+    }
+    return false;
+}
+
+bool HasLineOfSightToPartyLight(SpriteData& spriteData, CharacterData& charData, Level &level, const Vector2i& pos) {
+    for(auto& partyCharId : level.partyCharacters) {
+        Vector2i partyCharPos = GetCharacterGridPosI(spriteData, charData.sprite[partyCharId]);
+        if(HasLineOfSightLight(level, partyCharPos, pos, 50))
             return true;
     }
     return false;
