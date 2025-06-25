@@ -8,5 +8,4 @@
 #include "data/WeaponData.h"
 
 void InitWeaponData(WeaponData& weaponData, const std::string& filename);
-int CreateWeapon(WeaponData& weaponData, const std::string& templateName);
 #endif //SANDBOX_WEAPON_H

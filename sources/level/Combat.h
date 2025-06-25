@@ -8,9 +8,9 @@
 #include <map>
 #include "Level.h"
 
-AttackResult Attack(CharacterData& charData, WeaponData& weaponData, Level& level, int attacker, int defender);
-int DealDamage(SpriteData& spriteData, CharacterData& charData, WeaponData& weaponData, Level& level, int attacker, int defender, int damage);
-int DealDamageStatusEffect(SpriteData& spriteData, CharacterData& charData, WeaponData& weaponData, Level& level, int target, int damage);
+AttackResult Attack(GameData& data, Level& level, int attacker, int defender);
+int DealDamage(GameData& data, Level& level, int attacker, int defender, int damage);
+int DealDamageStatusEffect(GameData& data, Level& level, int target, int damage);
 void KillCharacter(SpriteData& spriteData, CharacterData& charData, Level &level, int character);
 bool IsPlayerCharacter(CharacterData& charData, int character);
 bool IsIncapacitated(CharacterData& charData, int character);

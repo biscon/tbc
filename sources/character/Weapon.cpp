@@ -38,9 +38,3 @@ void InitWeaponData(WeaponData& weaponData, const std::string& filename) {
     }
 }
 
-int CreateWeapon(WeaponData& weaponData, const std::string &templateName) {
-    int templateIdx = weaponData.templateIdToIndex.at(templateName);
-    weaponData.instanceData.name.emplace_back(weaponData.templateData.name[templateIdx]);
-    weaponData.instanceData.weaponTemplateIdx.emplace_back(templateIdx);
-    return (int) weaponData.instanceData.name.size()-1;
-}

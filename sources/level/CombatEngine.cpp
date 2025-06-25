@@ -22,7 +22,7 @@ void UpdateCombat(GameData &data, Level &level, PlayField& playField, float dt) 
         case TurnState::StartRound: {
             TraceLog(LOG_INFO, "Start round");
             WaitTurnState(level, TurnState::StartTurn, 1.0f);
-            ApplyStatusEffects(spriteData, charData, weaponData, level, playField);
+            ApplyStatusEffects(data, level, playField);
             PlaySoundEffect(SoundEffectType::StartRound);
             break;
         }
@@ -77,7 +77,7 @@ void UpdateCombat(GameData &data, Level &level, PlayField& playField, float dt) 
             float attackerX = GetCharacterSpritePosX(spriteData, sprite);
             float attackerY = GetCharacterSpritePosY(spriteData, sprite);
 
-            SkillResult result = ExecuteSkill(spriteData, charData, weaponData, level, playField);
+            SkillResult result = ExecuteSkill(data, level, playField);
             Animation damageNumberAnim{};
             if(!level.selectedSkill->noTarget) {
                 if(!result.success) {
@@ -112,7 +112,7 @@ void UpdateCombat(GameData &data, Level &level, PlayField& playField, float dt) 
         case TurnState::Attack: {
             TraceLog(LOG_INFO, "Attack");
 
-            level.attackResult = Attack(charData, weaponData, level, level.currentCharacter, level.selectedCharacter);
+            level.attackResult = Attack(data, level, level.currentCharacter, level.selectedCharacter);
             FaceCharacter(spriteData, charData, level.currentCharacter, level.selectedCharacter);
             FaceCharacter(spriteData, charData, level.selectedCharacter, level.currentCharacter);
             assert(level.attackResult.defender == level.selectedCharacter);
@@ -134,12 +134,12 @@ void UpdateCombat(GameData &data, Level &level, PlayField& playField, float dt) 
             float defenderY = GetCharacterSpritePosY(spriteData, charData.sprite[level.selectedCharacter]);
             int damage = level.attackResult.damage;
             if(damage > 0) {
-                float intensity = (float) GetBloodIntensity(damage, GetAttack(charData, weaponData, level.currentCharacter));
+                float intensity = (float) GetBloodIntensity(damage, GetAttack(data, level.currentCharacter));
                 TraceLog(LOG_INFO, "Damage: %d, intensity: %f", damage, intensity);
                 Vector2 bloodPos = {defenderX + (float) RandomInRange(-2,2), defenderY - 8 + (float) RandomInRange(-2,2)};
                 CreateBloodSplatter(*playField.particleManager, bloodPos, 10, intensity);
                 Animation damageNumberAnim{};
-                Color dmgColor = GetDamageColor(damage, GetAttack(charData, weaponData, level.currentCharacter));
+                Color dmgColor = GetDamageColor(damage, GetAttack(data, level.currentCharacter));
                 SetupDamageNumberAnimation(damageNumberAnim, TextFormat("%d", damage), defenderX, defenderY-25, dmgColor, level.attackResult.crit ? 20 : 10);
                 level.animations.push_back(damageNumberAnim);
                 PlaySoundEffect(SoundEffectType::HumanPain, 0.25f);

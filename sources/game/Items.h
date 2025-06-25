@@ -9,5 +9,8 @@
 #include "data/GameData.h"
 
 void InitItemData(GameData& data, const std::string &filename);
+int CreateItem(GameData& data, const std::string& templateId, int quantity);
+int GetItemTypeTemplateId(GameData& data, int itemId);
+std::string GetItemTemplateIdString(GameData& data, int itemId);
 
 #endif //SANDBOX_ITEMS_H

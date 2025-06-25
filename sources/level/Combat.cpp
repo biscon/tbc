@@ -16,6 +16,7 @@
 #include "LevelScreen.h"
 #include "audio/SoundEffect.h"
 #include "ai/PathFinding.h"
+#include "game/Items.h"
 
 void DecayThreat(CharacterData& charData, Level& level, int amount) {
     for (auto& entry : level.threatTable) {
@@ -165,7 +166,9 @@ static int CalculateDamageReduction(CharacterData& charData, int defender, int b
 }
 
 // Function to calculate baseAttack dealt in combat, with chance to miss and critical hit
-static void CalculateDamage(CharacterData& charData, WeaponData& weaponData, Level& combat, int attacker, int defender, AttackResult &result) {
+static void CalculateDamage(GameData& data, Level& combat, int attacker, int defender, AttackResult &result) {
+    CharacterData& charData = data.charData;
+    WeaponData& weaponData = data.weaponData;
     // Calculate miss chance based on defender's dodge skill and speed
     int missChance = CalculateMissChance(charData, attacker, defender);
     int missRoll = RandomInRange(1, 100);  // Random roll between 1 and 100
@@ -193,7 +196,8 @@ static void CalculateDamage(CharacterData& charData, WeaponData& weaponData, Lev
 
     if (charData.isWeaponEquipped[attacker] && charData.weaponIdx[attacker] != -1) {
         int scalingStatValue = 0;
-        int tplIdx = weaponData.instanceData.weaponTemplateIdx[charData.weaponIdx[attacker]];
+        int tplIdx = GetItemTypeTemplateId(data, charData.weaponIdx[attacker]);
+        //int tplIdx = weaponData.instanceData.weaponTemplateIdx[charData.weaponIdx[attacker]];
         switch (weaponData.templateData.stats[tplIdx].scalingStat) {
             case ScalingStat::Attack: scalingStatValue = atkStats.attack; break;
             case ScalingStat::Speed: scalingStatValue = atkStats.speed; break;
@@ -236,14 +240,16 @@ static void CalculateDamage(CharacterData& charData, WeaponData& weaponData, Lev
 }
 
 // Function for a character to attack another
-AttackResult Attack(CharacterData& charData, WeaponData& weaponData, Level& level, int attacker, int defender) {
+AttackResult Attack(GameData& data, Level& level, int attacker, int defender) {
+    CharacterData& charData = data.charData;
+
     AttackResult result{};
     result.attacker = attacker;
     result.defender = defender;
     result.hit = false;
     result.crit = false;
     result.damage = 0;
-    CalculateDamage(charData, weaponData, level, attacker, defender, result);
+    CalculateDamage(data, level, attacker, defender, result);
     if (result.damage > 0) {
         if(IsPlayerCharacter(charData, attacker)) {
             // If the attacker is a player character, increase their threat
@@ -260,7 +266,10 @@ AttackResult Attack(CharacterData& charData, WeaponData& weaponData, Level& leve
     return result;
 }
 
-int DealDamage(SpriteData& spriteData, CharacterData& charData, WeaponData& weaponData, Level& level, int attacker, int defender, int damage) {
+int DealDamage(GameData& data, Level& level, int attacker, int defender, int damage) {
+    SpriteData& spriteData = data.spriteData;
+    CharacterData& charData = data.charData;
+
     CharacterSprite& defenderSprite = charData.sprite[defender];
     float defenderX = GetCharacterSpritePosX(spriteData, defenderSprite);
     float defenderY = GetCharacterSpritePosY(spriteData, defenderSprite);
@@ -291,7 +300,7 @@ int DealDamage(SpriteData& spriteData, CharacterData& charData, WeaponData& weap
          */
     }
     Animation damageNumberAnim{};
-    Color dmgColor = GetDamageColor(baseDamage, GetAttack(charData, weaponData, attacker));
+    Color dmgColor = GetDamageColor(baseDamage, GetAttack(data, attacker));
     SetupDamageNumberAnimation(damageNumberAnim, TextFormat("%d", baseDamage), defenderX, defenderY-25, dmgColor, isCritical ? 20 : 10);
     level.animations.push_back(damageNumberAnim);
 
@@ -314,7 +323,10 @@ int DealDamage(SpriteData& spriteData, CharacterData& charData, WeaponData& weap
     return baseDamage;
 }
 
-int DealDamageStatusEffect(SpriteData& spriteData, CharacterData& charData, WeaponData& weaponData, Level& level, int target, int damage) {
+int DealDamageStatusEffect(GameData& data, Level& level, int target, int damage) {
+    SpriteData& spriteData = data.spriteData;
+    CharacterData& charData = data.charData;
+
     float targetX = GetCharacterSpritePosX(spriteData, charData.sprite[target]);
     float targetY = GetCharacterSpritePosY(spriteData, charData.sprite[target]);
 
@@ -326,7 +338,7 @@ int DealDamageStatusEffect(SpriteData& spriteData, CharacterData& charData, Weap
     if (baseDamage < 0) baseDamage = 0;  // No negative baseAttack
 
     Animation damageNumberAnim{};
-    Color dmgColor = GetDamageColor(baseDamage, GetAttack(charData, weaponData, level.currentCharacter));
+    Color dmgColor = GetDamageColor(baseDamage, GetAttack(data, level.currentCharacter));
     SetupDamageNumberAnimation(damageNumberAnim, TextFormat("%d", baseDamage), targetX, targetY-25, dmgColor, 10);
     level.animations.push_back(damageNumberAnim);
 

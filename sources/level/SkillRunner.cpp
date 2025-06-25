@@ -11,7 +11,10 @@
 #include "graphics/Animation.h"
 #include "ai/PathFinding.h"
 
-SkillResult ExecuteSkill(SpriteData& spriteData, CharacterData& charData, WeaponData& weaponData, Level& level, PlayField& playField) {
+SkillResult ExecuteSkill(GameData& data, Level& level, PlayField& playField) {
+    SpriteData& spriteData = data.spriteData;
+    CharacterData& charData = data.charData;
+
     SkillResult result;
     result.success = false;
     result.attack = false;
@@ -83,7 +86,7 @@ SkillResult ExecuteSkill(SpriteData& spriteData, CharacterData& charData, Weapon
                     AssignStatusEffect(charData.statusEffects[t], StatusEffectType::Burning, skill->rank + 2, 5.0f);
                     // calculate baseAttack
                     int damage = RandomInRange(10, 20);
-                    DealDamage(spriteData, charData, weaponData, level, user, t, damage);
+                    DealDamage(data, level, user, t, damage);
                     Vector2 tPos = GetCharacterSpritePos(spriteData, charData.sprite[t]);
                     CreateExplosionEffect(*playField.particleManager, tPos, 10, 16.0f, 0.2f);
                     // check if dead

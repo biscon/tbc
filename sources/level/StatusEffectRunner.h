@@ -8,7 +8,7 @@
 #include "Level.h"
 #include "PlayField.h"
 
-void ApplyStatusEffects(SpriteData& spriteData, CharacterData& charData, WeaponData& weaponData, Level &level, PlayField &playField);
+void ApplyStatusEffects(GameData& data, Level &level, PlayField &playField);
 void UpdateStatusEffects(CharacterData& charData, Level &level);
 
 #endif //SANDBOX_STATUSEFFECTRUNNER_H

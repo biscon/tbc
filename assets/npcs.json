@@ -7,7 +7,7 @@
         "ai": "Fighter",
         "sprite": "MaleNinja",
         "level": 1,
-        "weapon": "Sword"
+        "weapon": "item_weapon_sword"
     },
     {
         "characterName": "Ninja Staffhole",
@@ -17,7 +17,7 @@
         "ai": "Fighter",
         "sprite": "MaleNinja",
         "level": 2,
-        "weapon": "Staff"
+        "weapon": "item_weapon_staff"
     },
     {
         "characterName": "Ser Donald",

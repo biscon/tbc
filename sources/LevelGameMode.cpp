@@ -115,7 +115,7 @@ static void processEvents() {
     }
 }
 
-static void handleCameraMovementOLD() {
+static void handleCameraMovement() {
     float dt = GetFrameTime();
     float speed = 8.0f;
     float accelerationTime = 0.75f;
@@ -183,7 +183,7 @@ static void handleCameraMovementOLD() {
 const int EDGE_SCROLL_ZONE_X = 16;  // Wider horizontal edge zone
 const int EDGE_SCROLL_ZONE_Y = 9;  // Narrower vertical edge zone
 
-static void handleCameraMovement() {
+static void handleCameraMovementMouse() {
     float dt = GetFrameTime();
     float speed = 8.0f;
     float accelerationTime = 0.75f;

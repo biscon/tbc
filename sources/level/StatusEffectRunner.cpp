@@ -6,7 +6,9 @@
 #include "StatusEffectRunner.h"
 #include "Combat.h"
 
-static void ApplyStatusEffect(SpriteData& spriteData, CharacterData& charData, WeaponData& weaponData, Level &combat, PlayField &gridState, int character, StatusEffect& effect) {
+static void ApplyStatusEffect(GameData& data, Level &combat, PlayField &gridState, int character, StatusEffect& effect) {
+    SpriteData& spriteData = data.spriteData;
+    CharacterData& charData = data.charData;
     Vector2 charPos = GetCharacterSpritePos(spriteData, charData.sprite[character]);
 
     switch(effect.type) {
@@ -28,7 +30,7 @@ static void ApplyStatusEffect(SpriteData& spriteData, CharacterData& charData, W
             break;
         case StatusEffectType::Burning: {
             // Burning effect
-            int damage = DealDamageStatusEffect(spriteData, charData, weaponData, combat, character, (int) effect.value);
+            int damage = DealDamageStatusEffect(data, combat, character, (int) effect.value);
             if(damage > 0) {
                 CreateExplosionEffect(*gridState.particleManager, {charPos.x, charPos.y}, 5, 10.0f, 0.2f);
             }
@@ -43,14 +45,14 @@ static void ApplyStatusEffect(SpriteData& spriteData, CharacterData& charData, W
     }
 }
 
-void ApplyStatusEffects(SpriteData& spriteData, CharacterData& charData, WeaponData& weaponData, Level &level, PlayField &playField) {
+void ApplyStatusEffects(GameData& data, Level &level, PlayField &playField) {
     for(auto& character : level.turnOrder) {
         // skip dead characters
-        if(charData.stats[character].health <= 0) {
+        if(data.charData.stats[character].health <= 0) {
             continue;
         }
-        for(auto& effect : charData.statusEffects[character]) {
-            ApplyStatusEffect(spriteData, charData, weaponData, level, playField, character, effect);
+        for(auto& effect : data.charData.statusEffects[character]) {
+            ApplyStatusEffect(data, level, playField, character, effect);
         }
     }
 }

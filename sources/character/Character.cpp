@@ -5,6 +5,7 @@
 #include <cmath>
 #include "Character.h"
 #include "util/Random.h"
+#include "game/Items.h"
 
 // Simple function to display character info
 /*
@@ -98,12 +99,12 @@ void ClearAllCharacters(CharacterData& data) {
     data.skills.clear();
 }
 
-void GiveWeapon(SpriteData& spriteData, WeaponData& weaponData, CharacterData &charData, int characterIdx, const std::string& weaponTemplate) {
-    int weaponIdx = CreateWeapon(weaponData, weaponTemplate);
-    charData.weaponIdx[characterIdx] = weaponIdx;
-    charData.isWeaponEquipped[characterIdx] = true;
-    int tplIdx = weaponData.instanceData.weaponTemplateIdx[weaponIdx];
-    SetCharacterSpriteWeaponAnimation(spriteData, charData.sprite[characterIdx], weaponData.templateData.animationTemplate[tplIdx]);
+void GiveWeapon(GameData& data, int characterIdx, const std::string& itemTemplate) {
+    int weaponId = CreateItem(data, itemTemplate, 1);
+    data.charData.weaponIdx[characterIdx] = weaponId;
+    data.charData.isWeaponEquipped[characterIdx] = true;
+    int tplIdx = GetItemTypeTemplateId(data, weaponId);
+    SetCharacterSpriteWeaponAnimation(data.spriteData, data.charData.sprite[characterIdx], data.weaponData.templateData.animationTemplate[tplIdx]);
 }
 
 Vector2 GetOrientationVector(Orientation orientation) {
@@ -225,12 +226,13 @@ void LevelUp(CharacterData &charData, int cid, bool autoDistributePoints) {
     charData.stats[cid].health = charData.stats[cid].maxHealth;
 }
 
-int GetAttack(CharacterData &charData, WeaponData& weaponData, int cid) {
-    if(charData.isWeaponEquipped[cid]) {
-        int tplIdx = weaponData.instanceData.weaponTemplateIdx[charData.weaponIdx[cid]];
-        return charData.stats[cid].attack + weaponData.templateData.stats[tplIdx].baseAttack;
+int GetAttack(GameData& data, int cid) {
+    if(data.charData.isWeaponEquipped[cid]) {
+        int weaponItemId = data.charData.weaponIdx[cid];
+        int tplIdx = GetItemTypeTemplateId(data, weaponItemId);
+        return data.charData.stats[cid].attack + data.weaponData.templateData.stats[tplIdx].baseAttack;
     }
-    return charData.stats[cid].attack;
+    return data.charData.stats[cid].attack;
 }
 
 void FaceCharacter(SpriteData& spriteData, CharacterData &charData, int attackerId, int defenderId) {

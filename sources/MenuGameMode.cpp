@@ -8,6 +8,7 @@
 #include "data/SaveData.h"
 #include "game/Settings.h"
 #include "ai/PathFinding.h"
+#include "game/Items.h"
 
 static GameData* game;
 
@@ -44,7 +45,7 @@ static void StartNewGame() {
     AssignSkill(game->charData.skills[id], SkillType::Taunt, "Howling Scream", 1, false, true, 0, 3, 0);
     AssignSkill(game->charData.skills[id], SkillType::Stun, "Stunning Blow", 1, false, false, 0, 3, 1);
     InitCharacterSprite(game->spriteData, game->charData.sprite[id], "MaleWarrior", true);
-    GiveWeapon(game->spriteData, game->weaponData, game->charData, id, "Sword");
+    GiveWeapon(*game, id, "item_weapon_sword");
     LevelUp(game->charData, id, true);
     LevelUp(game->charData, id, true);
     LevelUp(game->charData, id, true);
@@ -55,7 +56,7 @@ static void StartNewGame() {
     AssignSkill(game->charData.skills[id], SkillType::Dodge, "Dodge", 1, true, true, 0, 0, 0);
     AssignSkill(game->charData.skills[id], SkillType::FlameJet, "Burning Hands", 1, false, false, 0, 3, 5);
     InitCharacterSprite(game->spriteData, game->charData.sprite[id], "MaleWarrior", true);
-    GiveWeapon(game->spriteData, game->weaponData, game->charData, id, "Bow");
+    GiveWeapon(*game, id, "item_weapon_bow");
     LevelUp(game->charData, id, true);
     LevelUp(game->charData, id, true);
     LevelUp(game->charData, id, true);
@@ -86,7 +87,7 @@ static void loadGame() {
         int id = CreateCharacter(game->charData, ch.characterClass, ch.faction, ch.name, ch.ai);
         //AssignSkill(game->charData.skills[id], SkillType::Taunt, "Howling Scream", 1, false, true, 0, 3, 0);
         InitCharacterSprite(game->spriteData, game->charData.sprite[id], ch.spriteTemplate, true);
-        GiveWeapon(game->spriteData, game->weaponData, game->charData, id, ch.weaponTemplate);
+        GiveWeapon(*game, id, ch.weaponTemplate);
         game->charData.stats[id] = ch.stats;
         Vector2i savedPos = { ch.tilePosX, ch.tilePosY};
         SetCharacterGridPosI(game->spriteData, game->charData.sprite[id], savedPos);
@@ -113,9 +114,9 @@ static void saveGame() {
         pc.spriteTemplate = game->charData.sprite[id].spriteTemplate;
 
         // save weapon template
-        auto weaponId = game->charData.weaponIdx[id];
-        auto weaponTplId = game->weaponData.instanceData.weaponTemplateIdx[weaponId];
-        pc.weaponTemplate = game->weaponData.templateData.name[weaponTplId];
+        auto weaponItemId = game->charData.weaponIdx[id];
+        pc.weaponTemplate = GetItemTemplateIdString(*game, weaponItemId);
+
         // save position
         Vector2i pos = GetCharacterGridPosI(game->spriteData, game->charData.sprite[id]);
         pc.tilePosX = pos.x;

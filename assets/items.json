@@ -1,10 +1,26 @@
 [
     {
-        "id": "item_weapon_knife",
-        "name": "Combat Knife",
+        "id": "item_weapon_sword",
+        "name": "Sword",
         "type": "Weapon",
-        "typeTemplateId": "Staff",
+        "typeTemplateId": "weapon_sword",
         "value": 25,
-        "stackable": true
+        "stackable": false
+    },
+    {
+        "id": "item_weapon_staff",
+        "name": "Staff",
+        "type": "Weapon",
+        "typeTemplateId": "weapon_staff",
+        "value": 25,
+        "stackable": false
+    },
+    {
+        "id": "item_weapon_bow",
+        "name": "Bow",
+        "type": "Weapon",
+        "typeTemplateId": "weapon_bow",
+        "value": 25,
+        "stackable": false
     }
 ]

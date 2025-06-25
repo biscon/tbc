@@ -35,14 +35,8 @@ struct WeaponTemplateData {
     std::vector<std::string> soundEffectType;
 };
 
-struct WeaponInstanceData {
-    std::vector<std::string> name;
-    std::vector<int> weaponTemplateIdx;
-};
-
 struct WeaponData {
     WeaponTemplateData templateData;
-    WeaponInstanceData instanceData;
     std::unordered_map<std::string, int> templateIdToIndex;
     std::vector<std::string> indexToTemplateId;
 };

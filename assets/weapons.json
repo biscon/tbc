@@ -1,6 +1,6 @@
 [
     {
-        "name": "Sword",
+        "name": "weapon_sword",
         "type": "Melee",
         "soundEffectType": "BladeWeapon",
         "baseAttack": 4,
@@ -11,7 +11,7 @@
         "animationTemplate": "Sword"
     },
     {
-        "name": "Staff",
+        "name": "weapon_staff",
         "type": "Melee",
         "soundEffectType": "BluntWeapon",
         "baseAttack": 4,
@@ -22,7 +22,7 @@
         "animationTemplate": "Staff"
     },
     {
-        "name": "Bow",
+        "name": "weapon_bow",
         "type": "Ranged",
         "soundEffectType": "Bow",
         "baseAttack": 4,

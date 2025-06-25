@@ -35,7 +35,7 @@
             "group": "ninja1",
             "characters": [
                 "MaleNinja",
-                "MaleNinja"
+                "MaleNinjaStaff"
             ],
             "spawnAt": "enemies"
         }
@@ -111,7 +111,7 @@
             "x": 18,
             "y": 25,
             "falloff": 2.5,
-            "color": "1133FF"
+            "color": "FFE6B4"
         },
         {
             "id": "cornerlight2",

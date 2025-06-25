@@ -40,3 +40,24 @@ void InitItemData(GameData& data, const std::string &filename) {
 
     TraceLog(LOG_INFO, "Loaded %zu item templates from %s", itemData.templateData.size(), filename.c_str());
 }
+
+int CreateItem(GameData& data, const std::string& templateId, int quantity) {
+    int id = (int) data.itemData.instanceData.size();
+    int templateIndex = data.itemData.templateIdToIndex.at(templateId);
+    ItemInstance instance{};
+    instance.id = id;
+    instance.quantity = quantity;
+    instance.templateId = templateIndex;
+    data.itemData.instanceData.push_back(instance);
+    return id;
+}
+
+int GetItemTypeTemplateId(GameData &data, int itemId) {
+    int templateId = data.itemData.instanceData.at(itemId).templateId;
+    return data.itemData.templateData[templateId].typeTemplateId;
+}
+
+std::string GetItemTemplateIdString(GameData& data, int itemId) {
+    int templateId = data.itemData.instanceData[itemId].templateId;
+    return data.itemData.indexToTemplateId.at(templateId);
+}
