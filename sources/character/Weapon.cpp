@@ -9,7 +9,8 @@
 
 using json = nlohmann::json;
 
-void InitWeaponTemplateData(WeaponTemplateData& weaponTemplateData, const std::string& filename) {
+void InitWeaponData(WeaponData& weaponData, const std::string& filename) {
+    WeaponTemplateData& weaponTemplateData = weaponData.templateData;
     std::ifstream file(filename);
     json j;
     file >> j;
@@ -31,21 +32,15 @@ void InitWeaponTemplateData(WeaponTemplateData& weaponTemplateData, const std::s
         std::string soundEffectType = weaponJson["soundEffectType"].get<std::string>();
         weaponTemplateData.soundEffectType.emplace_back(soundEffectType);
 
-        weaponTemplateData.weaponTemplates[name] = (int) weaponTemplateData.name.size()-1;
+        weaponData.templateIdToIndex[name] = (int) weaponTemplateData.name.size()-1;
+        weaponData.indexToTemplateId.push_back(name);
         TraceLog(LOG_INFO, "Loaded weapon: %s", name.c_str());
     }
 }
 
 int CreateWeapon(WeaponData& weaponData, const std::string &templateName) {
-    auto it = weaponData.templateData.weaponTemplates.find(templateName);
-    if(it != weaponData.templateData.weaponTemplates.end()) {
-        int templateIdx = it->second;
-        weaponData.instanceData.name.emplace_back(weaponData.templateData.name[templateIdx]);
-        weaponData.instanceData.weaponTemplateIdx.emplace_back(templateIdx);
-        return (int) weaponData.instanceData.name.size()-1;
-    } else {
-        TraceLog(LOG_ERROR, "CreateWeapon: Weapon template not found: %s", templateName.c_str());
-        std::abort();
-    }
-    return -1;
+    int templateIdx = weaponData.templateIdToIndex.at(templateName);
+    weaponData.instanceData.name.emplace_back(weaponData.templateData.name[templateIdx]);
+    weaponData.instanceData.weaponTemplateIdx.emplace_back(templateIdx);
+    return (int) weaponData.instanceData.name.size()-1;
 }

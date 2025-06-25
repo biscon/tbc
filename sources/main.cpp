@@ -12,6 +12,7 @@
 #include "game/Dialogue.h"
 #include "game/Quest.h"
 #include "game/Settings.h"
+#include "game/Items.h"
 
 #define MAX(a, b) ((a)>(b)? (a) : (b))
 #define MIN(a, b) ((a)<(b)? (a) : (b))
@@ -58,9 +59,10 @@ int main() {
     InitDialogueData(game.dialogueData, ASSETS_PATH"dialogue.json");
     InitQuestData(game, ASSETS_PATH"quests.json");
     InitSpriteAnimationData(game.spriteData, ASSETS_PATH"animations.json");
-    InitWeaponTemplateData(game.weaponData.templateData, ASSETS_PATH"weapons.json");
-    InitNpcTemplateData(game.npcTemplateData, ASSETS_PATH"npcs.json");
+    InitWeaponData(game.weaponData, ASSETS_PATH"weapons.json");
+    InitItemData(game, ASSETS_PATH"items.json");
 
+    InitNpcTemplateData(game.npcTemplateData, ASSETS_PATH"npcs.json");
 
     InitGameMode();
     PushGameMode(GameModes::Menu);

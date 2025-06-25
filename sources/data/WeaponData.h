@@ -33,7 +33,6 @@ struct WeaponTemplateData {
     std::vector<WeaponStats> stats;
     std::vector<std::string> animationTemplate;
     std::vector<std::string> soundEffectType;
-    std::unordered_map<std::string, int> weaponTemplates;
 };
 
 struct WeaponInstanceData {
@@ -44,6 +43,8 @@ struct WeaponInstanceData {
 struct WeaponData {
     WeaponTemplateData templateData;
     WeaponInstanceData instanceData;
+    std::unordered_map<std::string, int> templateIdToIndex;
+    std::vector<std::string> indexToTemplateId;
 };
 
 #endif //SANDBOX_WEAPONDATA_H

@@ -17,6 +17,7 @@
 #include "DialogueData.h"
 #include "QuestData.h"
 #include "SettingsData.h"
+#include "ItemData.h"
 
 const int gameScreenWidth = 640;
 const int gameScreenHeight = 360;
@@ -47,6 +48,7 @@ struct GameData {
     DialogueData dialogueData;
     SettingsData settingsData;
     QuestData questData;
+    ItemData itemData;
 
     // global save state
     std::unordered_map<std::string, LevelSaveState> levelState;

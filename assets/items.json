@@ -1,0 +1,10 @@
+[
+    {
+        "id": "item_weapon_knife",
+        "name": "Combat Knife",
+        "type": "Weapon",
+        "typeTemplateId": "Staff",
+        "value": 25,
+        "stackable": true
+    }
+]
