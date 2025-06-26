@@ -49,7 +49,7 @@ int main() {
 
     //Font font = LoadFont(ASSETS_PATH"small.fnt");
 
-    Font font2 = LoadFontEx(ASSETS_PATH"pixel-3x5.ttf", 5, nullptr, 0);
+    game.smallFont1 = LoadFontEx(ASSETS_PATH"pixel-3x5.ttf", 5, nullptr, 0);
 
     //--------------------------------------------------------------------------------------
 
@@ -116,10 +116,10 @@ int main() {
             ClearBackground(BLANK);
             RenderUiGameMode();
             if(game.settingsData.showFPS) {
-                DrawTextEx(font2, TextFormat("FPS: %i", GetFPS()), (Vector2) {1, 1}, 5, 1, GREEN);
-                DrawTextEx(font2, TextFormat("ScreenWidth: %i", GetScreenWidth()), (Vector2) {1, 10}, 5, 1, YELLOW);
-                DrawTextEx(font2, TextFormat("ScreenHeight: %i", GetScreenHeight()), (Vector2) {1, 16}, 5, 1, YELLOW);
-                DrawTextEx(font2, TextFormat("Mouse: %i,%i", GetMouseX(), GetMouseY()), (Vector2) {1, 22}, 5, 1, YELLOW);
+                DrawTextEx(game.smallFont1, TextFormat("FPS: %i", GetFPS()), (Vector2) {1, 1}, 5, 1, GREEN);
+                DrawTextEx(game.smallFont1, TextFormat("ScreenWidth: %i", GetScreenWidth()), (Vector2) {1, 10}, 5, 1, YELLOW);
+                DrawTextEx(game.smallFont1, TextFormat("ScreenHeight: %i", GetScreenHeight()), (Vector2) {1, 16}, 5, 1, YELLOW);
+                DrawTextEx(game.smallFont1, TextFormat("Mouse: %i,%i", GetMouseX(), GetMouseY()), (Vector2) {1, 22}, 5, 1, YELLOW);
                 //DrawTextEx(font2, TextFormat("MouseOff: %f,%f", finalX, finalY), (Vector2) {1, 28}, 5, 1, YELLOW);
                 //DrawTextEx(font2, TextFormat("MouseScale: %f,%f", mouseScaleX, mouseScaleY), (Vector2) {1, 36}, 5, 1, YELLOW);
             }
@@ -156,7 +156,7 @@ int main() {
     UnloadRenderTexture(game.uiTarget);
 
     //UnloadFont(font);                   // Unload custom font
-    UnloadFont(font2);                   // Unload custom font
+    UnloadFont(game.smallFont1);                   // Unload custom font
 
     DestroySpriteAnimationData(game.spriteData);
     DestroySoundEffectManager();

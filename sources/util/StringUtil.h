@@ -9,5 +9,6 @@
 #include "raylib.h"
 
 Color HexToColor(const std::string& hex);
+std::string TruncateWithEllipsis(const std::string& input, size_t maxLength);
 
 #endif //SANDBOX_STRINGUTIL_H

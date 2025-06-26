@@ -10,9 +10,11 @@ void DrawStatusText(const char* text, Color color, int y, int size) {
     DrawText(text, gameScreenHalfWidth - (MeasureText(text, size) / 2), y, size, color);
 }
 
-void DrawStatusTextBg(const char* text, Color color, int y, int size) {
-    int textWidth = MeasureText(text, size);
-    int textHeight = size; // Approximate height as the font size
+void DrawStatusTextBg(const char* text, Color color, int y, int size, Font font) {
+    Vector2 textDims = MeasureTextEx(font, text, size, 1.0f);
+
+    int textWidth = (int) textDims.x;
+    int textHeight = (int) textDims.y; // Approximate height as the font size
 
     // Padding around the text
     int padding = 8;
@@ -24,13 +26,17 @@ void DrawStatusTextBg(const char* text, Color color, int y, int size) {
     int rectHeight = textHeight + padding;
 
     // Draw semi-transparent rounded black background
-    DrawRectangleRounded((Rectangle){ (float)rectX, (float)rectY, (float)rectWidth, (float)rectHeight }, 0.4f, 8, (Color){ 0, 0, 0, 128 });
+    DrawRectangleRounded((Rectangle){ (float)rectX, (float)rectY, (float)rectWidth, (float)rectHeight }, 0.4f, 8, (Color){ 15, 15, 15, 200 });
 
+    Vector2 textPos = {
+            roundf(gameScreenHalfWidth - (textWidth / 2)),
+            floorf(y)
+    };
     // Draw the text
-    DrawText(text, gameScreenHalfWidth - (textWidth / 2), y, size, color);
+    DrawTextEx(font, text, textPos, size, 1, color);
 }
 
-void DisplayCharacterStatsFloating(CharacterData& charData, int character, int x, int y, bool isPlayer) {
+void DisplayCharacterStatsFloatingOLD(CharacterData& charData, int character, int x, int y, bool isPlayer) {
     int statusEffectsHeight = (int)charData.statusEffects[character].size() * 12;
 
     // Calculate the initial rectangle
@@ -71,6 +77,105 @@ void DisplayCharacterStatsFloating(CharacterData& charData, int character, int x
         // Show status effects
         for (size_t i = 0; i < charData.statusEffects[character].size(); ++i) {
             DrawText(TextFormat("%s", GetStatusEffectName(charData.statusEffects[character][i].type).c_str()), offsetX, offsetY + i * 12, 10, YELLOW);
+        }
+    }
+}
+
+
+void DisplayCharacterStatsFloating(CharacterData& charData, int character, int x, int y, bool isPlayer, Font font) {
+    const float fontSize = 5.0f;
+    const float spacing = 1.0f;
+    const float padding = 4.0f;
+    const float lineHeight = fontSize + 2;
+
+    CharacterStats& stats = charData.stats[character];
+    const std::string& name = charData.name[character];
+
+    // Prepare label-value pairs
+    std::vector<std::pair<std::string, std::string>> lines = {
+            { "Level", TextFormat("%d", stats.level) },
+            { "Health", TextFormat("%d/%d", stats.health, stats.maxHealth) },
+            { "Attack", TextFormat("%d", stats.attack) },
+            { "Defense", TextFormat("%d", stats.defense) },
+            { "Speed", TextFormat("%d", stats.speed) }
+    };
+
+    // Include status effect height
+    int statusCount = (int)charData.statusEffects[character].size();
+    float statusHeight = statusCount * lineHeight;
+    bool hasStatus = statusCount > 0;
+
+    // Measure max label and value widths
+    float labelWidth = 0;
+    float valueWidth = 0;
+    for (const auto& [label, value] : lines) {
+        labelWidth = std::max(labelWidth, MeasureTextEx(font, label.c_str(), fontSize, spacing).x);
+        valueWidth = std::max(valueWidth, MeasureTextEx(font, value.c_str(), fontSize, spacing).x);
+    }
+
+    float titleWidth = MeasureTextEx(font, name.c_str(), fontSize, spacing).x;
+    float contentWidth = labelWidth + 8 + valueWidth;
+    float width = std::max(titleWidth, contentWidth) + 2 * padding;
+
+    float height = (lines.size() * lineHeight) + (hasStatus ? (statusHeight + lineHeight) : 0) + 3 * padding;
+
+    Rectangle bg = {
+            (float)x, (float)y,
+            width,
+            height
+    };
+
+    // Clamp into screen bounds
+    if (bg.x + bg.width > gameScreenWidth)
+        bg.x = gameScreenWidth - bg.width - 2;
+    if (bg.x < 0)
+        bg.x = 0;
+    if (bg.y + bg.height > gameScreenHeight)
+        bg.y = gameScreenHeight - bg.height - 2;
+    if (bg.y < 0)
+        bg.y = 0;
+
+    static const Color bgColor = Color{15, 15, 15, 200};
+
+    DrawRectangleRounded(bg, 0.1f, 16, bgColor);
+    DrawRectangleRoundedLinesEx(bg, 0.1f, 16, 1.0f, DARKGRAY);
+
+    // Title
+    Vector2 namePos = {
+            roundf(bg.x + padding),
+            roundf(bg.y + padding)
+    };
+    DrawTextEx(font, name.c_str(), namePos, fontSize, spacing, YELLOW);
+
+    // Stats
+    float lineY = namePos.y + lineHeight + 1;
+    for (const auto& [label, value] : lines) {
+        Vector2 labelPos = { roundf(bg.x + padding), roundf(lineY) };
+        Vector2 valuePos = {
+                roundf(bg.x + bg.width - padding - MeasureTextEx(font, value.c_str(), fontSize, spacing).x),
+                roundf(lineY)
+        };
+        DrawTextEx(font, label.c_str(), labelPos, fontSize, spacing, LIGHTGRAY);
+        DrawTextEx(font, value.c_str(), valuePos, fontSize, spacing, LIGHTGRAY);
+        lineY += lineHeight;
+    }
+
+    // Status effects
+    if (hasStatus) {
+        DrawLine(
+                (int)(bg.x + padding),
+                (int)(lineY + 1),
+                (int)(bg.x + bg.width - padding),
+                (int)(lineY + 1),
+                LIGHTGRAY
+        );
+
+        lineY += lineHeight;
+        for (int i = 0; i < statusCount; ++i) {
+            const std::string& effectName = GetStatusEffectName(charData.statusEffects[character][i].type);
+            Vector2 pos = { roundf(bg.x + padding), roundf(lineY) };
+            DrawTextEx(font, effectName.c_str(), pos, fontSize, spacing, YELLOW);
+            lineY += lineHeight;
         }
     }
 }

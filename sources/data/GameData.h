@@ -56,6 +56,7 @@ struct GameData {
 
     RenderTexture2D levelTarget;
     RenderTexture2D uiTarget;
+    Font smallFont1;
 };
 
 #endif //SANDBOX_GAMEDATA_H

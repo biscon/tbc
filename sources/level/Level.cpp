@@ -14,6 +14,7 @@
 #include "character/Character.h"
 #include "util/StringUtil.h"
 #include "graphics/Animation.h"
+#include "game/PartySideBar.h"
 
 using json = nlohmann::json;
 
@@ -293,6 +294,8 @@ void LoadLevel(GameData& data, Level &level, const std::string &filename) {
         }
     }
     PropagateLight(level.lighting, level.tileMap);
+
+    InitPartySideBar(data);
 
     Animation anim{};
     SetupFancyTextAnimation(anim,

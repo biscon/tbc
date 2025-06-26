@@ -15,6 +15,7 @@
 #include "level/CombatEngine.h"
 #include "game/Dialogue.h"
 #include "graphics/Animation.h"
+#include "game/PartySideBar.h"
 
 static GameData* game;
 static Level level;
@@ -179,81 +180,6 @@ static void handleCameraMovement() {
     }
 }
 
-// These can be placed at file scope or made configurable:
-const int EDGE_SCROLL_ZONE_X = 16;  // Wider horizontal edge zone
-const int EDGE_SCROLL_ZONE_Y = 9;  // Narrower vertical edge zone
-
-static void handleCameraMovementMouse() {
-    float dt = GetFrameTime();
-    float speed = 8.0f;
-    float accelerationTime = 0.75f;
-    float decelerationTime = 0.75f;
-
-    float acceleration = speed / accelerationTime;
-    float deceleration = speed / decelerationTime;
-
-    Vector2 mouse = GetMousePosition();
-    int screenWidth = gameScreenWidth;
-    int screenHeight = gameScreenHeight;
-
-    bool scrollLeft = mouse.x <= EDGE_SCROLL_ZONE_X;
-    bool scrollRight = mouse.x >= screenWidth - EDGE_SCROLL_ZONE_X;
-    bool scrollUp = mouse.y <= EDGE_SCROLL_ZONE_Y;
-    bool scrollDown = mouse.y >= screenHeight - EDGE_SCROLL_ZONE_Y;
-
-    // X-axis movement (A/D + mouse edge scroll)
-    if (!level.camera.cameraLockX) {
-        if (IsKeyDown(KEY_A) || scrollLeft) {
-            level.camera.cameraVelocity.x -= acceleration * dt;
-            if (level.camera.cameraVelocity.x < -speed)
-                level.camera.cameraVelocity.x = -speed;
-        } else if (IsKeyDown(KEY_D) || scrollRight) {
-            level.camera.cameraVelocity.x += acceleration * dt;
-            if (level.camera.cameraVelocity.x > speed)
-                level.camera.cameraVelocity.x = speed;
-        } else {
-            // Decelerate when no input
-            if (level.camera.cameraVelocity.x > 0.0f) {
-                level.camera.cameraVelocity.x -= deceleration * dt;
-                if (level.camera.cameraVelocity.x < 0.0f)
-                    level.camera.cameraVelocity.x = 0.0f;
-            } else if (level.camera.cameraVelocity.x < 0.0f) {
-                level.camera.cameraVelocity.x += deceleration * dt;
-                if (level.camera.cameraVelocity.x > 0.0f)
-                    level.camera.cameraVelocity.x = 0.0f;
-            }
-        }
-    } else {
-        level.camera.cameraVelocity.x = 0.0f;
-    }
-
-    // Y-axis movement (W/S + mouse edge scroll)
-    if (!level.camera.cameraLockY) {
-        if (IsKeyDown(KEY_W) || scrollUp) {
-            level.camera.cameraVelocity.y -= acceleration * dt;
-            if (level.camera.cameraVelocity.y < -speed)
-                level.camera.cameraVelocity.y = -speed;
-        } else if (IsKeyDown(KEY_S) || scrollDown) {
-            level.camera.cameraVelocity.y += acceleration * dt;
-            if (level.camera.cameraVelocity.y > speed)
-                level.camera.cameraVelocity.y = speed;
-        } else {
-            // Decelerate when no input
-            if (level.camera.cameraVelocity.y > 0.0f) {
-                level.camera.cameraVelocity.y -= deceleration * dt;
-                if (level.camera.cameraVelocity.y < 0.0f)
-                    level.camera.cameraVelocity.y = 0.0f;
-            } else if (level.camera.cameraVelocity.y < 0.0f) {
-                level.camera.cameraVelocity.y += deceleration * dt;
-                if (level.camera.cameraVelocity.y > 0.0f)
-                    level.camera.cameraVelocity.y = 0.0f;
-            }
-        }
-    } else {
-        level.camera.cameraVelocity.y = 0.0f;
-    }
-}
-
 void LevelInit() {
     LoadSoundEffect(SoundEffectType::Ambience, ASSETS_PATH"music/ambience_cave.ogg", true);
     //LoadSoundEffect(SoundEffectType::Ambience, ASSETS_PATH"sound/ambient_forest_01.ogg", true);
@@ -312,6 +238,7 @@ void LevelUpdate(float dt) {
     UpdateLevelScreen(game->spriteData, game->charData, level, levelScreen, dt);
     UpdatePlayField(game->spriteData, game->charData, playField, level, dt);
     UpdateDialogue(*game, dt);
+    UpdatePartySideBar(*game, dt);
 
     UpdateVisibilityMap(*game, level);
     UpdateVisibilityTexture(level.lighting);
@@ -322,11 +249,13 @@ void LevelHandleInput() {
     processEvents();
     if(game->state != GameState::DIALOGUE) {
         handleCameraMovement();
+        if(!HandlePartySideBarInput(*game, eventQueue)) {
+            HandleInputPlayField(*game, playField, level);
+        }
+        HandleInputLevelScreen(game->spriteData, game->charData, levelScreen, level);
     } else {
         HandleDialogueInput(*game, eventQueue);
     }
-    HandleInputPlayField(*game, playField, level);
-    HandleInputLevelScreen(game->spriteData, game->charData, levelScreen, level);
 
     if (IsKeyPressed(KEY_ESCAPE)) {
         PopGameMode();
@@ -385,6 +314,7 @@ void LevelRenderLevel() {
 
 void LevelRenderUi() {
     DrawLevelScreen(*game, level, levelScreen, playField);
+    RenderPartySideBarUI(*game);
     RenderDialogueUI(*game);
 }
 

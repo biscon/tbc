@@ -21,6 +21,11 @@ struct LevelCamera {
     int worldHeight;
     bool cameraLockX;
     bool cameraLockY;
+    // Extra margin to allow overscroll (in pixels)
+    int overscrollLeft = 0;
+    int overscrollRight = 0;
+    int overscrollTop = 0;
+    int overscrollBottom = 0;
 };
 
 void InitLevelCamera(LevelCamera& cam);

@@ -11,7 +11,7 @@
 #include <algorithm>
 #include <iostream>
 
-#define NODE_POOL_SIZE 1024  // Pre-allocated node pool size
+#define NODE_POOL_SIZE 4096  // Pre-allocated node pool size
 
 struct Node {
     Vector2i position;

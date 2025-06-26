@@ -29,3 +29,9 @@ Color HexToColor(const std::string& hex) {
              static_cast<unsigned char>(b),
              255 };
 }
+
+std::string TruncateWithEllipsis(const std::string& input, size_t maxLength) {
+    if (input.length() > maxLength)
+        return input.substr(0, maxLength) + "..";
+    return input;
+}

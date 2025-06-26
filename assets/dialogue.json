@@ -83,7 +83,14 @@
         "197": {
             "id": 197,
             "text": "Im on it, you fat bastard.",
-            "nextNodeId": -1
+            "nextNodeId": -1,
+            "conditions": [
+                {
+                    "type": "QuestStatusEquals",
+                    "param": "kill_ninjas",
+                    "value": "Active"
+                }
+            ]
         },
         "198": {
             "id": 198,

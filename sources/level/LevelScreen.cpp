@@ -45,19 +45,27 @@ static bool IsCharacterVisible(Level &combat, int character) {
     return true;
 }
 
-static bool DrawActionIcon(float x, float y, ActionIcon &actionIcon, LevelScreen &uiState) {
+static bool DrawActionIcon(float x, float y, ActionIcon &actionIcon, LevelScreen &uiState, Font font) {
     Vector2 mousePos = GetMousePosition();
-    Rectangle iconRect = {x, y, 32, 32};
+    Rectangle iconRect = {x, y, 24, 24};
+    static const Color bgColor = Color{15, 15, 15, 200};
+    // Center text inside icon
+    Vector2 textDim = MeasureTextEx(font, actionIcon.text, 5, 1);
+    Vector2 textPos = {
+            roundf(x + iconRect.width/2 - textDim.x / 2),
+            floorf(y + iconRect.width/2 - textDim.y / 2)
+    };
 
     if (CheckCollisionPointRec(mousePos, iconRect) && !actionIcon.disabled) {
         uiState.showActionBarTitle = false;
-        DrawStatusTextBg(actionIcon.description, WHITE, 310, 10);
-        DrawRectangleRec(iconRect, GRAY);
+        DrawStatusTextBg(actionIcon.description, WHITE, 318, 5, font);
+        DrawRectangleRec(iconRect, bgColor);
         DrawRectangleLinesEx(iconRect, 1, YELLOW);
 
-        // Center text inside icon
-        int textWidth = MeasureText(actionIcon.text, 10);
-        DrawText(actionIcon.text, x + 16 - textWidth / 2, y + 16 - 5, 10, YELLOW);
+        DrawTextEx(font, actionIcon.text, textPos, 5, 1, YELLOW);
+
+        //int textWidth = MeasureText(actionIcon.text, 10);
+        //DrawText(actionIcon.text, x + 16 - textWidth / 2, y + 16 - 5, 10, YELLOW);
 
         // Check for a mouse click
         if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
@@ -65,8 +73,12 @@ static bool DrawActionIcon(float x, float y, ActionIcon &actionIcon, LevelScreen
         }
     } else {
         // Background color for the icon
-        DrawRectangleRec(iconRect, actionIcon.disabled ? DARKGRAY : GRAY);
-        DrawRectangleLinesEx(iconRect, 1, actionIcon.disabled ? GRAY : LIGHTGRAY);
+        //DrawRectangleRec(iconRect, actionIcon.disabled ? bgColor : bgColor);
+        //DrawRectangleLinesEx(iconRect, 1, DARKGRAY);
+
+        DrawRectangleRounded(iconRect, 0.1f, 16, bgColor);
+        DrawRectangleRoundedLinesEx(iconRect, 0.1f, 16, 1.0f, DARKGRAY);
+
 
         // Draw cooldown overlay with alpha gradient if the skill exists and has a cooldown
         if (actionIcon.skill != nullptr && actionIcon.skill->cooldown > 0) {
@@ -81,37 +93,39 @@ static bool DrawActionIcon(float x, float y, ActionIcon &actionIcon, LevelScreen
         }
 
         // Center text inside icon
-        int textWidth = MeasureText(actionIcon.text, 10);
-        DrawText(actionIcon.text, x + 16 - textWidth / 2, y + 16 - 5, 10, actionIcon.disabled ? LIGHTGRAY : WHITE);
+        DrawTextEx(font, actionIcon.text, textPos, 5, 1, LIGHTGRAY);
     }
     return false;
 }
 
-static void DisplayActionUI(SpriteData& spriteData, CharacterData& charData, Level &combat, LevelScreen &uiState, PlayField &gridState) {
-    //DrawRectangleRec((Rectangle) {0, 209, 480, 65}, Fade(BLACK, 0.75f));
+static void DisplayActionUI(SpriteData& spriteData, CharacterData& charData, Level &combat, LevelScreen &uiState, PlayField &gridState, Font font) {
+    float iconWidth = 24;
+    float iconHeight = 24;
+    int visibleIcons = 10;
+    float spacing = 3.0f;
 
-    float iconWidth = 32;
-    float iconHeight = 32;
-    int visibleIcons = 14;
+    float barWidth = (float) visibleIcons * (iconWidth + spacing);
+    float iconX = gameScreenHalfWidthF - barWidth/2;
+    float iconY = 331;
 
-    float offsetX = 0;
-    float offsetY = 326;
-    Vector2 scrollLeft[3] = {{offsetX + 15, offsetY + 1},
-                             {offsetX + 1,  offsetY + 16},
-                             {offsetX + 15, offsetY + 31}};
+    float offsetX = iconX - 14;
+    float offsetY = iconY;
+    Vector2 scrollLeft[3] = {{offsetX + 11, offsetY + 1},
+                             {offsetX + 1,  offsetY + 12},
+                             {offsetX + 11, offsetY + 23}};
 
     bool mouseOverScrollLeft = CheckCollisionPointTriangle(GetMousePosition(), scrollLeft[0], scrollLeft[1],
                                                            scrollLeft[2]);
 
-    DrawTriangle(scrollLeft[0], scrollLeft[1], scrollLeft[2], mouseOverScrollLeft ? WHITE : GRAY);
+    DrawTriangle(scrollLeft[0], scrollLeft[1], scrollLeft[2], mouseOverScrollLeft ? YELLOW : DARKGRAY);
 
-    offsetX = gameScreenWidthF - 16;
+    offsetX = iconX + barWidth - 1;
     Vector2 scrollRight[3] = {{offsetX + 1,  offsetY + 1},
-                              {offsetX + 1,  offsetY + 31},
-                              {offsetX + 15, offsetY + 16}};
+                              {offsetX + 1,  offsetY + 23},
+                              {offsetX + 11, offsetY + 12}};
     bool mouseOverScrollRight = CheckCollisionPointTriangle(GetMousePosition(), scrollRight[0], scrollRight[1],
                                                             scrollRight[2]);
-    DrawTriangle(scrollRight[0], scrollRight[1], scrollRight[2], mouseOverScrollRight ? WHITE : GRAY);
+    DrawTriangle(scrollRight[0], scrollRight[1], scrollRight[2], mouseOverScrollRight ? YELLOW : DARKGRAY);
 
     std::vector<ActionIcon> actionIcons = {
             ActionIcon{"MOV", "Move", charData.stats[combat.currentCharacter].movePoints <= 0, nullptr},
@@ -139,15 +153,14 @@ static void DisplayActionUI(SpriteData& spriteData, CharacterData& charData, Lev
 
     uiState.showActionBarTitle = true;
 
-    //DisplayCharacterStatsUI(*combat.currentCharacter, true);
     // Draw 14 action icons 32x32 in a row, no spacing
+
     for (int i = 0; i < visibleIcons; ++i) {
         if (i >= actionIcons.size()) {
             break;
         }
-        float iconX = 16 + i * iconWidth;
-        float iconY = 326;
-        if (DrawActionIcon(iconX, iconY, actionIcons[uiState.actionIconScrollIndex + i], uiState)) {
+
+        if (DrawActionIcon(iconX, iconY, actionIcons[uiState.actionIconScrollIndex + i], uiState, font)) {
             PlaySoundEffect(SoundEffectType::Select);
             // action icon clicked
             TraceLog(LOG_INFO, "Action icon clicked: %s", actionIcons[uiState.actionIconScrollIndex + i].text);
@@ -198,12 +211,11 @@ static void DisplayActionUI(SpriteData& spriteData, CharacterData& charData, Lev
                 break;
             }
         }
-
-        //DrawRectangleLines(iconX, iconY, iconWidth, iconHeight, DARKGRAY);
+        iconX += iconWidth + spacing;
     }
 
     if (uiState.showActionBarTitle) {
-        DrawStatusTextBg("Select Action", WHITE, 10, 10);
+        DrawStatusTextBg("Select Action", WHITE, 318, 5, font);
     }
 
     if (CheckCollisionPointTriangle(GetMousePosition(), scrollRight[0], scrollRight[1], scrollRight[2]) &&
@@ -225,6 +237,8 @@ static void DisplayActionUI(SpriteData& spriteData, CharacterData& charData, Lev
         uiState.actionIconScrollIndex = 0;
     }
 }
+
+
 
 static void DisplayDamageNumbers(Level &combat) {
     for (auto &animation: combat.animations) {
@@ -556,7 +570,7 @@ void DrawLevelScreen(GameData& data, Level &level, LevelScreen &levelScreen, Pla
 
 
     if (level.turnState == TurnState::SelectAction) {
-        DisplayActionUI(spriteData, charData, level, levelScreen, playField);
+        DisplayActionUI(spriteData, charData, level, levelScreen, playField, data.smallFont1);
     }
     if (level.turnState == TurnState::Victory) {
         std::string text = "Victory!";
@@ -584,11 +598,11 @@ void DrawLevelScreen(GameData& data, Level &level, LevelScreen &levelScreen, Pla
         // to screen space
         Vector2 screenPos = GetWorldToScreen2D(Vector2{x, y}, level.camera.camera);
         DisplayCharacterStatsFloating(charData, levelScreen.floatingStatsCharacter, (int) screenPos.x - 10, (int) screenPos.y + 12,
-                                      IsPlayerCharacter(charData, levelScreen.floatingStatsCharacter));
+                                      IsPlayerCharacter(charData, levelScreen.floatingStatsCharacter), data.smallFont1);
     }
     // Display hint text
     if(!playField.hintText.empty()) {
-        DrawStatusTextBg(playField.hintText.c_str(), WHITE, 10, 10);
+        DrawStatusTextBg(playField.hintText.c_str(), WHITE, 318, 5, data.smallFont1);
         playField.hintText = "";
     }
 }
