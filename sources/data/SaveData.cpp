@@ -39,11 +39,15 @@ void to_json(nlohmann::json& j, const PartyCharacter& c) {
             {"tilePosX", c.tilePosX},
             {"tilePosY", c.tilePosY},
             {"spriteTemplate", c.spriteTemplate},
-            {"weaponTemplate", c.weaponTemplate},
             {"characterClass", c.characterClass},
             {"faction", c.faction},
             {"stats", c.stats}
     };
+    nlohmann::json jSlots;
+    for (size_t i = 0; i < static_cast<size_t>(ItemEquipSlot::COUNT); ++i) {
+        jSlots[GetEquipSlotName(static_cast<ItemEquipSlot>(i))] = c.equippedItems[i];
+    }
+    j["equippedItems"] = jSlots;
 }
 
 void from_json(const nlohmann::json& j, PartyCharacter& c) {
@@ -51,11 +55,18 @@ void from_json(const nlohmann::json& j, PartyCharacter& c) {
     j.at("ai").get_to(c.ai);
     j.at("tilePosX").get_to(c.tilePosX);
     j.at("tilePosY").get_to(c.tilePosY);
-    j.at("weaponTemplate").get_to(c.weaponTemplate);
     j.at("spriteTemplate").get_to(c.spriteTemplate);
     j.at("characterClass").get_to(c.characterClass);
     j.at("faction").get_to(c.faction);
     j.at("stats").get_to(c.stats);
+
+    if(j.contains("equippedItems")) {
+        const nlohmann::json &nodes = j.at("equippedItems");
+        for (nlohmann::json::const_iterator it = nodes.begin(); it != nodes.end(); ++it) {
+            const std::string &slotName = it.key();
+            c.equippedItems[GetEquipSlotIndexByName(slotName)] = it.value();
+        }
+    }
 }
 
 bool SaveGameData(SaveData& data, const std::string& filename) {

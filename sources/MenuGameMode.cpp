@@ -87,7 +87,18 @@ static void loadGame() {
         int id = CreateCharacter(game->charData, ch.characterClass, ch.faction, ch.name, ch.ai);
         //AssignSkill(game->charData.skills[id], SkillType::Taunt, "Howling Scream", 1, false, true, 0, 3, 0);
         InitCharacterSprite(game->spriteData, game->charData.sprite[id], ch.spriteTemplate, true);
-        GiveWeapon(*game, id, ch.weaponTemplate, ItemEquipSlot::Weapon1);
+
+        // loop through equipment slots and instantiate items
+        for (size_t i = 0; i < static_cast<size_t>(ItemEquipSlot::COUNT); ++i) {
+            int itemId = -1;
+            if(!ch.equippedItems[i].empty()) {
+                itemId = CreateItem(*game, ch.equippedItems[i], 1);
+                SetEquippedItem(*game, id, static_cast<ItemEquipSlot>(i), itemId);
+            } else {
+                game->charData.equippedItemIdx[id][i] = itemId;
+            }
+        }
+
         game->charData.stats[id] = ch.stats;
         Vector2i savedPos = { ch.tilePosX, ch.tilePosY};
         SetCharacterGridPosI(game->spriteData, game->charData.sprite[id], savedPos);
@@ -113,9 +124,11 @@ static void saveGame() {
         // save sprite template
         pc.spriteTemplate = game->charData.sprite[id].spriteTemplate;
 
-        // save weapon template
-        auto weaponItemId = GetEquippedItem(game->charData, id, ItemEquipSlot::Weapon1);
-        pc.weaponTemplate = GetItemTemplateIdString(*game, weaponItemId);
+        // save item equipment slots
+        for (size_t i = 0; i < static_cast<size_t>(ItemEquipSlot::COUNT); ++i) {
+            int itemId =  game->charData.equippedItemIdx[id][i];
+            pc.equippedItems[i] = itemId == -1 ? "" : GetItemTemplateIdString(*game, itemId);
+        }
 
         // save position
         Vector2i pos = GetCharacterGridPosI(game->spriteData, game->charData.sprite[id]);

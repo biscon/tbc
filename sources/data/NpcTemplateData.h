@@ -18,7 +18,7 @@ struct NpcTemplateData {
     std::vector<std::string> ai;
     std::vector<std::string> characterSprite;
     std::vector<int> level;
-    std::vector<std::string> weaponTemplate;
+    std::vector<std::array<std::string, static_cast<size_t>(ItemEquipSlot::COUNT)>> equippedItems;
     // name to index lookup
     std::unordered_map<std::string, int> npcTemplates;
 };

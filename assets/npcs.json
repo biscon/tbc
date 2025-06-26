@@ -7,7 +7,10 @@
         "ai": "Fighter",
         "sprite": "MaleNinja",
         "level": 1,
-        "weapon": "item_weapon_sword"
+        "equippedItems": {
+            "armor": "",
+            "weapon": "item_weapon_sword"
+        }
     },
     {
         "characterName": "Ninja Staffhole",
@@ -17,7 +20,10 @@
         "ai": "Fighter",
         "sprite": "MaleNinja",
         "level": 2,
-        "weapon": "item_weapon_staff"
+        "equippedItems": {
+            "armor": "",
+            "weapon": "item_weapon_staff"
+        }
     },
     {
         "characterName": "Ser Donald",
@@ -26,7 +32,6 @@
         "faction": "Npc",
         "ai": "Fighter",
         "sprite": "MaleBase",
-        "level": 10,
-        "weapon": ""
+        "level": 10
     }
 ]

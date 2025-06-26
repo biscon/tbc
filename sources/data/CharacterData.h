@@ -52,7 +52,6 @@ void from_json(const nlohmann::json& j, CharacterStats& m);
 
 enum class ItemEquipSlot {
     Weapon1,
-    Weapon2,
     Armor,
     // Add more later
     COUNT
@@ -71,5 +70,21 @@ struct CharacterData {
     std::vector<Orientation> orientation;
     std::vector<std::array<int, static_cast<size_t>(ItemEquipSlot::COUNT)>> equippedItemIdx;
 };
+
+inline const char* GetEquipSlotName(ItemEquipSlot slot) {
+    switch (slot) {
+        case ItemEquipSlot::Weapon1: return "weapon";
+        case ItemEquipSlot::Armor:  return "armor";
+        default: return "unknown";
+    }
+}
+
+inline int GetEquipSlotIndexByName(const std::string& slotName) {
+    if(slotName == "weapon") return 0;
+    if(slotName == "armor") return 1;
+    TraceLog(LOG_ERROR, "Could not map slot '%s' to index", slotName.c_str());
+    std::abort();
+    return -1;
+}
 
 #endif //SANDBOX_CHARACTERDATA_H

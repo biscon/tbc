@@ -99,9 +99,7 @@ void ClearAllCharacters(CharacterData& data) {
 
 void GiveWeapon(GameData& data, int characterIdx, const std::string& itemTemplate, ItemEquipSlot slot) {
     int weaponId = CreateItem(data, itemTemplate, 1);
-    SetEquippedItem(data.charData, characterIdx, slot, weaponId);
-    int tplIdx = GetItemTypeTemplateId(data, weaponId);
-    SetCharacterSpriteWeaponAnimation(data.spriteData, data.charData.sprite[characterIdx], data.weaponData.templateData.animationTemplate[tplIdx]);
+    SetEquippedItem(data, characterIdx, slot, weaponId);
 }
 
 Vector2 GetOrientationVector(Orientation orientation) {
@@ -224,7 +222,7 @@ void LevelUp(CharacterData &charData, int cid, bool autoDistributePoints) {
 }
 
 int GetAttack(GameData& data, int cid) {
-    int weaponItemId = GetEquippedItem(data.charData, cid, ItemEquipSlot::Weapon1);
+    int weaponItemId = GetEquippedItem(data, cid, ItemEquipSlot::Weapon1);
     if(weaponItemId != -1) {
         int tplIdx = GetItemTypeTemplateId(data, weaponItemId);
         return data.charData.stats[cid].attack + data.weaponData.templateData.stats[tplIdx].baseAttack;
@@ -267,10 +265,14 @@ CharacterFaction StringToFaction(const std::string &factionName) {
     return CharacterFaction::Enemy;
 }
 
-int GetEquippedItem(const CharacterData& data, int charIdx, ItemEquipSlot slot) {
-    return data.equippedItemIdx[charIdx][static_cast<size_t>(slot)];
+int GetEquippedItem(const GameData& data, int charIdx, ItemEquipSlot slot) {
+    return data.charData.equippedItemIdx[charIdx][static_cast<size_t>(slot)];
 }
 
-void SetEquippedItem(CharacterData& data, int charIdx, ItemEquipSlot slot, int itemIdx) {
-    data.equippedItemIdx[charIdx][static_cast<size_t>(slot)] = itemIdx;
+void SetEquippedItem(GameData& data, int charIdx, ItemEquipSlot slot, int itemIdx) {
+    data.charData.equippedItemIdx[charIdx][static_cast<size_t>(slot)] = itemIdx;
+    if(slot == ItemEquipSlot::Weapon1) {
+        int tplIdx = GetItemTypeTemplateId(data, itemIdx);
+        SetCharacterSpriteWeaponAnimation(data.spriteData, data.charData.sprite[charIdx], data.weaponData.templateData.animationTemplate[tplIdx]);
+    }
 }

@@ -6,6 +6,7 @@
 #include "Npc.h"
 #include "util/json.hpp"
 #include "Character.h"
+#include "game/Items.h"
 
 void to_json(nlohmann::json& j, const NpcInstance& npc) {
     j = nlohmann::json{
@@ -38,8 +39,15 @@ void InitNpcTemplateData(NpcTemplateData &data, const std::string &filename) {
         std::string sprite = npcJson["sprite"].get<std::string>();
         data.characterSprite.emplace_back(sprite);
 
-        std::string weapon = npcJson["weapon"].get<std::string>();
-        data.weaponTemplate.emplace_back(weapon);
+        // equipped items
+        data.equippedItems.emplace_back();
+        if(npcJson.contains("equippedItems")) {
+            const nlohmann::json &nodes = npcJson.at("equippedItems");
+            for (nlohmann::json::const_iterator it = nodes.begin(); it != nodes.end(); ++it) {
+                const std::string &slotName = it.key();
+                data.equippedItems.back()[GetEquipSlotIndexByName(slotName)] = it.value();
+            }
+        }
 
         int level = npcJson["level"].get<int>();
         data.level.emplace_back(level);
@@ -70,9 +78,14 @@ int CreateCharacterFromTemplate(GameData& data, const std::string &npcTemplate) 
             LevelUp(data.charData, charIdx, true);
         }
         InitCharacterSprite(data.spriteData, data.charData.sprite[charIdx], tplData.characterSprite[templateIdx], true);
-        std::string weaponTemplate = tplData.weaponTemplate[templateIdx];
-        if(!weaponTemplate.empty()) {
-            GiveWeapon(data, charIdx, weaponTemplate, ItemEquipSlot::Weapon1);
+
+        // loop through equipment slots and instantiate items
+        for (size_t i = 0; i < static_cast<size_t>(ItemEquipSlot::COUNT); ++i) {
+            int itemId = -1;
+            if(!tplData.equippedItems[templateIdx][i].empty()) {
+                itemId = CreateItem(data, tplData.equippedItems[templateIdx][i], 1);
+                SetEquippedItem(data, charIdx, static_cast<ItemEquipSlot>(i), itemId);
+            }
         }
         return charIdx;
     } else {

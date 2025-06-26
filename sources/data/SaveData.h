@@ -35,13 +35,13 @@ void from_json(const nlohmann::json& j, LevelSaveState& m);
 struct PartyCharacter {
     std::string name;
     std::string ai;
-    std::string weaponTemplate;
     std::string spriteTemplate;
     int tilePosX = 0;
     int tilePosY = 0;
     CharacterClass characterClass;
     CharacterFaction faction;
     CharacterStats stats;
+    std::array<std::string, static_cast<size_t>(ItemEquipSlot::COUNT)> equippedItems;
 };
 
 void to_json(nlohmann::json& j, const PartyCharacter& c);

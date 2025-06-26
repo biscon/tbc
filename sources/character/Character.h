@@ -27,7 +27,7 @@ int GetAttack(GameData& data, int cid);
 void FaceCharacter(SpriteData& spriteData, CharacterData &charData, int attackerId, int defenderId);
 CharacterClass StringToClass(const std::string& className);
 CharacterFaction StringToFaction(const std::string& factionName);
-int GetEquippedItem(const CharacterData& data, int charIdx, ItemEquipSlot slot);
-void SetEquippedItem(CharacterData& data, int charIdx, ItemEquipSlot slot, int itemIdx);
+int GetEquippedItem(const GameData& data, int charIdx, ItemEquipSlot slot);
+void SetEquippedItem(GameData& data, int charIdx, ItemEquipSlot slot, int itemIdx);
 
 #endif //SANDBOX_CHARACTER_H
