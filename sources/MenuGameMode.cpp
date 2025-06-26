@@ -36,110 +36,20 @@ struct Menu {
 };
 
 
-//static std::stack<std::shared_ptr<Menu>> menuStack;
-static std::stack<std::function<std::shared_ptr<Menu>()>> menuStack;
-
-
-static void StartNewGame() {
-    int id = CreateCharacter(game->charData, CharacterClass::Warrior, CharacterFaction::Player, "Player1", "Fighter");
-    AssignSkill(game->charData.skills[id], SkillType::Taunt, "Howling Scream", 1, false, true, 0, 3, 0);
-    AssignSkill(game->charData.skills[id], SkillType::Stun, "Stunning Blow", 1, false, false, 0, 3, 1);
-    InitCharacterSprite(game->spriteData, game->charData.sprite[id], "MaleWarrior", true);
-    GiveWeapon(*game, id, "item_weapon_sword", ItemEquipSlot::Weapon1);
-    LevelUp(game->charData, id, true);
-    LevelUp(game->charData, id, true);
-    LevelUp(game->charData, id, true);
-    LevelUp(game->charData, id, true);
-    game->party.emplace_back(id);
-
-    id = CreateCharacter(game->charData, CharacterClass::Mage, CharacterFaction::Player, "Player2", "Fighter");
-    AssignSkill(game->charData.skills[id], SkillType::Dodge, "Dodge", 1, true, true, 0, 0, 0);
-    AssignSkill(game->charData.skills[id], SkillType::FlameJet, "Burning Hands", 1, false, false, 0, 3, 5);
-    InitCharacterSprite(game->spriteData, game->charData.sprite[id], "MaleWarrior", true);
-    GiveWeapon(*game, id, "item_weapon_bow", ItemEquipSlot::Weapon1);
-    LevelUp(game->charData, id, true);
-    LevelUp(game->charData, id, true);
-    LevelUp(game->charData, id, true);
-    LevelUp(game->charData, id, true);
-    game->party.emplace_back(id);
-
-    game->state = GameState::LOAD_LEVEL;
-    PushGameMode(GameModes::Level);
+static void startNewGame() {
+    StartNewGame(*game);
 }
 
 static void loadGame() {
-    SaveData saveData;
-    if(!LoadGameData(saveData, "savegame.json")) {
-        TraceLog(LOG_DEBUG, "No existing savegame found");
-        return;
-    }
-    game->levelFileName = saveData.currentLevel;
-    game->state = GameState::LOAD_LEVEL_FROM_SAVE;
-    game->levelState = saveData.levels;
-    game->questState = saveData.quests;
-
-    ClearAllCharacters(game->charData);
-    game->spriteData.player.animationIdx.clear();
-    game->spriteData.player.animData.clear();
-    game->spriteData.player.renderData.clear();
-    game->party.clear();
-    for(auto& ch : saveData.party) {
-        int id = CreateCharacter(game->charData, ch.characterClass, ch.faction, ch.name, ch.ai);
-        //AssignSkill(game->charData.skills[id], SkillType::Taunt, "Howling Scream", 1, false, true, 0, 3, 0);
-        InitCharacterSprite(game->spriteData, game->charData.sprite[id], ch.spriteTemplate, true);
-
-        // loop through equipment slots and instantiate items
-        for (size_t i = 0; i < static_cast<size_t>(ItemEquipSlot::COUNT); ++i) {
-            int itemId = -1;
-            if(!ch.equippedItems[i].empty()) {
-                itemId = CreateItem(*game, ch.equippedItems[i], 1);
-                SetEquippedItem(*game, id, static_cast<ItemEquipSlot>(i), itemId);
-            } else {
-                game->charData.equippedItemIdx[id][i] = itemId;
-            }
-        }
-
-        game->charData.stats[id] = ch.stats;
-        Vector2i savedPos = { ch.tilePosX, ch.tilePosY};
-        SetCharacterGridPosI(game->spriteData, game->charData.sprite[id], savedPos);
-        game->party.emplace_back(id);
-    }
-
-    PushGameMode(GameModes::Level);
+    LoadGame(*game);
 }
 
 static void saveGame() {
-    SaveData saveData;
-    saveData.currentLevel = game->levelFileName;
-    saveData.levels = game->levelState;
-    saveData.quests = game->questState;
-
-    for(auto& id : game->party) {
-        PartyCharacter pc;
-        pc.name = game->charData.name[id];
-        pc.faction = game->charData.faction[id];
-        pc.characterClass = game->charData.characterClass[id];
-        pc.ai = game->charData.ai[id];
-        pc.stats = game->charData.stats[id];
-        // save sprite template
-        pc.spriteTemplate = game->charData.sprite[id].spriteTemplate;
-
-        // save item equipment slots
-        for (size_t i = 0; i < static_cast<size_t>(ItemEquipSlot::COUNT); ++i) {
-            int itemId =  game->charData.equippedItemIdx[id][i];
-            pc.equippedItems[i] = itemId == -1 ? "" : GetItemTemplateIdString(*game, itemId);
-        }
-
-        // save position
-        Vector2i pos = GetCharacterGridPosI(game->spriteData, game->charData.sprite[id]);
-        pc.tilePosX = pos.x;
-        pc.tilePosY = pos.y;
-
-        saveData.party.push_back(pc);
-    }
-
-    SaveGameData(saveData, "savegame.json");
+    SaveGame(*game);
 }
+
+//static std::stack<std::shared_ptr<Menu>> menuStack;
+static std::stack<std::function<std::shared_ptr<Menu>()>> menuStack;
 
 static std::shared_ptr<Menu> createResolutionMenu() {
     // Resolution submenu
@@ -310,7 +220,7 @@ static std::shared_ptr<Menu> createMainMenu() {
         MenuItem item;
         item.text = "Start New Game";
         item.isSubmenu = false;
-        item.action = StartNewGame;
+        item.action = startNewGame;
         menu->items.push_back(item);
     } else {
         MenuItem resume;

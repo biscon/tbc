@@ -44,6 +44,14 @@ struct PartyCharacter {
     std::array<std::string, static_cast<size_t>(ItemEquipSlot::COUNT)> equippedItems;
 };
 
+struct InventorySaveState {
+    int capacity;
+    std::vector<std::string> itemTemplateIds;
+};
+
+void to_json(nlohmann::json& j, const InventorySaveState& s);
+void from_json(const nlohmann::json& j, InventorySaveState& s);
+
 void to_json(nlohmann::json& j, const PartyCharacter& c);
 void from_json(const nlohmann::json& j, PartyCharacter& c);
 
@@ -52,6 +60,7 @@ struct SaveData {
     std::unordered_map<std::string, LevelSaveState> levels;
     std::list<PartyCharacter> party;
     std::unordered_map<std::string, QuestSaveState> quests;
+    InventorySaveState partyInventory;
 };
 
 bool SaveGameData(SaveData& data, const std::string& filename);

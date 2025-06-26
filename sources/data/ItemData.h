@@ -34,11 +34,19 @@ struct ItemInstance {
     int quantity;   // For stackables
 };
 
+struct Inventory {
+    int id;
+    int capacity;
+    std::vector<int> items;
+};
+
 struct ItemData {
     std::vector<ItemTemplate> templateData;
     std::unordered_map<std::string, int> templateIdToIndex;
     std::vector<std::string> indexToTemplateId;
     std::vector<ItemInstance> instanceData;
+    std::vector<Inventory> inventoryData;
+    int partyInventoryId = -1;
 };
 
 // Enum conversion helpers

@@ -112,3 +112,5 @@ void SetDataInstancePtrs(ItemData* itemDataPtr, WeaponData* weaponDataPtr) {
     itemData = itemDataPtr;
     weaponData = weaponDataPtr;
 }
+
+

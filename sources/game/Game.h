@@ -9,4 +9,8 @@
 
 void CreateGame(GameData &game, const std::string& levelFileName);
 void DestroyGame(GameData &game);
+void StartNewGame(GameData &data);
+void LoadGame(GameData &data);
+void SaveGame(GameData &data);
+
 #endif //SANDBOX_GAME_H

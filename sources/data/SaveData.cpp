@@ -3,6 +3,7 @@
 //
 #include <fstream>
 #include "SaveData.h"
+#include "ItemData.h"
 
 void to_json(nlohmann::json& j, const DoorSaveState& s) {
     j = nlohmann::json{
@@ -69,11 +70,26 @@ void from_json(const nlohmann::json& j, PartyCharacter& c) {
     }
 }
 
+void to_json(nlohmann::json& j, const InventorySaveState& s) {
+    j = nlohmann::json{
+        {"capacity", s.capacity},
+        {"itemTemplateIds", s.itemTemplateIds},
+    };
+}
+
+void from_json(const nlohmann::json& j, InventorySaveState& s) {
+    j.at("capacity").get_to(s.capacity);
+    j.at("itemTemplateIds").get_to(s.itemTemplateIds);
+}
+
 bool SaveGameData(SaveData& data, const std::string& filename) {
     nlohmann::json j;
     j["currentMap"] = data.currentLevel;
     j["party"] = data.party;
     j["levels"] = data.levels;
+    j["partyInventory"] = data.partyInventory;
+
+    //const Inventory& partyInventory = game->
 
     nlohmann::json questsJson;
     for (const auto& pair : data.quests) {
@@ -97,6 +113,7 @@ bool LoadGameData(SaveData& data, const std::string& filename) {
     j.at("currentMap").get_to(data.currentLevel);
     j.at("party").get_to(data.party);
     j.at("levels").get_to(data.levels);
+    j.at("partyInventory").get_to(data.partyInventory);
 
     // Handle QuestSaveState
     const nlohmann::json& nodes = j.at("quests");
