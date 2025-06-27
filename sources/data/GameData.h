@@ -18,6 +18,7 @@
 #include "QuestData.h"
 #include "SettingsData.h"
 #include "ItemData.h"
+#include "UiData.h"
 
 const int gameScreenWidth = 640;
 const int gameScreenHeight = 360;
@@ -34,7 +35,9 @@ enum class GameState {
     LOAD_LEVEL_FROM_SAVE,
     PLAY_LEVEL,
     DIALOGUE,
+    INVENTORY,
 };
+
 
 struct GameData {
     std::vector<int> party;
@@ -53,6 +56,9 @@ struct GameData {
     // global save state
     std::unordered_map<std::string, LevelSaveState> levelState;
     std::unordered_map<std::string, QuestSaveState> questState;
+
+    // ui state
+    UiState ui;
 
     RenderTexture2D levelTarget;
     RenderTexture2D uiTarget;

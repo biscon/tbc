@@ -92,6 +92,7 @@ bool HandlePartySideBarInput(GameData& data, GameEventQueue& eventQueue) {
             if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
                 int charId = data.party[i];
                 TraceLog(LOG_INFO, "Clicked on character: %s", data.charData.name[charId].c_str());
+                PublishOpenInventoryEvent(eventQueue, charId);
                 return true;
             }
         }

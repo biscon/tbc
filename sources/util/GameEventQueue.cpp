@@ -68,3 +68,16 @@ void PublishStartQuestEvent(GameEventQueue &eventQueue, const std::string& quest
     strncpy(event.startQuestEvent.questId, questId.c_str(), sizeof(event.startQuestEvent.questId));
     PublishEvent(eventQueue, event);
 }
+
+void PublishOpenInventoryEvent(GameEventQueue &eventQueue, int charId) {
+    GameEvent event{};
+    event.type = GameEventType::OpenInventory;
+    event.endDialogueEvent.npcId = charId;
+    PublishEvent(eventQueue, event);
+}
+
+void PublishCloseInventoryEvent(GameEventQueue &eventQueue) {
+    GameEvent event{};
+    event.type = GameEventType::CloseInventory;
+    PublishEvent(eventQueue, event);
+}

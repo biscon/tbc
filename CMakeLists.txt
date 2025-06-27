@@ -142,6 +142,10 @@ add_executable(${PROJECT_NAME}
         sources/game/Items.h
         sources/game/PartySideBar.cpp
         sources/game/PartySideBar.h
+        sources/game/Inventory.cpp
+        sources/game/Inventory.h
+        sources/data/UiData.cpp
+        sources/data/UiData.h
 )
 target_sources(${PROJECT_NAME} PRIVATE ${PROJECT_SOURCES})
 target_include_directories(${PROJECT_NAME} PRIVATE ${PROJECT_INCLUDE})

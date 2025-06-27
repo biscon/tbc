@@ -17,6 +17,8 @@ enum class GameEventType {
     InitiateDialogue,
     EndDialogue,
     StartQuest,
+    OpenInventory,
+    CloseInventory,
 };
 
 struct MovePartyEvent {
@@ -45,6 +47,10 @@ struct EndDialogueEvent {
     int npcId;
 };
 
+struct OpenInventoryEvent {
+    int charId;
+};
+
 struct StartQuestEvent {
     char questId[128];
 };
@@ -59,6 +65,7 @@ struct GameEvent {
         InitiateDialogueEvent initiateDialogueEvent;
         EndDialogueEvent endDialogueEvent;
         StartQuestEvent startQuestEvent;
+        OpenInventoryEvent openInventoryEvent;
     };
 };
 
@@ -76,5 +83,7 @@ void PublishExitLevelEvent(GameEventQueue &eventQueue, const std::string& levelF
 void PublishInitiateDialogueEvent(GameEventQueue &eventQueue, int npcId, int dialogueNodeId);
 void PublishEndDialogueEvent(GameEventQueue &eventQueue, int npcId);
 void PublishStartQuestEvent(GameEventQueue &eventQueue, const std::string& questId);
+void PublishOpenInventoryEvent(GameEventQueue &eventQueue, int charId);
+void PublishCloseInventoryEvent(GameEventQueue &eventQueue);
 
 #endif //SANDBOX_GAMEEVENTQUEUE_H

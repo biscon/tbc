@@ -16,6 +16,7 @@
 #include "game/Dialogue.h"
 #include "graphics/Animation.h"
 #include "game/PartySideBar.h"
+#include "game/Inventory.h"
 
 static GameData* game;
 static Level level;
@@ -108,6 +109,18 @@ static void processEvents() {
                 Animation textAnim{};
                 SetupFancyTextAnimation(textAnim, TextFormat("'%s' started", quest.title.c_str()), 300, 2.0f, 0.5f, 0.05f, 1.0f);
                 level.animations.push_back(textAnim);
+                break;
+            }
+            case GameEventType::OpenInventory: {
+                playField.mode = PlayFieldMode::None;
+                game->state = GameState::INVENTORY;
+                game->ui.selectedCharacter = event.openInventoryEvent.charId;
+                InitInventory(*game);
+                break;
+            }
+            case GameEventType::CloseInventory: {
+                playField.mode = PlayFieldMode::Explore;
+                game->state = GameState::PLAY_LEVEL;
                 break;
             }
             default:
@@ -239,6 +252,7 @@ void LevelUpdate(float dt) {
     UpdatePlayField(game->spriteData, game->charData, playField, level, dt);
     UpdateDialogue(*game, dt);
     UpdatePartySideBar(*game, dt);
+    UpdateInventory(*game, dt);
 
     UpdateVisibilityMap(*game, level);
     UpdateVisibilityTexture(level.lighting);
@@ -247,17 +261,18 @@ void LevelUpdate(float dt) {
 
 void LevelHandleInput() {
     processEvents();
-    if(game->state != GameState::DIALOGUE) {
+    if(game->state != GameState::DIALOGUE && game->state != GameState::INVENTORY) {
         handleCameraMovement();
         if(!HandlePartySideBarInput(*game, eventQueue)) {
             HandleInputPlayField(*game, playField, level);
         }
         HandleInputLevelScreen(game->spriteData, game->charData, levelScreen, level);
     } else {
-        HandleDialogueInput(*game, eventQueue);
+        if(game->state == GameState::DIALOGUE) HandleDialogueInput(*game, eventQueue);
+        if(game->state == GameState::INVENTORY) HandleInventoryInput(*game, eventQueue);
     }
 
-    if (IsKeyPressed(KEY_ESCAPE)) {
+    if (IsKeyPressed(KEY_ESCAPE) && (game->state != GameState::INVENTORY)) {
         PopGameMode();
         return;
     }
@@ -316,6 +331,8 @@ void LevelRenderUi() {
     DrawLevelScreen(*game, level, levelScreen, playField);
     RenderPartySideBarUI(*game);
     RenderDialogueUI(*game);
+    if(game->state == GameState::INVENTORY)
+        RenderInventoryUI(*game);
 }
 
 void LevelPreRender() {
