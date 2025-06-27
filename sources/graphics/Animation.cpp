@@ -126,12 +126,13 @@ void SetupVictoryAnimation(SpriteData& spriteData, CharacterData& charData, Anim
     state.movingUp = true;
 }
 
-void SetupFancyTextAnimation(Animation &animation, const char *text, float y, float holdDuration, float initialDelay, float letterPause, float fadeOutDuration) {
+void SetupFancyTextAnimation(Animation &animation, const char *text, int fontSize, float y, float holdDuration, float initialDelay, float letterPause, float fadeOutDuration) {
     animation.type = AnimationType::FancyText;
     animation.time = 0.0f;
     animation.stay = false;
 
     FancyTextAnimationState &state = animation.state.fancyText;
+    state.fontSize = fontSize;
     strncpy(state.text, text, sizeof(state.text));
     state.text[sizeof(state.text) - 1] = '\0';
 

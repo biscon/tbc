@@ -101,6 +101,7 @@ struct FancyTextAnimationState {
     float letterPause;
     float fadeOutDuration;
     float alpha;
+    int fontSize;
 
     int scrambleLength;     // How many characters are currently "scrambled"
     int finalRevealLength;  // How many characters are now real

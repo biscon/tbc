@@ -138,7 +138,7 @@ void RenderInventoryUI(GameData& data) {
         Vector2 size = MeasureTextEx(font, tooltip.c_str(), fontSize, spacing);
         size.x = ceilf(size.x); size.y = ceilf(size.y);
 
-        Rectangle tipRect = {mouse.x + 8, mouse.y + 8, size.x + 4, size.y + 4};
+        Rectangle tipRect = {floorf(mouse.x + 8), ceilf(mouse.y + 8), size.x + 4, size.y + 4};
         DrawRectangleRec(tipRect, Color{15, 15, 15, 200});
         DrawRectangleLinesEx(tipRect, 1, DARKGRAY);
         DrawTextEx(font, tooltip.c_str(), {tipRect.x + 2, tipRect.y + 2}, fontSize, spacing, LIGHTGRAY);

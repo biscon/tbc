@@ -106,16 +106,19 @@ static void processEvents() {
             }
             case GameEventType::StartQuest: {
                 const Quest& quest = game->questData.quests[event.startQuestEvent.questId];
-                Animation textAnim{};
-                SetupFancyTextAnimation(textAnim, TextFormat("'%s' started", quest.title.c_str()), 300, 2.0f, 0.5f, 0.05f, 1.0f);
-                level.animations.push_back(textAnim);
+                Animation textAnim1{};
+                Animation textAnim2{};
+                SetupFancyTextAnimation(textAnim1, "Quest started:", 10, 285, 2.0f, 0.5f, 0.05f, 1.0f);
+                SetupFancyTextAnimation(textAnim2, quest.title.c_str(), 20, 300, 2.0f, 1.0f, 0.05f, 1.0f);
+                level.animations.push_back(textAnim1);
+                level.animations.push_back(textAnim2);
                 break;
             }
             case GameEventType::OpenInventory: {
                 playField.mode = PlayFieldMode::None;
                 game->state = GameState::INVENTORY;
                 game->ui.selectedCharacter = event.openInventoryEvent.charId;
-                InitInventory(*game);
+                //InitInventory(*game);
                 break;
             }
             case GameEventType::CloseInventory: {
@@ -233,6 +236,7 @@ void LevelInit() {
     CreatePlayField(playField, &particleManager, &eventQueue);
 
     InitBloodRendering();
+    InitInventory(*game);
 
 }
 

@@ -306,7 +306,7 @@ static void DisplayTextAnimations(Level &level) {
 
                 DrawText(displayText,
                          50,
-                         (int) state.y, 20,
+                         (int) state.y, state.fontSize,
                          Fade(WHITE, state.alpha));
                 break;
             }

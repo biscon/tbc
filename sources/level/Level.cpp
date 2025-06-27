@@ -297,15 +297,28 @@ void LoadLevel(GameData& data, Level &level, const std::string &filename) {
 
     InitPartySideBar(data);
 
-    Animation anim{};
-    SetupFancyTextAnimation(anim,
-                            TextFormat("Location: %s", level.name.c_str()),
+    Animation anim1{};
+    Animation anim2{};
+
+    SetupFancyTextAnimation(anim1,
+                            "Location:",
+                            10,
+                            285,
+                            2.0f,   // holdDuration
+                            1.0f,     // initialDelay
+                            0.05f,    // letterPause (reveal speed)
+                            1.5f);    // fadeOut
+
+    SetupFancyTextAnimation(anim2,
+                            level.name.c_str(),
+                            20,
                             300,
                             2.0f,   // holdDuration
                             1.5f,     // initialDelay
                             0.05f,    // letterPause (reveal speed)
                             1.5f);    // fadeOut
-    level.animations.push_back(anim);
+    level.animations.push_back(anim1);
+    level.animations.push_back(anim2);
 }
 
 void DestroyLevel(SpriteSheetData& sheetData, Level &level) {
