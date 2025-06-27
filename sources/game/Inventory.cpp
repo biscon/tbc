@@ -7,7 +7,7 @@
 
 static const int separator = 1;
 static const int itemHeightPx = 12;
-static const Rectangle invRect = {100, 50, gameScreenWidth - 200, gameScreenHeight - 100};
+static const Rectangle invRect = {140, 8, gameScreenWidth - 200, gameScreenHeight - 100};
 static const int visibleItems = (int)((invRect.height - 50) / itemHeightPx);
 static const int firstRowOffset = 16;
 static const int rowRightMargin = 20;
@@ -91,7 +91,8 @@ void RenderInventoryUI(GameData& data) {
     float spacing = 1.0f;
 
     DrawRectangleRec(invRect, Color{15, 15, 15, 200});
-    DrawRectangleLinesEx(invRect, 1, DARKGRAY);
+    //DrawRectangleLinesEx(invRect, 1, DARKGRAY);
+    DrawRectangleRoundedLinesEx(invRect, 0.02f, 16, 1.0f, DARKGRAY);
 
     DrawTextEx(font, "Party Inventory", {invRect.x + 5, invRect.y + 6}, fontSize, spacing, WHITE);
 
