@@ -57,8 +57,8 @@ void RenderPartySideBarUI(GameData& data) {
         // Border
         //DrawRectangleLinesEx(slot.rect, 1, slot.hovered ? hoverBorder : borderColor);
 
-        DrawRectangleRounded(slot.rect, 0.1f, 16, portraitColor);
-        DrawRectangleRoundedLinesEx(slot.rect, 0.1f, 16, 1.0f, slot.hovered ? hoverBorder : borderColor);
+        DrawRectangleRounded(slot.rect, 0.1f, 4, portraitColor);
+        DrawRectangleRoundedLinesEx(slot.rect, 0.1f, 4, 1.0f, slot.hovered ? hoverBorder : borderColor);
 
         // Name
         int charId = data.party[i];

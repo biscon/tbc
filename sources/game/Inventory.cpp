@@ -92,7 +92,7 @@ void RenderInventoryUI(GameData& data) {
 
     DrawRectangleRec(invRect, Color{15, 15, 15, 200});
     //DrawRectangleLinesEx(invRect, 1, DARKGRAY);
-    DrawRectangleRoundedLinesEx(invRect, 0.02f, 16, 1.0f, DARKGRAY);
+    DrawRectangleRoundedLinesEx(invRect, 0.02f, 4, 1.0f, DARKGRAY);
 
     DrawTextEx(font, "Party Inventory", {invRect.x + 5, invRect.y + 6}, fontSize, spacing, WHITE);
 
