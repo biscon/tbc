@@ -24,6 +24,7 @@ constexpr Color hoverBorder = YELLOW;
 constexpr Color borderColor = DARKGRAY;
 
 void InitPartySideBar(GameData& data) {
+    data.ui.selectedCharacter = 0;
     sidebarSlots.clear();
 
     int count = static_cast<int>(data.party.size());
@@ -53,15 +54,17 @@ void RenderPartySideBarUI(GameData& data) {
     int count = static_cast<int>(sidebarSlots.size());
     for (int i = 0; i < count; ++i) {
         auto& slot = sidebarSlots[i];
+        int charId = data.party[i];
         //DrawRectangleRec(slot.rect, portraitColor);
         // Border
         //DrawRectangleLinesEx(slot.rect, 1, slot.hovered ? hoverBorder : borderColor);
-
+        bool selected = data.ui.selectedCharacter == charId;
         DrawRectangleRounded(slot.rect, 0.1f, 4, portraitColor);
-        DrawRectangleRoundedLinesEx(slot.rect, 0.1f, 4, 1.0f, slot.hovered ? hoverBorder : borderColor);
+        DrawRectangleRoundedLinesEx(slot.rect, 0.1f, 4, 1.0f,
+                                    selected ? YELLOW : (slot.hovered ? hoverBorder : borderColor));
 
         // Name
-        int charId = data.party[i];
+
         std::string name = data.charData.name[charId];
         Vector2 textDim = MeasureTextEx(data.smallFont1, name.c_str(), textHeight, 1);
 

@@ -273,7 +273,10 @@ void LevelHandleInput() {
         HandleInputLevelScreen(game->spriteData, game->charData, levelScreen, level);
     } else {
         if(game->state == GameState::DIALOGUE) HandleDialogueInput(*game, eventQueue);
-        if(game->state == GameState::INVENTORY) HandleInventoryInput(*game, eventQueue);
+        if(game->state == GameState::INVENTORY) {
+            HandleInventoryInput(*game, eventQueue);
+            HandlePartySideBarInput(*game, eventQueue);
+        }
     }
 
     if (IsKeyPressed(KEY_ESCAPE) && (game->state != GameState::INVENTORY)) {
