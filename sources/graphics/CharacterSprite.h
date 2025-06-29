@@ -32,6 +32,7 @@ void PauseCharacterSpriteAnim(SpriteData& spriteData, CharacterSprite& sprite);
 void StartPausedCharacterSpriteAnim(SpriteData& spriteData, CharacterSprite& sprite, SpriteAnimationType type, bool loop);
 void DrawCharacterSprite(SpriteData& spriteData, CharacterSprite& sprite);
 void DrawCharacterSprite(SpriteData& spriteData, CharacterSprite& sprite, float x, float y);
+void DrawCharacterSpriteScaled(SpriteData& spriteData, CharacterSprite &sprite, float x, float y, float scale);
 void SetCharacterSpriteTint(SpriteData& spriteData, CharacterSprite& sprite, Color tint);
 Color GetCharacterSpriteTint(SpriteData& spriteData, CharacterSprite& sprite);
 void SetCharacterSpriteFrame(SpriteData& spriteData, CharacterSprite& sprite, int frame);

@@ -12,6 +12,7 @@ void InitItemData(GameData& data, const std::string &filename);
 int CreateItem(GameData& data, const std::string& templateId, int quantity);
 int CreateItem(GameData& data, int templateId, int quantity);
 int GetItemTypeTemplateId(GameData& data, int itemId);
+int GetItemTemplateId(GameData& data, int itemId);
 std::string GetItemTemplateIdString(GameData& data, int itemId);
 
 int CreateInventory(GameData& data, int capacity);

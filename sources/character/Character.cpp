@@ -276,3 +276,12 @@ void SetEquippedItem(GameData& data, int charIdx, ItemEquipSlot slot, int itemId
         SetCharacterSpriteWeaponAnimation(data.spriteData, data.charData.sprite[charIdx], data.weaponData.templateData.animationTemplate[tplIdx]);
     }
 }
+
+SpriteAnimationType CharacterOrientationToAnimType(GameData& data, int charId) {
+    switch(data.charData.orientation[charId]) {
+        case Orientation::Up:   return SpriteAnimationType::WalkUp;
+        case Orientation::Down: return SpriteAnimationType::WalkDown;
+        case Orientation::Left: return SpriteAnimationType::WalkLeft;
+        case Orientation::Right: return SpriteAnimationType::WalkRight;
+    }
+}

@@ -96,6 +96,7 @@ struct InventoryUiState {
     bool draggingScrollKnob = false;
     float dragOffsetY = 0;
     std::unordered_map<std::string, Button> buttons;
+    std::unordered_map<std::string, Button> contextButtons;
 };
 
 struct UiState {

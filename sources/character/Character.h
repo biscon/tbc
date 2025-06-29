@@ -29,5 +29,6 @@ CharacterClass StringToClass(const std::string& className);
 CharacterFaction StringToFaction(const std::string& factionName);
 int GetEquippedItem(const GameData& data, int charIdx, ItemEquipSlot slot);
 void SetEquippedItem(GameData& data, int charIdx, ItemEquipSlot slot, int itemIdx);
+SpriteAnimationType CharacterOrientationToAnimType(GameData& data, int charId);
 
 #endif //SANDBOX_CHARACTER_H

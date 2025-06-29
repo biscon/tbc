@@ -59,19 +59,13 @@ void DrawSpriteAnimation(SpriteData& sprite, int player, float x, float y) {
     SpriteAnimationPlayerData& playerData = sprite.player;
 
     int animIdx = playerData.animationIdx[player];
-    /*
-    for(auto& item: spriteData.nameIndexMap) {
-        if(item.second == animIdx) {
-            TraceLog(LOG_INFO, "Attempting to draw anim: %s", item.first.c_str());
-        }
-    }
-    */
-    int spriteSheetIdx = spriteData.spriteSheetIdx[animIdx];
 
     if(animIdx == -1 || spriteData.frames[animIdx].empty()) {
         TraceLog(LOG_INFO, "Roaching out from drawing, empty frames or missing animation");
         return;
     }
+
+    int spriteSheetIdx = spriteData.spriteSheetIdx[animIdx];
 
 
     // Get the current frame index
@@ -98,6 +92,58 @@ void DrawSpriteAnimation(SpriteData& sprite, int player, float x, float y) {
     Vector2 rotationOrigin = {
             spriteData.origin[animIdx].x * renderData.scale.x, // Scaled x origin
             spriteData.origin[animIdx].y * renderData.scale.y  // Scaled y origin
+    };
+
+    // Draw the texture with rotation, scale, and tint
+    DrawTexturePro(
+            sheetData.texture[spriteSheetIdx], // The texture
+            sourceRect,           // The source rectangle
+            destRect,             // The destination rectangle
+            rotationOrigin,       // Rotation origin relative to destRect
+            renderData.rotation,      // The rotation in degrees
+            renderData.tint           // The color tint
+    );
+}
+
+void DrawSpriteAnimationScaled(SpriteData& sprite, int player, float x, float y, float scale) {
+    SpriteSheetData& sheetData = sprite.sheet;
+    SpriteAnimationData& spriteData = sprite.anim;
+    SpriteAnimationPlayerData& playerData = sprite.player;
+
+    int animIdx = playerData.animationIdx[player];
+
+    if(animIdx == -1 || spriteData.frames[animIdx].empty()) {
+        TraceLog(LOG_INFO, "Roaching out from drawing, empty frames or missing animation");
+        return;
+    }
+
+    int spriteSheetIdx = spriteData.spriteSheetIdx[animIdx];
+
+
+    // Get the current frame index
+    int frameIndex = spriteData.frames[animIdx][playerData.animData[player].currentFrame];
+
+    if (frameIndex < 0 || frameIndex >= sheetData.frameRects[spriteSheetIdx].size()) {
+        TraceLog(LOG_INFO, "Roaching out from drawing, cannot find framerect");
+        std::abort();
+        return; // Invalid frame index, skip drawing
+    }
+    Rectangle sourceRect = sheetData.frameRects[spriteSheetIdx][frameIndex];
+    SpriteAnimationPlayerRenderData& renderData = playerData.renderData[player];
+
+    // Calculate destination rectangle without manually applying origin
+    Rectangle destRect = {
+            x,                                // World x position
+            y,                                // World y position
+            sourceRect.width * scale, // Scaled width
+            sourceRect.height * scale // Scaled height
+    };
+
+
+    // Define the rotation origin relative to the sprite space
+    Vector2 rotationOrigin = {
+            spriteData.origin[animIdx].x * scale, // Scaled x origin
+            spriteData.origin[animIdx].y * scale  // Scaled y origin
     };
 
     // Draw the texture with rotation, scale, and tint
@@ -277,17 +323,14 @@ void DrawSpriteAnimationColors(SpriteData& sprite, int player, float x, float y,
     SpriteAnimationPlayerData& playerData = sprite.player;
 
     int animIdx = playerData.animationIdx[player];
-    /*
-    for(auto& item: spriteData.nameIndexMap) {
-        if(item.second == animIdx) {
-            TraceLog(LOG_INFO, "Attempting to draw anim: %s", item.first.c_str());
-        }
+    if(animIdx == -1) {
+        TraceLog(LOG_WARNING, "Cannot draw animIdx -1");
+        return;
     }
-    */
     int spriteSheetIdx = spriteData.spriteSheetIdx[animIdx];
 
-    if(animIdx == -1 || spriteData.frames[animIdx].empty()) {
-        TraceLog(LOG_INFO, "Roaching out from drawing, empty frames or missing animation");
+    if(spriteData.frames[animIdx].empty()) {
+        TraceLog(LOG_WARNING, "Roaching out from drawing, empty frames or missing animation");
         return;
     }
 
@@ -296,7 +339,7 @@ void DrawSpriteAnimationColors(SpriteData& sprite, int player, float x, float y,
     int frameIndex = spriteData.frames[animIdx][playerData.animData[player].currentFrame];
 
     if (frameIndex < 0 || frameIndex >= sheetData.frameRects[spriteSheetIdx].size()) {
-        TraceLog(LOG_INFO, "Roaching out from drawing, cannot find framerect");
+        TraceLog(LOG_WARNING, "Roaching out from drawing, cannot find framerect");
         std::abort();
         return; // Invalid frame index, skip drawing
     }

@@ -83,6 +83,53 @@ void DisplayCharacterStatsFloatingOLD(CharacterData& charData, int character, in
     }
 }
 
+void RenderCharacterStats(CharacterData& charData, int character, int x, int y, int width, Font font) {
+    const float fontSize = 10.0f;
+    const float spacing = 1.0f;
+    const float padding = 0.0f;
+    const float lineHeight = fontSize + 2;
+
+    CharacterStats& stats = charData.stats[character];
+    const std::string& name = charData.name[character];
+
+    // Prepare label-value pairs
+    std::vector<std::pair<std::string, std::string>> lines = {
+            { "Level", TextFormat("%d", stats.level) },
+            { "Health", TextFormat("%d/%d", stats.health, stats.maxHealth) },
+            { "Attack", TextFormat("%d", stats.attack) },
+            { "Defense", TextFormat("%d", stats.defense) },
+            { "Speed", TextFormat("%d", stats.speed) }
+    };
+
+
+    float height = (lines.size() * lineHeight) + 3 * padding;
+
+    Rectangle bg = {
+            (float)x, (float)y,
+            (float) width,
+            height
+    };
+
+
+    //DrawRectangleRoundedLinesEx(bg, 0.1f, 16, 1.0f, DARKGRAY);
+
+    // Stats
+    float lineY = bg.y;
+    for (const auto& [label, value] : lines) {
+        Vector2 labelPos = { roundf(bg.x + padding), roundf(lineY) };
+        Vector2 valuePos = {
+                roundf(bg.x + bg.width - padding - MeasureTextEx(font, value.c_str(), fontSize, spacing).x),
+                roundf(lineY)
+        };
+        DrawTextEx(font, label.c_str(), labelPos, fontSize, spacing, LIGHTGRAY);
+        DrawTextEx(font, value.c_str(), valuePos, fontSize, spacing, LIGHTGRAY);
+        lineY += lineHeight;
+    }
+}
+
+
+
+
 
 void DisplayCharacterStatsFloating(CharacterData& charData, int character, int x, int y, bool isPlayer, Font font) {
     const float fontSize = 5.0f;

@@ -161,6 +161,12 @@ void DrawCharacterSprite(SpriteData& spriteData, CharacterSprite &sprite, float 
         DrawSpriteAnimation(spriteData, sprite.weaponPlayer, x, y);
 }
 
+void DrawCharacterSpriteScaled(SpriteData& spriteData, CharacterSprite &sprite, float x, float y, float scale) {
+    DrawSpriteAnimationScaled(spriteData, sprite.bodyPlayer, x, y, scale);
+    if(sprite.displayWeapon)
+        DrawSpriteAnimationScaled(spriteData, sprite.weaponPlayer, x, y, scale);
+}
+
 void DrawCharacterSpriteColors(SpriteData& spriteData, CharacterSprite &sprite, float x, float y, Color c1, Color c2, Color c3, Color c4) {
     DrawSpriteAnimationColors(spriteData, sprite.bodyPlayer, x, y, c1, c2, c3, c4);
     if(sprite.displayWeapon)

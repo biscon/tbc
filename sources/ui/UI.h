@@ -10,7 +10,7 @@
 
 void DrawStatusText(const char* text, Color color, int y, int size);
 void DrawStatusTextBg(const char* text, Color color, int y, int size, Font font);
-//void DisplayCharacterStatsFloating(CharacterData& charData, int character, int x, int y, bool isPlayer);
+void RenderCharacterStats(CharacterData& charData, int character, int x, int y, int width, Font font);
 void DisplayCharacterStatsFloating(CharacterData& charData, int character, int x, int y, bool isPlayer, Font font);
 void DrawSpeechBubble(float x, float y, const char *text, float alpha);
 Color GetDamageColor(int dmg, int attackerAttack);

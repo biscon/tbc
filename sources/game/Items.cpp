@@ -43,9 +43,11 @@ void InitItemData(GameData& data, const std::string &filename) {
     TraceLog(LOG_INFO, "Loaded %zu item templates from %s", itemData.templateData.size(), filename.c_str());
     itemData.partyInventoryId = CreateInventory(data, 100);
     for(int i = 0; i < 30; i++) {
-        itemData.inventoryData[itemData.partyInventoryId].items.push_back(CreateItem(data, "item_weapon_staff", 1));
-        itemData.inventoryData[itemData.partyInventoryId].items.push_back(CreateItem(data, "item_weapon_bow", 1));
+
     }
+    itemData.inventoryData[itemData.partyInventoryId].items.push_back(CreateItem(data, "item_weapon_staff", 1));
+    itemData.inventoryData[itemData.partyInventoryId].items.push_back(CreateItem(data, "item_weapon_bow", 1));
+    itemData.inventoryData[itemData.partyInventoryId].items.push_back(CreateItem(data, "item_weapon_sword", 1));
 }
 
 int CreateItem(GameData& data, const std::string& templateId, int quantity) {
@@ -73,6 +75,11 @@ int CreateItem(GameData& data, int templateId, int quantity) {
 int GetItemTypeTemplateId(GameData &data, int itemId) {
     int templateId = data.itemData.instanceData.at(itemId).templateId;
     return data.itemData.templateData[templateId].typeTemplateId;
+}
+
+int GetItemTemplateId(GameData &data, int itemId) {
+    int templateId = data.itemData.instanceData.at(itemId).templateId;
+    return templateId;
 }
 
 std::string GetItemTemplateIdString(GameData& data, int itemId) {
