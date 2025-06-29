@@ -14,6 +14,8 @@ static const int rowRightMargin = 20;
 static const Rectangle scrollBarRect = {invRect.x + invRect.width - 14, invRect.y + firstRowOffset, 10, invRect.height - firstRowOffset - 24};
 static const int scrollbarMinHeight = 16;
 
+static const Rectangle charInfoRect = {140, 8, gameScreenWidth - 200, gameScreenHeight - 100};
+
 void InitInventory(GameData& data) {
     data.ui.inventory.scrollOffset = 0;
     data.ui.inventory.selectedIndex = -1;
@@ -83,6 +85,11 @@ static void RenderScrollBar(GameData& data, int maxItems) {
         DrawRectangleRec(knobRect, DARKGRAY);
         DrawRectangleLinesEx(knobRect, 1, data.ui.inventory.draggingScrollKnob ? YELLOW : LIGHTGRAY);
     }
+}
+
+static void RenderCharacterInfo(GameData& data) {
+    int charId = data.party[data.ui.selectedCharacter];
+
 }
 
 void RenderInventoryUI(GameData& data) {
