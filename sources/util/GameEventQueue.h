@@ -19,6 +19,7 @@ enum class GameEventType {
     StartQuest,
     OpenInventory,
     CloseInventory,
+    OpenMenu,
 };
 
 struct MovePartyEvent {
@@ -85,5 +86,6 @@ void PublishEndDialogueEvent(GameEventQueue &eventQueue, int npcId);
 void PublishStartQuestEvent(GameEventQueue &eventQueue, const std::string& questId);
 void PublishOpenInventoryEvent(GameEventQueue &eventQueue, int charId);
 void PublishCloseInventoryEvent(GameEventQueue &eventQueue);
+void PublishOpenMenuEvent(GameEventQueue &eventQueue);
 
 #endif //SANDBOX_GAMEEVENTQUEUE_H

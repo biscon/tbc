@@ -4,6 +4,7 @@
 
 #include "Inventory.h"
 #include "raymath.h"
+#include "ui/UI.h"
 
 static const int separator = 1;
 static const int itemHeightPx = 12;
@@ -14,7 +15,7 @@ static const int rowRightMargin = 20;
 static const Rectangle scrollBarRect = {invRect.x + invRect.width - 14, invRect.y + firstRowOffset, 10, invRect.height - firstRowOffset - 24};
 static const int scrollbarMinHeight = 16;
 
-static const Rectangle charInfoRect = {140, 8, gameScreenWidth - 200, gameScreenHeight - 100};
+static const Rectangle charInfoRect = {8, 8, 125, 100};
 
 void InitInventory(GameData& data) {
     data.ui.inventory.scrollOffset = 0;
@@ -22,6 +23,14 @@ void InitInventory(GameData& data) {
     data.ui.inventory.hoveredIndex = -1;
     data.ui.inventory.draggingScrollKnob = false;
     data.ui.inventory.dragOffsetY = 0;
+
+    data.ui.inventory.buttons.clear();
+    Button closeButton{};
+    closeButton.label = "Close";
+    closeButton.region = CreateClickRegion({invRect.x + invRect.width - 40 - 5, invRect.y + invRect.height - 18, 40, 11});
+    closeButton.enabled = true;
+    closeButton.hovered = false;
+    data.ui.inventory.buttons["close"] = closeButton;
 }
 
 void UpdateInventory(GameData& data, float dt) {
@@ -89,7 +98,8 @@ static void RenderScrollBar(GameData& data, int maxItems) {
 
 static void RenderCharacterInfo(GameData& data) {
     int charId = data.party[data.ui.selectedCharacter];
-
+    DrawRectangleRec(charInfoRect, Color{15, 15, 15, 200});
+    DrawRectangleRoundedLinesEx(charInfoRect, 0.03f, 4, 1.0f, DARKGRAY);
 }
 
 void RenderInventoryUI(GameData& data) {
@@ -98,7 +108,6 @@ void RenderInventoryUI(GameData& data) {
     float spacing = 1.0f;
 
     DrawRectangleRec(invRect, Color{15, 15, 15, 200});
-    //DrawRectangleLinesEx(invRect, 1, DARKGRAY);
     DrawRectangleRoundedLinesEx(invRect, 0.02f, 4, 1.0f, DARKGRAY);
 
     DrawTextEx(font, "Party Inventory", {invRect.x + 5, invRect.y + 6}, fontSize, spacing, WHITE);
@@ -135,7 +144,10 @@ void RenderInventoryUI(GameData& data) {
     }
 
     RenderScrollBar(data, maxItems);
+    RenderButtons(data.ui.inventory.buttons, data.smallFont1, 5.0f);
+    RenderCharacterInfo(data);
 
+    // Render tooltips
     if (data.ui.inventory.hoveredIndex >= 0 && data.ui.inventory.hoveredIndex < (int)partyInventory.items.size()) {
         int itemId = partyInventory.items.at(data.ui.inventory.hoveredIndex);
         ItemInstance& inst = data.itemData.instanceData[itemId];
@@ -175,6 +187,10 @@ bool HandleInventoryInput(GameData& data, GameEventQueue& eventQueue) {
             rowY += (float) (itemHeightPx + separator);
         }
     }
-
+    HandleInputButtons(data.ui.inventory.buttons);
+    if(data.ui.inventory.buttons["close"].region.ConsumeClick()) {
+        data.ui.inventory.buttons["close"].hovered = false;
+        PublishCloseInventoryEvent(eventQueue);
+    }
     return true;
 }

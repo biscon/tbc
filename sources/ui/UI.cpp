@@ -6,6 +6,8 @@
 #include "raymath.h"
 #include "data/GameData.h"
 
+static const Color bgColor = Color{15, 15, 15, 200};
+
 void DrawStatusText(const char* text, Color color, int y, int size) {
     DrawText(text, gameScreenHalfWidth - (MeasureText(text, size) / 2), y, size, color);
 }
@@ -240,4 +242,61 @@ Color GetDamageColor(int dmg, int attackerAttack) {
                 255
         };
     }
+}
+
+void RenderButtons(const std::unordered_map<std::string, Button> &buttons, const Font& font, float fontSize) {
+    for(const auto& entry : buttons) {
+        auto& button = entry.second;
+        DrawRectangleRounded(button.region.rect, 0.30f, 4, bgColor);
+        DrawRectangleRoundedLinesEx(button.region.rect, 0.30f, 4, 1.0f, button.hovered ? WHITE : DARKGRAY);
+        Vector2 textDim = MeasureTextEx(font, button.label.c_str(), 5, 1);
+        Vector2 pos = {
+                roundf(button.region.rect.x + (button.region.rect.width / 2.0f) - (textDim.x / 2.0f)),
+                floorf(button.region.rect.y + 3.0f)
+        };
+        DrawTextEx(font, button.label.c_str(), pos, fontSize, 1, button.hovered ? WHITE : GRAY);
+    }
+}
+
+bool HandleInputButtons(std::unordered_map<std::string, Button> &buttons) {
+    Vector2 mouse = GetMousePosition();
+    bool anyHovered = false;
+    for (auto& entry : buttons) {
+        auto& button = entry.second;
+        button.hovered = CheckCollisionPointRec(mouse, button.region.rect);
+        if(button.hovered) {
+            anyHovered = true;
+        }
+        button.region.Update(mouse);
+    }
+    return anyHovered;
+}
+
+void DrawRectangleCorners(Rectangle& rect, Color color, int cornerSize) {
+    int x = (int) rect.x;
+    int y = (int) rect.y;
+    int w = (int) rect.width;
+    int h = (int) rect.height;
+
+    int right = x + w;
+    int bottom = y + h;
+
+    // Top-left
+    DrawLine(x+1, y, x + cornerSize, y, color);       // horizontal
+    DrawLine(x+1, y+1, x+1, y + cornerSize, color);       // vertical
+
+
+    // Top-right
+    DrawLine(right - cornerSize, y, right-1, y, color);      // horizontal
+    DrawLine(right, y+1, right, y + cornerSize, color);      // vertical
+
+
+    // Bottom-left
+    DrawLine(x+1, bottom -1 , x + cornerSize, bottom - 1, color);    // horizontal
+    DrawLine(x+1, bottom - cornerSize, x + 1, bottom-1, color);    // vertical
+
+
+    // Bottom-right
+    DrawLine(right - cornerSize, bottom - 1, right-1, bottom - 1, color);  // horizontal
+    DrawLine(right, bottom - cornerSize, right, bottom-1, color);  // vertical
 }

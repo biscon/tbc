@@ -81,3 +81,9 @@ void PublishCloseInventoryEvent(GameEventQueue &eventQueue) {
     event.type = GameEventType::CloseInventory;
     PublishEvent(eventQueue, event);
 }
+
+void PublishOpenMenuEvent(GameEventQueue &eventQueue) {
+    GameEvent event{};
+    event.type = GameEventType::OpenMenu;
+    PublishEvent(eventQueue, event);
+}

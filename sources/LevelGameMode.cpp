@@ -10,7 +10,6 @@
 #include "level/LevelScreen.h"
 #include "graphics/BloodPool.h"
 #include "rcamera.h"
-#include "raymath.h"
 #include "util/GameEventQueue.h"
 #include "level/CombatEngine.h"
 #include "game/Dialogue.h"
@@ -23,16 +22,17 @@ static Level level;
 static LevelScreen levelScreen;
 static ParticleManager particleManager;
 static PlayField playField{};
-const Color BACKGROUND_GREY = Color{15, 15, 15, 255};
 static GameEventQueue eventQueue;
 
 static void moveParty(Vector2i target) {
     TraceLog(LOG_INFO, "MoveParty event,target: %d,%d", target.x, target.y);
     playField.activeMoves.clear();
-    MoveCharacter(game->spriteData, game->charData, playField, level, level.partyCharacters[0], target);
+    MoveCharacter(game->spriteData, game->charData, playField, level, game->ui.selectedCharacter, target);
     // move the rest partially
-    for(int i = 1; i < (int)level.partyCharacters.size(); i++) {
-        MoveCharacterPartial(game->spriteData, game->charData, playField, level, level.partyCharacters[i], target);
+    for(int i = 0; i < (int)level.partyCharacters.size(); i++) {
+        if(level.partyCharacters[i] != game->ui.selectedCharacter) {
+            MoveCharacterPartial(game->spriteData, game->charData, playField, level, level.partyCharacters[i], target);
+        }
     }
 }
 
@@ -124,6 +124,10 @@ static void processEvents() {
             case GameEventType::CloseInventory: {
                 playField.mode = PlayFieldMode::Explore;
                 game->state = GameState::PLAY_LEVEL;
+                break;
+            }
+            case GameEventType::OpenMenu: {
+                PopGameMode();
                 break;
             }
             default:

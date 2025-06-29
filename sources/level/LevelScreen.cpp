@@ -553,6 +553,26 @@ static void DrawSelectActionHighlight(GameData& data, Level &level, PlayField &p
     }
 }
 
+static void RenderActiveCharacterIndicator(GameData& data, float alpha) {
+    auto& sprite = data.charData.sprite[data.ui.selectedCharacter];
+    Vector2 pos = GetCharacterSpritePos(data.spriteData, sprite);
+    if(sprite.bodyPlayer == -1) {
+        return;
+    }
+    SpriteAnimationPlayerRenderData& renderData = data.spriteData.player.renderData[sprite.bodyPlayer];
+    int animIdx = data.spriteData.player.animationIdx[sprite.bodyPlayer];
+    Vector2 origin = data.spriteData.anim.origin[animIdx];
+
+    Rectangle rect = {pos.x - origin.x + 6, pos.y - origin.y + 7, 19, 25};
+
+    //DrawRectangleLinesEx(rect, 1.0f, ColorAlpha(WHITE, Clamp(alpha - 0.5f, 0.0f, 1.0f)));
+    //DrawRectangleLinesEx(rect, 1.0f, ColorAlpha(WHITE, 0.5f));
+    //DrawRectangleCorners(rect, YELLOW, 4);
+    DrawRectangleCorners(rect, ColorAlpha(YELLOW, alpha), 4);
+
+
+}
+
 void DrawLevelScreen(GameData& data, Level &level, LevelScreen &levelScreen, PlayField &playField) {
     SpriteData& spriteData = data.spriteData;
     CharacterData& charData = data.charData;
@@ -561,6 +581,7 @@ void DrawLevelScreen(GameData& data, Level &level, LevelScreen &levelScreen, Pla
     DrawSelectActionHighlight(data, level, playField);
     if(playField.mode == PlayFieldMode::Explore) {
         DrawTileSelection(playField, level);
+        RenderActiveCharacterIndicator(data, playField.highlightAlpha);
     } else {
         DrawPathAndSelection(spriteData, charData, playField, level);
     }
@@ -576,7 +597,7 @@ void DrawLevelScreen(GameData& data, Level &level, LevelScreen &levelScreen, Pla
         std::string text = "Victory!";
         // Draw the enemy selection UI
         DrawText(text.c_str(), gameScreenHalfWidth - (MeasureText(text.c_str(), 20) / 2), 10, 20, WHITE);
-        if (GuiButton((Rectangle) {gameScreenHalfWidthF - 50, 340, 100, 20}, "End Battle")) {
+        if (GuiButton((Rectangle) {gameScreenHalfWidthF - 50, 330, 100, 20}, "End Battle")) {
             PublishEndCombatEvent(*levelScreen.eventQueue, true);
         }
     }
@@ -584,7 +605,7 @@ void DrawLevelScreen(GameData& data, Level &level, LevelScreen &levelScreen, Pla
         std::string text = "Defeat!";
         // Draw the enemy selection UI
         DrawText(text.c_str(), gameScreenHalfWidth - (MeasureText(text.c_str(), 20) / 2), 10, 20, WHITE);
-        if (GuiButton((Rectangle) {gameScreenHalfWidthF - 50, 340, 100, 20}, "End Battle")) {
+        if (GuiButton((Rectangle) {gameScreenHalfWidthF - 50, 330, 100, 20}, "End Battle")) {
             PublishEndCombatEvent(*levelScreen.eventQueue, false);
         }
     }
