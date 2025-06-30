@@ -14,7 +14,7 @@
 #include "character/Character.h"
 #include "util/StringUtil.h"
 #include "graphics/Animation.h"
-#include "game/PartySideBar.h"
+#include "ui/PartySideBar.h"
 
 using json = nlohmann::json;
 

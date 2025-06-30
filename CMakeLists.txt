@@ -121,8 +121,8 @@ add_executable(${PROJECT_NAME}
         sources/data/DialogueData.h
         sources/data/QuestData.cpp
         sources/data/QuestData.h
-        sources/game/Dialogue.cpp
-        sources/game/Dialogue.h
+        sources/ui/Dialogue.cpp
+        sources/ui/Dialogue.h
         sources/game/Quest.cpp
         sources/game/Quest.h
         sources/game/Settings.cpp
@@ -140,10 +140,10 @@ add_executable(${PROJECT_NAME}
         sources/data/ItemData.h
         sources/game/Items.cpp
         sources/game/Items.h
-        sources/game/PartySideBar.cpp
-        sources/game/PartySideBar.h
-        sources/game/Inventory.cpp
-        sources/game/Inventory.h
+        sources/ui/PartySideBar.cpp
+        sources/ui/PartySideBar.h
+        sources/ui/Inventory.cpp
+        sources/ui/Inventory.h
         sources/data/UiData.cpp
         sources/data/UiData.h
 )

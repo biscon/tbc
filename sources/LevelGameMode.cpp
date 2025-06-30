@@ -12,10 +12,10 @@
 #include "rcamera.h"
 #include "util/GameEventQueue.h"
 #include "level/CombatEngine.h"
-#include "game/Dialogue.h"
+#include "ui/Dialogue.h"
 #include "graphics/Animation.h"
-#include "game/PartySideBar.h"
-#include "game/Inventory.h"
+#include "ui/PartySideBar.h"
+#include "ui/Inventory.h"
 
 static GameData* game;
 static Level level;

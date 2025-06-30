@@ -5,7 +5,7 @@
 #include "Inventory.h"
 #include "raymath.h"
 #include "ui/UI.h"
-#include "Items.h"
+#include "game/Items.h"
 
 static const int separator = 1;
 static const int itemHeightPx = 12;

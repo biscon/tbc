@@ -9,7 +9,7 @@
 #include "MenuGameMode.h"
 #include "game/Game.h"
 #include "character/Npc.h"
-#include "game/Dialogue.h"
+#include "ui/Dialogue.h"
 #include "game/Quest.h"
 #include "game/Settings.h"
 #include "game/Items.h"
