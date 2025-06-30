@@ -20,14 +20,13 @@
 #include "ai/PathFinding.h"
 #include <cassert>
 
-void CreateLevelScreen(LevelScreen &levelScreen, GameEventQueue* eventQueue) {
-    levelScreen.actionIconScrollIndex = 0;
-    levelScreen.showActionBarTitle = true;
-    levelScreen.eventQueue = eventQueue;
-    levelScreen.floatingStatsCharacter = -1;
+void CreateLevelScreen(GameData& data) {
+    data.ui.actionBar.actionIconScrollIndex = 0;
+    data.ui.actionBar.showActionBarTitle = true;
+    data.ui.playField.floatingStatsCharacter = -1;
 }
 
-void DestroyLevelScreen(LevelScreen &levelScreen) {
+void DestroyLevelScreen(GameData& data) {
 
 }
 
@@ -45,7 +44,7 @@ static bool IsCharacterVisible(Level &combat, int character) {
     return true;
 }
 
-static bool DrawActionIcon(float x, float y, ActionIcon &actionIcon, LevelScreen &uiState, Font font) {
+static bool DrawActionIcon(GameData& data, float x, float y, ActionIcon &actionIcon, Font font) {
     Vector2 mousePos = GetMousePosition();
     Rectangle iconRect = {x, y, 24, 24};
     static const Color bgColor = Color{15, 15, 15, 200};
@@ -57,7 +56,7 @@ static bool DrawActionIcon(float x, float y, ActionIcon &actionIcon, LevelScreen
     };
 
     if (CheckCollisionPointRec(mousePos, iconRect) && !actionIcon.disabled) {
-        uiState.showActionBarTitle = false;
+        data.ui.actionBar.showActionBarTitle = false;
         DrawStatusTextBg(actionIcon.description, WHITE, 318, 5, font);
         DrawRectangleRec(iconRect, bgColor);
         DrawRectangleLinesEx(iconRect, 1, YELLOW);
@@ -98,7 +97,10 @@ static bool DrawActionIcon(float x, float y, ActionIcon &actionIcon, LevelScreen
     return false;
 }
 
-static void DisplayActionUI(SpriteData& spriteData, CharacterData& charData, Level &combat, LevelScreen &uiState, PlayField &gridState, Font font) {
+static void DisplayActionUI(GameData& data, Level &combat, PlayField &gridState, Font font) {
+    SpriteData& spriteData = data.spriteData;
+    CharacterData& charData = data.charData;
+
     float iconWidth = 24;
     float iconHeight = 24;
     int visibleIcons = 10;
@@ -151,7 +153,7 @@ static void DisplayActionUI(SpriteData& spriteData, CharacterData& charData, Lev
         actionIcons.push_back(icon);
     }
 
-    uiState.showActionBarTitle = true;
+    data.ui.actionBar.showActionBarTitle = true;
 
     // Draw 14 action icons 32x32 in a row, no spacing
 
@@ -160,11 +162,11 @@ static void DisplayActionUI(SpriteData& spriteData, CharacterData& charData, Lev
             break;
         }
 
-        if (DrawActionIcon(iconX, iconY, actionIcons[uiState.actionIconScrollIndex + i], uiState, font)) {
+        if (DrawActionIcon(data, iconX, iconY, actionIcons[data.ui.actionBar.actionIconScrollIndex + i], font)) {
             PlaySoundEffect(SoundEffectType::Select);
             // action icon clicked
-            TraceLog(LOG_INFO, "Action icon clicked: %s", actionIcons[uiState.actionIconScrollIndex + i].text);
-            if (i + uiState.actionIconScrollIndex == 0) {
+            TraceLog(LOG_INFO, "Action icon clicked: %s", actionIcons[data.ui.actionBar.actionIconScrollIndex + i].text);
+            if (i + data.ui.actionBar.actionIconScrollIndex == 0) {
                 // Move button pressed
                 combat.turnState = TurnState::Waiting;
                 combat.waitTime = 0.15f;
@@ -172,7 +174,7 @@ static void DisplayActionUI(SpriteData& spriteData, CharacterData& charData, Lev
                 gridState.mode = PlayFieldMode::SelectingTile;
                 break;
             }
-            if (i + uiState.actionIconScrollIndex == 1) {
+            if (i + data.ui.actionBar.actionIconScrollIndex == 1) {
                 // Attack button pressed
                 combat.turnState = TurnState::Waiting;
                 combat.waitTime = 0.15f;
@@ -180,7 +182,7 @@ static void DisplayActionUI(SpriteData& spriteData, CharacterData& charData, Lev
                 gridState.mode = PlayFieldMode::SelectingEnemyTarget;
                 break;
             }
-            if (i + uiState.actionIconScrollIndex == 2) {
+            if (i + data.ui.actionBar.actionIconScrollIndex == 2) {
                 // Defend button pressed
                 combat.turnState = TurnState::EndTurn;
                 AssignStatusEffectAllowStacking(charData.statusEffects[combat.currentCharacter], StatusEffectType::DamageReduction, 1, 0.5f);
@@ -191,16 +193,16 @@ static void DisplayActionUI(SpriteData& spriteData, CharacterData& charData, Lev
                 combat.animations.push_back(anim);
                 break;
             }
-            if (i + uiState.actionIconScrollIndex == 3) {
+            if (i + data.ui.actionBar.actionIconScrollIndex == 3) {
                 // End button pressed
                 combat.turnState = TurnState::EndTurn;
                 break;
             }
-            if (i + uiState.actionIconScrollIndex > 3) {
+            if (i + data.ui.actionBar.actionIconScrollIndex > 3) {
                 // Skill button pressed
                 combat.turnState = TurnState::Waiting;
                 combat.waitTime = 0.25f;
-                combat.selectedSkill = actionIcons[uiState.actionIconScrollIndex + i].skill;
+                combat.selectedSkill = actionIcons[data.ui.actionBar.actionIconScrollIndex + i].skill;
                 if (combat.selectedSkill->noTarget) {
                     combat.nextState = TurnState::UseSkill;
                     combat.selectedCharacter = -1;
@@ -214,27 +216,27 @@ static void DisplayActionUI(SpriteData& spriteData, CharacterData& charData, Lev
         iconX += iconWidth + spacing;
     }
 
-    if (uiState.showActionBarTitle) {
+    if (data.ui.actionBar.showActionBarTitle) {
         DrawStatusTextBg("Select Action", WHITE, 318, 5, font);
     }
 
     if (CheckCollisionPointTriangle(GetMousePosition(), scrollRight[0], scrollRight[1], scrollRight[2]) &&
         IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
-        uiState.actionIconScrollIndex++;
+        data.ui.actionBar.actionIconScrollIndex++;
     }
     if (CheckCollisionPointTriangle(GetMousePosition(), scrollLeft[0], scrollLeft[1], scrollLeft[2]) &&
         IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
-        uiState.actionIconScrollIndex--;
+        data.ui.actionBar.actionIconScrollIndex--;
     }
     // clip scroll index
-    if (uiState.actionIconScrollIndex < 0) {
-        uiState.actionIconScrollIndex = 0;
+    if (data.ui.actionBar.actionIconScrollIndex < 0) {
+        data.ui.actionBar.actionIconScrollIndex = 0;
     }
-    if (uiState.actionIconScrollIndex > actionIcons.size() - visibleIcons) {
-        uiState.actionIconScrollIndex = (int) actionIcons.size() - visibleIcons;
+    if (data.ui.actionBar.actionIconScrollIndex > actionIcons.size() - visibleIcons) {
+        data.ui.actionBar.actionIconScrollIndex = (int) actionIcons.size() - visibleIcons;
     }
     if (actionIcons.size() <= visibleIcons) {
-        uiState.actionIconScrollIndex = 0;
+        data.ui.actionBar.actionIconScrollIndex = 0;
     }
 }
 
@@ -540,7 +542,7 @@ static void DrawTileSelection(PlayField &playField, Level &level) {
 static void DrawSelectActionHighlight(GameData& data, Level &level, PlayField &playField) {
     // Draw a highlight for the current character if not moving
     if (level.currentCharacter != -1 && (level.turnState == TurnState::SelectAction || level.turnState == TurnState::SelectEnemy)) {
-        Vector2 charPos = GetAnimatedCharPos(data.spriteData, data.charData, level, level.currentCharacter);
+        Vector2 charPos = GetAnimatedCharPos(data, level, level.currentCharacter);
         Color outlineColor = Fade(YELLOW, playField.highlightAlpha);
         DrawRectangleLinesEx(
                 Rectangle{
@@ -573,7 +575,7 @@ static void RenderActiveCharacterIndicator(GameData& data, float alpha) {
 
 }
 
-void DrawLevelScreen(GameData& data, Level &level, LevelScreen &levelScreen, PlayField &playField) {
+void DrawLevelScreen(GameData& data, Level &level, PlayField &playField) {
     SpriteData& spriteData = data.spriteData;
     CharacterData& charData = data.charData;
 
@@ -591,14 +593,14 @@ void DrawLevelScreen(GameData& data, Level &level, LevelScreen &levelScreen, Pla
 
 
     if (level.turnState == TurnState::SelectAction) {
-        DisplayActionUI(spriteData, charData, level, levelScreen, playField, data.smallFont1);
+        DisplayActionUI(data, level, playField, data.smallFont1);
     }
     if (level.turnState == TurnState::Victory) {
         std::string text = "Victory!";
         // Draw the enemy selection UI
         DrawText(text.c_str(), gameScreenHalfWidth - (MeasureText(text.c_str(), 20) / 2), 10, 20, WHITE);
         if (GuiButton((Rectangle) {gameScreenHalfWidthF - 50, 330, 100, 20}, "End Battle")) {
-            PublishEndCombatEvent(*levelScreen.eventQueue, true);
+            PublishEndCombatEvent(data.ui.eventQueue, true);
         }
     }
     if (level.turnState == TurnState::Defeat) {
@@ -606,20 +608,21 @@ void DrawLevelScreen(GameData& data, Level &level, LevelScreen &levelScreen, Pla
         // Draw the enemy selection UI
         DrawText(text.c_str(), gameScreenHalfWidth - (MeasureText(text.c_str(), 20) / 2), 10, 20, WHITE);
         if (GuiButton((Rectangle) {gameScreenHalfWidthF - 50, 330, 100, 20}, "End Battle")) {
-            PublishEndCombatEvent(*levelScreen.eventQueue, false);
+            PublishEndCombatEvent(data.ui.eventQueue, false);
         }
     }
 
     DisplayTextAnimations(level);
 
-    if (data.state != GameState::DIALOGUE && levelScreen.floatingStatsCharacter != -1 && (level.turnState == TurnState::None || level.turnState == TurnState::SelectAction ||
+    int statsCharId = data.ui.playField.floatingStatsCharacter;
+    if (data.state != GameState::DIALOGUE && statsCharId != -1 && (level.turnState == TurnState::None || level.turnState == TurnState::SelectAction ||
                                                         level.turnState == TurnState::SelectEnemy || level.turnState == TurnState::SelectDestination)) {
-        float x = GetCharacterSpritePosX(spriteData, charData.sprite[levelScreen.floatingStatsCharacter]);
-        float y = GetCharacterSpritePosY(spriteData, charData.sprite[levelScreen.floatingStatsCharacter]);
+        float x = GetCharacterSpritePosX(spriteData, charData.sprite[statsCharId]);
+        float y = GetCharacterSpritePosY(spriteData, charData.sprite[statsCharId]);
         // to screen space
         Vector2 screenPos = GetWorldToScreen2D(Vector2{x, y}, level.camera.camera);
-        DisplayCharacterStatsFloating(charData, levelScreen.floatingStatsCharacter, (int) screenPos.x - 10, (int) screenPos.y + 12,
-                                      IsPlayerCharacter(charData, levelScreen.floatingStatsCharacter), data.smallFont1);
+        DisplayCharacterStatsFloating(charData, statsCharId, (int) screenPos.x - 10, (int) screenPos.y + 12,
+                                      IsPlayerCharacter(charData, statsCharId), data.smallFont1);
     }
     // Display hint text
     if(!playField.hintText.empty()) {
@@ -642,30 +645,30 @@ static void UpdateAnimations(SpriteData& spriteData, CharacterData& charData, Le
     );
 }
 
-void UpdateLevelScreen(SpriteData& spriteData, CharacterData& charData, Level &level, LevelScreen &levelScreen, float dt) {
-    UpdateAnimations(spriteData, charData, level, dt);
+void UpdateLevelScreen(GameData& data, Level &level, float dt) {
+    UpdateAnimations(data.spriteData, data.charData, level, dt);
 }
 
-void HandleInputLevelScreen(SpriteData& spriteData, CharacterData& charData, LevelScreen &levelScreen, Level &level) {
+void HandleInputLevelScreen(GameData& data, Level &level) {
     // get mouse position
-    levelScreen.floatingStatsCharacter = -1;
+    data.ui.playField.floatingStatsCharacter = -1;
     Vector2 mousePos = GetScreenToWorld2D(GetMousePosition(), level.camera.camera);
     Vector2 gridPos = PixelToGridPosition(mousePos.x, mousePos.y);
     // check if mouse is over character
     for (auto &character: level.allCharacters) {
         // skip dead
-        if (charData.stats[character].health <= 0) {
+        if (data.charData.stats[character].health <= 0) {
             continue;
         }
 
         // don't show floating stats for characters out of LoS
-        if(!HasLineOfSightToParty(spriteData, charData, level, character))
+        if(!HasLineOfSightToParty(data.spriteData, data.charData, level, character))
             continue;
 
-        Vector2 gridPosCharacter = PixelToGridPosition(GetCharacterSpritePosX(spriteData, charData.sprite[character]),
-                                                       GetCharacterSpritePosY(spriteData, charData.sprite[character]));
+        Vector2 gridPosCharacter = PixelToGridPosition(GetCharacterSpritePosX(data.spriteData, data.charData.sprite[character]),
+                                                       GetCharacterSpritePosY(data.spriteData, data.charData.sprite[character]));
         if ((int) gridPosCharacter.x == (int) gridPos.x && (int) gridPosCharacter.y == (int) gridPos.y) {
-            levelScreen.floatingStatsCharacter = character;
+            data.ui.playField.floatingStatsCharacter = character;
         }
     }
 }

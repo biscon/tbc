@@ -253,9 +253,9 @@ static void EquipSelectedItem(GameData& data) {
     }
 }
 
-bool HandleInventoryInput(GameData& data, GameEventQueue& eventQueue) {
+bool HandleInventoryInput(GameData& data) {
     if (IsKeyPressed(KEY_ESCAPE)) {
-        PublishCloseInventoryEvent(eventQueue);
+        PublishCloseInventoryEvent(data.ui.eventQueue);
         return true;
     }
     Vector2 mouse = GetMousePosition();
@@ -279,7 +279,7 @@ bool HandleInventoryInput(GameData& data, GameEventQueue& eventQueue) {
     HandleInputButtons(data.ui.inventory.buttons);
     if(data.ui.inventory.buttons["close"].region.ConsumeClick()) {
         data.ui.inventory.buttons["close"].hovered = false;
-        PublishCloseInventoryEvent(eventQueue);
+        PublishCloseInventoryEvent(data.ui.eventQueue);
     }
     HandleInputButtons(data.ui.inventory.contextButtons);
     if(data.ui.inventory.contextButtons["equip"].region.ConsumeClick()) {

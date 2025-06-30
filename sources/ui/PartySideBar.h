@@ -11,7 +11,7 @@
 void InitPartySideBar(GameData& data); // call after level is loaded to setup the sidebar
 void RenderPartySideBarUI(GameData& data);
 void UpdatePartySideBar(GameData& data, float dt);
-bool HandlePartySideBarInput(GameData& data, GameEventQueue& eventQueue);
+bool HandlePartySideBarInput(GameData& data);
 
 
 #endif //SANDBOX_PARTYSIDEBAR_H

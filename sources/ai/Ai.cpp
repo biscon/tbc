@@ -5,6 +5,7 @@
 #include <algorithm>
 #include "Ai.h"
 #include "PathFinding.h"
+#include "graphics/CharacterSprite.h"
 
 static std::map<std::string, AiInterface> aiInterfaces;
 

@@ -5,6 +5,8 @@
 #include <algorithm>
 #include "StatusEffectRunner.h"
 #include "Combat.h"
+#include "graphics/CharacterSprite.h"
+#include "character/StatusEffect.h"
 
 static void ApplyStatusEffect(GameData& data, Level &combat, PlayField &gridState, int character, StatusEffect& effect) {
     SpriteData& spriteData = data.spriteData;

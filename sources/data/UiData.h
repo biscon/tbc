@@ -10,6 +10,8 @@
 #include <string>
 #include <unordered_map>
 #include "raylib.h"
+#include "util/GameEventQueue.h"
+#include "character/Skill.h"
 
 struct ClickRegion {
     Rectangle rect;
@@ -99,10 +101,30 @@ struct InventoryUiState {
     std::unordered_map<std::string, Button> contextButtons;
 };
 
+struct ActionIcon {
+    char text[64];
+    char description[256];
+    bool disabled;
+    Skill* skill;
+};
+
+struct ActionBarUI {
+    int actionIconScrollIndex;
+    bool showActionBarTitle;
+};
+
+struct PlayFieldUI {
+    int floatingStatsCharacter = -1;
+};
+
 struct UiState {
     PartySideBarData sideBar;
     InventoryUiState inventory;
-    int selectedCharacter;
+    ActionBarUI actionBar{};
+    PlayFieldUI playField;
+    int selectedCharacter = 0;
+    GameEventQueue eventQueue;
+
 };
 
 #endif //SANDBOX_UIDATA_H

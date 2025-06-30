@@ -284,4 +284,5 @@ SpriteAnimationType CharacterOrientationToAnimType(GameData& data, int charId) {
         case Orientation::Left: return SpriteAnimationType::WalkLeft;
         case Orientation::Right: return SpriteAnimationType::WalkRight;
     }
+    std::abort();
 }

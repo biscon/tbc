@@ -36,18 +36,17 @@ struct PlayField {
     bool increasing = true;       // Direction of the alpha
     float pulseSpeed = 4.0f; // Speed of the pulsing
     ParticleManager* particleManager;
-    GameEventQueue* eventQueue;
     std::vector<CharacterMove> activeMoves;
     std::string hintText;
 };
 
-void CreatePlayField(PlayField &playField, ParticleManager* particleManager, GameEventQueue* eventQueue);
-void UpdatePlayField(SpriteData& spriteData, CharacterData& charData, PlayField &playField, Level &level, float dt);
+void CreatePlayField(PlayField &playField, ParticleManager* particleManager);
+void UpdatePlayField(GameData& data, PlayField &playField, Level &level, float dt);
 void HandleInputPlayField(GameData& data, PlayField &playField, Level &level);
-void DrawPlayField(SpriteData& spriteData, CharacterData& charData, PlayField &playField, Level &level);
-void MoveCharacter(SpriteData& spriteData, CharacterData& charData, PlayField &playField, Level &level, int character, Vector2i target);
-void MoveCharacterPartial(SpriteData& spriteData, CharacterData& charData, PlayField &playField, Level &level, int character, Vector2i target);
+void DrawPlayField(GameData& data, PlayField &playField, Level &level);
+void MoveCharacter(GameData& data, PlayField &playField, Level &level, int character, Vector2i target);
+void MoveCharacterPartial(GameData& data, PlayField &playField, Level &level, int character, Vector2i target);
 void ResetPlayField(PlayField &playField);
-Vector2 GetAnimatedCharPos(SpriteData& spriteData, CharacterData& charData, Level &level, int character);
+Vector2 GetAnimatedCharPos(GameData& data, Level &level, int character);
 
 #endif //SANDBOX_PLAYFIELD_H

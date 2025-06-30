@@ -9,25 +9,12 @@
 #include "graphics/ParticleSystem.h"
 #include "util/GameEventQueue.h"
 
-struct ActionIcon {
-    char text[64];
-    char description[256];
-    bool disabled;
-    Skill* skill;
-};
 
-struct LevelScreen {
-    int actionIconScrollIndex;
-    bool showActionBarTitle;
-    GameEventQueue* eventQueue;
-    int floatingStatsCharacter;
-};
-
-void CreateLevelScreen(LevelScreen &levelScreen, GameEventQueue* eventQueue);
-void DestroyLevelScreen(LevelScreen &levelScreen);
-void DrawLevelScreen(GameData& data, Level &level, LevelScreen &levelScreen, PlayField &playField);
-void UpdateLevelScreen(SpriteData& spriteData, CharacterData& charData, Level &level, LevelScreen &levelScreen, float dt);
-void HandleInputLevelScreen(SpriteData& spriteData, CharacterData& charData, LevelScreen &levelScreen, Level &level);
+void CreateLevelScreen(GameData& data);
+void DestroyLevelScreen(GameData& data);
+void DrawLevelScreen(GameData& data, Level &level, PlayField &playField);
+void UpdateLevelScreen(GameData& data, Level &level, float dt);
+void HandleInputLevelScreen(GameData& data, Level &level);
 //Character* SelectTargetBasedOnThreat(Level& level);
 
 

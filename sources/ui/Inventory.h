@@ -11,7 +11,7 @@
 void InitInventory(GameData& data);
 void RenderInventoryUI(GameData& data);
 void UpdateInventory(GameData& data, float dt);
-bool HandleInventoryInput(GameData& data, GameEventQueue& eventQueue); // returns true if it "swallowed" the input
+bool HandleInventoryInput(GameData& data); // returns true if it "swallowed" the input
 
 
 #endif //SANDBOX_INVENTORY_H

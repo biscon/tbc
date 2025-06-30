@@ -7,7 +7,6 @@
 
 #include <vector>
 #include "MathUtil.h"
-#include "character/Character.h"
 
 enum class GameEventType {
     MoveParty,

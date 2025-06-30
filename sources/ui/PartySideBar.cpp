@@ -90,7 +90,7 @@ void RenderPartySideBarUI(GameData& data) {
     RenderButtons(data.ui.sideBar.buttons, data.smallFont1, 5.0f);
 }
 
-bool HandlePartySideBarInput(GameData& data, GameEventQueue& eventQueue) {
+bool HandlePartySideBarInput(GameData& data) {
     Vector2 mouse = GetMousePosition();
     for (auto& slot : data.ui.sideBar.sidebarSlots) {
         slot.hovered = CheckCollisionPointRec(mouse, slot.region.rect);
@@ -108,14 +108,14 @@ bool HandlePartySideBarInput(GameData& data, GameEventQueue& eventQueue) {
     }
     if(data.ui.sideBar.buttons["inventory"].region.ConsumeClick()) {
         if(data.state != GameState::INVENTORY) {
-            PublishOpenInventoryEvent(eventQueue, data.ui.selectedCharacter);
+            PublishOpenInventoryEvent(data.ui.eventQueue, data.ui.selectedCharacter);
         } else {
-            PublishCloseInventoryEvent(eventQueue);
+            PublishCloseInventoryEvent(data.ui.eventQueue);
         }
         return true;
     }
     if(data.ui.sideBar.buttons["menu"].region.ConsumeClick()) {
-        PublishOpenMenuEvent(eventQueue);
+        PublishOpenMenuEvent(data.ui.eventQueue);
         return true;
     }
 

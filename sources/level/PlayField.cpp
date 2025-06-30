@@ -31,7 +31,7 @@ static bool IsCharacterVisible(Level &level, int character) {
     return true;
 }
 
-Vector2 GetAnimatedCharPos(SpriteData& spriteData, CharacterData& charData, Level &level, int character) {
+Vector2 GetAnimatedCharPos(GameData& data, Level &level, int character) {
     // Check if the character is visible (not blinking)
     for (auto &animation: level.animations) {
         if (animation.type == AnimationType::Attack) {
@@ -40,17 +40,16 @@ Vector2 GetAnimatedCharPos(SpriteData& spriteData, CharacterData& charData, Leve
             }
         }
     }
-    return GetCharacterSpritePos(spriteData, charData.sprite[character]);
+    return GetCharacterSpritePos(data.spriteData, data.charData.sprite[character]);
 }
 
-void CreatePlayField(PlayField &playField, ParticleManager* particleManager, GameEventQueue* eventQueue) {
+void CreatePlayField(PlayField &playField, ParticleManager* particleManager) {
     playField.particleManager = particleManager;
     playField.moving = false;
     playField.mode = PlayFieldMode::None;
     playField.selectedCharacter = -1;
     playField.selectedTile = {-1, -1};
     playField.path = {};
-    playField.eventQueue = eventQueue;
 }
 
 // Function to draw the health bar
@@ -61,14 +60,16 @@ void DrawHealthBar(float x, float y, float width, float health, float maxHealth)
     DrawRectangle(x, y, width * (health / maxHealth), 2, GREEN);
 }
 
-static void DrawGridCharacters(SpriteData& spriteData, CharacterData& charData, PlayField &playField, Level &level) {
+static void DrawGridCharacters(GameData& data, Level &level) {
+    SpriteData& spriteData = data.spriteData;
+    CharacterData& charData = data.charData;
     // Sort characters by y position
     std::vector<int> sortedCharacters;
     for (auto &character: level.allCharacters) {
         sortedCharacters.push_back(character);
     }
-    std::sort(sortedCharacters.begin(), sortedCharacters.end(), [&spriteData, &charData, &level](int a, int b) {
-        return GetAnimatedCharPos(spriteData, charData, level, a).y < GetAnimatedCharPos(spriteData, charData, level, b).y;
+    std::sort(sortedCharacters.begin(), sortedCharacters.end(), [&data, &level](int a, int b) {
+        return GetAnimatedCharPos(data, level, a).y < GetAnimatedCharPos(data, level, b).y;
     });
 
 
@@ -77,7 +78,7 @@ static void DrawGridCharacters(SpriteData& spriteData, CharacterData& charData, 
     for (auto &character: sortedCharacters) {
         if(!HasLineOfSightToParty(spriteData, charData, level, character))
             continue;
-        Vector2 charPos = GetAnimatedCharPos(spriteData, charData, level, character);
+        Vector2 charPos = GetAnimatedCharPos(data, level, character);
         // Draw oval shadow underneath
         if(charData.stats[character].health > 0 && level.turnState != TurnState::Victory && level.turnState != TurnState::Defeat)
             DrawEllipse((int) charPos.x, (int) charPos.y, 6, 4, Fade(BLACK, 0.25f));
@@ -281,35 +282,35 @@ static void updateActiveMovement(SpriteData& spriteData, CharacterData& charData
     );
 }
 
-static void checkIfPartySpotted(SpriteData& spriteData, CharacterData& charData, PlayField &playField, Level &level) {
+static void checkIfPartySpotted(GameData& data, PlayField &playField, Level &level) {
     for(auto& c : level.allCharacters) {
-        if(charData.faction[c] != CharacterFaction::Enemy || charData.stats[c].health <= 0) {
+        if(data.charData.faction[c] != CharacterFaction::Enemy || data.charData.stats[c].health <= 0) {
             continue;
         }
-        Vector2i enemyGridPos = GetCharacterGridPosI(spriteData, charData.sprite[c]);
+        Vector2i enemyGridPos = GetCharacterGridPosI(data.spriteData, data.charData.sprite[c]);
         for(auto& partyChar : level.partyCharacters) {
-            Vector2i partyGridPos = GetCharacterGridPosI(spriteData, charData.sprite[partyChar]);
+            Vector2i partyGridPos = GetCharacterGridPosI(data.spriteData, data.charData.sprite[partyChar]);
             if(HasLineOfSight(level, enemyGridPos, partyGridPos, 5)) {
-                TraceLog(LOG_INFO, "Party last spotted by %s", charData.name[c].c_str());
-                PublishPartySpottedEvent(*playField.eventQueue, c);
+                TraceLog(LOG_INFO, "Party last spotted by %s", data.charData.name[c].c_str());
+                PublishPartySpottedEvent(data.ui.eventQueue, c);
                 return;
             }
         }
     }
 }
 
-static void checkLevelExits(SpriteData& spriteData, CharacterData& charData, PlayField &playField, Level &level) {
+static void checkLevelExits(GameData& data, Level &level) {
     for(auto& exit : level.exits) {
         for(auto& c : level.partyCharacters) {
-            Vector2i cGridPos = GetCharacterGridPosI(spriteData, charData.sprite[c]);
+            Vector2i cGridPos = GetCharacterGridPosI(data.spriteData, data.charData.sprite[c]);
             if(exit.x == cGridPos.x && exit.y == cGridPos.y) {
-                PublishExitLevelEvent(*playField.eventQueue, exit.levelFile, exit.spawnPoint);
+                PublishExitLevelEvent(data.ui.eventQueue, exit.levelFile, exit.spawnPoint);
             }
         }
     }
 }
 
-void UpdatePlayField(SpriteData& spriteData, CharacterData& charData, PlayField &playField, Level &level, float dt) {
+void UpdatePlayField(GameData& data, PlayField &playField, Level &level, float dt) {
     // Update the pulsing alpha
     if (playField.increasing) {
         playField.highlightAlpha = Lerp(playField.highlightAlpha, 1.0f, dt * playField.pulseSpeed);
@@ -322,24 +323,24 @@ void UpdatePlayField(SpriteData& spriteData, CharacterData& charData, PlayField 
             playField.increasing = true;
         }
     }
-    updateActiveMovement(spriteData, charData, playField, dt);
-    updateTurnBasedMove(spriteData, charData, playField, level, dt);
+    updateActiveMovement(data.spriteData, data.charData, playField, dt);
+    updateTurnBasedMove(data.spriteData, data.charData, playField, level, dt);
 
     // Update animations for all characters
     for (auto &character: level.allCharacters) {
-        UpdateCharacterSprite(spriteData, charData.sprite[character], dt);
+        UpdateCharacterSprite(data.spriteData, data.charData.sprite[character], dt);
     }
     if(level.turnState == TurnState::None) {
-        checkIfPartySpotted(spriteData, charData, playField, level);
-        checkLevelExits(spriteData, charData, playField, level);
+        checkIfPartySpotted(data, playField, level);
+        checkLevelExits(data, level);
     }
     for(auto& entry : level.objects) {
         auto& obj = entry.second;
-        UpdateSpriteAnimation(spriteData, obj.animPlayer, dt);
+        UpdateSpriteAnimation(data.spriteData, obj.animPlayer, dt);
     }
     for(auto& entry : level.doors) {
         auto& door = entry.second;
-        UpdateSpriteAnimation(spriteData, door.animPlayer, dt);
+        UpdateSpriteAnimation(data.spriteData, door.animPlayer, dt);
     }
 }
 
@@ -410,7 +411,7 @@ static void handleInputPlayFieldExploration(GameData& data, PlayField &playField
                      target, playerChar, IsTileOccupiedEnemies)) {
             playField.selectedTilePos = gridPos;
             if(IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
-                PublishMovePartyEvent(*playField.eventQueue, gridPos);
+                PublishMovePartyEvent(data.ui.eventQueue, gridPos);
             }
         }
     } else {
@@ -421,7 +422,7 @@ static void handleInputPlayFieldExploration(GameData& data, PlayField &playField
                 if(Distance(playerPos, npcPos) < 3) {
                     playField.hintText = "Talk to " + charData.name[npcId];
                     if(IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
-                        PublishInitiateDialogueEvent(*playField.eventQueue, npcId, level.npcDialogueNodeIds[npcId]);
+                        PublishInitiateDialogueEvent(data.ui.eventQueue, npcId, level.npcDialogueNodeIds[npcId]);
                     }
                 } else {
                     playField.hintText = "Too far away!";
@@ -441,25 +442,25 @@ void HandleInputPlayField(GameData& data, PlayField &playField, Level &level) {
     }
 }
 
-void DrawPlayField(SpriteData& spriteData, CharacterData& charData, PlayField &playField, Level &level) {
+void DrawPlayField(GameData& data, PlayField &playField, Level &level) {
     // Bottom layer
     BeginMode2D(level.camera.camera);
-    DrawTileLayer(level.lighting, spriteData.sheet, level.tileMap, BOTTOM_LAYER, 0, 0);
-    DrawTileLayer(level.lighting, spriteData.sheet, level.tileMap, LIGHT_LAYER, 0, 0);
+    DrawTileLayer(level.lighting, data.spriteData.sheet, level.tileMap, BOTTOM_LAYER, 0, 0);
+    DrawTileLayer(level.lighting, data.spriteData.sheet, level.tileMap, LIGHT_LAYER, 0, 0);
     EndMode2D();
 
     DrawBloodPools();
 
     // Middle layer
     BeginMode2D(level.camera.camera);
-    DrawTileLayer(level.lighting, spriteData.sheet, level.tileMap, MIDDLE_LAYER, 0, 0);
-    DrawLevelObjects(spriteData, level);
-    DrawDoors(spriteData, level);
+    DrawTileLayer(level.lighting, data.spriteData.sheet, level.tileMap, MIDDLE_LAYER, 0, 0);
+    DrawLevelObjects(data.spriteData, level);
+    DrawDoors(data.spriteData, level);
     EndMode2D();
 
 
     BeginMode2D(level.camera.camera);
-    DrawGridCharacters(spriteData, charData, playField, level);
+    DrawGridCharacters(data, level);
     EndMode2D();
 
 
@@ -467,19 +468,19 @@ void DrawPlayField(SpriteData& spriteData, CharacterData& charData, PlayField &p
 
     // Top layer
     BeginMode2D(level.camera.camera);
-    DrawTileLayer(level.lighting, spriteData.sheet, level.tileMap, TOP_LAYER, 0, 0);
+    DrawTileLayer(level.lighting, data.spriteData.sheet, level.tileMap, TOP_LAYER, 0, 0);
     RenderVisibilityMap(level.lighting);
     EndMode2D();
 
     //RenderLighting(level.lighting);
 }
 
-void MoveCharacter(SpriteData& spriteData, CharacterData& charData, PlayField &playField, Level &level, int character, Vector2i target) {
+void MoveCharacter(GameData& data, PlayField &playField, Level &level, int character, Vector2i target) {
     // calculate a path and draw it as lines
     Path path;
-    Vector2i cCharPos = GetCharacterSpritePosI(spriteData, charData.sprite[character]);
+    Vector2i cCharPos = GetCharacterSpritePosI(data.spriteData, data.charData.sprite[character]);
     Vector2i cGridPos = PixelToGridPositionI(cCharPos.x, cCharPos.y);
-    if (CalcPath(spriteData, charData, level, path, cGridPos, target, character, IsTileOccupiedEnemies)) {
+    if (CalcPath(data.spriteData, data.charData, level, path, cGridPos, target, character, IsTileOccupiedEnemies)) {
         CharacterMove move;
         move.character = character;
         move.path = path;
@@ -490,12 +491,12 @@ void MoveCharacter(SpriteData& spriteData, CharacterData& charData, PlayField &p
     }
 }
 
-void MoveCharacterPartial(SpriteData& spriteData, CharacterData& charData, PlayField &playField, Level &level, int character, Vector2i target) {
+void MoveCharacterPartial(GameData& data, PlayField &playField, Level &level, int character, Vector2i target) {
     // calculate a path and draw it as lines
     Path path;
-    Vector2i cCharPos = GetCharacterSpritePosI(spriteData, charData.sprite[character]);
+    Vector2i cCharPos = GetCharacterSpritePosI(data.spriteData, data.charData.sprite[character]);
     Vector2i cGridPos = PixelToGridPositionI(cCharPos.x, cCharPos.y);
-    CalcPathWithRangePartial(spriteData, charData, level, path, cGridPos, target, 1, character, IsTileOccupiedEnemies);
+    CalcPathWithRangePartial(data.spriteData, data.charData, level, path, cGridPos, target, 1, character, IsTileOccupiedEnemies);
     if(!path.path.empty()) {
         CharacterMove move;
         move.character = character;

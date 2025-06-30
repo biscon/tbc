@@ -19,26 +19,24 @@
 
 static GameData* game;
 static Level level;
-static LevelScreen levelScreen;
 static ParticleManager particleManager;
 static PlayField playField{};
-static GameEventQueue eventQueue;
 
 static void moveParty(Vector2i target) {
     TraceLog(LOG_INFO, "MoveParty event,target: %d,%d", target.x, target.y);
     playField.activeMoves.clear();
-    MoveCharacter(game->spriteData, game->charData, playField, level, game->ui.selectedCharacter, target);
+    MoveCharacter(*game, playField, level, game->ui.selectedCharacter, target);
     // move the rest partially
     for(int i = 0; i < (int)level.partyCharacters.size(); i++) {
         if(level.partyCharacters[i] != game->ui.selectedCharacter) {
-            MoveCharacterPartial(game->spriteData, game->charData, playField, level, level.partyCharacters[i], target);
+            MoveCharacterPartial(*game, playField, level, level.partyCharacters[i], target);
         }
     }
 }
 
 static void processEvents() {
     GameEvent event{};
-    while(GetNextEvent(eventQueue, event)) {
+    while(GetNextEvent(game->ui.eventQueue, event)) {
         switch(event.type) {
             case GameEventType::MoveParty: {
                 StartCameraPanToTilePos(level.camera, event.moveParty.target, 250.0f);
@@ -95,7 +93,7 @@ static void processEvents() {
                 playField.mode = PlayFieldMode::None;
                 game->state = GameState::DIALOGUE;
                 TraceLog(LOG_INFO, "InitiateDialogue: npcId = %i, dialogueNodeId = %i", event.initiateDialogueEvent.npcId, event.initiateDialogueEvent.dialogueNodeId);
-                InitiateDialogue(*game, event.initiateDialogueEvent.dialogueNodeId, event.initiateDialogueEvent.npcId, eventQueue);
+                InitiateDialogue(*game, event.initiateDialogueEvent.dialogueNodeId, event.initiateDialogueEvent.npcId);
                 break;
             }
             case GameEventType::EndDialogue: {
@@ -234,10 +232,10 @@ void LevelInit() {
     //PlaySoundEffect(SoundEffectType::Ambience);
 
     CreateLevel(level);
-    CreateLevelScreen(levelScreen, &eventQueue);
+    CreateLevelScreen(*game);
     CreateParticleManager(particleManager, {0, 0}, gameScreenWidth, gameScreenHeight);
 
-    CreatePlayField(playField, &particleManager, &eventQueue);
+    CreatePlayField(playField, &particleManager);
 
     InitBloodRendering();
     InitInventory(*game);
@@ -247,7 +245,7 @@ void LevelInit() {
 void LevelDestroy() {
     DestroyParticleManager(particleManager);
     DestroyBloodRendering();
-    DestroyLevelScreen(levelScreen);
+    DestroyLevelScreen(*game);
     DestroyLevel(game->spriteData.sheet, level);
 }
 
@@ -256,8 +254,8 @@ void LevelUpdate(float dt) {
 
     UpdateCombat(*game, level, playField, dt);
     UpdateParticleManager(particleManager, dt);
-    UpdateLevelScreen(game->spriteData, game->charData, level, levelScreen, dt);
-    UpdatePlayField(game->spriteData, game->charData, playField, level, dt);
+    UpdateLevelScreen(*game, level, dt);
+    UpdatePlayField(*game, playField, level, dt);
     UpdateDialogue(*game, dt);
     UpdatePartySideBar(*game, dt);
     UpdateInventory(*game, dt);
@@ -271,15 +269,15 @@ void LevelHandleInput() {
     processEvents();
     if(game->state != GameState::DIALOGUE && game->state != GameState::INVENTORY) {
         handleCameraMovement();
-        if(!HandlePartySideBarInput(*game, eventQueue)) {
+        if(!HandlePartySideBarInput(*game)) {
             HandleInputPlayField(*game, playField, level);
         }
-        HandleInputLevelScreen(game->spriteData, game->charData, levelScreen, level);
+        HandleInputLevelScreen(*game, level);
     } else {
-        if(game->state == GameState::DIALOGUE) HandleDialogueInput(*game, eventQueue);
+        if(game->state == GameState::DIALOGUE) HandleDialogueInput(*game);
         if(game->state == GameState::INVENTORY) {
-            HandleInventoryInput(*game, eventQueue);
-            HandlePartySideBarInput(*game, eventQueue);
+            HandleInventoryInput(*game);
+            HandlePartySideBarInput(*game);
         }
     }
 
@@ -333,13 +331,13 @@ void LevelRenderLevel() {
     // Only apply scissor if there's a valid area
     if (scissorW > 0 && scissorH > 0) {
         BeginScissorMode(scissorX, scissorY, scissorW, scissorH);
-        DrawPlayField(game->spriteData, game->charData, playField, level);
+        DrawPlayField(*game, playField, level);
         EndScissorMode();
     }
 }
 
 void LevelRenderUi() {
-    DrawLevelScreen(*game, level, levelScreen, playField);
+    DrawLevelScreen(*game, level, playField);
     RenderPartySideBarUI(*game);
     RenderDialogueUI(*game);
     if(game->state == GameState::INVENTORY)

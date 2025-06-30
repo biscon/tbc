@@ -7,6 +7,7 @@
 #include "Dialogue.h"
 #include "raylib.h"
 #include "util/GameEventQueue.h"
+#include "graphics/SpriteAnimation.h"
 
 static bool EvaluateQuestStatusEquals(GameData& data, const Condition& condition) {
     const std::string& questId = condition.param;
@@ -296,7 +297,7 @@ static void handlePlayerResponse(GameData& data, int responseId, GameEventQueue&
     AdvanceDialogue(data, response.nextNodeId, eventQueue);
 }
 
-void HandleDialogueInput(GameData& data, GameEventQueue& eventQueue) {
+void HandleDialogueInput(GameData& data) {
     auto& dlg = data.dialogueData;
     if (dlg.currentDialogueNode == -1) return;
 
@@ -305,18 +306,18 @@ void HandleDialogueInput(GameData& data, GameEventQueue& eventQueue) {
 
         for (const auto& [rect, responseId] : dlg.responseClickTargets) {
             if (CheckCollisionPointRec(mouse, rect)) {
-                handlePlayerResponse(data, responseId, eventQueue);
+                handlePlayerResponse(data, responseId, data.ui.eventQueue);
                 break;
             }
         }
     }
 }
 
-void InitiateDialogue(GameData &data, int nodeId, int npcId, GameEventQueue& eventQueue) {
+void InitiateDialogue(GameData &data, int nodeId, int npcId) {
     data.dialogueData.currentNpc = npcId;
     data.dialogueData.currentDialogueNode = nodeId;
     data.dialogueData.idleAnimPlayer = CreateSpriteAnimationPlayer(data.spriteData);
     int idleAnim = GetSpriteAnimation(data.spriteData, "SerDonaldPortraitTalkTalk");
     PlaySpriteAnimation(data.spriteData, data.dialogueData.idleAnimPlayer, idleAnim, true);
-    AdvanceDialogue(data, nodeId, eventQueue);
+    AdvanceDialogue(data, nodeId, data.ui.eventQueue);
 }
