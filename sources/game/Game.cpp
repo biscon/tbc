@@ -18,26 +18,24 @@ void DestroyGame(GameData &game) {
 }
 
 void StartNewGame(GameData &data) {
-    int id = CreateCharacter(data.charData, CharacterClass::Warrior, CharacterFaction::Player, "Player1", "Fighter");
+    int id = CreateCharacter(data.charData, CharacterFaction::Player, "Player1", "Fighter");
     AssignSkill(data.charData.skills[id], SkillType::Taunt, "Howling Scream", 1, false, true, 0, 3, 0);
     AssignSkill(data.charData.skills[id], SkillType::Stun, "Stunning Blow", 1, false, false, 0, 3, 1);
     InitCharacterSprite(data.spriteData, data.charData.sprite[id], "MaleWarrior", true);
-    GiveWeapon(data, id, "item_weapon_sword", ItemEquipSlot::Weapon1);
-    LevelUp(data.charData, id, true);
-    LevelUp(data.charData, id, true);
-    LevelUp(data.charData, id, true);
-    LevelUp(data.charData, id, true);
+    GiveWeapon(data, id, "item_weapon_knife", ItemEquipSlot::Weapon1);
+    data.charData.stats[id].LVL = 5;
+    data.charData.stats[id].HP = CalculateCharHealth(data.charData.stats[id]);
+    data.charData.stats[id].AP = CalculateCharMaxAP(data.charData.stats[id]);
     data.party.emplace_back(id);
 
-    id = CreateCharacter(data.charData, CharacterClass::Mage, CharacterFaction::Player, "Player2", "Fighter");
+    id = CreateCharacter(data.charData, CharacterFaction::Player, "Player2", "Fighter");
     AssignSkill(data.charData.skills[id], SkillType::Dodge, "Dodge", 1, true, true, 0, 0, 0);
     AssignSkill(data.charData.skills[id], SkillType::FlameJet, "Burning Hands", 1, false, false, 0, 3, 5);
     InitCharacterSprite(data.spriteData, data.charData.sprite[id], "MaleWarrior", true);
-    GiveWeapon(data, id, "item_weapon_bow", ItemEquipSlot::Weapon1);
-    LevelUp(data.charData, id, true);
-    LevelUp(data.charData, id, true);
-    LevelUp(data.charData, id, true);
-    LevelUp(data.charData, id, true);
+    GiveWeapon(data, id, "item_weapon_club", ItemEquipSlot::Weapon1);
+    data.charData.stats[id].LVL = 5;
+    data.charData.stats[id].HP = CalculateCharHealth(data.charData.stats[id]);
+    data.charData.stats[id].AP = CalculateCharMaxAP(data.charData.stats[id]);
     data.party.emplace_back(id);
 
     data.state = GameState::LOAD_LEVEL;
@@ -63,7 +61,7 @@ void LoadGame(GameData &data) {
     data.spriteData.player.renderData.clear();
     data.party.clear();
     for(auto& ch : saveData.party) {
-        int id = CreateCharacter(data.charData, ch.characterClass, ch.faction, ch.name, ch.ai);
+        int id = CreateCharacter(data.charData, ch.faction, ch.name, ch.ai);
         //AssignSkill(data.charData.skills[id], SkillType::Taunt, "Howling Scream", 1, false, true, 0, 3, 0);
         InitCharacterSprite(data.spriteData, data.charData.sprite[id], ch.spriteTemplate, true);
 
@@ -79,6 +77,7 @@ void LoadGame(GameData &data) {
         }
 
         data.charData.stats[id] = ch.stats;
+        data.charData.selectedWeaponSlot[id] = ch.selectedWeaponSlot;
         Vector2i savedPos = { ch.tilePosX, ch.tilePosY};
         SetCharacterGridPosI(data.spriteData, data.charData.sprite[id], savedPos);
         data.party.emplace_back(id);
@@ -99,9 +98,9 @@ void SaveGame(GameData &data) {
         PartyCharacter pc;
         pc.name = data.charData.name[id];
         pc.faction = data.charData.faction[id];
-        pc.characterClass = data.charData.characterClass[id];
         pc.ai = data.charData.ai[id];
         pc.stats = data.charData.stats[id];
+        pc.selectedWeaponSlot = data.charData.selectedWeaponSlot[id];
         // save sprite template
         pc.spriteTemplate = data.charData.sprite[id].spriteTemplate;
 

@@ -45,9 +45,10 @@ void InitItemData(GameData& data, const std::string &filename) {
     for(int i = 0; i < 30; i++) {
 
     }
-    itemData.inventoryData[itemData.partyInventoryId].items.push_back(CreateItem(data, "item_weapon_staff", 1));
-    itemData.inventoryData[itemData.partyInventoryId].items.push_back(CreateItem(data, "item_weapon_bow", 1));
-    itemData.inventoryData[itemData.partyInventoryId].items.push_back(CreateItem(data, "item_weapon_sword", 1));
+    itemData.inventoryData[itemData.partyInventoryId].items.push_back(CreateItem(data, "item_weapon_knife", 1));
+    itemData.inventoryData[itemData.partyInventoryId].items.push_back(CreateItem(data, "item_weapon_club", 1));
+    itemData.inventoryData[itemData.partyInventoryId].items.push_back(CreateItem(data, "item_weapon_pistol", 1));
+    itemData.inventoryData[itemData.partyInventoryId].items.push_back(CreateItem(data, "item_weapon_assault_rifle", 1));
 }
 
 int CreateItem(GameData& data, const std::string& templateId, int quantity) {

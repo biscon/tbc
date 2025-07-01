@@ -16,6 +16,8 @@
 #include "graphics/Animation.h"
 #include "ui/PartySideBar.h"
 #include "ui/Inventory.h"
+#include "level/LevelCamera.h"
+#include "graphics/Lighting.h"
 
 static GameData* game;
 static Level level;
@@ -58,7 +60,7 @@ static void processEvents() {
             }
             case GameEventType::PartySpotted: {
                 playField.mode = PlayFieldMode::None;
-                StartCombat(game->spriteData, game->charData, level, event.partySpotted.spotter, 5);
+                StartCombat(game->spriteData, game->charData, level, event.partySpotted.spotter);
                 break;
             }
             case GameEventType::EndCombat: {
@@ -70,8 +72,8 @@ static void processEvents() {
                     StartPausedCharacterSpriteAnim(game->spriteData, sprite, SpriteAnimationType::WalkDown, true);
                     game->charData.orientation[c] = Orientation::Down;
                     game->charData.statusEffects[c].clear();
-                    if(game->charData.stats[c].health <= 0) {
-                        game->charData.stats[c].health = 1;
+                    if(game->charData.stats[c].HP <= 0) {
+                        game->charData.stats[c].HP = 1;
                         SetCharacterSpriteRotation(game->spriteData, sprite, 0);
                     }
                 }

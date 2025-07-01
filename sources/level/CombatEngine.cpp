@@ -13,6 +13,7 @@
 #include "util/Random.h"
 #include "ui/UI.h"
 #include "graphics/Animation.h"
+#include "LevelCamera.h"
 
 void UpdateCombat(GameData &data, Level &level, PlayField& playField, float dt) {
     SpriteData& spriteData = data.spriteData;
@@ -32,11 +33,11 @@ void UpdateCombat(GameData &data, Level &level, PlayField& playField, float dt) 
 
             Animation blinkAnim{};
 
-            // restore movepoints
+            // restore action points
             CharacterStats& stats = charData.stats[level.currentCharacter];
-            int movePoints = (int) (5 + sqrt(stats.speed) * 2);
-            stats.movePoints = movePoints;
-            TraceLog(LOG_INFO, "Restored move points for %s: %d", charData.name[level.currentCharacter].c_str(), movePoints);
+            stats.AP = CalculateCharMaxAP(stats);
+
+            TraceLog(LOG_INFO, "Restored action points for %s: %d", charData.name[level.currentCharacter].c_str(), stats.AP);
 
             level.waitTime = 0.5f;
             if(IsPlayerCharacter(charData, level.currentCharacter)) {
@@ -103,9 +104,6 @@ void UpdateCombat(GameData &data, Level &level, PlayField& playField, float dt) 
             } else {
                 level.nextState = TurnState::EndTurn;
             }
-            if(result.giveAggro) {
-                SetTaunt(charData, level, level.currentCharacter);
-            }
             level.selectedSkill = nullptr;
             break;
         }
@@ -134,12 +132,12 @@ void UpdateCombat(GameData &data, Level &level, PlayField& playField, float dt) 
             float defenderY = GetCharacterSpritePosY(spriteData, charData.sprite[level.selectedCharacter]);
             int damage = level.attackResult.damage;
             if(damage > 0) {
-                float intensity = (float) GetBloodIntensity(damage, GetAttack(data, level.currentCharacter));
+                float intensity = (float) GetBloodIntensity(damage, 5);
                 TraceLog(LOG_INFO, "Damage: %d, intensity: %f", damage, intensity);
                 Vector2 bloodPos = {defenderX + (float) RandomInRange(-2,2), defenderY - 8 + (float) RandomInRange(-2,2)};
                 CreateBloodSplatter(*playField.particleManager, bloodPos, 10, intensity);
                 Animation damageNumberAnim{};
-                Color dmgColor = GetDamageColor(damage, GetAttack(data, level.currentCharacter));
+                Color dmgColor = GetDamageColor(damage, 5);
                 SetupDamageNumberAnimation(damageNumberAnim, TextFormat("%d", damage), defenderX, defenderY-25, dmgColor, level.attackResult.crit ? 20 : 10);
                 level.animations.push_back(damageNumberAnim);
                 PlaySoundEffect(SoundEffectType::HumanPain, 0.25f);
@@ -160,8 +158,8 @@ void UpdateCombat(GameData &data, Level &level, PlayField& playField, float dt) 
                     PlaySoundEffect(SoundEffectType::MeleeHit);
             }
 
-            charData.stats[level.attackResult.defender].health -= damage;
-            if(charData.stats[level.attackResult.defender].health <= 0) {
+            charData.stats[level.attackResult.defender].HP -= damage;
+            if(charData.stats[level.attackResult.defender].HP <= 0) {
                 Animation speechBubble{};
                 SetupSpeechBubbleAnimation(speechBubble, "Haha!", attackerX, attackerY - 25, 1.5f, 0.0f);
                 level.animations.push_back(speechBubble);
@@ -200,7 +198,6 @@ void UpdateCombat(GameData &data, Level &level, PlayField& playField, float dt) 
             level.animations.push_back(textAnim);
             WaitTurnState(level, TurnState::StartRound, 0.2f);
             UpdateStatusEffects(charData, level);
-            DecayThreat(charData, level, 10);
             UpdateSkillCooldown(charData, level);
             break;
         }
@@ -210,7 +207,7 @@ void UpdateCombat(GameData &data, Level &level, PlayField& playField, float dt) 
         // check victory condition, all enemies have zero health
         bool allEnemiesDefeated = true;
         for (auto &enemy: level.enemyCharacters) {
-            if (charData.stats[enemy].health > 0) {
+            if (charData.stats[enemy].HP > 0) {
                 allEnemiesDefeated = false;
                 break;
             }
@@ -226,7 +223,7 @@ void UpdateCombat(GameData &data, Level &level, PlayField& playField, float dt) 
         // check defeat condition, all players have zero health
         bool allPlayersDefeated = true;
         for (auto &player: level.partyCharacters) {
-            if (charData.stats[player].health > 0) {
+            if (charData.stats[player].HP > 0) {
                 allPlayersDefeated = false;
                 break;
             }

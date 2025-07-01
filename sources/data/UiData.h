@@ -16,8 +16,10 @@
 struct ClickRegion {
     Rectangle rect;
     bool pressed = false;
+    bool hovered = false;
     bool wasClicked = false;
     bool wasDoubleClicked = false;
+
 
     float lastClickTime = -1.0f;
     float doubleClickThreshold = 0.3f; // seconds
@@ -25,8 +27,14 @@ struct ClickRegion {
     void Update(Vector2 mouse) {
         float timeNow = static_cast<float>(GetTime());
 
+        if (CheckCollisionPointRec(mouse, rect)) {
+            hovered = true;
+        } else {
+            hovered = false;
+        }
+
         // Start press
-        if (CheckCollisionPointRec(mouse, rect) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+        if (hovered && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
             pressed = true;
         }
 
@@ -97,6 +105,8 @@ struct InventoryUiState {
     int hoveredIndex = -1;
     bool draggingScrollKnob = false;
     float dragOffsetY = 0;
+    ClickRegion weapon1Region;
+    ClickRegion weapon2Region;
     std::unordered_map<std::string, Button> buttons;
     std::unordered_map<std::string, Button> contextButtons;
 };

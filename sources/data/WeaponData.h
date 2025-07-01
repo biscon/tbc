@@ -14,31 +14,41 @@ enum class WeaponType {
     Ranged,
 };
 
-enum class ScalingStat {
-    Attack,
-    Speed,
+struct FireMode {
+    std::string name;
+    int apCost;
+    int roundsFired; // -1 = dump mag
+    float accuracyMod; // Penalty/bonus for this mode
+    float critChance;
+    float critMultiplier;
 };
 
-struct WeaponStats {
-    int baseAttack;
-    int range;
-    float armorPenetration;  // Percentage of defender’s defense ignored
-    float attackMultiplier;
-    ScalingStat scalingStat;
+struct WeaponRanged {
+    std::string ammoType;
+    int magazineSize;
+    int currentAmmo;
+    std::vector<FireMode> fireModes;
 };
 
-struct WeaponTemplateData {
-    std::vector<std::string> name;
-    std::vector<WeaponType> type;
-    std::vector<WeaponStats> stats;
-    std::vector<std::string> animationTemplate;
-    std::vector<std::string> soundEffectType;
+struct WeaponTemplate {
+    std::string name;
+    int baseDamage;
+    float critChance;
+    float critMultiplier;
+    float weaponAccuracy; // +/- % hit bonus
+    int range;            // Tiles (1 = melee)
+    std::string skillUsed;
+    WeaponType type;
+    int rangeDataId;
+    std::string animationTemplate;
 };
 
 struct WeaponData {
-    WeaponTemplateData templateData;
+    std::vector<WeaponTemplate> templateData;
     std::unordered_map<std::string, int> templateIdToIndex;
     std::vector<std::string> indexToTemplateId;
+    // additional template data for ranged weapon
+    std::vector<WeaponRanged> rangedData;
 };
 
 #endif //SANDBOX_WEAPONDATA_H

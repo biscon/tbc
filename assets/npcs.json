@@ -2,36 +2,66 @@
     {
         "characterName": "Ninja Dumbass",
         "name": "MaleNinja",
-        "class": "Warrior",
         "faction": "Enemy",
         "ai": "Fighter",
         "sprite": "MaleNinja",
         "level": 1,
+        "stats": {
+            "STR": 5,
+            "REF": 5,
+            "END": 5,
+            "INT": 5,
+            "PER": 5,
+            "CHA": 5,
+            "LUK": 5,
+            "HP": 25,
+            "LVL": 1
+        },
         "equippedItems": {
             "armor": "",
-            "weapon": "item_weapon_sword"
+            "weapon 1": "item_weapon_knife"
         }
     },
     {
         "characterName": "Ninja Staffhole",
         "name": "MaleNinjaStaff",
-        "class": "Warrior",
         "faction": "Enemy",
         "ai": "Fighter",
         "sprite": "MaleNinja",
-        "level": 2,
+        "level": 1,
+        "stats": {
+            "STR": 5,
+            "REF": 5,
+            "END": 5,
+            "INT": 5,
+            "PER": 5,
+            "CHA": 5,
+            "LUK": 5,
+            "HP": 25,
+            "LVL": 1
+        },
         "equippedItems": {
             "armor": "",
-            "weapon": "item_weapon_staff"
+            "weapon 1": "item_weapon_club"
         }
     },
     {
         "characterName": "Ser Donald",
         "name": "SerDonald",
-        "class": "Warrior",
         "faction": "Npc",
         "ai": "Fighter",
         "sprite": "MaleBase",
-        "level": 10
+        "level": 1,
+        "stats": {
+            "STR": 5,
+            "REF": 5,
+            "END": 5,
+            "INT": 5,
+            "PER": 5,
+            "CHA": 5,
+            "LUK": 5,
+            "HP": 25,
+            "LVL": 10
+        }
     }
 ]

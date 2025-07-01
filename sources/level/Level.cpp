@@ -5,16 +5,16 @@
 #include <algorithm>
 #include <fstream>
 #include "Level.h"
-#include "../util/json.hpp"
 #include "ai/PathFinding.h"
 #include "graphics/SpriteSheet.h"
 #include "graphics/TileMap.h"
 #include "graphics/CharacterSprite.h"
 #include "character/Npc.h"
-#include "character/Character.h"
 #include "util/StringUtil.h"
 #include "graphics/Animation.h"
 #include "ui/PartySideBar.h"
+#include "LevelCamera.h"
+#include "graphics/Lighting.h"
 
 using json = nlohmann::json;
 

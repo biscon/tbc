@@ -38,10 +38,10 @@ struct PartyCharacter {
     std::string spriteTemplate;
     int tilePosX = 0;
     int tilePosY = 0;
-    CharacterClass characterClass;
     CharacterFaction faction;
     CharacterStats stats;
     std::array<std::string, static_cast<size_t>(ItemEquipSlot::COUNT)> equippedItems;
+    int selectedWeaponSlot;
 };
 
 struct InventorySaveState {

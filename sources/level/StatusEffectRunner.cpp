@@ -42,7 +42,7 @@ static void ApplyStatusEffect(GameData& data, Level &combat, PlayField &gridStat
             break;
     }
     // check if dead
-    if(charData.stats[character].health <= 0) {
+    if(charData.stats[character].HP <= 0) {
         KillCharacter(spriteData, charData, combat, character);
     }
 }
@@ -50,7 +50,7 @@ static void ApplyStatusEffect(GameData& data, Level &combat, PlayField &gridStat
 void ApplyStatusEffects(GameData& data, Level &level, PlayField &playField) {
     for(auto& character : level.turnOrder) {
         // skip dead characters
-        if(data.charData.stats[character].health <= 0) {
+        if(data.charData.stats[character].HP <= 0) {
             continue;
         }
         for(auto& effect : data.charData.statusEffects[character]) {

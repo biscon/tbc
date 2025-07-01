@@ -52,7 +52,7 @@ std::vector<int> GetCharactersWithinAttackRange(SpriteData& spriteData, Characte
     std::vector<int> charactersInRange;
     for(auto &c : level.allCharacters) {
         // skip same and death characters
-        if(c == character || charData.stats[c].health <= 0 || charData.faction[c] != faction) {
+        if(c == character || charData.stats[c].HP <= 0 || charData.faction[c] != faction) {
             continue;
         }
         Path path;
@@ -74,7 +74,7 @@ std::vector<std::pair<int, Path>> GetCharactersWithinMoveRange(SpriteData& sprit
     std::vector<std::pair<int, Path>> charactersInRange;
     for(auto &c : level.allCharacters) {
         // skip same and death characters
-        if(c == character || charData.stats[c].health <= 0 || charData.faction[c] != faction) {
+        if(c == character || charData.stats[c].HP <= 0 || charData.faction[c] != faction) {
             continue;
         }
         Path path;
@@ -82,7 +82,7 @@ std::vector<std::pair<int, Path>> GetCharactersWithinMoveRange(SpriteData& sprit
         Vector2i cGridPos = PixelToGridPositionI(cCharPos.x, cCharPos.y);
         if(CalcPathWithRange(spriteData, charData, level, path, charGridPos, cGridPos, attackRange, character, IsTileOccupied)) {
             if(checkPoints) {
-                if (path.cost <= charData.stats[character].movePoints) {
+                if (path.cost <= charData.stats[character].AP) {
                     charactersInRange.emplace_back(c, path);
                 }
             } else {
@@ -100,7 +100,7 @@ std::vector<std::pair<int, Path>> GetCharactersWithinMoveRangePartial(SpriteData
     std::vector<std::pair<int, Path>> charactersInRange;
     for(auto &c : level.allCharacters) {
         // skip same and death characters
-        if(c == character || charData.stats[c].health <= 0 || charData.faction[c] != faction) {
+        if(c == character || charData.stats[c].HP <= 0 || charData.faction[c] != faction) {
             continue;
         }
         Path path;
@@ -109,7 +109,7 @@ std::vector<std::pair<int, Path>> GetCharactersWithinMoveRangePartial(SpriteData
         CalcPathWithRangePartial(spriteData, charData, level, path, charGridPos, cGridPos, attackRange, character, IsTileOccupied);
         if(!path.path.empty()) {
             if(checkPoints) {
-                if (path.cost <= charData.stats[character].movePoints) {
+                if (path.cost <= charData.stats[character].AP) {
                     charactersInRange.emplace_back(c, path);
                 }
             } else {
@@ -126,7 +126,7 @@ std::vector<int> GetAdjacentCharacters(SpriteData& spriteData, CharacterData& ch
     std::vector<int> charactersInRange;
     for(auto &c : level.allCharacters) {
         // skip same and death characters
-        if(c == character || charData.stats[c].health <= 0 || charData.faction[c] != faction) {
+        if(c == character || charData.stats[c].HP <= 0 || charData.faction[c] != faction) {
             continue;
         }
         Vector2i cCharPos = GetCharacterSpritePosI(spriteData, charData.sprite[c]);

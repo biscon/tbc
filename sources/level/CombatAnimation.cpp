@@ -32,7 +32,7 @@ void PlayAttackAnimation(SpriteData& spriteData, CharacterData& charData, Level 
 }
 
 void PlayDefendAnimation(SpriteData& spriteData, CharacterData& charData, Level &level, int attacker, int defender) {
-    if(charData.stats[defender].health <= 0) {
+    if(charData.stats[defender].HP <= 0) {
         return;
     }
     float defenderX = GetCharacterSpritePosX(spriteData, charData.sprite[defender]);
@@ -56,7 +56,7 @@ void PlayAttackDefendAnimation(SpriteData& spriteData, CharacterData& charData, 
 void PlayEnemyVictoryAnimation(SpriteData& spriteData, CharacterData& charData, Level &level) {
     for(auto &c : level.allCharacters) {
         // skip dead
-        if(charData.stats[c].health <= 0 || charData.faction[c] != CharacterFaction::Enemy) {
+        if(charData.stats[c].HP <= 0 || charData.faction[c] != CharacterFaction::Enemy) {
             continue;
         }
         PlayCharacterSpriteAnim(spriteData, charData.sprite[c], SpriteAnimationType::WalkDown, true);
@@ -69,7 +69,7 @@ void PlayEnemyVictoryAnimation(SpriteData& spriteData, CharacterData& charData, 
 void PlayPlayerVictoryAnimation(SpriteData& spriteData, CharacterData& charData, Level &level) {
     for(auto &c : level.partyCharacters) {
         // skip dead
-        if(charData.stats[c].health <= 0) {
+        if(charData.stats[c].HP <= 0) {
             continue;
         }
         PlayCharacterSpriteAnim(spriteData, charData.sprite[c], SpriteAnimationType::WalkDown, true);

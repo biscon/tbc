@@ -14,9 +14,7 @@ int DealDamageStatusEffect(GameData& data, Level& level, int target, int damage)
 void KillCharacter(SpriteData& spriteData, CharacterData& charData, Level &level, int character);
 bool IsPlayerCharacter(CharacterData& charData, int character);
 bool IsIncapacitated(CharacterData& charData, int character);
-void DecayThreat(CharacterData& charData, Level& level, int amount);
-void SetTaunt(CharacterData& charData, Level& level, int target);
 void NextCharacter(CharacterData& charData, Level &level);
-void StartCombat(SpriteData& spriteData, CharacterData& charData, Level &level, int spotter, int maxDist);
+void StartCombat(SpriteData& spriteData, CharacterData& charData, Level &level, int spotter);
 
 #endif //SANDBOX_COMBAT_H

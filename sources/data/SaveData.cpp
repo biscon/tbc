@@ -40,9 +40,9 @@ void to_json(nlohmann::json& j, const PartyCharacter& c) {
             {"tilePosX", c.tilePosX},
             {"tilePosY", c.tilePosY},
             {"spriteTemplate", c.spriteTemplate},
-            {"characterClass", c.characterClass},
             {"faction", c.faction},
-            {"stats", c.stats}
+            {"stats", c.stats},
+            {"selectedWeaponSlot", c.selectedWeaponSlot}
     };
     nlohmann::json jSlots;
     for (size_t i = 0; i < static_cast<size_t>(ItemEquipSlot::COUNT); ++i) {
@@ -57,9 +57,9 @@ void from_json(const nlohmann::json& j, PartyCharacter& c) {
     j.at("tilePosX").get_to(c.tilePosX);
     j.at("tilePosY").get_to(c.tilePosY);
     j.at("spriteTemplate").get_to(c.spriteTemplate);
-    j.at("characterClass").get_to(c.characterClass);
     j.at("faction").get_to(c.faction);
     j.at("stats").get_to(c.stats);
+    j.at("selectedWeaponSlot").get_to(c.selectedWeaponSlot);
 
     if(j.contains("equippedItems")) {
         const nlohmann::json &nodes = j.at("equippedItems");

@@ -7,67 +7,34 @@
 #include "util/Random.h"
 #include "game/Items.h"
 
-// Simple function to display character info
-/*
-void DisplayCharacterInfo(const Character &character) {
-    std::cout << "Name: " << character.name << "\n"
-              << "Health: " << character.health << "/" << character.maxHealth << "\n"
-              << "Attack: " << character.attack << "\n"
-              << "Defense: " << character.defense << "\n"
-              << "Speed: " << character.speed << "\n"
-              << "Hunger: " << character.hunger << "\n"
-              << "Thirst: " << character.thirst << "\n";
-
-    // Display skills
-    if (!character.skills.empty()) {
-        std::cout << "Skills:\n";
-        for (const Skill &skill : character.skills) {
-            std::cout << "  " << skill.name << " (Rank " << skill.rank << ")\n";
-        }
-    } else {
-        std::cout << "No skills.\n";
-    }
-
-    std::cout << "\n";  // Adding a line break for better readability
-}
-*/
-
 
 bool IsAlive(CharacterData &data, int characterIdx) {
-    return data.stats[characterIdx].health > 0;
+    return data.stats[characterIdx].HP > 0;
 }
 
-int CreateCharacter(CharacterData &data, CharacterClass characterClass, CharacterFaction faction, const std::string& name, const std::string& ai) {
+int CreateCharacter(CharacterData &data, CharacterFaction faction, const std::string& name, const std::string& ai) {
     data.name.push_back(name);
     data.ai.push_back(ai);
     data.faction.emplace_back(faction);
 
     CharacterStats stats{};
-    switch(characterClass) {
-        case CharacterClass::Warrior: stats.maxHealth = 16; break;
-        case CharacterClass::Mage: stats.maxHealth = 12; break;
-        case CharacterClass::Rogue: stats.maxHealth = 14; break;
-        default: stats.maxHealth = 16; break;
-    }
-
-
-    //character.maxHealth = 16;
-    stats.health = stats.maxHealth;
-    stats.attack = 5;
-    stats.defense = 3;
-    stats.speed = 4;
-    stats.hunger = 0;
-    stats.thirst = 0;
-    stats.movePoints = 0;
-    stats.level = 1;
+    stats.STR = 5;
+    stats.REF = 5;
+    stats.END = 5;
+    stats.INT = 5;
+    stats.PER = 5;
+    stats.CHA = 5;
+    stats.LUK = 5;
+    stats.HP = CalculateCharHealth(stats);
+    stats.LVL = 1;
     data.stats.emplace_back(stats);
-    data.characterClass.emplace_back(characterClass);
     data.orientation.emplace_back(Orientation::Right);
     data.equippedItemIdx.emplace_back();
     data.equippedItemIdx.back().fill(-1);
     data.statusEffects.emplace_back();
     data.skills.emplace_back();
     data.sprite.emplace_back();
+    data.selectedWeaponSlot.push_back(static_cast<int>(ItemEquipSlot::Weapon1));
     return (int) data.name.size()-1;
 }
 
@@ -76,12 +43,12 @@ void DeleteCharacter(CharacterData& data, int id) {
     data.sprite.erase(data.sprite.begin() + id);
     data.orientation.erase(data.orientation.begin() + id);
     data.equippedItemIdx.erase(data.equippedItemIdx.begin() + id);
-    data.characterClass.erase(data.characterClass.begin() + id);
     data.name.erase(data.name.begin() + id);
     data.ai.erase(data.ai.begin() + id);
     data.faction.erase(data.faction.begin() + id);
     data.statusEffects.erase(data.statusEffects.begin() + id);
     data.skills.erase(data.skills.begin() + id);
+    data.selectedWeaponSlot.erase(data.selectedWeaponSlot.begin() + id);
 }
 
 void ClearAllCharacters(CharacterData& data) {
@@ -89,12 +56,12 @@ void ClearAllCharacters(CharacterData& data) {
     data.sprite.clear();
     data.orientation.clear();
     data.equippedItemIdx.clear();
-    data.characterClass.clear();
     data.name.clear();
     data.ai.clear();
     data.faction.clear();
     data.statusEffects.clear();
     data.skills.clear();
+    data.selectedWeaponSlot.clear();
 }
 
 void GiveWeapon(GameData& data, int characterIdx, const std::string& itemTemplate, ItemEquipSlot slot) {
@@ -114,120 +81,6 @@ Vector2 GetOrientationVector(Orientation orientation) {
             return {1, 0};
     }
     return {0, 0};
-}
-
-// This could be in your Character struct or class
-void LevelUp(CharacterData &charData, int cid, bool autoDistributePoints) {
-    charData.stats[cid].level++;
-    int healthIncrease = 0;
-    int attackIncrease = 0;
-    int defenseIncrease = 0;
-    int speedIncrease = 0;
-
-    // Automatic stat increases per level
-    switch(charData.characterClass[cid]) {
-        case CharacterClass::Warrior:
-            healthIncrease = 6;
-            attackIncrease = 1;
-            defenseIncrease = 1;
-            break;
-        case CharacterClass::Mage:
-            healthIncrease = 2;
-            defenseIncrease = 1;
-            speedIncrease = 1;
-            break;
-        case CharacterClass::Rogue:
-            healthIncrease = 3;
-            defenseIncrease = 1;
-            speedIncrease = 1;
-            break;
-    }
-
-    // Apply automatic increases
-    charData.stats[cid].maxHealth += healthIncrease;
-    charData.stats[cid].attack += attackIncrease;
-    charData.stats[cid].defense += defenseIncrease;
-    charData.stats[cid].speed += speedIncrease;
-
-    if (charData.stats[cid].level % 2 == 0 && autoDistributePoints) {
-        int pointsToDistribute = 5;
-        int pointsPerStat = pointsToDistribute / 3;  // Divide points evenly
-        int remainder = pointsToDistribute % 3;      // The leftover points
-
-        // Distribute the evenly divided points
-        switch(charData.characterClass[cid]) {
-            case CharacterClass::Warrior: {
-                charData.stats[cid].maxHealth += pointsPerStat;
-                charData.stats[cid].attack += pointsPerStat;
-                charData.stats[cid].defense += pointsPerStat;
-
-                // Now distribute the remaining points
-                if (remainder > 0) {
-                    charData.stats[cid].attack++;  // Next point goes to attack
-                    remainder--;
-                }
-                if (remainder > 0) {
-                    charData.stats[cid].speed++;  // Extra point goes to health (for example)
-                    remainder--;
-                }
-                if (remainder > 0) {
-                    charData.stats[cid].defense++;  // Remaining point goes to defense
-                    remainder--;
-                }
-                break;
-            }
-            case CharacterClass::Mage: {
-                charData.stats[cid].maxHealth += pointsPerStat;
-                charData.stats[cid].attack += pointsPerStat;
-                charData.stats[cid].defense += pointsPerStat;
-
-                // Distribute the remaining points
-                if (remainder > 0) {
-                    charData.stats[cid].attack++;  // Extra point goes to attack
-                    remainder--;
-                }
-                if (remainder > 0) {
-                    charData.stats[cid].maxHealth++;  // Next point goes to health
-                    remainder--;
-                }
-                if (remainder > 0) {
-                    charData.stats[cid].defense++;  // Last point goes to defense
-                    remainder--;
-                }
-                break;
-            }
-            case CharacterClass::Rogue: {
-                charData.stats[cid].maxHealth += pointsPerStat;
-                charData.stats[cid].attack += pointsPerStat;
-                charData.stats[cid].speed += pointsPerStat;
-
-                // Distribute the remaining points
-                if (remainder > 0) {
-                    charData.stats[cid].attack++;  // Extra point goes to attack (for example)
-                    remainder--;
-                }
-                if (remainder > 0) {
-                    charData.stats[cid].defense++;  // Next point goes to defense
-                    remainder--;
-                }
-                if (remainder > 0) {
-                    charData.stats[cid].maxHealth++;  // Last point goes to health
-                    remainder--;
-                }
-                break;
-            }
-        }
-    }
-    charData.stats[cid].health = charData.stats[cid].maxHealth;
-}
-
-int GetAttack(GameData& data, int cid) {
-    int weaponItemId = GetEquippedItem(data, cid, ItemEquipSlot::Weapon1);
-    if(weaponItemId != -1) {
-        int tplIdx = GetItemTypeTemplateId(data, weaponItemId);
-        return data.charData.stats[cid].attack + data.weaponData.templateData.stats[tplIdx].baseAttack;
-    }
-    return data.charData.stats[cid].attack;
 }
 
 void FaceCharacter(SpriteData& spriteData, CharacterData &charData, int attackerId, int defenderId) {
@@ -255,10 +108,6 @@ void FaceCharacter(SpriteData& spriteData, CharacterData &charData, int attacker
     }
 }
 
-CharacterClass StringToClass(const std::string &className) {
-    return CharacterClass::Warrior;
-}
-
 CharacterFaction StringToFaction(const std::string &factionName) {
     if(factionName == "Player") return CharacterFaction::Player;
     if(factionName == "Npc") return CharacterFaction::Npc;
@@ -273,7 +122,8 @@ void SetEquippedItem(GameData& data, int charIdx, ItemEquipSlot slot, int itemId
     data.charData.equippedItemIdx[charIdx][static_cast<size_t>(slot)] = itemIdx;
     if(slot == ItemEquipSlot::Weapon1) {
         int tplIdx = GetItemTypeTemplateId(data, itemIdx);
-        SetCharacterSpriteWeaponAnimation(data.spriteData, data.charData.sprite[charIdx], data.weaponData.templateData.animationTemplate[tplIdx]);
+
+        SetCharacterSpriteWeaponAnimation(data.spriteData, data.charData.sprite[charIdx], data.weaponData.templateData[tplIdx].animationTemplate);
     }
 }
 
@@ -285,4 +135,19 @@ SpriteAnimationType CharacterOrientationToAnimType(GameData& data, int charId) {
         case Orientation::Right: return SpriteAnimationType::WalkRight;
     }
     std::abort();
+}
+
+int CalculateCharHealth(CharacterStats &stats) {
+    // HP = baseHP + (END × hpPerPoint) + (level - 1) × hpPerLevel
+    return 10 + (stats.END * 3) + ((stats.LVL - 1) * (stats.END / 2));
+}
+
+int CalculateCharInitiative(CharacterStats &stats) {
+    // Initiative = REF + Random(0, 5) + (LUK / 2)
+    return stats.REF + GetRandomValue(0, 5) + (stats.LUK / 2);
+}
+
+int CalculateCharMaxAP(CharacterStats &stats) {
+    // AP = 4 + (REF / 2)
+    return 4 + (stats.REF / 2);
 }

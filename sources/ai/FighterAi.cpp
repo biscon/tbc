@@ -7,6 +7,7 @@
 #include "level/PlayField.h"
 #include "Ai.h"
 #include "audio/SoundEffect.h"
+#include "level/LevelCamera.h"
 
 static bool AttackIfPossible(SpriteData& spriteData, CharacterData& charData, Level &level) {
     auto playersWithinRange = GetAdjacentCharacters(spriteData, charData, level, level.currentCharacter, CharacterFaction::Player);
@@ -36,10 +37,10 @@ static bool MoveIfPossible(SpriteData& spriteData, CharacterData& charData, Leve
         playField.path = playersWithinRange[0].second;
         playField.moving = true;
         CharacterStats& stats = charData.stats[level.currentCharacter];
-        stats.movePoints -= playersWithinRange[0].second.cost;
+        stats.AP -= playersWithinRange[0].second.cost;
         // cap at zero
-        if(stats.movePoints < 0) {
-            stats.movePoints = 0;
+        if(stats.AP < 0) {
+            stats.AP = 0;
         }
         level.turnState = TurnState::Move;
         StartCameraPanToTargetChar(spriteData, charData, level.camera, playersWithinRange[0].first, 250.0f);
@@ -54,15 +55,15 @@ static bool PartialMoveIfPossible(SpriteData& spriteData, CharacterData& charDat
     SortCharactersByThreat(level, playersWithinRange);
     CharacterStats& stats = charData.stats[level.currentCharacter];
 
-    if((int) playersWithinRange.size() > 0 && stats.movePoints > 0) {
+    if((int) playersWithinRange.size() > 0 && stats.AP > 0) {
         auto path = playersWithinRange[0].second;
         // truncate path to move points steps
-        if(path.path.size() > stats.movePoints) {
-            TraceLog(LOG_INFO, "Truncating path to %d steps", stats.movePoints);
-            path.path.resize(stats.movePoints);
-            path.cost = stats.movePoints;
+        if(path.path.size() > stats.AP) {
+            TraceLog(LOG_INFO, "Truncating path to %d steps", stats.AP);
+            path.path.resize(stats.AP);
+            path.cost = stats.AP;
         }
-        if(path.cost > stats.movePoints || path.cost == 0) {
+        if(path.cost > stats.AP || path.cost == 0) {
             TraceLog(LOG_INFO, "Cant move further toward player");
             level.turnState = TurnState::EndTurn;
             return false;
@@ -70,10 +71,10 @@ static bool PartialMoveIfPossible(SpriteData& spriteData, CharacterData& charDat
         playField.mode = PlayFieldMode::None;
         playField.path = path;
         playField.moving = true;
-        stats.movePoints -= path.cost;
+        stats.AP -= path.cost;
         // cap at zero
-        if(stats.movePoints < 0) {
-            stats.movePoints = 0;
+        if(stats.AP < 0) {
+            stats.AP = 0;
         }
         level.turnState = TurnState::Move;
         auto lastStep = path.path.back();

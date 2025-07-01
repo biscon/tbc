@@ -2,6 +2,7 @@
 #include "raymath.h"
 #include "data/GameData.h"
 #include "ai/PathFinding.h"
+#include "Lighting.h"
 #include <cmath>
 #include <cstdlib>
 

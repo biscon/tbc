@@ -16,6 +16,7 @@
 #include "level/Combat.h"
 #include "graphics/TileMap.h"
 #include "ai/PathFinding.h"
+#include "graphics/Lighting.h"
 
 static bool IsCharacterVisible(Level &level, int character) {
     // Check if the character is visible (not blinking)
@@ -73,14 +74,13 @@ static void DrawGridCharacters(GameData& data, Level &level) {
     });
 
 
-
     // Draw characters
     for (auto &character: sortedCharacters) {
         if(!HasLineOfSightToParty(spriteData, charData, level, character))
             continue;
         Vector2 charPos = GetAnimatedCharPos(data, level, character);
         // Draw oval shadow underneath
-        if(charData.stats[character].health > 0 && level.turnState != TurnState::Victory && level.turnState != TurnState::Defeat)
+        if(charData.stats[character].HP > 0 && level.turnState != TurnState::Victory && level.turnState != TurnState::Defeat)
             DrawEllipse((int) charPos.x, (int) charPos.y, 6, 4, Fade(BLACK, 0.25f));
 
         CharacterSprite& charSprite = charData.sprite[character];
@@ -99,10 +99,10 @@ static void DrawGridCharacters(GameData& data, Level &level) {
         }
         CharacterStats& stats = charData.stats[character];
         // Draw health bar
-        if(stats.health > 0 && level.turnState != TurnState::Victory && level.turnState != TurnState::Defeat && level.turnState != TurnState::None) {
-            DrawHealthBar(charPos.x - 8, charPos.y - 21, 15, (float) stats.health, (float) stats.maxHealth);
+        if(stats.HP > 0 && level.turnState != TurnState::Victory && level.turnState != TurnState::Defeat && level.turnState != TurnState::None) {
+            DrawHealthBar(charPos.x - 8, charPos.y - 21, 15, (float) stats.HP, (float) CalculateCharHealth(stats));
         } else if(std::count(level.partyCharacters.begin(), level.partyCharacters.end(), character)) {
-            DrawHealthBar(charPos.x - 8, charPos.y - 21, 15, (float) stats.health, (float) stats.maxHealth);
+            DrawHealthBar(charPos.x - 8, charPos.y - 21, 15, (float) stats.HP, (float) CalculateCharHealth(stats));
         }
     }
 }
@@ -284,7 +284,7 @@ static void updateActiveMovement(SpriteData& spriteData, CharacterData& charData
 
 static void checkIfPartySpotted(GameData& data, PlayField &playField, Level &level) {
     for(auto& c : level.allCharacters) {
-        if(data.charData.faction[c] != CharacterFaction::Enemy || data.charData.stats[c].health <= 0) {
+        if(data.charData.faction[c] != CharacterFaction::Enemy || data.charData.stats[c].HP <= 0) {
             continue;
         }
         Vector2i enemyGridPos = GetCharacterGridPosI(data.spriteData, data.charData.sprite[c]);

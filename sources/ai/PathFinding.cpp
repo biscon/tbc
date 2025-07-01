@@ -93,7 +93,7 @@ bool IsTileOccupied(SpriteData& spriteData, CharacterData& charData, Level &leve
     // check if any characters are in the way
     for (auto &character: level.allCharacters) {
         // skip dead
-        if (charData.stats[character].health <= 0) continue;
+        if (charData.stats[character].HP <= 0) continue;
         Vector2 gridPos = PixelToGridPosition(GetCharacterSpritePosX(spriteData, charData.sprite[character]), GetCharacterSpritePosY(spriteData, charData.sprite[character]));
         if ((int) gridPos.x == x && (int) gridPos.y == y && character != exceptCharacter) {
             //TraceLog(LOG_WARNING, "Player character in the way, x: %d, y: %d", x, y);
@@ -107,7 +107,7 @@ bool IsTileOccupiedEnemies(SpriteData& spriteData, CharacterData& charData, Leve
     if(GetTileAt(level.tileMap, NAV_LAYER, x, y) != 0) return true;
     for (auto &character: level.allCharacters) {
         // skip dead
-        if (charData.stats[character].health <= 0 || charData.faction[character] == CharacterFaction::Player)
+        if (charData.stats[character].HP <= 0 || charData.faction[character] == CharacterFaction::Player)
             continue;
         Vector2 gridPos = PixelToGridPosition(GetCharacterSpritePosX(spriteData, charData.sprite[character]), GetCharacterSpritePosY(spriteData, charData.sprite[character]));
         if ((int) gridPos.x == x && (int) gridPos.y == y && character != exceptCharacter) {
@@ -654,7 +654,7 @@ std::vector<int> GetTargetsInLine(SpriteData& spriteData, CharacterData& charDat
         for (auto &character : level.allCharacters) {
             if(character == exceptCharacter) continue;
             // skip dead
-            if (charData.stats[character].health <= 0) continue;
+            if (charData.stats[character].HP <= 0) continue;
             Vector2i charPos = GetCharacterSpritePosI(spriteData, charData.sprite[character]);
             Vector2i gridPos = PixelToGridPositionI(charPos.x, charPos.y);
             if (gridPos == tilePos) {

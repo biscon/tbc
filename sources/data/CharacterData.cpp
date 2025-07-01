@@ -5,44 +5,28 @@
 
 void to_json(nlohmann::json& j, const CharacterStats& m) {
     j = nlohmann::json {
-        {"health", m.health},
-        {"maxHealth", m.maxHealth},
-        {"attack", m.attack},
-        {"defense", m.defense},
-        {"speed", m.speed},
-        {"hunger", m.hunger},
-        {"thirst", m.thirst},
-        {"movePoints", m.movePoints},
-        {"level", m.level}
+        {"STR", m.STR},
+        {"REF", m.REF},
+        {"END", m.END},
+        {"INT", m.INT},
+        {"PER", m.PER},
+        {"CHA", m.CHA},
+        {"LUK", m.LUK},
+        {"LVL", m.LVL},
+        {"HP", m.HP}
     };
 }
 
 void from_json(const nlohmann::json& j, CharacterStats& m) {
-    j.at("health").get_to(m.health);
-    j.at("maxHealth").get_to(m.maxHealth);
-    j.at("attack").get_to(m.attack);
-    j.at("defense").get_to(m.defense);
-    j.at("speed").get_to(m.speed);
-    j.at("hunger").get_to(m.hunger);
-    j.at("thirst").get_to(m.thirst);
-    j.at("movePoints").get_to(m.movePoints);
-    j.at("level").get_to(m.level);
-}
-
-void to_json(nlohmann::json& j, const CharacterClass& c) {
-    switch (c) {
-        case CharacterClass::Warrior: j = "Warrior"; break;
-        case CharacterClass::Mage:    j = "Mage";    break;
-        case CharacterClass::Rogue:   j = "Rogue";   break;
-    }
-}
-
-void from_json(const nlohmann::json& j, CharacterClass& c) {
-    const std::string& s = j.get<std::string>();
-    if      (s == "Warrior") c = CharacterClass::Warrior;
-    else if (s == "Mage")    c = CharacterClass::Mage;
-    else if (s == "Rogue")   c = CharacterClass::Rogue;
-    else throw std::invalid_argument("Invalid CharacterClass: " + s);
+    j.at("STR").get_to(m.STR);
+    j.at("REF").get_to(m.REF);
+    j.at("END").get_to(m.END);
+    j.at("INT").get_to(m.INT);
+    j.at("PER").get_to(m.PER);
+    j.at("CHA").get_to(m.CHA);
+    j.at("LUK").get_to(m.LUK);
+    j.at("LVL").get_to(m.LVL);
+    j.at("HP").get_to(m.HP);
 }
 
 void to_json(nlohmann::json& j, const CharacterFaction& f) {

@@ -18,6 +18,8 @@
 #include "graphics/Animation.h"
 #include "Combat.h"
 #include "ai/PathFinding.h"
+#include "LevelCamera.h"
+#include "raymath.h"
 #include <cassert>
 
 void CreateLevelScreen(GameData& data) {
@@ -130,7 +132,7 @@ static void DisplayActionUI(GameData& data, Level &combat, PlayField &gridState,
     DrawTriangle(scrollRight[0], scrollRight[1], scrollRight[2], mouseOverScrollRight ? YELLOW : DARKGRAY);
 
     std::vector<ActionIcon> actionIcons = {
-            ActionIcon{"MOV", "Move", charData.stats[combat.currentCharacter].movePoints <= 0, nullptr},
+            ActionIcon{"MOV", "Move", charData.stats[combat.currentCharacter].AP <= 0, nullptr},
             ActionIcon{"ATK", "Attack", false, nullptr},
             ActionIcon{"DEF", "Defend (50% baseAttack reduction, cannot attack)", false, nullptr},
             ActionIcon{"END", "End turn (Do nothing)", false, nullptr},
@@ -349,15 +351,15 @@ static void DrawPathSelection(SpriteData& spriteData, CharacterData& charData, P
                                                                              (int) GetCharacterSpritePosY(spriteData, charData.sprite[level.currentCharacter])),
                      target, level.currentCharacter, IsTileOccupied)) {
             Color pathColor = Fade(WHITE, playField.highlightAlpha);
-            if (path.cost > stats.movePoints) {
-                playField.hintText = TextFormat("Not enough movement points (%d)", stats.movePoints);
+            if (path.cost > stats.AP) {
+                playField.hintText = TextFormat("Not enough movement points (%d)", stats.AP);
                 pathColor = Fade(RED, playField.highlightAlpha);
                 // Draw cross
                 DrawLine(gridPos.x * 16, gridPos.y * 16 + 1, gridPos.x * 16 + 15, gridPos.y * 16 + 16, pathColor);
                 DrawLine(gridPos.x * 16 + 15, gridPos.y * 16 + 1, gridPos.x * 16, gridPos.y * 16 + 16, pathColor);
 
             } else {
-                playField.hintText = TextFormat("Movement points %d/%d", path.cost, stats.movePoints);
+                playField.hintText = TextFormat("Movement points %d/%d", path.cost, stats.AP);
             }
             for (int i = 0; i < path.path.size() - 1; i++) {
                 Vector2 start = GridToPixelPosition(path.path[i].x, path.path[i].y);
@@ -377,14 +379,14 @@ static void DrawPathSelection(SpriteData& spriteData, CharacterData& charData, P
                 );
             }
             // Check for a mouse click
-            if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT) && path.cost <= stats.movePoints) {
+            if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT) && path.cost <= stats.AP) {
                 playField.mode = PlayFieldMode::None;
                 playField.path = path;
                 playField.moving = true;
-                stats.movePoints -= path.cost;
+                stats.AP -= path.cost;
                 // cap at zero
-                if (stats.movePoints < 0) {
-                    stats.movePoints = 0;
+                if (stats.AP < 0) {
+                    stats.AP = 0;
                 }
                 level.turnState = TurnState::Move;
                 PlaySoundEffect(SoundEffectType::Select);
@@ -418,7 +420,7 @@ static void DrawSelectCharacters(SpriteData& spriteData, CharacterData& charData
     Vector2 gridPos = PixelToGridPosition(mousePos.x, mousePos.y);
     for (auto &character: characters) {
         // skip death characters
-        if (charData.stats[character].health <= 0) {
+        if (charData.stats[character].HP <= 0) {
             continue;
         }
         if(onlyEnemies && charData.faction[character] == CharacterFaction::Player) {
@@ -657,7 +659,7 @@ void HandleInputLevelScreen(GameData& data, Level &level) {
     // check if mouse is over character
     for (auto &character: level.allCharacters) {
         // skip dead
-        if (data.charData.stats[character].health <= 0) {
+        if (data.charData.stats[character].HP <= 0) {
             continue;
         }
 

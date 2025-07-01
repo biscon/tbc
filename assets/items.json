@@ -1,25 +1,33 @@
 [
     {
-        "id": "item_weapon_sword",
-        "name": "Sword",
+        "id": "item_weapon_knife",
+        "name": "Combat Knife",
         "type": "Weapon",
-        "typeTemplateId": "weapon_sword",
+        "typeTemplateId": "knife_01",
         "value": 25,
         "stackable": false
     },
     {
-        "id": "item_weapon_staff",
-        "name": "Staff",
+        "id": "item_weapon_club",
+        "name": "Club",
         "type": "Weapon",
-        "typeTemplateId": "weapon_staff",
+        "typeTemplateId": "club_01",
         "value": 25,
         "stackable": false
     },
     {
-        "id": "item_weapon_bow",
-        "name": "Bow",
+        "id": "item_weapon_pistol",
+        "name": "9mm Pistol",
         "type": "Weapon",
-        "typeTemplateId": "weapon_bow",
+        "typeTemplateId": "pistol_01",
+        "value": 25,
+        "stackable": false
+    },
+    {
+        "id": "item_weapon_assault_rifle",
+        "name": "5.56mm Assault Rifle",
+        "type": "Weapon",
+        "typeTemplateId": "assault_rifle_01",
         "value": 25,
         "stackable": false
     }

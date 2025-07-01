@@ -52,11 +52,11 @@ void InitNpcTemplateData(NpcTemplateData &data, const std::string &filename) {
         int level = npcJson["level"].get<int>();
         data.level.emplace_back(level);
 
-        std::string charClass = npcJson["class"].get<std::string>();
-        data.characterClass.emplace_back(StringToClass(charClass));
-
         std::string faction = npcJson["faction"].get<std::string>();
         data.faction.emplace_back(StringToFaction(faction));
+
+        CharacterStats stats = npcJson["stats"].get<CharacterStats>();
+        data.stats.emplace_back(stats);
 
         data.npcTemplates[name] = (int) data.name.size()-1;
     }
@@ -69,14 +69,15 @@ int CreateCharacterFromTemplate(GameData& data, const std::string &npcTemplate) 
     auto it = npcTemplates.find(npcTemplate);
     if(it != npcTemplates.end()) {
         int templateIdx = it->second;
-        int charIdx = CreateCharacter(data.charData, tplData.characterClass[templateIdx],
+        int charIdx = CreateCharacter(data.charData,
                                       tplData.faction[templateIdx], tplData.charName[templateIdx],
                                       tplData.ai[templateIdx]);
 
-        // level up character to desired level
-        for(int i = 1; i < tplData.level[templateIdx]; ++i) {
-            LevelUp(data.charData, charIdx, true);
-        }
+        CharacterStats& stats = data.charData.stats[charIdx];
+        stats = data.npcTemplateData.stats[templateIdx];
+        stats.HP = CalculateCharHealth(stats);
+        stats.AP = CalculateCharMaxAP(stats);
+
         InitCharacterSprite(data.spriteData, data.charData.sprite[charIdx], tplData.characterSprite[templateIdx], true);
 
         // loop through equipment slots and instantiate items

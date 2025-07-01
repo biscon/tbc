@@ -19,6 +19,8 @@
 #include "SettingsData.h"
 #include "ItemData.h"
 #include "UiData.h"
+#include "LevelData.h"
+#include "PlayFieldData.h"
 
 const int gameScreenWidth = 640;
 const int gameScreenHeight = 360;

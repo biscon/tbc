@@ -5,6 +5,7 @@
 #include "BloodPool.h"
 #include "raylib.h"
 #include "ai/PathFinding.h"
+#include "Lighting.h"
 
 const Color DARK_BLOOD_RED = Color{139, 0, 0, 255};   // Dark blood red (#8B0000)
 const Color MEDIUM_BLOOD_RED = Color{178, 34, 34, 255};  // Medium blood red (#B22222)

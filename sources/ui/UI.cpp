@@ -38,67 +38,26 @@ void DrawStatusTextBg(const char* text, Color color, int y, int size, Font font)
     DrawTextEx(font, text, textPos, size, 1, color);
 }
 
-void DisplayCharacterStatsFloatingOLD(CharacterData& charData, int character, int x, int y, bool isPlayer) {
-    int statusEffectsHeight = (int)charData.statusEffects[character].size() * 12;
-
-    // Calculate the initial rectangle
-    auto backgroundRect = (Rectangle){(float)x, (float)y, 82, 76 + (float)statusEffectsHeight + 4}; // Adjusted height for level
-
-    // Adjust the rectangle position to fit within the screen boundaries
-    if (backgroundRect.x + backgroundRect.width > gameScreenWidth) {
-        backgroundRect.x = gameScreenWidth - backgroundRect.width - 2; // Push left
-    }
-    if (backgroundRect.x < 0) {
-        backgroundRect.x = 0; // Push right
-    }
-    if (backgroundRect.y + backgroundRect.height > gameScreenHeight) {
-        backgroundRect.y = gameScreenHeight - backgroundRect.height - 2; // Push up
-    }
-    if (backgroundRect.y < 0) {
-        backgroundRect.y = 0; // Push down
-    }
-
-    // Recalculate text offsets based on the adjusted position
-    int offsetX = (int)backgroundRect.x + 4;
-    int offsetY = (int)backgroundRect.y + 4;
-
-    CharacterStats& stats = charData.stats[character];
-    // Draw the adjusted rectangle and its content
-    DrawRectangleRounded(backgroundRect, 0.1f, 16, DARKGRAY);
-    DrawRectangleRoundedLinesEx(backgroundRect, 0.1f, 16, 1.0f, LIGHTGRAY);
-    DrawText(TextFormat("%s", charData.name[character].c_str()), offsetX, offsetY, 10, YELLOW);
-    DrawText(TextFormat("Level: %d", stats.level), offsetX, offsetY + 12, 10, WHITE); // Added level
-    DrawText(TextFormat("Health: %d/%d", stats.health, stats.maxHealth), offsetX, offsetY + 24, 10, WHITE);
-    DrawText(TextFormat("Attack: %d", stats.attack), offsetX, offsetY + 36, 10, WHITE);
-    DrawText(TextFormat("Defense: %d", stats.defense), offsetX, offsetY + 48, 10, WHITE);
-    DrawText(TextFormat("Speed: %d", stats.speed), offsetX, offsetY + 60, 10, WHITE); // Adjusted offsets
-
-    if (statusEffectsHeight > 0) {
-        DrawLine(backgroundRect.x, backgroundRect.y + 76, backgroundRect.x + 82, backgroundRect.y + 76, LIGHTGRAY); // Adjusted separator position
-        offsetY += 76;
-        // Show status effects
-        for (size_t i = 0; i < charData.statusEffects[character].size(); ++i) {
-            DrawText(TextFormat("%s", GetStatusEffectName(charData.statusEffects[character][i].type).c_str()), offsetX, offsetY + i * 12, 10, YELLOW);
-        }
-    }
-}
-
-void RenderCharacterStats(CharacterData& charData, int character, int x, int y, int width, Font font) {
-    const float fontSize = 10.0f;
+void RenderCharacterStats(CharacterData& charData, int character, int x, int y, int width, Font font, float fontSize) {
     const float spacing = 1.0f;
     const float padding = 0.0f;
-    const float lineHeight = fontSize + 2;
+    const float lineHeight = fontSize + 4;
 
     CharacterStats& stats = charData.stats[character];
     const std::string& name = charData.name[character];
 
     // Prepare label-value pairs
     std::vector<std::pair<std::string, std::string>> lines = {
-            { "Level", TextFormat("%d", stats.level) },
-            { "Health", TextFormat("%d/%d", stats.health, stats.maxHealth) },
-            { "Attack", TextFormat("%d", stats.attack) },
-            { "Defense", TextFormat("%d", stats.defense) },
-            { "Speed", TextFormat("%d", stats.speed) }
+            { "Strength", TextFormat("%d", stats.STR) },
+            { "Reflexes", TextFormat("%d", stats.REF) },
+            { "Endurance", TextFormat("%d", stats.END) },
+            { "Intelligence", TextFormat("%d", stats.INT) },
+            { "Perception", TextFormat("%d", stats.PER) },
+            { "Charisma", TextFormat("%d", stats.CHA) },
+            { "Luck", TextFormat("%d", stats.LUK) },
+            { "Level", TextFormat("%d", stats.LVL) },
+            { "Health", TextFormat("%d/%d", stats.HP, CalculateCharHealth(stats)) },
+            { "Action Points", TextFormat("%d/%d", stats.AP, CalculateCharMaxAP(stats)) },
     };
 
 
@@ -115,6 +74,7 @@ void RenderCharacterStats(CharacterData& charData, int character, int x, int y, 
 
     // Stats
     float lineY = bg.y;
+    int count = 0;
     for (const auto& [label, value] : lines) {
         Vector2 labelPos = { roundf(bg.x + padding), roundf(lineY) };
         Vector2 valuePos = {
@@ -122,8 +82,12 @@ void RenderCharacterStats(CharacterData& charData, int character, int x, int y, 
                 roundf(lineY)
         };
         DrawTextEx(font, label.c_str(), labelPos, fontSize, spacing, LIGHTGRAY);
-        DrawTextEx(font, value.c_str(), valuePos, fontSize, spacing, LIGHTGRAY);
-        lineY += lineHeight;
+        DrawTextEx(font, value.c_str(), valuePos, fontSize, spacing, GRAY);
+        lineY += count == 6 ? lineHeight + 5 : lineHeight;
+        if(count == 6) {
+            DrawLine(bg.x, lineY - 5, bg.x + bg.width, lineY - 5, DARKGRAY);
+        }
+        count++;
     }
 }
 
@@ -142,12 +106,17 @@ void DisplayCharacterStatsFloating(CharacterData& charData, int character, int x
 
     // Prepare label-value pairs
     std::vector<std::pair<std::string, std::string>> lines = {
-            { "Level", TextFormat("%d", stats.level) },
-            { "Health", TextFormat("%d/%d", stats.health, stats.maxHealth) },
-            { "Attack", TextFormat("%d", stats.attack) },
-            { "Defense", TextFormat("%d", stats.defense) },
-            { "Speed", TextFormat("%d", stats.speed) }
+            { "STR", TextFormat("%d", stats.STR) },
+            { "REF", TextFormat("%d", stats.REF) },
+            { "END", TextFormat("%d", stats.END) },
+            { "INT", TextFormat("%d", stats.INT) },
+            { "PER", TextFormat("%d", stats.PER) },
+            { "CHA", TextFormat("%d", stats.CHA) },
+            { "LUK", TextFormat("%d", stats.LUK) },
+            { "Level", TextFormat("%d", stats.LVL) },
+            { "HP", TextFormat("%d/%d", stats.HP, CalculateCharHealth(stats)) },
     };
+
 
     // Include status effect height
     int statusCount = (int)charData.statusEffects[character].size();

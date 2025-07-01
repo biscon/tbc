@@ -9,25 +9,6 @@
 #include "data/GameData.h"
 #include "util/MathUtil.h"
 
-struct LevelCamera {
-    Camera2D camera;
-    Vector2 cameraVelocity;
-    Vector2 cameraPanTarget;
-    Vector2 cameraStartPos;
-    bool cameraPanning;
-    float cameraPanDuration;
-    float cameraPanElapsed;
-    int worldWidth;
-    int worldHeight;
-    bool cameraLockX;
-    bool cameraLockY;
-    // Extra margin to allow overscroll (in pixels)
-    int overscrollLeft = 0;
-    int overscrollRight = 0;
-    int overscrollTop = 0;
-    int overscrollBottom = 0;
-};
-
 void InitLevelCamera(LevelCamera& cam);
 void StartCameraPanToTargetPos(LevelCamera& cam, Vector2 target, float speed);
 void StartCameraPanToTilePos(LevelCamera& cam, Vector2i target, float speed);

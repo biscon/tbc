@@ -15,6 +15,7 @@ static const int firstRowOffset = 16;
 static const int rowRightMargin = 20;
 static const Rectangle scrollBarRect = {invRect.x + invRect.width - 14, invRect.y + firstRowOffset, 10, invRect.height - firstRowOffset - 24};
 static const int scrollbarMinHeight = 16;
+static const Rectangle charInfoRect = {8, 8, 125, gameScreenHeight - 100};
 
 void InitInventory(GameData& data) {
     data.ui.inventory.scrollOffset = 0;
@@ -33,6 +34,8 @@ void InitInventory(GameData& data) {
     data.ui.inventory.buttons["close"] = closeButton;
 
     data.ui.inventory.contextButtons.clear();
+    data.ui.inventory.weapon1Region = CreateClickRegion({charInfoRect.x + 5, 190, charInfoRect.width - 10, 9});
+    data.ui.inventory.weapon2Region = CreateClickRegion({charInfoRect.x + 5, 200, charInfoRect.width - 10, 9});
 }
 
 static void UpdateContextButtons(GameData& data) {
@@ -114,7 +117,6 @@ static void RenderScrollBar(GameData& data, int maxItems) {
 static void RenderCharacterInfo(GameData& data) {
     int charId = data.party[data.ui.selectedCharacter];
     auto& sprite = data.charData.sprite[charId];
-    static const Rectangle charInfoRect = {8, 8, 125, gameScreenHeight - 100};
 
     DrawRectangleRec(charInfoRect, Color{15, 15, 15, 200});
     DrawRectangleRoundedLinesEx(charInfoRect, 0.03f, 4, 1.0f, DARKGRAY);
@@ -137,28 +139,49 @@ static void RenderCharacterInfo(GameData& data) {
     StartPausedCharacterSpriteAnim(data.spriteData, sprite, animType, true);
 
     DrawLine(charInfoRect.x + 5, 72, charInfoRect.x + charInfoRect.width - 5, 72, DARKGRAY);
-    RenderCharacterStats(data.charData, charId, charInfoRect.x + 5, 76, charInfoRect.width - 10, GetFontDefault());
+    RenderCharacterStats(data.charData, charId, charInfoRect.x + 5, 76, charInfoRect.width - 10, data.smallFont1, 5);
 
     int labelWidth = MeasureText("Equipment", 10);
-    DrawLine(charInfoRect.x + 5, 138, charInfoRect.x + charInfoRect.width - 5, 138, DARKGRAY);
-    DrawText("Equipment", charInfoRect.x + halfWidth - (labelWidth/2), 144, 10, WHITE);
-    int ypos = 160;
+    DrawLine(charInfoRect.x + 5, 170, charInfoRect.x + charInfoRect.width - 5, 170, DARKGRAY);
+    DrawText("Equipment", charInfoRect.x + halfWidth - (labelWidth/2), 177, 10, WHITE);
+    int ypos = 192;
 
     for (size_t i = 0; i < static_cast<size_t>(ItemEquipSlot::COUNT); ++i) {
         int itemId = data.charData.equippedItemIdx[charId][i];
-        std::string slotName = GetEquipSlotName(static_cast<ItemEquipSlot>(i));
-        DrawTextEx(data.smallFont1, slotName.c_str(), { charInfoRect.x + 5, (float) ypos}, 5, 1, LIGHTGRAY);
+        ItemEquipSlot slot = static_cast<ItemEquipSlot>(i);
+        std::string slotName = GetEquipSlotName(slot);
+        bool selectedSlot = data.charData.selectedWeaponSlot[charId] == i;
+        bool hovered = false;
+
+        if(data.ui.inventory.weapon1Region.hovered && i == static_cast<int>(ItemEquipSlot::Weapon1)) {
+            hovered = true;
+        }
+        if(data.ui.inventory.weapon2Region.hovered && i == static_cast<int>(ItemEquipSlot::Weapon2)) {
+            hovered = true;
+        }
+
+        DrawTextEx(data.smallFont1, slotName.c_str(), { charInfoRect.x + 5, (float) ypos}, 5, 1, selectedSlot ? YELLOW : (hovered ? WHITE : LIGHTGRAY));
         std::string itemName = "none";
-        Color itemColor = GRAY;
+
+        Color itemColor = selectedSlot ? YELLOW : (hovered ? WHITE : GRAY);
         if(itemId != -1) {
             ItemTemplate& tmpl = data.itemData.templateData[GetItemTemplateId(data, itemId)];
             itemName = tmpl.name;
-            itemColor = YELLOW;
         }
         Vector2 textDims = MeasureTextEx(data.smallFont1, itemName.c_str(), 5.0f, 1.0f);
         DrawTextEx(data.smallFont1, itemName.c_str(), { charInfoRect.x + charInfoRect.width - textDims.x - 5, (float) ypos}, 5, 1, itemColor);
         ypos += 10;
     }
+    Rectangle hoverRect;
+    if(data.ui.inventory.weapon1Region.hovered) {
+        hoverRect = data.ui.inventory.weapon1Region.rect;
+    }
+    if(data.ui.inventory.weapon2Region.hovered) {
+        hoverRect = data.ui.inventory.weapon2Region.rect;
+    }
+    hoverRect.x -= 2.0f;
+    hoverRect.width += 4.0f;
+    DrawRectangleLinesEx(hoverRect, 1.0f, WHITE);
 }
 
 void RenderInventoryUI(GameData& data) {
@@ -207,6 +230,9 @@ void RenderInventoryUI(GameData& data) {
     RenderButtons(data.ui.inventory.contextButtons, data.smallFont1, 5.0f);
     RenderCharacterInfo(data);
 
+    //DrawRectangleRec(data.ui.inventory.weapon1Region.rect, ColorAlpha(GREEN, 0.5f));
+    //DrawRectangleRec(data.ui.inventory.weapon2Region.rect, ColorAlpha(RED, 0.5f));
+
     // Render tooltips
     if (data.ui.inventory.hoveredIndex >= 0 && data.ui.inventory.hoveredIndex < (int)partyInventory.items.size()) {
         int itemId = partyInventory.items.at(data.ui.inventory.hoveredIndex);
@@ -232,8 +258,9 @@ static void EquipSelectedItem(GameData& data) {
     int charId = data.ui.selectedCharacter;
     switch(tpl.type) {
         case ItemType::Weapon: {
-            int prevItem = GetEquippedItem(data, charId, ItemEquipSlot::Weapon1);
-            SetEquippedItem(data, charId, ItemEquipSlot::Weapon1, itemId);
+            ItemEquipSlot selectedSlot = static_cast<ItemEquipSlot>(data.charData.selectedWeaponSlot[charId]);
+            int prevItem = GetEquippedItem(data, charId, selectedSlot);
+            SetEquippedItem(data, charId, selectedSlot, itemId);
             partyInventory.items.erase(partyInventory.items.begin() + data.ui.inventory.selectedIndex);
             if(prevItem != -1) {
                 partyInventory.items.push_back(prevItem);
@@ -260,7 +287,7 @@ bool HandleInventoryInput(GameData& data) {
     }
     Vector2 mouse = GetMousePosition();
 
-    if (!CheckCollisionPointRec(mouse, invRect)) return false;
+    if (!CheckCollisionPointRec(mouse, invRect) && !CheckCollisionPointRec(mouse, charInfoRect)) return false;
 
     if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
         float rowY = invRect.y + firstRowOffset;
@@ -284,6 +311,15 @@ bool HandleInventoryInput(GameData& data) {
     HandleInputButtons(data.ui.inventory.contextButtons);
     if(data.ui.inventory.contextButtons["equip"].region.ConsumeClick()) {
         EquipSelectedItem(data);
+    }
+
+    data.ui.inventory.weapon1Region.Update(mouse);
+    if(data.ui.inventory.weapon1Region.ConsumeClick()) {
+        data.charData.selectedWeaponSlot[data.ui.selectedCharacter] = static_cast<int>(ItemEquipSlot::Weapon1);
+    }
+    data.ui.inventory.weapon2Region.Update(mouse);
+    if(data.ui.inventory.weapon2Region.ConsumeClick()) {
+        data.charData.selectedWeaponSlot[data.ui.selectedCharacter] = static_cast<int>(ItemEquipSlot::Weapon2);
     }
     return true;
 }

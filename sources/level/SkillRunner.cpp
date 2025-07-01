@@ -90,7 +90,7 @@ SkillResult ExecuteSkill(GameData& data, Level& level, PlayField& playField) {
                     Vector2 tPos = GetCharacterSpritePos(spriteData, charData.sprite[t]);
                     CreateExplosionEffect(*playField.particleManager, tPos, 10, 16.0f, 0.2f);
                     // check if dead
-                    if(charData.stats[t].health <= 0) {
+                    if(charData.stats[t].HP <= 0) {
                         KillCharacter(spriteData, charData, level, t);
                     } else {
                         PlayDefendAnimation(spriteData, charData, level, user, t);

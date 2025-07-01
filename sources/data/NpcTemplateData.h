@@ -13,7 +13,7 @@
 struct NpcTemplateData {
     std::vector<std::string> name;
     std::vector<std::string> charName;
-    std::vector<CharacterClass> characterClass;
+    std::vector<CharacterStats> stats;
     std::vector<CharacterFaction> faction;
     std::vector<std::string> ai;
     std::vector<std::string> characterSprite;
