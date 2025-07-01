@@ -111,6 +111,7 @@ struct InventoryUiState {
     std::unordered_map<std::string, Button> contextButtons;
 };
 
+// old stuff, to be deleted
 struct ActionIcon {
     char text[64];
     char description[256];
@@ -118,9 +119,29 @@ struct ActionIcon {
     Skill* skill;
 };
 
+enum class ActionBarAction {
+    Move,
+    Attack,
+    Reload,
+    EndTurn
+};
+
+struct ActionBarIcon {
+    ActionBarAction action;
+    std::string text;
+    std::string tooltip;
+    ClickRegion region;
+    bool enabled;
+};
+
 struct ActionBarUI {
     int actionIconScrollIndex;
     bool showActionBarTitle;
+
+    // new stuff
+    ClickRegion switchWeapons;
+    std::array<ActionBarIcon, 8> actionIcons;
+    std::array<ActionBarIcon, 4> modeIcons;
 };
 
 struct PlayFieldUI {
@@ -134,7 +155,8 @@ struct UiState {
     PlayFieldUI playField;
     int selectedCharacter = 0;
     GameEventQueue eventQueue;
-
+    bool inCombat = false;
+    int iconSpriteSheet;
 };
 
 #endif //SANDBOX_UIDATA_H

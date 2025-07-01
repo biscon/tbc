@@ -13,6 +13,7 @@
 #include "game/Quest.h"
 #include "game/Settings.h"
 #include "game/Items.h"
+#include "ui/UI.h"
 
 #define MAX(a, b) ((a)>(b)? (a) : (b))
 #define MIN(a, b) ((a)<(b)? (a) : (b))
@@ -63,6 +64,8 @@ int main() {
     InitItemData(game, ASSETS_PATH"items.json");
 
     InitNpcTemplateData(game.npcTemplateData, ASSETS_PATH"npcs.json");
+
+    InitUI(game);
 
     InitGameMode();
     PushGameMode(GameModes::Menu);
@@ -149,6 +152,8 @@ int main() {
     }
 
     DestroyGameMode();
+
+    DestroyUI(game);
 
     // De-Initialization
     //--------------------------------------------------------------------------------------

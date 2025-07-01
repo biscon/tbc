@@ -150,6 +150,9 @@ add_executable(${PROJECT_NAME}
         sources/data/LevelData.h
         sources/data/PlayFieldData.cpp
         sources/data/PlayFieldData.h
+        sources/ui/ActionBar.cpp
+        sources/ui/ActionBar.h
+        sources/ui/Icons.h
 )
 target_sources(${PROJECT_NAME} PRIVATE ${PROJECT_SOURCES})
 target_include_directories(${PROJECT_NAME} PRIVATE ${PROJECT_INCLUDE})

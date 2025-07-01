@@ -5,7 +5,6 @@
 #include <algorithm>
 #include <cmath>
 #include <queue>
-#include <unordered_set>
 #include "PlayField.h"
 #include "raylib.h"
 #include "ui/UI.h"

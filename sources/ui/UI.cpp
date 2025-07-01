@@ -5,6 +5,7 @@
 #include "UI.h"
 #include "raymath.h"
 #include "data/GameData.h"
+#include "graphics/SpriteSheet.h"
 
 static const Color bgColor = Color{15, 15, 15, 200};
 
@@ -315,4 +316,13 @@ void DrawRectangleCorners(Rectangle& rect, Color color, int cornerSize) {
     // Bottom-right
     DrawLine(right - cornerSize, bottom - 1, right-1, bottom - 1, color);  // horizontal
     DrawLine(right, bottom - cornerSize, right, bottom-1, color);  // vertical
+}
+
+void InitUI(GameData &data) {
+    int sheet = LoadSpriteSheet(data.spriteData.sheet, ASSETS_PATH"icons_16x16.png", 16, 16);
+    data.ui.iconSpriteSheet = sheet;
+}
+
+void DestroyUI(GameData &data) {
+    UnloadSpriteSheet(data.spriteData.sheet, data.ui.iconSpriteSheet);
 }

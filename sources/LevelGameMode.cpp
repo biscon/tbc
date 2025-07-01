@@ -18,6 +18,7 @@
 #include "ui/Inventory.h"
 #include "level/LevelCamera.h"
 #include "graphics/Lighting.h"
+#include "ui/ActionBar.h"
 
 static GameData* game;
 static Level level;
@@ -59,6 +60,7 @@ static void processEvents() {
                 break;
             }
             case GameEventType::PartySpotted: {
+                game->ui.inCombat = true;
                 playField.mode = PlayFieldMode::None;
                 StartCombat(game->spriteData, game->charData, level, event.partySpotted.spotter);
                 break;
@@ -66,14 +68,16 @@ static void processEvents() {
             case GameEventType::EndCombat: {
                 level.turnState = TurnState::None;
                 playField.mode = PlayFieldMode::Explore;
+                game->ui.inCombat = false;
                 for(auto& c : level.partyCharacters) {
                     // Set initial animation to paused
                     CharacterSprite& sprite = game->charData.sprite[c];
                     StartPausedCharacterSpriteAnim(game->spriteData, sprite, SpriteAnimationType::WalkDown, true);
                     game->charData.orientation[c] = Orientation::Down;
                     game->charData.statusEffects[c].clear();
+                    // revive dead party chars
                     if(game->charData.stats[c].HP <= 0) {
-                        game->charData.stats[c].HP = 1;
+                        game->charData.stats[c].HP = CalculateCharHealth(game->charData.stats[c]);
                         SetCharacterSpriteRotation(game->spriteData, sprite, 0);
                     }
                 }
@@ -241,7 +245,7 @@ void LevelInit() {
 
     InitBloodRendering();
     InitInventory(*game);
-
+    InitActionBar(*game);
 }
 
 void LevelDestroy() {
@@ -261,6 +265,7 @@ void LevelUpdate(float dt) {
     UpdateDialogue(*game, dt);
     UpdatePartySideBar(*game, dt);
     UpdateInventory(*game, dt);
+    UpdateActionBar(*game, dt);
 
     UpdateVisibilityMap(*game, level);
     UpdateVisibilityTexture(level.lighting);
@@ -271,7 +276,7 @@ void LevelHandleInput() {
     processEvents();
     if(game->state != GameState::DIALOGUE && game->state != GameState::INVENTORY) {
         handleCameraMovement();
-        if(!HandlePartySideBarInput(*game)) {
+        if(!HandlePartySideBarInput(*game) && !HandleActionBarInput(*game)) {
             HandleInputPlayField(*game, playField, level);
         }
         HandleInputLevelScreen(*game, level);
@@ -280,6 +285,7 @@ void LevelHandleInput() {
         if(game->state == GameState::INVENTORY) {
             HandleInventoryInput(*game);
             HandlePartySideBarInput(*game);
+            HandleActionBarInput(*game);
         }
     }
 
@@ -341,6 +347,9 @@ void LevelRenderLevel() {
 void LevelRenderUi() {
     DrawLevelScreen(*game, level, playField);
     RenderPartySideBarUI(*game);
+    if(game->state != GameState::DIALOGUE) {
+        RenderActionBarUI(*game);
+    }
     RenderDialogueUI(*game);
     if(game->state == GameState::INVENTORY)
         RenderInventoryUI(*game);

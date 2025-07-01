@@ -8,6 +8,8 @@
 #include "raylib.h"
 #include "character/Character.h"
 
+void InitUI(GameData& data);
+void DestroyUI(GameData& data);
 void DrawStatusText(const char* text, Color color, int y, int size);
 void DrawStatusTextBg(const char* text, Color color, int y, int size, Font font);
 void RenderCharacterStats(CharacterData& charData, int character, int x, int y, int width, Font font, float fontSize);
