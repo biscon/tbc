@@ -132,6 +132,7 @@ struct ActionBarIcon {
     ClickRegion region;
     bool enabled;
     bool selectable;
+    int icon = -1;
 };
 
 struct ActionBarUI {

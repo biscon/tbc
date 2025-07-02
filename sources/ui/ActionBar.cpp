@@ -41,11 +41,17 @@ void InitActionBar(GameData &data) {
 
 static void RenderIcon(GameData& data, ActionBarIcon& icon, bool selected) {
     bool hovered = icon.region.hovered;
-    DrawRectangleLinesEx(icon.region.rect, 1.0f, icon.enabled ? (selected ? YELLOW : (hovered ? WHITE : DARKGRAY)) : ColorAlpha(DARKGRAY, 0.5f));
-    Vector2 textDims = MeasureTextEx(data.smallFont1, icon.text.c_str(), 5, 1);
-    DrawTextEx(data.smallFont1, icon.text.c_str(), {
-        floorf((icon.region.rect.x + (icon.region.rect.width/2)) - (textDims.x/2)),
-        icon.region.rect.y + 10}, 5, 1, LIGHTGRAY);
+    Color color = icon.enabled ? (selected ? YELLOW : (hovered ? WHITE : DARKGRAY)) : ColorAlpha(DARKGRAY, 0.5f);
+    Color textColor = icon.enabled ? (selected ? YELLOW : (hovered ? WHITE : GRAY)) : ColorAlpha(DARKGRAY, 0.5f);
+    DrawRectangleLinesEx(icon.region.rect, 1.0f, color);
+    if(icon.icon == -1) {
+        Vector2 textDims = MeasureTextEx(data.smallFont1, icon.text.c_str(), 5, 1);
+        DrawTextEx(data.smallFont1, icon.text.c_str(), {
+                floorf((icon.region.rect.x + (icon.region.rect.width / 2)) - (textDims.x / 2)),
+                icon.region.rect.y + 10}, 5, 1, textColor);
+    } else {
+        DrawIcon(data, icon.region.rect.x + 4, icon.region.rect.y + 4, textColor, icon.icon);
+    }
 }
 
 // Render action icon grid
@@ -133,12 +139,14 @@ static void UpdateActionBarActions(GameData& data) {
     auto& icons = data.ui.actionBar.actionIcons;
     icons[0].enabled = true;
     icons[0].selectable = true;
+    icons[0].icon = ICON_MOVE;
     icons[0].text = "Move";
     icons[0].tooltip = "Move to a new location.";
     icons[0].action = ActionBarAction::Move;
 
     icons[1].enabled = true;
     icons[1].selectable = true;
+    icons[1].icon = ICON_ATTACK;
     icons[1].text = "Atk";
     icons[1].tooltip = "Attack enemy character if in range.";
     icons[1].action = ActionBarAction::Attack;
@@ -150,6 +158,7 @@ static void UpdateActionBarActions(GameData& data) {
         if(ranged->currentAmmo == 0) {
             icons[i].enabled = true;
             icons[i].selectable = false;
+            icons[i].icon = ICON_RELOAD;
             icons[i].text = "Rel";
             icons[i].tooltip = "Reload the currently selected weapon.";
             icons[i].action = ActionBarAction::Reload;
@@ -160,6 +169,7 @@ static void UpdateActionBarActions(GameData& data) {
     i = 7;
     icons[i].enabled = true;
     icons[i].selectable = false;
+    icons[i].icon = ICON_END_TURN;
     icons[i].text = "End";
     icons[i].tooltip = "End the characters current turn.";
     icons[i].action = ActionBarAction::EndTurn;
