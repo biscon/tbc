@@ -26,11 +26,10 @@ struct ClickRegion {
 
     void Update(Vector2 mouse) {
         float timeNow = static_cast<float>(GetTime());
+        hovered = false;
 
         if (CheckCollisionPointRec(mouse, rect)) {
             hovered = true;
-        } else {
-            hovered = false;
         }
 
         // Start press
@@ -132,6 +131,7 @@ struct ActionBarIcon {
     std::string tooltip;
     ClickRegion region;
     bool enabled;
+    bool selectable;
 };
 
 struct ActionBarUI {
@@ -142,6 +142,8 @@ struct ActionBarUI {
     ClickRegion switchWeapons;
     std::array<ActionBarIcon, 8> actionIcons;
     std::array<ActionBarIcon, 4> modeIcons;
+    int selectedActionIdx = -1;
+    int selectedModeIdx = -1;
 };
 
 struct PlayFieldUI {

@@ -19,6 +19,6 @@ Color GetDamageColor(int dmg, int attackerAttack);
 void RenderButtons(const std::unordered_map<std::string, Button> &buttons, const Font& font, float fontSize);
 bool HandleInputButtons(std::unordered_map<std::string, Button> &buttons);
 void DrawRectangleCorners(Rectangle& rect, Color color, int cornerSize);
-
+void DrawToolTip(Font& font, float fontSize, float spacing, std::string tooltip);
 
 #endif //SANDBOX_UI_H

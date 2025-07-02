@@ -240,14 +240,7 @@ void RenderInventoryUI(GameData& data) {
         ItemTemplate& tmpl = data.itemData.templateData[inst.templateId];
         std::string tooltip = "Some placeholder tooltip for: " + tmpl.name;
 
-        Vector2 mouse = GetMousePosition();
-        Vector2 size = MeasureTextEx(font, tooltip.c_str(), fontSize, spacing);
-        size.x = ceilf(size.x); size.y = ceilf(size.y);
-
-        Rectangle tipRect = {floorf(mouse.x + 8), ceilf(mouse.y + 8), size.x + 4, size.y + 4};
-        DrawRectangleRec(tipRect, Color{15, 15, 15, 200});
-        DrawRectangleLinesEx(tipRect, 1, DARKGRAY);
-        DrawTextEx(font, tooltip.c_str(), {tipRect.x + 2, tipRect.y + 2}, fontSize, spacing, LIGHTGRAY);
+        DrawToolTip(data.smallFont1, 5, 1, tooltip);
     }
 }
 
@@ -281,11 +274,17 @@ static void EquipSelectedItem(GameData& data) {
 }
 
 bool HandleInventoryInput(GameData& data) {
+    Vector2 mouse = GetMousePosition();
+    HandleInputButtons(data.ui.inventory.buttons);
+    HandleInputButtons(data.ui.inventory.contextButtons);
+    data.ui.inventory.weapon1Region.Update(mouse);
+    data.ui.inventory.weapon2Region.Update(mouse);
+
     if (IsKeyPressed(KEY_ESCAPE)) {
         PublishCloseInventoryEvent(data.ui.eventQueue);
         return true;
     }
-    Vector2 mouse = GetMousePosition();
+
 
     if (!CheckCollisionPointRec(mouse, invRect) && !CheckCollisionPointRec(mouse, charInfoRect)) return false;
 
@@ -303,23 +302,22 @@ bool HandleInventoryInput(GameData& data) {
             rowY += (float) (itemHeightPx + separator);
         }
     }
-    HandleInputButtons(data.ui.inventory.buttons);
+
     if(data.ui.inventory.buttons["close"].region.ConsumeClick()) {
         data.ui.inventory.buttons["close"].hovered = false;
         PublishCloseInventoryEvent(data.ui.eventQueue);
     }
-    HandleInputButtons(data.ui.inventory.contextButtons);
+
     if(data.ui.inventory.contextButtons["equip"].region.ConsumeClick()) {
         EquipSelectedItem(data);
     }
 
-    data.ui.inventory.weapon1Region.Update(mouse);
     if(data.ui.inventory.weapon1Region.ConsumeClick()) {
-        data.charData.selectedWeaponSlot[data.ui.selectedCharacter] = static_cast<int>(ItemEquipSlot::Weapon1);
+        SetSelectedWeaponSlot(data, data.ui.selectedCharacter, ItemEquipSlot::Weapon1);
     }
-    data.ui.inventory.weapon2Region.Update(mouse);
+
     if(data.ui.inventory.weapon2Region.ConsumeClick()) {
-        data.charData.selectedWeaponSlot[data.ui.selectedCharacter] = static_cast<int>(ItemEquipSlot::Weapon2);
+        SetSelectedWeaponSlot(data, data.ui.selectedCharacter, ItemEquipSlot::Weapon2);
     }
     return true;
 }

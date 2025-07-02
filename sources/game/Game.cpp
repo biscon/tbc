@@ -31,7 +31,7 @@ void StartNewGame(GameData &data) {
     id = CreateCharacter(data.charData, CharacterFaction::Player, "Player2", "Fighter");
     AssignSkill(data.charData.skills[id], SkillType::Dodge, "Dodge", 1, true, true, 0, 0, 0);
     AssignSkill(data.charData.skills[id], SkillType::FlameJet, "Burning Hands", 1, false, false, 0, 3, 5);
-    InitCharacterSprite(data.spriteData, data.charData.sprite[id], "MaleWarrior", true);
+    InitCharacterSprite(data.spriteData, data.charData.sprite[id], "MaleBase", true);
     GiveWeapon(data, id, "item_weapon_club", ItemEquipSlot::Weapon1);
     data.charData.stats[id].LVL = 5;
     data.charData.stats[id].HP = CalculateCharHealth(data.charData.stats[id]);

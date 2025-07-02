@@ -27,9 +27,14 @@ CharacterFaction StringToFaction(const std::string& factionName);
 int GetEquippedItem(const GameData& data, int charIdx, ItemEquipSlot slot);
 void SetEquippedItem(GameData& data, int charIdx, ItemEquipSlot slot, int itemIdx);
 SpriteAnimationType CharacterOrientationToAnimType(GameData& data, int charId);
+void SetSelectedWeaponSlot(GameData& data, int charId, ItemEquipSlot slot);
+void SwapWeapons(GameData& data, int charIdx);
 
 int CalculateCharHealth(CharacterStats& stats);
 int CalculateCharInitiative(CharacterStats &stats);
 int CalculateCharMaxAP(CharacterStats &stats);
+
+WeaponTemplate* GetSelectedWeaponTemplate(GameData& data, int charId);
+WeaponRanged* GetSelectedRangedTemplate(GameData& data, int charId);
 
 #endif //SANDBOX_CHARACTER_H

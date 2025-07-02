@@ -120,9 +120,8 @@ int GetEquippedItem(const GameData& data, int charIdx, ItemEquipSlot slot) {
 
 void SetEquippedItem(GameData& data, int charIdx, ItemEquipSlot slot, int itemIdx) {
     data.charData.equippedItemIdx[charIdx][static_cast<size_t>(slot)] = itemIdx;
-    if(slot == ItemEquipSlot::Weapon1) {
+    if(data.charData.selectedWeaponSlot[charIdx] == static_cast<int>(slot) && itemIdx != -1) {
         int tplIdx = GetItemTypeTemplateId(data, itemIdx);
-
         SetCharacterSpriteWeaponAnimation(data.spriteData, data.charData.sprite[charIdx], data.weaponData.templateData[tplIdx].animationTemplate);
     }
 }
@@ -150,4 +149,69 @@ int CalculateCharInitiative(CharacterStats &stats) {
 int CalculateCharMaxAP(CharacterStats &stats) {
     // AP = 4 + (REF / 2)
     return 4 + (stats.REF / 2);
+}
+
+void SetSelectedWeaponSlot(GameData& data, int charId, ItemEquipSlot slot) {
+    data.charData.selectedWeaponSlot[charId] = static_cast<int>(slot);
+    int itemId = GetEquippedItem(data, data.ui.selectedCharacter, slot);
+    if(itemId != -1) {
+        int tplIdx = GetItemTypeTemplateId(data, itemId);
+        SetCharacterSpriteWeaponAnimation(data.spriteData, data.charData.sprite[charId],
+                                          data.weaponData.templateData[tplIdx].animationTemplate);
+        SpriteAnimationType animType = CharacterOrientationToAnimType(data, charId);
+        StartPausedCharacterSpriteAnim(data.spriteData, data.charData.sprite[charId], animType, true);
+    } else {
+        data.charData.sprite[charId].displayWeapon = false;
+    }
+}
+
+void SwapWeapons(GameData &data, int charIdx) {
+    auto selectedSlot = static_cast<ItemEquipSlot>(data.charData.selectedWeaponSlot[charIdx]);
+    switch(selectedSlot) {
+        case ItemEquipSlot::Weapon1:
+            data.charData.selectedWeaponSlot[charIdx] = static_cast<int>(ItemEquipSlot::Weapon2);
+            break;
+        case ItemEquipSlot::Weapon2:
+            data.charData.selectedWeaponSlot[charIdx] = static_cast<int>(ItemEquipSlot::Weapon1);
+            break;
+        default:
+            throw std::runtime_error("");
+    }
+    selectedSlot = static_cast<ItemEquipSlot>(data.charData.selectedWeaponSlot[charIdx]);
+    int itemId = GetEquippedItem(data, data.ui.selectedCharacter, selectedSlot);
+    if(itemId != -1) {
+        int tplIdx = GetItemTypeTemplateId(data, itemId);
+        SetCharacterSpriteWeaponAnimation(data.spriteData, data.charData.sprite[charIdx],
+                                          data.weaponData.templateData[tplIdx].animationTemplate);
+
+        SpriteAnimationType animType = CharacterOrientationToAnimType(data, charIdx);
+        StartPausedCharacterSpriteAnim(data.spriteData, data.charData.sprite[charIdx], animType, true);
+    } else {
+        data.charData.sprite[charIdx].displayWeapon = false;
+    }
+}
+
+ WeaponTemplate* GetSelectedWeaponTemplate(GameData& data, int charId) {
+    int selectedSlot = data.charData.selectedWeaponSlot[charId];
+    int itemId = GetEquippedItem(data, charId, static_cast<ItemEquipSlot>(selectedSlot));
+    if(itemId != -1) {
+        int weaponTplId = GetItemTypeTemplateId(data, itemId);
+        WeaponTemplate& weaponTpl = data.weaponData.templateData[weaponTplId];
+        return &weaponTpl;
+    }
+    return nullptr;
+}
+
+WeaponRanged* GetSelectedRangedTemplate(GameData& data, int charId) {
+    int selectedSlot = data.charData.selectedWeaponSlot[charId];
+    int itemId = GetEquippedItem(data, charId, static_cast<ItemEquipSlot>(selectedSlot));
+    if(itemId != -1) {
+        int weaponTplId = GetItemTypeTemplateId(data, itemId);
+        WeaponTemplate& weaponTpl = data.weaponData.templateData[weaponTplId];
+        if(weaponTpl.rangeDataId != -1) {
+            WeaponRanged& weaponRanged = data.weaponData.rangedData[weaponTpl.rangeDataId];
+            return &weaponRanged;
+        }
+    }
+    return nullptr;
 }

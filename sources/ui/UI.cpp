@@ -326,3 +326,14 @@ void InitUI(GameData &data) {
 void DestroyUI(GameData &data) {
     UnloadSpriteSheet(data.spriteData.sheet, data.ui.iconSpriteSheet);
 }
+
+void DrawToolTip(Font& font, float fontSize, float spacing, std::string tooltip) {
+    Vector2 mouse = GetMousePosition();
+    Vector2 size = MeasureTextEx(font, tooltip.c_str(), fontSize, spacing);
+    size.x = ceilf(size.x); size.y = ceilf(size.y);
+
+    Rectangle tipRect = {floorf(mouse.x + 8), ceilf(mouse.y + 8), size.x + 4, size.y + 4};
+    DrawRectangleRec(tipRect, Color{15, 15, 15, 255});
+    DrawRectangleLinesEx(tipRect, 1, DARKGRAY);
+    DrawTextEx(font, tooltip.c_str(), {tipRect.x + 2, tipRect.y + 2}, fontSize, spacing, LIGHTGRAY);
+}
