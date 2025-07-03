@@ -12,6 +12,7 @@
 #include "raylib.h"
 #include "util/GameEventQueue.h"
 #include "character/Skill.h"
+#include "PathFindingData.h"
 
 struct ClickRegion {
     Rectangle rect;
@@ -164,10 +165,13 @@ struct ActionBarUI {
     int selectedActionIdx = -1;
     int selectedModeIdx = 0;
     int previewApUse = -1;
+    bool hovered = false;
 };
 
 struct PlayFieldUI {
     int floatingStatsCharacter = -1;
+    Path movePath;
+    bool validMovePath = false;
 };
 
 struct UiState {
@@ -179,6 +183,7 @@ struct UiState {
     GameEventQueue eventQueue;
     bool inCombat = false;
     int iconSpriteSheet;
+    int portraitSpriteSheet;
     bool showActionBar = false;
 };
 

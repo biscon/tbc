@@ -14,7 +14,7 @@ void CreateLevelScreen(GameData& data);
 void DestroyLevelScreen(GameData& data);
 void DrawLevelScreen(GameData& data, Level &level, PlayField &playField);
 void UpdateLevelScreen(GameData& data, Level &level, float dt);
-void HandleInputLevelScreen(GameData& data, Level &level);
+void HandleInputLevelScreen(GameData& data, Level &level, PlayField &playField);
 void RenderFloatingStats(GameData& data, Level& level);
 
 

@@ -6,6 +6,7 @@
 #include "raylib.h"
 #include "util/StringUtil.h"
 #include "ui/UI.h"
+#include "portraits.h"
 #include <vector>
 #include <string>
 
@@ -69,6 +70,7 @@ void RenderPartySideBarUI(GameData& data) {
         DrawRectangleRoundedLinesEx(slot.region.rect, 0.1f, 4, 1.0f,
                                     selected ? YELLOW : (slot.hovered ? hoverBorder : borderColor));
 
+        DrawPortrait(data, slot.region.rect.x, slot.region.rect.y, GRAY, PORTRAIT_DEFAULT);
         // Name
 
         std::string name = data.charData.name[charId];

@@ -112,8 +112,8 @@ static void processEvents() {
                 const Quest& quest = game->questData.quests[event.startQuestEvent.questId];
                 Animation textAnim1{};
                 Animation textAnim2{};
-                SetupFancyTextAnimation(textAnim1, "Quest started:", 10, 240, 2.0f, 0.5f, 0.05f, 1.0f);
-                SetupFancyTextAnimation(textAnim2, quest.title.c_str(), 20, 255, 2.0f, 1.0f, 0.05f, 1.0f);
+                SetupFancyTextAnimation(textAnim1, "Quest started:", 10, 285, 2.0f, 0.5f, 0.05f, 1.0f);
+                SetupFancyTextAnimation(textAnim2, quest.title.c_str(), 20, 300, 2.0f, 1.0f, 0.05f, 1.0f);
                 level.animations.push_back(textAnim1);
                 level.animations.push_back(textAnim2);
                 break;
@@ -291,11 +291,6 @@ void LevelHandleInput() {
         PopGameMode();
         return;
     }
-    if(game->ui.showActionBar) {
-        if(HandleActionBarInput(*game, level, playField)) {
-            return;
-        }
-    }
     if(game->state == GameState::DIALOGUE) {
         HandleDialogueInput(*game);
         return;
@@ -306,10 +301,16 @@ void LevelHandleInput() {
         return;
     }
     handleCameraMovement();
-    if(!HandlePartySideBarInput(*game)) {
-        HandleInputPlayField(*game, playField, level);
+    if(game->ui.showActionBar) {
+        if(HandleActionBarInput(*game, level, playField)) {
+            return;
+        }
     }
-    HandleInputLevelScreen(*game, level);
+    if(HandlePartySideBarInput(*game)) {
+       return;
+    }
+    HandleInputPlayField(*game, playField, level);
+    HandleInputLevelScreen(*game, level, playField);
 }
 
 void LevelRenderLevel() {
@@ -364,7 +365,7 @@ void LevelRenderLevel() {
 void LevelRenderUi() {
     DrawLevelScreen(*game, level, playField);
     RenderPartySideBarUI(*game);
-    if(game->ui.showActionBar) {
+    if(game->ui.showActionBar && game->state != GameState::INVENTORY) {
         RenderActionBarUI(*game);
     }
     RenderFloatingStats(*game, level);

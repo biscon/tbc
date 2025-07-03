@@ -322,12 +322,13 @@ void DrawRectangleCorners(Rectangle& rect, Color color, int cornerSize) {
 }
 
 void InitUI(GameData &data) {
-    int sheet = LoadSpriteSheet(data.spriteData.sheet, ASSETS_PATH"icons_16x16.png", 16, 16);
-    data.ui.iconSpriteSheet = sheet;
+    data.ui.iconSpriteSheet = LoadSpriteSheet(data.spriteData.sheet, ASSETS_PATH"icons_16x16.png", 16, 16);
+    data.ui.portraitSpriteSheet = LoadSpriteSheet(data.spriteData.sheet, ASSETS_PATH"portraits_40x40.png", 40, 40);
 }
 
 void DestroyUI(GameData &data) {
     UnloadSpriteSheet(data.spriteData.sheet, data.ui.iconSpriteSheet);
+    UnloadSpriteSheet(data.spriteData.sheet, data.ui.portraitSpriteSheet);
 }
 
 void DrawToolTip(Font& font, float fontSize, float spacing, std::string tooltip) {

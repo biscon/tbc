@@ -339,60 +339,23 @@ static void ResetGridState(PlayField &playField) {
 }
 
 static void DrawPathSelection(GameData& data, PlayField &playField, Level &level) {
-    SpriteData& spriteData = data.spriteData;
-    CharacterData& charData = data.charData;
-    // check if mouse is over tile
     Vector2 mousePos = GetScreenToWorld2D(GetMousePosition(), level.camera.camera);
     Vector2 gridPos = PixelToGridPosition(mousePos.x, mousePos.y);
-    data.ui.actionBar.previewApUse = -1;
-    if (!IsTileOccupied(spriteData, charData, level, static_cast<int>(gridPos.x), static_cast<int>(gridPos.y), -1)) {
-        playField.selectedTile = gridPos;
-        // calculate a path and draw it as lines
-        Path path;
-        CharacterStats& stats = charData.stats[level.currentCharacter];
-        Vector2i target = PixelToGridPositionI(static_cast<int>(mousePos.x), static_cast<int>(mousePos.y));
-        if (CalcPath(spriteData, charData, level, path, PixelToGridPositionI((int) GetCharacterSpritePosX(spriteData, charData.sprite[level.currentCharacter]),
-                                                                             (int) GetCharacterSpritePosY(spriteData, charData.sprite[level.currentCharacter])),
-                     target, level.currentCharacter, IsTileOccupied)) {
-            Color pathColor = Fade(YELLOW, playField.highlightAlpha);
-            if (path.cost > stats.AP) {
-                //data.ui.actionBar.previewApUse = path.cost;
-                pathColor = Fade(RED, playField.highlightAlpha);
-                DrawIcon(data, gridPos.x * 16, gridPos.y * 16 + 1, pathColor, ICON_END_TURN);
-            } else {
-                data.ui.actionBar.previewApUse = path.cost;
-                DrawIcon(data, gridPos.x * 16, gridPos.y * 16 + 1, pathColor, ICON_SQUARE);
-            }
-            if (path.cost <= stats.AP) {
-                for (int i = 0; i < path.path.size() - 1; i++) {
-                    Vector2 start = GridToPixelPosition(path.path[i].x, path.path[i].y);
-                    Vector2 end = GridToPixelPosition(path.path[i + 1].x, path.path[i + 1].y);
-                    DrawLineEx(start, end, 1, pathColor);
-                }
-            }
+    if(data.ui.playField.validMovePath) {
+        Path& path = data.ui.playField.movePath;
+        Color pathColor = Fade(YELLOW, playField.highlightAlpha);
+        DrawIcon(data, gridPos.x * 16, gridPos.y * 16, pathColor, ICON_SQUARE);
 
-            /*
-            EndMode2D();
-            DrawToolTip(data.smallFont1, 5, 1, TextFormat("AP: %d/%d", path.cost, stats.AP));
-            BeginMode2D(level.camera.camera);
-             */
-
-            // Check for a mouse click
-            if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT) && path.cost <= stats.AP) {
-                playField.mode = PlayFieldMode::None;
-                playField.path = path;
-                playField.moving = true;
-                stats.AP -= path.cost;
-                // cap at zero
-                if (stats.AP < 0) {
-                    stats.AP = 0;
-                }
-                level.turnState = TurnState::Move;
-                PlaySoundEffect(SoundEffectType::Select);
-                PlaySoundEffect(SoundEffectType::Footstep);
-                StartCameraPanToTargetPos(level.camera, mousePos, 250.0f);
-            }
+        for (int i = 0; i < path.path.size() - 1; i++) {
+            Vector2 start = GridToPixelPosition(path.path[i].x, path.path[i].y);
+            Vector2 end = GridToPixelPosition(path.path[i + 1].x, path.path[i + 1].y);
+            DrawLineEx(start, end, 1, pathColor);
         }
+        /*
+        EndMode2D();
+        DrawToolTip(data.smallFont1, 5, 1, TextFormat("AP: %d/%d", path.cost, stats.AP));
+        BeginMode2D(level.camera.camera);
+         */
     } else {
         DrawIcon(data, gridPos.x * 16, gridPos.y * 16 + 1, Fade(RED, playField.highlightAlpha), ICON_END_TURN);
     }
@@ -501,7 +464,7 @@ static void DrawTargetSelection(GameData& data, PlayField &gridState, Level &lev
 }
 
 static void DrawPathAndSelection(GameData& data, PlayField &playField, Level &level) {
-    if(data.state == GameState::PLAY_LEVEL) {
+    if(data.state == GameState::PLAY_LEVEL && !data.ui.actionBar.hovered) {
         if (playField.mode == PlayFieldMode::SelectingTile) {
             DrawPathSelection(data, playField, level);
         }
@@ -517,7 +480,7 @@ static void DrawTileSelection(GameData& data, PlayField &playField, Level &level
         Vector2i& gridPos = playField.selectedTilePos;
 
         if (gridPos.x >= 0 && gridPos.x < level.tileMap.width && gridPos.y >= 0 && gridPos.y < level.tileMap.height) {
-            DrawIcon(data, gridPos.x * 16, gridPos.y * 16 + 1, ColorAlpha(YELLOW, playField.highlightAlpha), ICON_SQUARE);
+            DrawIcon(data, gridPos.x * 16, gridPos.y * 16, ColorAlpha(YELLOW, playField.highlightAlpha), ICON_SQUARE);
         }
     }
 }
@@ -531,12 +494,7 @@ static void RenderActiveCharacterIndicator(GameData& data, float alpha, int char
     SpriteAnimationPlayerRenderData& renderData = data.spriteData.player.renderData[sprite.bodyPlayer];
     int animIdx = data.spriteData.player.animationIdx[sprite.bodyPlayer];
     Vector2 origin = data.spriteData.anim.origin[animIdx];
-
     Rectangle rect = {pos.x - origin.x + 6, pos.y - origin.y + 7, 19, 25};
-
-    //DrawRectangleLinesEx(rect, 1.0f, ColorAlpha(WHITE, Clamp(alpha - 0.5f, 0.0f, 1.0f)));
-    //DrawRectangleLinesEx(rect, 1.0f, ColorAlpha(WHITE, 0.5f));
-    //DrawRectangleCorners(rect, YELLOW, 4);
     DrawRectangleCorners(rect, ColorAlpha(YELLOW, alpha), 4);
 }
 
@@ -560,10 +518,6 @@ void DrawLevelScreen(GameData& data, Level &level, PlayField &playField) {
     DisplayDamageNumbers(level);
     EndMode2D();
 
-
-    if (level.turnState == TurnState::SelectAction) {
-        //DisplayActionUI(data, level, playField, data.smallFont1);
-    }
     if (level.turnState == TurnState::Victory) {
         std::string text = "Victory!";
         // Draw the enemy selection UI
@@ -622,7 +576,49 @@ void UpdateLevelScreen(GameData& data, Level &level, float dt) {
     UpdateAnimations(data.spriteData, data.charData, level, dt);
 }
 
-void HandleInputLevelScreen(GameData& data, Level &level) {
+
+static void HandleInputPathSelection(GameData& data, PlayField &playField, Level &level) {
+    SpriteData& spriteData = data.spriteData;
+    CharacterData& charData = data.charData;
+    // check if mouse is over tile
+    Vector2 mousePos = GetScreenToWorld2D(GetMousePosition(), level.camera.camera);
+    Vector2 gridPos = PixelToGridPosition(mousePos.x, mousePos.y);
+    data.ui.actionBar.previewApUse = -1;
+    data.ui.playField.validMovePath = false;
+    if (!IsTileOccupied(spriteData, charData, level, static_cast<int>(gridPos.x), static_cast<int>(gridPos.y), -1)) {
+        playField.selectedTile = gridPos;
+        // calculate a path and draw it as lines
+        Path& path = data.ui.playField.movePath;
+        CharacterStats& stats = charData.stats[level.currentCharacter];
+        Vector2i target = PixelToGridPositionI(static_cast<int>(mousePos.x), static_cast<int>(mousePos.y));
+        if (CalcPath(spriteData, charData, level, path, PixelToGridPositionI((int) GetCharacterSpritePosX(spriteData, charData.sprite[level.currentCharacter]),
+                                                                             (int) GetCharacterSpritePosY(spriteData, charData.sprite[level.currentCharacter])),
+                     target, level.currentCharacter, IsTileOccupied)) {
+
+            if (path.cost <= stats.AP) {
+                data.ui.playField.validMovePath = true;
+                data.ui.actionBar.previewApUse = path.cost;
+            }
+            // Check for a mouse click
+            if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT) && path.cost <= stats.AP) {
+                playField.mode = PlayFieldMode::None;
+                playField.path = path;
+                playField.moving = true;
+                stats.AP -= path.cost;
+                // cap at zero
+                if (stats.AP < 0) {
+                    stats.AP = 0;
+                }
+                level.turnState = TurnState::Move;
+                PlaySoundEffect(SoundEffectType::Select);
+                PlaySoundEffect(SoundEffectType::Footstep);
+                StartCameraPanToTargetPos(level.camera, mousePos, 250.0f);
+            }
+        }
+    }
+}
+
+void HandleInputLevelScreen(GameData& data, Level &level, PlayField &playField) {
     // get mouse position
     data.ui.playField.floatingStatsCharacter = -1;
     Vector2 mousePos = GetScreenToWorld2D(GetMousePosition(), level.camera.camera);
@@ -642,6 +638,14 @@ void HandleInputLevelScreen(GameData& data, Level &level) {
                                                        GetCharacterSpritePosY(data.spriteData, data.charData.sprite[character]));
         if ((int) gridPosCharacter.x == (int) gridPos.x && (int) gridPosCharacter.y == (int) gridPos.y) {
             data.ui.playField.floatingStatsCharacter = character;
+        }
+    }
+
+    if(data.state == GameState::PLAY_LEVEL) {
+        if (playField.mode == PlayFieldMode::SelectingTile) {
+            HandleInputPathSelection(data, playField, level);
+        }
+        if (playField.mode == PlayFieldMode::SelectingEnemyTarget) {
         }
     }
 }

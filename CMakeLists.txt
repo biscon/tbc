@@ -153,6 +153,7 @@ add_executable(${PROJECT_NAME}
         sources/ui/ActionBar.cpp
         sources/ui/ActionBar.h
         sources/ui/Icons.h
+        sources/ui/portraits.h
 )
 target_sources(${PROJECT_NAME} PRIVATE ${PROJECT_SOURCES})
 target_include_directories(${PROJECT_NAME} PRIVATE ${PROJECT_INCLUDE})

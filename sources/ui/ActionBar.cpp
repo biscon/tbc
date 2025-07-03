@@ -150,9 +150,8 @@ static void RenderActionPoints(GameData& data) {
             if(previewAp > ap) {
                 DrawIcon(data, x, apRect.y + 1, WHITE, ICON_RED_AP);
             } else {
-                DrawIcon(data, x, apRect.y + 1, WHITE, i < previewAp ? ICON_YELLOW_AP : ( i < ap ? ICON_GREEN_AP : ICON_GRAY_AP));
+                DrawIcon(data, x, apRect.y + 1, WHITE, i < previewAp ? ICON_RED_AP : ( i < ap ? ICON_GREEN_AP : ICON_GRAY_AP));
             }
-
         } else {
             DrawIcon(data, x, apRect.y + 1, WHITE, i < ap ? ICON_GREEN_AP : ICON_GRAY_AP);
         }
@@ -291,8 +290,9 @@ bool HandleActionBarInput(GameData &data, Level& level, PlayField& playField) {
             }
         }
     }
-
+    data.ui.actionBar.hovered = false;
     if (!CheckCollisionPointRec(mouse, actionBarRect)) return false;
+    data.ui.actionBar.hovered = true;
     int charId = data.ui.selectedCharacter;
 
     if(data.ui.actionBar.switchWeapons.ConsumeClick()) {
