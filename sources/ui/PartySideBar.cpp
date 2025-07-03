@@ -92,14 +92,16 @@ void RenderPartySideBarUI(GameData& data) {
 
 bool HandlePartySideBarInput(GameData& data) {
     Vector2 mouse = GetMousePosition();
-    for (auto& slot : data.ui.sideBar.sidebarSlots) {
-        slot.hovered = CheckCollisionPointRec(mouse, slot.region.rect);
-        slot.region.Update(mouse);
+    if(!data.ui.inCombat) {
+        for (auto &slot: data.ui.sideBar.sidebarSlots) {
+            slot.hovered = CheckCollisionPointRec(mouse, slot.region.rect);
+            slot.region.Update(mouse);
+        }
     }
     HandleInputButtons(data.ui.sideBar.buttons);
-
+    
     for (size_t i = 0; i < data.ui.sideBar.sidebarSlots.size(); ++i) {
-        if(data.ui.sideBar.sidebarSlots[i].region.ConsumeClick()) {
+        if (data.ui.sideBar.sidebarSlots[i].region.ConsumeClick()) {
             int charId = data.party[i];
             data.ui.selectedCharacter = charId;
             TraceLog(LOG_INFO, "Selected character: %s", data.charData.name[charId].c_str());

@@ -112,26 +112,37 @@ static void processEvents() {
                 const Quest& quest = game->questData.quests[event.startQuestEvent.questId];
                 Animation textAnim1{};
                 Animation textAnim2{};
-                SetupFancyTextAnimation(textAnim1, "Quest started:", 10, 285, 2.0f, 0.5f, 0.05f, 1.0f);
-                SetupFancyTextAnimation(textAnim2, quest.title.c_str(), 20, 300, 2.0f, 1.0f, 0.05f, 1.0f);
+                SetupFancyTextAnimation(textAnim1, "Quest started:", 10, 240, 2.0f, 0.5f, 0.05f, 1.0f);
+                SetupFancyTextAnimation(textAnim2, quest.title.c_str(), 20, 255, 2.0f, 1.0f, 0.05f, 1.0f);
                 level.animations.push_back(textAnim1);
                 level.animations.push_back(textAnim2);
                 break;
             }
             case GameEventType::OpenInventory: {
-                playField.mode = PlayFieldMode::None;
+                //playField.mode = PlayFieldMode::None;
                 game->state = GameState::INVENTORY;
                 game->ui.selectedCharacter = event.openInventoryEvent.charId;
                 //InitInventory(*game);
                 break;
             }
             case GameEventType::CloseInventory: {
-                playField.mode = PlayFieldMode::Explore;
+                //playField.mode = PlayFieldMode::Explore;
                 game->state = GameState::PLAY_LEVEL;
                 break;
             }
             case GameEventType::OpenMenu: {
                 PopGameMode();
+                break;
+            }
+            case GameEventType::OpenActionBar: {
+                game->ui.showActionBar = true;
+                // preselect move
+                game->ui.actionBar.selectedActionIdx = 0;
+                ExecuteAction(*game, ActionBarAction::Move, level, playField, true);
+                break;
+            }
+            case GameEventType::CloseActionBar: {
+                game->ui.showActionBar = false;
                 break;
             }
             default:
@@ -265,7 +276,9 @@ void LevelUpdate(float dt) {
     UpdateDialogue(*game, dt);
     UpdatePartySideBar(*game, dt);
     UpdateInventory(*game, dt);
-    UpdateActionBar(*game, dt);
+    if(game->ui.showActionBar) {
+        UpdateActionBar(*game, dt);
+    }
 
     UpdateVisibilityMap(*game, level);
     UpdateVisibilityTexture(level.lighting);
@@ -274,25 +287,29 @@ void LevelUpdate(float dt) {
 
 void LevelHandleInput() {
     processEvents();
-    if(game->state != GameState::DIALOGUE && game->state != GameState::INVENTORY) {
-        handleCameraMovement();
-        if(!HandlePartySideBarInput(*game) && !HandleActionBarInput(*game)) {
-            HandleInputPlayField(*game, playField, level);
-        }
-        HandleInputLevelScreen(*game, level);
-    } else {
-        if(game->state == GameState::DIALOGUE) HandleDialogueInput(*game);
-        if(game->state == GameState::INVENTORY) {
-            HandleInventoryInput(*game);
-            HandlePartySideBarInput(*game);
-            HandleActionBarInput(*game);
-        }
-    }
-
     if (IsKeyPressed(KEY_ESCAPE) && (game->state != GameState::INVENTORY)) {
         PopGameMode();
         return;
     }
+    if(game->ui.showActionBar) {
+        if(HandleActionBarInput(*game, level, playField)) {
+            return;
+        }
+    }
+    if(game->state == GameState::DIALOGUE) {
+        HandleDialogueInput(*game);
+        return;
+    }
+    if(game->state == GameState::INVENTORY) {
+        HandleInventoryInput(*game);
+        HandlePartySideBarInput(*game);
+        return;
+    }
+    handleCameraMovement();
+    if(!HandlePartySideBarInput(*game)) {
+        HandleInputPlayField(*game, playField, level);
+    }
+    HandleInputLevelScreen(*game, level);
 }
 
 void LevelRenderLevel() {
@@ -347,12 +364,15 @@ void LevelRenderLevel() {
 void LevelRenderUi() {
     DrawLevelScreen(*game, level, playField);
     RenderPartySideBarUI(*game);
-    if(game->state != GameState::DIALOGUE) {
+    if(game->ui.showActionBar) {
         RenderActionBarUI(*game);
     }
+    RenderFloatingStats(*game, level);
     RenderDialogueUI(*game);
-    if(game->state == GameState::INVENTORY)
+    if(game->state == GameState::INVENTORY) {
         RenderInventoryUI(*game);
+    }
+
 }
 
 void LevelPreRender() {

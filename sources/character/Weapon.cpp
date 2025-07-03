@@ -55,6 +55,11 @@ void InitWeaponData(WeaponData& weaponData, const std::string& filename) {
             for (auto& mode : value.at("rangedData").at("fireModes")) {
                 FireMode fm;
                 fm.name = mode.at("name");
+                if(mode.contains("icon")) {
+                    fm.icon = mode.at("icon");
+                } else {
+                    fm.icon = -1;
+                }
                 fm.apCost = mode.at("apCost");
                 fm.roundsFired = mode.at("roundsFired");
                 fm.accuracyMod = mode.at("accuracyMod");

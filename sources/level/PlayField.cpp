@@ -198,7 +198,8 @@ static void updateTurnBasedMove(SpriteData& spriteData, CharacterData& charData,
                     SetCharacterSpritePos(spriteData, sprite, GridToPixelPosition(finalPos.x, finalPos.y));
 
                     if (IsPlayerCharacter(charData, level.currentCharacter)) {
-                        level.turnState = TurnState::SelectAction;
+                        level.turnState = TurnState::SelectDestination;
+                        playField.mode = PlayFieldMode::SelectingTile;
                     } else {
                         level.turnState = TurnState::EnemyTurn;
                     }
@@ -343,18 +344,6 @@ void UpdatePlayField(GameData& data, PlayField &playField, Level &level, float d
     }
 }
 
-static void handleInputPlayFieldNormal(PlayField &playField, Level &level) {
-
-}
-
-static void handleInputPlayFieldSelectingTile(PlayField &playField, Level &level) {
-
-}
-
-static void handleInputPlayFieldSelectingEnemyTarget(PlayField &playField, Level &level) {
-
-}
-
 static bool handleDoors(GameData& data, Level &level, Vector2i gridPos, Vector2i playerPos) {
     SpriteData& spriteData = data.spriteData;
     for(auto& entry : level.doors){
@@ -432,12 +421,8 @@ static void handleInputPlayFieldExploration(GameData& data, PlayField &playField
 }
 
 void HandleInputPlayField(GameData& data, PlayField &playField, Level &level) {
-    switch(playField.mode) {
-        case PlayFieldMode::None:handleInputPlayFieldNormal(playField, level);break;
-        case PlayFieldMode::SelectingTile:handleInputPlayFieldSelectingTile(playField, level);break;
-        case PlayFieldMode::SelectingEnemyTarget:handleInputPlayFieldSelectingEnemyTarget(playField, level);break;
-        case PlayFieldMode::Explore:
-            handleInputPlayFieldExploration(data, playField, level);break;
+    if(playField.mode == PlayFieldMode::Explore) {
+        handleInputPlayFieldExploration(data, playField, level);
     }
 }
 

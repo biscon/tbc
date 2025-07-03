@@ -42,6 +42,7 @@
             "fireModes": [
                 {
                     "name": "Single",
+                    "icon": 5,
                     "apCost": 4,
                     "roundsFired": 1,
                     "accuracyMod": 0.0,
@@ -69,6 +70,7 @@
             "fireModes": [
                 {
                     "name": "Single",
+                    "icon": 5,
                     "apCost": 4,
                     "roundsFired": 1,
                     "accuracyMod": 0.0,
@@ -77,6 +79,7 @@
                 },
                 {
                     "name": "Burst",
+                    "icon": 6,
                     "apCost": 6,
                     "roundsFired": 3,
                     "accuracyMod": -10.0,
@@ -85,7 +88,8 @@
                 },
                 {
                     "name": "Full Auto",
-                    "apCost": 8,
+                    "icon": 7,
+                    "apCost": 7,
                     "roundsFired": -1,
                     "accuracyMod": -25.0,
                     "critChance": 0.02,

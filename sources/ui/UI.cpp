@@ -70,7 +70,7 @@ void RenderCharacterStats(CharacterData& charData, int character, int x, int y, 
             height
     };
 
-
+    ClampToScreenBounds(bg);
     //DrawRectangleRoundedLinesEx(bg, 0.1f, 16, 1.0f, DARKGRAY);
 
     // Stats
@@ -93,7 +93,17 @@ void RenderCharacterStats(CharacterData& charData, int character, int x, int y, 
 }
 
 
-
+void ClampToScreenBounds(Rectangle& bg) {
+    // Clamp into screen bounds
+    if (bg.x + bg.width > gameScreenWidth)
+        bg.x = gameScreenWidth - bg.width - 2;
+    if (bg.x < 0)
+        bg.x = 0;
+    if (bg.y + bg.height > gameScreenHeight)
+        bg.y = gameScreenHeight - bg.height - 2;
+    if (bg.y < 0)
+        bg.y = 0;
+}
 
 
 void DisplayCharacterStatsFloating(CharacterData& charData, int character, int x, int y, bool isPlayer, Font font) {
@@ -145,14 +155,7 @@ void DisplayCharacterStatsFloating(CharacterData& charData, int character, int x
     };
 
     // Clamp into screen bounds
-    if (bg.x + bg.width > gameScreenWidth)
-        bg.x = gameScreenWidth - bg.width - 2;
-    if (bg.x < 0)
-        bg.x = 0;
-    if (bg.y + bg.height > gameScreenHeight)
-        bg.y = gameScreenHeight - bg.height - 2;
-    if (bg.y < 0)
-        bg.y = 0;
+    ClampToScreenBounds(bg);
 
     static const Color bgColor = Color{15, 15, 15, 200};
 
@@ -332,8 +335,11 @@ void DrawToolTip(Font& font, float fontSize, float spacing, std::string tooltip)
     Vector2 size = MeasureTextEx(font, tooltip.c_str(), fontSize, spacing);
     size.x = ceilf(size.x); size.y = ceilf(size.y);
 
-    Rectangle tipRect = {floorf(mouse.x + 8), ceilf(mouse.y + 8), size.x + 4, size.y + 4};
-    DrawRectangleRec(tipRect, Color{15, 15, 15, 255});
-    DrawRectangleLinesEx(tipRect, 1, DARKGRAY);
-    DrawTextEx(font, tooltip.c_str(), {tipRect.x + 2, tipRect.y + 2}, fontSize, spacing, LIGHTGRAY);
+    Rectangle tipRect = {floorf(mouse.x + 6), ceilf(mouse.y + 6), size.x + 6, size.y + 6};
+    ClampToScreenBounds(tipRect);
+    //DrawRectangleRec(tipRect, Color{15, 15, 15, 255});
+    DrawRectangleRounded(tipRect, 0.5f, 4, Color{0, 0, 0, 225});
+    //DrawRectangleLinesEx(tipRect, 1, DARKGRAY);
+    //DrawRectangleRoundedLinesEx(tipRect, 0.5f, 4, 1, LIGHTGRAY);
+    DrawTextEx(font, tooltip.c_str(), {tipRect.x + 3, tipRect.y + 3}, fontSize, spacing, WHITE);
 }

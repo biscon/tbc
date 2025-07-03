@@ -43,6 +43,8 @@ void UpdateCombat(GameData &data, Level &level, PlayField& playField, float dt) 
             if(IsPlayerCharacter(charData, level.currentCharacter)) {
                 SetupBlinkAnimation(blinkAnim, level.currentCharacter, 2.0f);
                 level.nextState = TurnState::SelectAction;
+                data.ui.selectedCharacter = level.currentCharacter;
+                PublishOpenActionBarEvent(data.ui.eventQueue);
             } else {
                 SetupBlinkAnimation(blinkAnim, level.currentCharacter, 1.0f);
                 level.nextState = TurnState::EnemyTurn;
@@ -63,6 +65,7 @@ void UpdateCombat(GameData &data, Level &level, PlayField& playField, float dt) 
             break;
         }
         case TurnState::EndTurn: {
+            PublishCloseActionBarEvent(data.ui.eventQueue);
             NextCharacter(charData, level);
             break;
         }

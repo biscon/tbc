@@ -87,3 +87,15 @@ void PublishOpenMenuEvent(GameEventQueue &eventQueue) {
     event.type = GameEventType::OpenMenu;
     PublishEvent(eventQueue, event);
 }
+
+void PublishOpenActionBarEvent(GameEventQueue &eventQueue) {
+    GameEvent event{};
+    event.type = GameEventType::OpenActionBar;
+    PublishEvent(eventQueue, event);
+}
+
+void PublishCloseActionBarEvent(GameEventQueue &eventQueue) {
+    GameEvent event{};
+    event.type = GameEventType::CloseActionBar;
+    PublishEvent(eventQueue, event);
+}

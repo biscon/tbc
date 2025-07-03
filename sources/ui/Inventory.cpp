@@ -310,14 +310,17 @@ bool HandleInventoryInput(GameData& data) {
 
     if(data.ui.inventory.contextButtons["equip"].region.ConsumeClick()) {
         EquipSelectedItem(data);
+        data.ui.actionBar.selectedModeIdx = 0;
     }
 
     if(data.ui.inventory.weapon1Region.ConsumeClick()) {
         SetSelectedWeaponSlot(data, data.ui.selectedCharacter, ItemEquipSlot::Weapon1);
+        data.ui.actionBar.selectedModeIdx = 0;
     }
 
     if(data.ui.inventory.weapon2Region.ConsumeClick()) {
         SetSelectedWeaponSlot(data, data.ui.selectedCharacter, ItemEquipSlot::Weapon2);
+        data.ui.actionBar.selectedModeIdx = 0;
     }
     return true;
 }

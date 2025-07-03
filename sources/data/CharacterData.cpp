@@ -13,7 +13,8 @@ void to_json(nlohmann::json& j, const CharacterStats& m) {
         {"CHA", m.CHA},
         {"LUK", m.LUK},
         {"LVL", m.LVL},
-        {"HP", m.HP}
+        {"HP", m.HP},
+        //{"AP", m.AP}
     };
 }
 
@@ -27,6 +28,7 @@ void from_json(const nlohmann::json& j, CharacterStats& m) {
     j.at("LUK").get_to(m.LUK);
     j.at("LVL").get_to(m.LVL);
     j.at("HP").get_to(m.HP);
+    //j.at("AP").get_to(m.AP);
 }
 
 void to_json(nlohmann::json& j, const CharacterFaction& f) {

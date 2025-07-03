@@ -16,6 +16,7 @@ enum class WeaponType {
 
 struct FireMode {
     std::string name;
+    int icon = -1;
     int apCost;
     int roundsFired; // -1 = dump mag
     float accuracyMod; // Penalty/bonus for this mode

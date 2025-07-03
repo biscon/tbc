@@ -12,6 +12,17 @@
 #define ICON_MOVE               2
 #define ICON_RELOAD             3
 #define ICON_ATTACK             4
+#define ICON_SINGLE_SHOT        5
+#define ICON_BURST_SHOT         6
+#define ICON_FULL_AUTO          7
+#define ICON_GREEN_AP           8
+#define ICON_GRAY_AP            9
+#define ICON_RED_AP             10
+#define ICON_YELLOW_AP          11
+
+#define ICON_CIRCLE_PLUS        16
+#define ICON_SQUARE_FOOT        17
+#define ICON_SQUARE             18
 
 inline void DrawIcon(GameData& data, int x, int y, Color tint, int icon) {
     int sheetId = data.ui.iconSpriteSheet;

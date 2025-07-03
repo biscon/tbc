@@ -75,7 +75,7 @@ void LoadGame(GameData &data) {
                 data.charData.equippedItemIdx[id][i] = itemId;
             }
         }
-
+        ch.stats.AP = CalculateCharMaxAP(ch.stats);
         data.charData.stats[id] = ch.stats;
         data.charData.selectedWeaponSlot[id] = ch.selectedWeaponSlot;
         Vector2i savedPos = { ch.tilePosX, ch.tilePosY};

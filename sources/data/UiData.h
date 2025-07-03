@@ -17,19 +17,36 @@ struct ClickRegion {
     Rectangle rect;
     bool pressed = false;
     bool hovered = false;
+    bool showToolTip = false;
     bool wasClicked = false;
     bool wasDoubleClicked = false;
-
-
     float lastClickTime = -1.0f;
     float doubleClickThreshold = 0.3f; // seconds
+
+    float toolTipDelay = 0.5f; // seconds
+    float hoverStartTime = -1.0f;
+    Vector2 lastMousePos = {-9999, -9999};
 
     void Update(Vector2 mouse) {
         float timeNow = static_cast<float>(GetTime());
         hovered = false;
+        showToolTip = false;
 
-        if (CheckCollisionPointRec(mouse, rect)) {
+        bool mouseInRegion = CheckCollisionPointRec(mouse, rect);
+        if (mouseInRegion) {
             hovered = true;
+
+            if (lastMousePos.x != mouse.x || lastMousePos.y != mouse.y) {
+                hoverStartTime = timeNow; // Reset on movement
+                lastMousePos = mouse;
+            }
+
+            if (hoverStartTime >= 0 && timeNow - hoverStartTime >= toolTipDelay) {
+                showToolTip = true;
+            }
+        } else {
+            hoverStartTime = -1.0f;
+            lastMousePos = {-9999, -9999};
         }
 
         // Start press
@@ -40,7 +57,7 @@ struct ClickRegion {
         // Handle release
         if (pressed && IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) {
             pressed = false;
-            if (CheckCollisionPointRec(mouse, rect)) {
+            if (mouseInRegion) {
                 wasClicked = true;
 
                 if (timeNow - lastClickTime <= doubleClickThreshold) {
@@ -55,7 +72,7 @@ struct ClickRegion {
         }
 
         // Cancel if dragged out
-        if (pressed && !CheckCollisionPointRec(mouse, rect) && IsMouseButtonDown(MOUSE_LEFT_BUTTON)) {
+        if (pressed && !mouseInRegion && IsMouseButtonDown(MOUSE_LEFT_BUTTON)) {
             pressed = false;
         }
     }
@@ -129,6 +146,7 @@ struct ActionBarIcon {
     ActionBarAction action;
     std::string text;
     std::string tooltip;
+    int apCost = -1;
     ClickRegion region;
     bool enabled;
     bool selectable;
@@ -144,7 +162,8 @@ struct ActionBarUI {
     std::array<ActionBarIcon, 8> actionIcons;
     std::array<ActionBarIcon, 4> modeIcons;
     int selectedActionIdx = -1;
-    int selectedModeIdx = -1;
+    int selectedModeIdx = 0;
+    int previewApUse = -1;
 };
 
 struct PlayFieldUI {
@@ -160,6 +179,7 @@ struct UiState {
     GameEventQueue eventQueue;
     bool inCombat = false;
     int iconSpriteSheet;
+    bool showActionBar = false;
 };
 
 #endif //SANDBOX_UIDATA_H

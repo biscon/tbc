@@ -15,7 +15,7 @@ void DestroyLevelScreen(GameData& data);
 void DrawLevelScreen(GameData& data, Level &level, PlayField &playField);
 void UpdateLevelScreen(GameData& data, Level &level, float dt);
 void HandleInputLevelScreen(GameData& data, Level &level);
-//Character* SelectTargetBasedOnThreat(Level& level);
+void RenderFloatingStats(GameData& data, Level& level);
 
 
 #endif //SANDBOX_LEVELSCREEN_H

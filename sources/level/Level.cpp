@@ -303,7 +303,7 @@ void LoadLevel(GameData& data, Level &level, const std::string &filename) {
     SetupFancyTextAnimation(anim1,
                             "Location:",
                             10,
-                            285,
+                            240,
                             2.0f,   // holdDuration
                             1.0f,     // initialDelay
                             0.05f,    // letterPause (reveal speed)
@@ -312,7 +312,7 @@ void LoadLevel(GameData& data, Level &level, const std::string &filename) {
     SetupFancyTextAnimation(anim2,
                             level.name.c_str(),
                             20,
-                            300,
+                            255,
                             2.0f,   // holdDuration
                             1.5f,     // initialDelay
                             0.05f,    // letterPause (reveal speed)
