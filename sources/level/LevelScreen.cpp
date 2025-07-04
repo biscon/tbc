@@ -24,8 +24,6 @@
 #include <cassert>
 
 void CreateLevelScreen(GameData& data) {
-    data.ui.actionBar.actionIconScrollIndex = 0;
-    data.ui.actionBar.showActionBarTitle = true;
     data.ui.playField.floatingStatsCharacter = -1;
 }
 
@@ -46,204 +44,6 @@ static bool IsCharacterVisible(Level &combat, int character) {
     }
     return true;
 }
-
-static bool DrawActionIcon(GameData& data, float x, float y, ActionIcon &actionIcon, Font font) {
-    Vector2 mousePos = GetMousePosition();
-    Rectangle iconRect = {x, y, 24, 24};
-    static const Color bgColor = Color{15, 15, 15, 200};
-    // Center text inside icon
-    Vector2 textDim = MeasureTextEx(font, actionIcon.text, 5, 1);
-    Vector2 textPos = {
-            roundf(x + iconRect.width/2 - textDim.x / 2),
-            floorf(y + iconRect.width/2 - textDim.y / 2)
-    };
-
-    if (CheckCollisionPointRec(mousePos, iconRect) && !actionIcon.disabled) {
-        data.ui.actionBar.showActionBarTitle = false;
-        DrawStatusTextBg(actionIcon.description, WHITE, 318, 5, font);
-        DrawRectangleRec(iconRect, bgColor);
-        DrawRectangleLinesEx(iconRect, 1, YELLOW);
-
-        DrawTextEx(font, actionIcon.text, textPos, 5, 1, YELLOW);
-
-        //int textWidth = MeasureText(actionIcon.text, 10);
-        //DrawText(actionIcon.text, x + 16 - textWidth / 2, y + 16 - 5, 10, YELLOW);
-
-        // Check for a mouse click
-        if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
-            return true;
-        }
-    } else {
-        // Background color for the icon
-        //DrawRectangleRec(iconRect, actionIcon.disabled ? bgColor : bgColor);
-        //DrawRectangleLinesEx(iconRect, 1, DARKGRAY);
-
-        DrawRectangleRounded(iconRect, 0.1f, 16, bgColor);
-        DrawRectangleRoundedLinesEx(iconRect, 0.1f, 16, 1.0f, DARKGRAY);
-
-
-        // Draw cooldown overlay with alpha gradient if the skill exists and has a cooldown
-        if (actionIcon.skill != nullptr && actionIcon.skill->cooldown > 0) {
-            float cooldownRatio = actionIcon.skill->cooldown / (float) actionIcon.skill->maxCooldown; // Cooldown ratio
-            float overlayHeight = 32 * cooldownRatio; // Height of the overlay based on cooldown
-
-            // Draw gradient overlay
-            for (int i = 0; i < (int) overlayHeight; i++) {
-                float alpha = 0.5f * ((overlayHeight - i) / overlayHeight); // Alpha decreases from top to bottom
-                DrawRectangle(x, y + 32 - overlayHeight + i, 32, 1, Fade(BLACK, alpha));
-            }
-        }
-
-        // Center text inside icon
-        DrawTextEx(font, actionIcon.text, textPos, 5, 1, LIGHTGRAY);
-    }
-    return false;
-}
-
-static void DisplayActionUI(GameData& data, Level &combat, PlayField &gridState, Font font) {
-    SpriteData& spriteData = data.spriteData;
-    CharacterData& charData = data.charData;
-
-    float iconWidth = 24;
-    float iconHeight = 24;
-    int visibleIcons = 10;
-    float spacing = 3.0f;
-
-    float barWidth = (float) visibleIcons * (iconWidth + spacing);
-    float iconX = gameScreenHalfWidthF - barWidth/2;
-    float iconY = 331;
-
-    float offsetX = iconX - 14;
-    float offsetY = iconY;
-    Vector2 scrollLeft[3] = {{offsetX + 11, offsetY + 1},
-                             {offsetX + 1,  offsetY + 12},
-                             {offsetX + 11, offsetY + 23}};
-
-    bool mouseOverScrollLeft = CheckCollisionPointTriangle(GetMousePosition(), scrollLeft[0], scrollLeft[1],
-                                                           scrollLeft[2]);
-
-    DrawTriangle(scrollLeft[0], scrollLeft[1], scrollLeft[2], mouseOverScrollLeft ? YELLOW : DARKGRAY);
-
-    offsetX = iconX + barWidth - 1;
-    Vector2 scrollRight[3] = {{offsetX + 1,  offsetY + 1},
-                              {offsetX + 1,  offsetY + 23},
-                              {offsetX + 11, offsetY + 12}};
-    bool mouseOverScrollRight = CheckCollisionPointTriangle(GetMousePosition(), scrollRight[0], scrollRight[1],
-                                                            scrollRight[2]);
-    DrawTriangle(scrollRight[0], scrollRight[1], scrollRight[2], mouseOverScrollRight ? YELLOW : DARKGRAY);
-
-    std::vector<ActionIcon> actionIcons = {
-            ActionIcon{"MOV", "Move", charData.stats[combat.currentCharacter].AP <= 0, nullptr},
-            ActionIcon{"ATK", "Attack", false, nullptr},
-            ActionIcon{"DEF", "Defend (50% baseAttack reduction, cannot attack)", false, nullptr},
-            ActionIcon{"END", "End turn (Do nothing)", false, nullptr},
-    };
-
-    // add active character skills
-    for (auto &skill: charData.skills[combat.currentCharacter]) {
-        if (skill.isPassive) {
-            continue;
-        }
-        ActionIcon icon{};
-        strncpy(icon.text, skill.name, 4);
-        // capitalize string
-        for (int i = 0; i < 4; i++) {
-            icon.text[i] = toupper(icon.text[i]);
-        }
-        strncpy(icon.description, skill.name, sizeof(skill.name));
-        icon.disabled = skill.cooldown > 0;
-        icon.skill = &skill;
-        actionIcons.push_back(icon);
-    }
-
-    data.ui.actionBar.showActionBarTitle = true;
-
-    // Draw 14 action icons 32x32 in a row, no spacing
-
-    for (int i = 0; i < visibleIcons; ++i) {
-        if (i >= actionIcons.size()) {
-            break;
-        }
-
-        if (DrawActionIcon(data, iconX, iconY, actionIcons[data.ui.actionBar.actionIconScrollIndex + i], font)) {
-            PlaySoundEffect(SoundEffectType::Select);
-            // action icon clicked
-            TraceLog(LOG_INFO, "Action icon clicked: %s", actionIcons[data.ui.actionBar.actionIconScrollIndex + i].text);
-            if (i + data.ui.actionBar.actionIconScrollIndex == 0) {
-                // Move button pressed
-                combat.turnState = TurnState::Waiting;
-                combat.waitTime = 0.15f;
-                combat.nextState = TurnState::SelectDestination;
-                gridState.mode = PlayFieldMode::SelectingTile;
-                break;
-            }
-            if (i + data.ui.actionBar.actionIconScrollIndex == 1) {
-                // Attack button pressed
-                combat.turnState = TurnState::Waiting;
-                combat.waitTime = 0.15f;
-                combat.nextState = TurnState::SelectEnemy;
-                gridState.mode = PlayFieldMode::SelectingEnemyTarget;
-                break;
-            }
-            if (i + data.ui.actionBar.actionIconScrollIndex == 2) {
-                // Defend button pressed
-                combat.turnState = TurnState::EndTurn;
-                AssignStatusEffectAllowStacking(charData.statusEffects[combat.currentCharacter], StatusEffectType::DamageReduction, 1, 0.5f);
-                float charX = GetCharacterSpritePosX(spriteData, charData.sprite[combat.currentCharacter]);
-                float charY = GetCharacterSpritePosY(spriteData, charData.sprite[combat.currentCharacter]);
-                Animation anim{};
-                SetupDamageNumberAnimation(anim, "DEFENDING", charX, charY - 25, WHITE, 10);
-                combat.animations.push_back(anim);
-                break;
-            }
-            if (i + data.ui.actionBar.actionIconScrollIndex == 3) {
-                // End button pressed
-                combat.turnState = TurnState::EndTurn;
-                break;
-            }
-            if (i + data.ui.actionBar.actionIconScrollIndex > 3) {
-                // Skill button pressed
-                combat.turnState = TurnState::Waiting;
-                combat.waitTime = 0.25f;
-                combat.selectedSkill = actionIcons[data.ui.actionBar.actionIconScrollIndex + i].skill;
-                if (combat.selectedSkill->noTarget) {
-                    combat.nextState = TurnState::UseSkill;
-                    combat.selectedCharacter = -1;
-                } else {
-                    combat.nextState = TurnState::SelectEnemy;
-                    gridState.mode = PlayFieldMode::SelectingEnemyTarget;
-                }
-                break;
-            }
-        }
-        iconX += iconWidth + spacing;
-    }
-
-    if (data.ui.actionBar.showActionBarTitle) {
-        DrawStatusTextBg("Select Action", WHITE, 318, 5, font);
-    }
-
-    if (CheckCollisionPointTriangle(GetMousePosition(), scrollRight[0], scrollRight[1], scrollRight[2]) &&
-        IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
-        data.ui.actionBar.actionIconScrollIndex++;
-    }
-    if (CheckCollisionPointTriangle(GetMousePosition(), scrollLeft[0], scrollLeft[1], scrollLeft[2]) &&
-        IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
-        data.ui.actionBar.actionIconScrollIndex--;
-    }
-    // clip scroll index
-    if (data.ui.actionBar.actionIconScrollIndex < 0) {
-        data.ui.actionBar.actionIconScrollIndex = 0;
-    }
-    if (data.ui.actionBar.actionIconScrollIndex > actionIcons.size() - visibleIcons) {
-        data.ui.actionBar.actionIconScrollIndex = (int) actionIcons.size() - visibleIcons;
-    }
-    if (actionIcons.size() <= visibleIcons) {
-        data.ui.actionBar.actionIconScrollIndex = 0;
-    }
-}
-
-
 
 static void DisplayDamageNumbers(Level &combat) {
     for (auto &animation: combat.animations) {
@@ -330,13 +130,6 @@ static void DisplaySpeechBubbleAnimations(Level &combat) {
     }
 }
 
-static void ResetGridState(PlayField &playField) {
-    playField.moving = false;
-    playField.mode = PlayFieldMode::None;
-    playField.selectedCharacter = -1;
-    playField.selectedTile = {-1, -1};
-    playField.path = {};
-}
 
 static void DrawPathSelection(GameData& data, PlayField &playField, Level &level) {
     Vector2 mousePos = GetScreenToWorld2D(GetMousePosition(), level.camera.camera);
@@ -361,105 +154,33 @@ static void DrawPathSelection(GameData& data, PlayField &playField, Level &level
     }
 }
 
-static void DrawSelectCharacters(SpriteData& spriteData, CharacterData& charData, PlayField &playField, std::vector<int> &characters, Color color, Camera2D &camera, bool onlyEnemies) {
-    Vector2 mousePos = GetScreenToWorld2D(GetMousePosition(), camera);
-    Vector2 gridPos = PixelToGridPosition(mousePos.x, mousePos.y);
-    for (auto &character: characters) {
-        // skip death characters
-        if (charData.stats[character].HP <= 0) {
-            continue;
-        }
-        if(onlyEnemies && charData.faction[character] == CharacterFaction::Player) {
-            continue;
-        }
-        Vector2 charPos = GetCharacterSpritePos(spriteData, charData.sprite[character]);
-        Vector2 gridPosCharacter = PixelToGridPosition(charPos.x, charPos.y);
-        if ((int) gridPosCharacter.x == (int) gridPos.x && (int) gridPosCharacter.y == (int) gridPos.y) {
-            DrawCircleLines(charPos.x, charPos.y, 10,
-                            Fade(color, playField.highlightAlpha));
-            // Draw plus
-            DrawLine(gridPos.x * 16 + 8, gridPos.y * 16 - 1, gridPos.x * 16 + 8, gridPos.y * 16 + 17,
-                     Fade(color, playField.highlightAlpha)); // Vertical line
-            DrawLine(gridPos.x * 16 - 1, gridPos.y * 16 + 8, gridPos.x * 16 + 17, gridPos.y * 16 + 8,
-                     Fade(color, playField.highlightAlpha)); // Horizontal line
-            playField.selectedCharacter = character;
-        }
-    }
+static void DrawSelectTargetAttackInfo(Font& font, float fontSize, float spacing, AttackInfo& info, const Vector2& pos) {
+    std::string text = TextFormat("%.0f%%", info.hitChance);
+    Vector2 size = MeasureTextEx(font, text.c_str(), fontSize, spacing);
+    size.x = ceilf(size.x); size.y = ceilf(size.y);
+
+    Rectangle rect = {floorf(pos.x), ceilf(pos.y), size.x + 6, size.y + 6};
+    rect.x -= ceilf(rect.width/2);
+    rect.y -= 24;
+    //ClampToScreenBounds(rect);
+    DrawRectangleRounded(rect, 0.5f, 4, Color{0, 0, 0, 225});
+    //DrawRectangleLinesEx(tipRect, 1, DARKGRAY);
+    //DrawRectangleRoundedLinesEx(tipRect, 0.5f, 4, 1, LIGHTGRAY);
+    DrawTextEx(font, text.c_str(), {rect.x + 3, rect.y + 3}, fontSize, spacing, WHITE);
 }
 
-static void DrawSelectCharacter(GameData& data, PlayField &playField, Level &level, bool onlyEnemies) {
-    SpriteData& spriteData = data.spriteData;
-    CharacterData& charData = data.charData;
-
-    playField.selectedCharacter = -1;
-    DrawSelectCharacters(spriteData, charData, playField, level.allCharacters, RED, level.camera.camera, onlyEnemies);
+static void DrawSelectTargetCharacter(GameData& data, PlayField &playField, Level &level) {
     if (playField.selectedCharacter != -1) {
-        playField.hintText = TextFormat("Selected: %s", charData.name[playField.selectedCharacter].c_str());
-        int range = 1;
-        if(level.selectedSkill != nullptr) {
-            range = level.selectedSkill->range;
-        }
-        if(range == 1) {
-            if (IsCharacterAdjacentToPlayer(spriteData, charData, level.currentCharacter, playField.selectedCharacter)) {
-                // draw last line from player to selected character
-                Vector2 start = GetCharacterSpritePos(spriteData, charData.sprite[level.currentCharacter]);
-                Vector2 end = GetCharacterSpritePos(spriteData, charData.sprite[playField.selectedCharacter]);
-                DrawLineEx(start, end, 1, Fade(RED, playField.highlightAlpha));
-                // Check for a mouse click
-                if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
-                    PlaySoundEffect(SoundEffectType::Select);
-                    level.turnState = TurnState::Waiting;
-                    level.waitTime = 0.25f;
-                    level.selectedCharacter = playField.selectedCharacter;
-                    if (level.selectedSkill == nullptr)
-                        level.nextState = TurnState::Attack;
-                    else
-                        level.nextState = TurnState::UseSkill;
-                    ResetGridState(playField);
-                }
-            } else {
-                playField.hintText = "Too far away!";
-            }
+        AttackInfo& info = data.ui.playField.attackInfo;
+        int ap = data.charData.stats[data.ui.selectedCharacter].AP;
+        Vector2i gridPos = GetCharacterGridPosI(data.spriteData, data.charData.sprite[playField.selectedCharacter]);
+        if(ap < info.apCost) {
+            DrawIcon(data, gridPos.x * 16, gridPos.y * 16, ColorAlpha(RED, playField.highlightAlpha), ICON_END_TURN);
         } else {
-            // draw last line from player to selected character
-            Vector2 start = GetCharacterSpritePos(spriteData, charData.sprite[level.currentCharacter]);
-            Vector2 end = GetCharacterSpritePos(spriteData, charData.sprite[playField.selectedCharacter]);
-            if(HasLineOfSight(level, PixelToGridPositionI((int) start.x, (int) start.y), PixelToGridPositionI((int) end.x, (int) end.y))) {
-                int distance = (int) Vector2Distance(start, end);
-                if(distance <= range * 16) {
-                    DrawLineEx(start, end, 1, Fade(RED, playField.highlightAlpha));
-                    // Check for a mouse click
-                    if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
-                        PlaySoundEffect(SoundEffectType::Select);
-                        level.turnState = TurnState::Waiting;
-                        level.waitTime = 0.25f;
-                        level.selectedCharacter = playField.selectedCharacter;
-                        if (level.selectedSkill == nullptr)
-                            level.nextState = TurnState::Attack;
-                        else
-                            level.nextState = TurnState::UseSkill;
-                        ResetGridState(playField);
-                    }
-                } else {
-                    playField.hintText = "Too far away!";
-
-                }
-            } else {
-                playField.hintText = "No line of sight!";
-            }
+            DrawIcon(data, gridPos.x * 16, gridPos.y * 16, ColorAlpha(YELLOW, playField.highlightAlpha), ICON_ATTACK);
+            Vector2 infoPos = GridToPixelPosition(gridPos.x, gridPos.y);
+            DrawSelectTargetAttackInfo(data.smallFont1, 5, 1, data.ui.playField.attackInfo, infoPos);
         }
-    } else {
-        playField.hintText = "Select a character";
-    }
-}
-
-static void DrawTargetSelection(GameData& data, PlayField &gridState, Level &level, bool onlyEnemies) {
-    DrawSelectCharacter(data, gridState, level, onlyEnemies);
-    if (IsMouseButtonReleased(MOUSE_BUTTON_RIGHT)) {
-        level.selectedSkill = nullptr;
-        level.selectedCharacter = -1;
-        ResetGridState(gridState);
-        level.turnState = TurnState::SelectAction;
     }
 }
 
@@ -469,7 +190,7 @@ static void DrawPathAndSelection(GameData& data, PlayField &playField, Level &le
             DrawPathSelection(data, playField, level);
         }
         if (playField.mode == PlayFieldMode::SelectingEnemyTarget) {
-            DrawTargetSelection(data, playField, level, true);
+            DrawSelectTargetCharacter(data, playField, level);
         }
     }
 }
@@ -618,6 +339,70 @@ static void HandleInputPathSelection(GameData& data, PlayField &playField, Level
     }
 }
 
+static void HandleMeleeTargetSelection(GameData& data, Level& level, PlayField& playField, WeaponTemplate* weaponTemplate, int targetId) {
+    if (IsCharacterAdjacentToPlayer(data.spriteData, data.charData, data.ui.selectedCharacter, targetId)) {
+        playField.selectedCharacter = targetId;
+        int weaponItemId = GetSelectedWeaponItemId(data, data.ui.selectedCharacter);
+        CalcHitChance(data, data.ui.selectedCharacter, weaponItemId, -1, data.ui.playField.attackInfo);
+        data.ui.actionBar.previewApUse = data.ui.playField.attackInfo.apCost;
+        int ap = data.charData.stats[data.ui.selectedCharacter].AP;
+        // Check for a mouse click
+        if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT) && ap >= data.ui.playField.attackInfo.apCost) {
+            PlaySoundEffect(SoundEffectType::Select);
+            level.turnState = TurnState::Waiting;
+            level.waitTime = 0.25f;
+            level.selectedCharacter = playField.selectedCharacter;
+            level.nextState = TurnState::Attack;
+            ResetPlayField(playField);
+        }
+    }
+}
+
+static void HandleRangedTargetSelection(GameData& data, Level& level, PlayField& playField, WeaponTemplate* weaponTemplate, int targetId) {
+    Vector2i start = GetCharacterGridPosI(data.spriteData, data.charData.sprite[data.ui.selectedCharacter]);
+    Vector2i end = GetCharacterGridPosI(data.spriteData, data.charData.sprite[targetId]);
+    if(HasLineOfSight(level, start, end, weaponTemplate->range)) {
+        int weaponItemId = GetSelectedWeaponItemId(data, data.ui.selectedCharacter);
+        CalcHitChance(data, data.ui.selectedCharacter, weaponItemId, data.ui.actionBar.selectedModeIdx, data.ui.playField.attackInfo);
+        data.ui.actionBar.previewApUse = data.ui.playField.attackInfo.apCost;
+        playField.selectedCharacter = targetId;
+    }
+}
+
+static void HandleInputTargetSelection(GameData& data, Level& level, PlayField &playField, bool onlyEnemies) {
+    Vector2 mousePos = GetScreenToWorld2D(GetMousePosition(), level.camera.camera);
+    Vector2i gridPos = PixelToGridPositionI(mousePos.x, mousePos.y);
+    playField.selectedCharacter = -1;
+    data.ui.actionBar.previewApUse = -1;
+    for (auto &character: level.allCharacters) {
+        // skip death characters
+        if (data.charData.stats[character].HP <= 0) {
+            continue;
+        }
+        if(onlyEnemies && data.charData.faction[character] == CharacterFaction::Player) {
+            continue;
+        }
+        Vector2i charPos = GetCharacterGridPosI(data.spriteData, data.charData.sprite[character]);
+        if (charPos.x == gridPos.x && charPos.y == gridPos.y) {
+            WeaponTemplate* weaponTemplate = GetSelectedWeaponTemplate(data, data.ui.selectedCharacter);
+            // Treat unarmed as melee
+            if(weaponTemplate == nullptr) {
+                HandleMeleeTargetSelection(data, level, playField, weaponTemplate, character);
+            }
+            else {
+                switch (weaponTemplate->type) {
+                    case WeaponType::Melee:
+                        HandleMeleeTargetSelection(data, level, playField, weaponTemplate, character);
+                        break;
+                    case WeaponType::Ranged:
+                        HandleRangedTargetSelection(data, level, playField, weaponTemplate, character);
+                        break;
+                }
+            }
+        }
+    }
+}
+
 void HandleInputLevelScreen(GameData& data, Level &level, PlayField &playField) {
     // get mouse position
     data.ui.playField.floatingStatsCharacter = -1;
@@ -646,6 +431,7 @@ void HandleInputLevelScreen(GameData& data, Level &level, PlayField &playField) 
             HandleInputPathSelection(data, playField, level);
         }
         if (playField.mode == PlayFieldMode::SelectingEnemyTarget) {
+            HandleInputTargetSelection(data, level, playField, true);
         }
     }
 }

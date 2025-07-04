@@ -103,7 +103,6 @@ void LoadLevel(GameData& data, Level &level, const std::string &filename) {
     level.allCharacters.clear();
     level.currentCharacter = -1;
     level.selectedCharacter = -1;
-    level.selectedSkill = nullptr;
     level.turnState = TurnState::None;
     std::string filePath = GetFilePath(filename);
     TraceLog(LOG_INFO, "Loading level from %s", filePath.c_str());

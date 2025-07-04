@@ -6,6 +6,7 @@
 #include "raymath.h"
 #include "ui/UI.h"
 #include "game/Items.h"
+#include "Icons.h"
 
 static const int separator = 1;
 static const int itemHeightPx = 12;
@@ -34,8 +35,11 @@ void InitInventory(GameData& data) {
     data.ui.inventory.buttons["close"] = closeButton;
 
     data.ui.inventory.contextButtons.clear();
-    data.ui.inventory.weapon1Region = CreateClickRegion({charInfoRect.x + 5, 190, charInfoRect.width - 10, 9});
-    data.ui.inventory.weapon2Region = CreateClickRegion({charInfoRect.x + 5, 200, charInfoRect.width - 10, 9});
+    data.ui.inventory.weapon1Region = CreateClickRegion({charInfoRect.x + 5, 88, charInfoRect.width - 10, 9});
+    data.ui.inventory.weapon2Region = CreateClickRegion({charInfoRect.x + 5, 98, charInfoRect.width - 10, 9});
+
+    data.ui.inventory.leftTabRegion = CreateClickRegion({charInfoRect.x + 5, 76, 10, 10});
+    data.ui.inventory.rightTabRegion = CreateClickRegion({charInfoRect.x + charInfoRect.width - 15, 76, 10, 10});
 }
 
 static void UpdateContextButtons(GameData& data) {
@@ -114,38 +118,16 @@ static void RenderScrollBar(GameData& data, int maxItems) {
     }
 }
 
-static void RenderCharacterInfo(GameData& data) {
-    int charId = data.party[data.ui.selectedCharacter];
-    auto& sprite = data.charData.sprite[charId];
+static void RenderStatsTab(GameData& data, int charId) {
+    RenderCharacterStats(data.charData, charId, charInfoRect.x + 5, 90, charInfoRect.width - 10, data.smallFont1, 5);
+}
 
-    DrawRectangleRec(charInfoRect, Color{15, 15, 15, 200});
-    DrawRectangleRoundedLinesEx(charInfoRect, 0.03f, 4, 1.0f, DARKGRAY);
-    float halfWidth = charInfoRect.width/2;
-    float halfHeight = charInfoRect.height/2;
-    //DrawTextEx(data.smallFont1, data.charData.name[charId].c_str(), {charInfoRect.x + 5, charInfoRect.y + 6}, 5, 1, WHITE);
-    int nameWidth = MeasureText(data.charData.name[charId].c_str(), 10);
-    DrawText(data.charData.name[charId].c_str(), charInfoRect.x + halfWidth - (nameWidth/2), charInfoRect.y + 6, 10, WHITE);
+static void RenderSkillsTab(GameData& data, int charId) {
+    RenderCharacterSkills(data.charData, charId, charInfoRect.x + 5, 90, charInfoRect.width - 10, data.smallFont1, 5);
+}
 
-    //DrawLine(charInfoRect.x + 5, 28, charInfoRect.x + charInfoRect.width - 5, 28, DARKGRAY);
-
-    StartPausedCharacterSpriteAnim(data.spriteData, sprite, SpriteAnimationType::WalkRight, true);
-    DrawCharacterSpriteScaled(data.spriteData, sprite, floorf(charInfoRect.x + 40), charInfoRect.y + 60, 2.0f);
-
-    StartPausedCharacterSpriteAnim(data.spriteData, sprite, SpriteAnimationType::WalkDown, true);
-    DrawCharacterSpriteScaled(data.spriteData, sprite, floorf(charInfoRect.x + charInfoRect.width - 40), charInfoRect.y + 60, 2.0f);
-
-    // restore
-    SpriteAnimationType animType = CharacterOrientationToAnimType(data, charId);
-    StartPausedCharacterSpriteAnim(data.spriteData, sprite, animType, true);
-
-    DrawLine(charInfoRect.x + 5, 72, charInfoRect.x + charInfoRect.width - 5, 72, DARKGRAY);
-    RenderCharacterStats(data.charData, charId, charInfoRect.x + 5, 76, charInfoRect.width - 10, data.smallFont1, 5);
-
-    int labelWidth = MeasureText("Equipment", 10);
-    DrawLine(charInfoRect.x + 5, 170, charInfoRect.x + charInfoRect.width - 5, 170, DARKGRAY);
-    DrawText("Equipment", charInfoRect.x + halfWidth - (labelWidth/2), 177, 10, WHITE);
-    int ypos = 192;
-
+static void RenderEquipmentTab(GameData& data, int charId) {
+    int ypos = 90;
     for (size_t i = 0; i < static_cast<size_t>(ItemEquipSlot::COUNT); ++i) {
         int itemId = data.charData.equippedItemIdx[charId][i];
         ItemEquipSlot slot = static_cast<ItemEquipSlot>(i);
@@ -172,16 +154,62 @@ static void RenderCharacterInfo(GameData& data) {
         DrawTextEx(data.smallFont1, itemName.c_str(), { charInfoRect.x + charInfoRect.width - textDims.x - 5, (float) ypos}, 5, 1, itemColor);
         ypos += 10;
     }
-    Rectangle hoverRect;
-    if(data.ui.inventory.weapon1Region.hovered) {
-        hoverRect = data.ui.inventory.weapon1Region.rect;
+}
+
+static void RenderCharacterInfo(GameData& data) {
+    int charId = data.party[data.ui.selectedCharacter];
+    auto& sprite = data.charData.sprite[charId];
+
+    DrawRectangleRec(charInfoRect, Color{15, 15, 15, 200});
+    DrawRectangleRoundedLinesEx(charInfoRect, 0.03f, 4, 1.0f, DARKGRAY);
+    float halfWidth = charInfoRect.width/2;
+    float halfHeight = charInfoRect.height/2;
+    //DrawTextEx(data.smallFont1, data.charData.name[charId].c_str(), {charInfoRect.x + 5, charInfoRect.y + 6}, 5, 1, WHITE);
+    int nameWidth = MeasureText(data.charData.name[charId].c_str(), 10);
+    DrawText(data.charData.name[charId].c_str(), charInfoRect.x + halfWidth - (nameWidth/2), charInfoRect.y + 6, 10, WHITE);
+
+    //DrawLine(charInfoRect.x + 5, 28, charInfoRect.x + charInfoRect.width - 5, 28, DARKGRAY);
+
+    StartPausedCharacterSpriteAnim(data.spriteData, sprite, SpriteAnimationType::WalkRight, true);
+    DrawCharacterSpriteScaled(data.spriteData, sprite, floorf(charInfoRect.x + 40), charInfoRect.y + 60, 2.0f);
+
+    StartPausedCharacterSpriteAnim(data.spriteData, sprite, SpriteAnimationType::WalkDown, true);
+    DrawCharacterSpriteScaled(data.spriteData, sprite, floorf(charInfoRect.x + charInfoRect.width - 40), charInfoRect.y + 60, 2.0f);
+
+    // restore
+    SpriteAnimationType animType = CharacterOrientationToAnimType(data, charId);
+    StartPausedCharacterSpriteAnim(data.spriteData, sprite, animType, true);
+
+    DrawLine(charInfoRect.x + 5, 72, charInfoRect.x + charInfoRect.width - 5, 72, DARKGRAY);
+
+    std::string tabText;
+    switch(data.ui.inventory.currentCharTab) {
+        case CharacterTabs::Stats:tabText = "Stats";break;
+        case CharacterTabs::Equipment:tabText = "Equipment";break;
+        case CharacterTabs::Skills:tabText = "Skills";break;
     }
-    if(data.ui.inventory.weapon2Region.hovered) {
-        hoverRect = data.ui.inventory.weapon2Region.rect;
+    int labelWidth = MeasureText(tabText.c_str(), 10);
+    DrawText(tabText.c_str(), charInfoRect.x + halfWidth - (labelWidth/2), 76, 10, WHITE);
+
+    DrawIcon(data,
+             (int) data.ui.inventory.leftTabRegion.rect.x,
+             (int) data.ui.inventory.leftTabRegion.rect.y,
+             data.ui.inventory.leftTabRegion.hovered ? WHITE : GRAY,
+             ICON_LEFT);
+
+    DrawIcon(data,
+             (int) data.ui.inventory.rightTabRegion.rect.x+5,
+             (int) data.ui.inventory.rightTabRegion.rect.y,
+             data.ui.inventory.rightTabRegion.hovered ? WHITE : GRAY,
+             ICON_RIGHT);
+
+
+
+    switch(data.ui.inventory.currentCharTab) {
+        case CharacterTabs::Stats:RenderStatsTab(data, charId);break;
+        case CharacterTabs::Equipment:RenderEquipmentTab(data, charId);break;
+        case CharacterTabs::Skills:RenderSkillsTab(data, charId);break;
     }
-    hoverRect.x -= 2.0f;
-    hoverRect.width += 4.0f;
-    DrawRectangleLinesEx(hoverRect, 1.0f, WHITE);
 }
 
 void RenderInventoryUI(GameData& data) {
@@ -277,8 +305,12 @@ bool HandleInventoryInput(GameData& data) {
     Vector2 mouse = GetMousePosition();
     HandleInputButtons(data.ui.inventory.buttons);
     HandleInputButtons(data.ui.inventory.contextButtons);
-    data.ui.inventory.weapon1Region.Update(mouse);
-    data.ui.inventory.weapon2Region.Update(mouse);
+    if(data.ui.inventory.currentCharTab == CharacterTabs::Equipment) {
+        data.ui.inventory.weapon1Region.Update(mouse);
+        data.ui.inventory.weapon2Region.Update(mouse);
+    }
+    data.ui.inventory.leftTabRegion.Update(mouse);
+    data.ui.inventory.rightTabRegion.Update(mouse);
 
     if (IsKeyPressed(KEY_ESCAPE)) {
         PublishCloseInventoryEvent(data.ui.eventQueue);
@@ -287,6 +319,8 @@ bool HandleInventoryInput(GameData& data) {
 
 
     if (!CheckCollisionPointRec(mouse, invRect) && !CheckCollisionPointRec(mouse, charInfoRect)) return false;
+
+    auto& partyInventory = data.itemData.inventoryData[data.itemData.partyInventoryId];
 
     if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
         float rowY = invRect.y + firstRowOffset;
@@ -314,13 +348,54 @@ bool HandleInventoryInput(GameData& data) {
     }
 
     if(data.ui.inventory.weapon1Region.ConsumeClick()) {
+        TraceLog(LOG_INFO, "Consuming Single Click");
         SetSelectedWeaponSlot(data, data.ui.selectedCharacter, ItemEquipSlot::Weapon1);
         data.ui.actionBar.selectedModeIdx = 0;
+    }
+
+    if(data.ui.inventory.weapon1Region.ConsumeDblClick()) {
+        TraceLog(LOG_INFO, "Consuming DBL CLICK");
+        int prevItem = GetEquippedItem(data, data.ui.selectedCharacter, ItemEquipSlot::Weapon1);
+        if(prevItem != -1) {
+            SetEquippedItem(data, data.ui.selectedCharacter, ItemEquipSlot::Weapon1, -1);
+            data.ui.actionBar.selectedModeIdx = 0;
+            partyInventory.items.push_back(prevItem);
+            data.ui.inventory.selectedIndex = -1;
+            UpdateContextButtons(data);
+        }
     }
 
     if(data.ui.inventory.weapon2Region.ConsumeClick()) {
         SetSelectedWeaponSlot(data, data.ui.selectedCharacter, ItemEquipSlot::Weapon2);
         data.ui.actionBar.selectedModeIdx = 0;
+    }
+
+    if(data.ui.inventory.weapon2Region.ConsumeDblClick()) {
+        int prevItem = GetEquippedItem(data, data.ui.selectedCharacter, ItemEquipSlot::Weapon2);
+        if(prevItem != -1) {
+            SetEquippedItem(data, data.ui.selectedCharacter, ItemEquipSlot::Weapon2, -1);
+            data.ui.actionBar.selectedModeIdx = 0;
+            partyInventory.items.push_back(prevItem);
+            data.ui.inventory.selectedIndex = -1;
+            UpdateContextButtons(data);
+        }
+    }
+
+    if(data.ui.inventory.leftTabRegion.ConsumeClick()) {
+        int idx = static_cast<int>(data.ui.inventory.currentCharTab);
+        idx -= 1;
+        if(idx < 0) {
+            idx = static_cast<int>(CharacterTabs::COUNT)-1;
+        }
+        data.ui.inventory.currentCharTab = static_cast<CharacterTabs>(idx);
+    }
+    if(data.ui.inventory.rightTabRegion.ConsumeClick()) {
+        int idx = static_cast<int>(data.ui.inventory.currentCharTab);
+        idx += 1;
+        if(idx > static_cast<int>(CharacterTabs::COUNT)-1) {
+            idx = 0;
+        }
+        data.ui.inventory.currentCharTab = static_cast<CharacterTabs>(idx);
     }
     return true;
 }

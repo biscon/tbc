@@ -38,7 +38,6 @@ enum class TurnState {
     Move,
     SelectAction,
     SelectEnemy,
-    UseSkill,
     Attack,
     AttackDone,
     EnemyTurn,
@@ -99,7 +98,6 @@ struct Level {
     std::vector<int> turnOrder;
     int currentCharacter = -1;
     int selectedCharacter = -1;
-    Skill* selectedSkill = nullptr;
     int currentCharacterIdx = -1;
     TurnState turnState;
     std::vector<Animation> animations;

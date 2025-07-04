@@ -6,7 +6,6 @@
 #include <cmath>
 #include "CombatEngine.h"
 #include "StatusEffectRunner.h"
-#include "SkillRunner.h"
 #include "audio/SoundEffect.h"
 #include "CombatAnimation.h"
 #include "ai/Ai.h"
@@ -75,41 +74,6 @@ void UpdateCombat(GameData &data, Level &level, PlayField& playField, float dt) 
         case TurnState::SelectEnemy: {
             break;
         }
-        case TurnState::UseSkill: {
-            TraceLog(LOG_INFO, "Use skill");
-            CharacterSprite& sprite = charData.sprite[level.currentCharacter];
-            float attackerX = GetCharacterSpritePosX(spriteData, sprite);
-            float attackerY = GetCharacterSpritePosY(spriteData, sprite);
-
-            SkillResult result = ExecuteSkill(data, level, playField);
-            Animation damageNumberAnim{};
-            if(!level.selectedSkill->noTarget) {
-                if(!result.success) {
-                    SetupDamageNumberAnimation(damageNumberAnim, "FAILED", attackerX, attackerY-25, WHITE, 10);
-                }
-            } else {
-                if(result.success) {
-                    SetupDamageNumberAnimation(damageNumberAnim, level.selectedSkill->name, attackerX, attackerY - 25, YELLOW, 10);
-                } else {
-                    SetupDamageNumberAnimation(damageNumberAnim, "FAILED", attackerX, attackerY-25, WHITE, 10);
-                }
-            }
-            level.log.push_back(result.message);
-            level.animations.push_back(damageNumberAnim);
-
-            WaitTurnState(level, TurnState::EndTurn, 1.0f);
-
-
-            if(result.attack) {
-                level.nextState = TurnState::Attack;
-            } else if(!result.consumeAction) {
-                level.nextState = TurnState::SelectAction;
-            } else {
-                level.nextState = TurnState::EndTurn;
-            }
-            level.selectedSkill = nullptr;
-            break;
-        }
         case TurnState::Attack: {
             TraceLog(LOG_INFO, "Attack");
 
@@ -161,6 +125,8 @@ void UpdateCombat(GameData &data, Level &level, PlayField& playField, float dt) 
                     PlaySoundEffect(SoundEffectType::MeleeHit);
             }
 
+            TurnState nextState = IsPlayerCharacter(data.charData, level.currentCharacter) ? TurnState::SelectEnemy : TurnState::EndTurn;
+
             charData.stats[level.attackResult.defender].HP -= damage;
             if(charData.stats[level.attackResult.defender].HP <= 0) {
                 Animation speechBubble{};
@@ -168,9 +134,13 @@ void UpdateCombat(GameData &data, Level &level, PlayField& playField, float dt) 
                 level.animations.push_back(speechBubble);
                 RemoveAttackAnimations(level);
                 KillCharacter(spriteData, charData, level, level.attackResult.defender);
-                WaitTurnState(level, TurnState::EndTurn, 0.95f);
+                WaitTurnState(level, nextState, 0.95f);
             } else {
-                WaitTurnState(level, TurnState::EndTurn, 0.60f);
+                WaitTurnState(level, nextState, 0.60f);
+            }
+            ResetPlayField(playField);
+            if(IsPlayerCharacter(data.charData, level.currentCharacter)) {
+                playField.mode = PlayFieldMode::SelectingEnemyTarget;
             }
             break;
         }
@@ -201,7 +171,6 @@ void UpdateCombat(GameData &data, Level &level, PlayField& playField, float dt) 
             level.animations.push_back(textAnim);
             WaitTurnState(level, TurnState::StartRound, 0.2f);
             UpdateStatusEffects(charData, level);
-            UpdateSkillCooldown(charData, level);
             break;
         }
     }

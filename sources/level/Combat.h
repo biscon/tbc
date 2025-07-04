@@ -16,5 +16,6 @@ bool IsPlayerCharacter(CharacterData& charData, int character);
 bool IsIncapacitated(CharacterData& charData, int character);
 void NextCharacter(CharacterData& charData, Level &level);
 void StartCombat(SpriteData& spriteData, CharacterData& charData, Level &level, int spotter);
+void CalcHitChance(GameData& data, int charId, int weaponItemId, int fireModeIdx, AttackInfo& info);
 
 #endif //SANDBOX_COMBAT_H

@@ -41,6 +41,7 @@ struct PartyCharacter {
     CharacterFaction faction;
     CharacterStats stats;
     std::array<std::string, static_cast<size_t>(ItemEquipSlot::COUNT)> equippedItems;
+    std::array<int, static_cast<size_t>(Skill::Count)> skillValues;
     int selectedWeaponSlot;
 };
 

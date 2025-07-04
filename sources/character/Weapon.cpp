@@ -42,6 +42,7 @@ void InitWeaponData(WeaponData& weaponData, const std::string& filename) {
         tmpl.critMultiplier = value.at("critMultiplier");
         tmpl.weaponAccuracy = value.at("weaponAccuracy");
         tmpl.range = value.at("range");
+        tmpl.apCost = value.at("apCost");
         tmpl.skillUsed = value.at("skillUsed");
         tmpl.type = WeaponTypeFromString(value.at("type"));
         tmpl.animationTemplate = value.at("animationTemplate");

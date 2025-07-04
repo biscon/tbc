@@ -42,6 +42,7 @@ struct WeaponTemplate {
     WeaponType type;
     int rangeDataId;
     std::string animationTemplate;
+    int apCost;
 };
 
 struct WeaponData {

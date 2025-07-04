@@ -56,11 +56,11 @@ struct CharacterData {
     std::vector<std::string> ai;
     std::vector<CharacterStats> stats;
     std::vector<CharacterSprite> sprite;
-    std::vector<std::vector<Skill>> skills;  // List of skills the character possesses
     std::vector<std::vector<StatusEffect>> statusEffects;
     std::vector<Orientation> orientation;
     std::vector<std::array<int, static_cast<size_t>(ItemEquipSlot::COUNT)>> equippedItemIdx;
     std::vector<int> selectedWeaponSlot;
+    std::vector<std::array<int, static_cast<size_t>(Skill::Count)>> skillValues;
 };
 
 inline const char* GetEquipSlotName(ItemEquipSlot slot) {

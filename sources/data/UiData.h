@@ -116,6 +116,13 @@ struct PartySideBarData {
     std::unordered_map<std::string, Button> buttons;
 };
 
+enum class CharacterTabs {
+    Stats,
+    Equipment,
+    Skills,
+    COUNT
+};
+
 struct InventoryUiState {
     int scrollOffset = 0;
     int selectedIndex = -1;
@@ -126,14 +133,9 @@ struct InventoryUiState {
     ClickRegion weapon2Region;
     std::unordered_map<std::string, Button> buttons;
     std::unordered_map<std::string, Button> contextButtons;
-};
-
-// old stuff, to be deleted
-struct ActionIcon {
-    char text[64];
-    char description[256];
-    bool disabled;
-    Skill* skill;
+    CharacterTabs currentCharTab = CharacterTabs::Stats;
+    ClickRegion leftTabRegion;
+    ClickRegion rightTabRegion;
 };
 
 enum class ActionBarAction {
@@ -155,10 +157,6 @@ struct ActionBarIcon {
 };
 
 struct ActionBarUI {
-    int actionIconScrollIndex;
-    bool showActionBarTitle;
-
-    // new stuff
     ClickRegion switchWeapons;
     std::array<ActionBarIcon, 8> actionIcons;
     std::array<ActionBarIcon, 4> modeIcons;
@@ -168,10 +166,16 @@ struct ActionBarUI {
     bool hovered = false;
 };
 
+struct AttackInfo {
+    float hitChance = 0;
+    int apCost = 0;
+};
+
 struct PlayFieldUI {
     int floatingStatsCharacter = -1;
     Path movePath;
     bool validMovePath = false;
+    AttackInfo attackInfo;
 };
 
 struct UiState {

@@ -251,6 +251,13 @@ void ExecuteAction(GameData& data, ActionBarAction action, Level& level, PlayFie
             }
             break;
         }
+        case ActionBarAction::Attack: {
+            if(wasSelected) {
+                level.turnState = TurnState::SelectEnemy;
+                playField.mode = PlayFieldMode::SelectingEnemyTarget;
+            }
+            break;
+        }
         case ActionBarAction::Reload:
             break;
         case ActionBarAction::EndTurn: {

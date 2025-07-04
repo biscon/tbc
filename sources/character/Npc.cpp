@@ -49,6 +49,16 @@ void InitNpcTemplateData(NpcTemplateData &data, const std::string &filename) {
             }
         }
 
+        data.skillValues.emplace_back();
+        data.skillValues.back().fill(5);
+        if(npcJson.contains("skillValues")) {
+            const nlohmann::json &nodes = npcJson.at("skillValues");
+            for (nlohmann::json::const_iterator it = nodes.begin(); it != nodes.end(); ++it) {
+                const std::string &skillId = it.key();
+                data.skillValues.back()[static_cast<size_t>(SkillIdToEnum(skillId))] = it.value();
+            }
+        }
+
         int level = npcJson["level"].get<int>();
         data.level.emplace_back(level);
 
@@ -77,6 +87,9 @@ int CreateCharacterFromTemplate(GameData& data, const std::string &npcTemplate) 
         stats = data.npcTemplateData.stats[templateIdx];
         stats.HP = CalculateCharHealth(stats);
         stats.AP = CalculateCharMaxAP(stats);
+
+        // Set skill values from template
+        data.charData.skillValues[charIdx] = data.npcTemplateData.skillValues[templateIdx];
 
         InitCharacterSprite(data.spriteData, data.charData.sprite[charIdx], tplData.characterSprite[templateIdx], true);
 

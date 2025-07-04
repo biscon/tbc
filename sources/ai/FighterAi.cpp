@@ -11,7 +11,6 @@
 
 static bool AttackIfPossible(SpriteData& spriteData, CharacterData& charData, Level &level) {
     auto playersWithinRange = GetAdjacentCharacters(spriteData, charData, level, level.currentCharacter, CharacterFaction::Player);
-    level.selectedSkill = nullptr;
     if((int) playersWithinRange.size() > 0) {
         // attack player
         SortCharactersByThreat(level, playersWithinRange);

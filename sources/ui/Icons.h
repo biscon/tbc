@@ -23,6 +23,10 @@
 #define ICON_CIRCLE_PLUS        16
 #define ICON_SQUARE_FOOT        17
 #define ICON_SQUARE             18
+#define ICON_LEFT               19
+#define ICON_RIGHT              20
+#define ICON_DOWN               21
+#define ICON_UP                 22
 
 inline void DrawIcon(GameData& data, int x, int y, Color tint, int icon) {
     int sheetId = data.ui.iconSpriteSheet;

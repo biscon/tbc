@@ -49,6 +49,12 @@ void to_json(nlohmann::json& j, const PartyCharacter& c) {
         jSlots[GetEquipSlotName(static_cast<ItemEquipSlot>(i))] = c.equippedItems[i];
     }
     j["equippedItems"] = jSlots;
+
+    nlohmann::json jSkillValues;
+    for (size_t i = 0; i < static_cast<size_t>(Skill::Count); ++i) {
+        jSkillValues[EnumToSkillId(static_cast<Skill>(i))] = c.skillValues[i];
+    }
+    j["skillValues"] = jSkillValues;
 }
 
 void from_json(const nlohmann::json& j, PartyCharacter& c) {
@@ -66,6 +72,14 @@ void from_json(const nlohmann::json& j, PartyCharacter& c) {
         for (nlohmann::json::const_iterator it = nodes.begin(); it != nodes.end(); ++it) {
             const std::string &slotName = it.key();
             c.equippedItems[GetEquipSlotIndexByName(slotName)] = it.value();
+        }
+    }
+
+    if(j.contains("skillValues")) {
+        const nlohmann::json &nodes = j.at("skillValues");
+        for (nlohmann::json::const_iterator it = nodes.begin(); it != nodes.end(); ++it) {
+            const std::string &skillId = it.key();
+            c.skillValues[static_cast<size_t>(SkillIdToEnum(skillId))] = it.value();
         }
     }
 }

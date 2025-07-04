@@ -34,7 +34,10 @@ int CalculateCharHealth(CharacterStats& stats);
 int CalculateCharInitiative(CharacterStats &stats);
 int CalculateCharMaxAP(CharacterStats &stats);
 
+int GetSelectedWeaponItemId(GameData& data, int charId);
 WeaponTemplate* GetSelectedWeaponTemplate(GameData& data, int charId);
 WeaponRanged* GetSelectedRangedTemplate(GameData& data, int charId);
+int GetSkillValue(GameData& data, Skill s, int charId);
+int GetSkillValue(GameData& data, const std::string& skillName, int charId);
 
 #endif //SANDBOX_CHARACTER_H

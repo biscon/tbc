@@ -92,6 +92,42 @@ void RenderCharacterStats(CharacterData& charData, int character, int x, int y, 
     }
 }
 
+void RenderCharacterSkills(CharacterData& charData, int character, int x, int y, int width, Font font, float fontSize) {
+    const float spacing = 1.0f;
+    const float padding = 0.0f;
+    const float lineHeight = fontSize + 4;
+
+    // Prepare label-value pairs
+    std::vector<std::pair<std::string, std::string>> lines;
+    for(int i = 0; i < static_cast<size_t>(Skill::Count); i++) {
+        lines.emplace_back( EnumToSkillId(static_cast<Skill>(i)), TextFormat("%d", charData.skillValues[character][i]));
+    }
+
+    float height = (lines.size() * lineHeight) + 3 * padding;
+
+    Rectangle bg = {
+            (float)x, (float)y,
+            (float) width,
+            height
+    };
+
+    ClampToScreenBounds(bg);
+    //DrawRectangleRoundedLinesEx(bg, 0.1f, 16, 1.0f, DARKGRAY);
+
+    // Stats
+    float lineY = bg.y;
+    for (const auto& [label, value] : lines) {
+        Vector2 labelPos = { roundf(bg.x + padding), roundf(lineY) };
+        Vector2 valuePos = {
+                roundf(bg.x + bg.width - padding - MeasureTextEx(font, value.c_str(), fontSize, spacing).x),
+                roundf(lineY)
+        };
+        DrawTextEx(font, label.c_str(), labelPos, fontSize, spacing, LIGHTGRAY);
+        DrawTextEx(font, value.c_str(), valuePos, fontSize, spacing, GRAY);
+        lineY += lineHeight;
+    }
+}
+
 
 void ClampToScreenBounds(Rectangle& bg) {
     // Clamp into screen bounds

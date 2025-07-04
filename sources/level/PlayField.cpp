@@ -197,6 +197,7 @@ static void updateTurnBasedMove(SpriteData& spriteData, CharacterData& charData,
                     auto finalPos = playField.path.path[playField.path.path.size() - 1];
                     SetCharacterSpritePos(spriteData, sprite, GridToPixelPosition(finalPos.x, finalPos.y));
 
+                    ResetPlayField(playField);
                     if (IsPlayerCharacter(charData, level.currentCharacter)) {
                         level.turnState = TurnState::SelectDestination;
                         playField.mode = PlayFieldMode::SelectingTile;

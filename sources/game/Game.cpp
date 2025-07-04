@@ -19,8 +19,6 @@ void DestroyGame(GameData &game) {
 
 void StartNewGame(GameData &data) {
     int id = CreateCharacter(data.charData, CharacterFaction::Player, "Player1", "Fighter");
-    AssignSkill(data.charData.skills[id], SkillType::Taunt, "Howling Scream", 1, false, true, 0, 3, 0);
-    AssignSkill(data.charData.skills[id], SkillType::Stun, "Stunning Blow", 1, false, false, 0, 3, 1);
     InitCharacterSprite(data.spriteData, data.charData.sprite[id], "MaleWarrior", true);
     GiveWeapon(data, id, "item_weapon_knife", ItemEquipSlot::Weapon1);
     data.charData.stats[id].LVL = 5;
@@ -29,8 +27,6 @@ void StartNewGame(GameData &data) {
     data.party.emplace_back(id);
 
     id = CreateCharacter(data.charData, CharacterFaction::Player, "Player2", "Fighter");
-    AssignSkill(data.charData.skills[id], SkillType::Dodge, "Dodge", 1, true, true, 0, 0, 0);
-    AssignSkill(data.charData.skills[id], SkillType::FlameJet, "Burning Hands", 1, false, false, 0, 3, 5);
     InitCharacterSprite(data.spriteData, data.charData.sprite[id], "MaleBase", true);
     GiveWeapon(data, id, "item_weapon_club", ItemEquipSlot::Weapon1);
     data.charData.stats[id].LVL = 5;
@@ -75,9 +71,13 @@ void LoadGame(GameData &data) {
                 data.charData.equippedItemIdx[id][i] = itemId;
             }
         }
+        // load skill values
+        data.charData.skillValues[id] = ch.skillValues;
+
         ch.stats.AP = CalculateCharMaxAP(ch.stats);
         data.charData.stats[id] = ch.stats;
-        data.charData.selectedWeaponSlot[id] = ch.selectedWeaponSlot;
+        //data.charData.selectedWeaponSlot[id] = ch.selectedWeaponSlot;
+        SetSelectedWeaponSlot(data, id, static_cast<ItemEquipSlot>(ch.selectedWeaponSlot));
         Vector2i savedPos = { ch.tilePosX, ch.tilePosY};
         SetCharacterGridPosI(data.spriteData, data.charData.sprite[id], savedPos);
         data.party.emplace_back(id);
@@ -109,6 +109,9 @@ void SaveGame(GameData &data) {
             int itemId =  data.charData.equippedItemIdx[id][i];
             pc.equippedItems[i] = itemId == -1 ? "" : GetItemTemplateIdString(data, itemId);
         }
+
+        // save skills
+        pc.skillValues = data.charData.skillValues[id];
 
         // save position
         Vector2i pos = GetCharacterGridPosI(data.spriteData, data.charData.sprite[id]);

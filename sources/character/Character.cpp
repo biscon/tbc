@@ -32,9 +32,12 @@ int CreateCharacter(CharacterData &data, CharacterFaction faction, const std::st
     data.equippedItemIdx.emplace_back();
     data.equippedItemIdx.back().fill(-1);
     data.statusEffects.emplace_back();
-    data.skills.emplace_back();
     data.sprite.emplace_back();
     data.selectedWeaponSlot.push_back(static_cast<int>(ItemEquipSlot::Weapon1));
+
+    data.skillValues.emplace_back();
+    data.skillValues.back().fill(5);
+
     return (int) data.name.size()-1;
 }
 
@@ -47,7 +50,7 @@ void DeleteCharacter(CharacterData& data, int id) {
     data.ai.erase(data.ai.begin() + id);
     data.faction.erase(data.faction.begin() + id);
     data.statusEffects.erase(data.statusEffects.begin() + id);
-    data.skills.erase(data.skills.begin() + id);
+    data.skillValues.erase(data.skillValues.begin() + id);
     data.selectedWeaponSlot.erase(data.selectedWeaponSlot.begin() + id);
 }
 
@@ -60,7 +63,7 @@ void ClearAllCharacters(CharacterData& data) {
     data.ai.clear();
     data.faction.clear();
     data.statusEffects.clear();
-    data.skills.clear();
+    data.skillValues.clear();
     data.selectedWeaponSlot.clear();
 }
 
@@ -120,9 +123,16 @@ int GetEquippedItem(const GameData& data, int charIdx, ItemEquipSlot slot) {
 
 void SetEquippedItem(GameData& data, int charIdx, ItemEquipSlot slot, int itemIdx) {
     data.charData.equippedItemIdx[charIdx][static_cast<size_t>(slot)] = itemIdx;
-    if(data.charData.selectedWeaponSlot[charIdx] == static_cast<int>(slot) && itemIdx != -1) {
-        int tplIdx = GetItemTypeTemplateId(data, itemIdx);
-        SetCharacterSpriteWeaponAnimation(data.spriteData, data.charData.sprite[charIdx], data.weaponData.templateData[tplIdx].animationTemplate);
+    if(data.charData.selectedWeaponSlot[charIdx] == static_cast<int>(slot)) {
+        if(itemIdx != -1) {
+            int tplIdx = GetItemTypeTemplateId(data, itemIdx);
+            SetCharacterSpriteWeaponAnimation(data.spriteData, data.charData.sprite[charIdx],
+                                              data.weaponData.templateData[tplIdx].animationTemplate);
+            SpriteAnimationType animType = CharacterOrientationToAnimType(data, charIdx);
+            StartPausedCharacterSpriteAnim(data.spriteData, data.charData.sprite[charIdx], animType, true);
+        } else {
+            data.charData.sprite[charIdx].displayWeapon = false;
+        }
     }
 }
 
@@ -152,6 +162,9 @@ int CalculateCharMaxAP(CharacterStats &stats) {
 }
 
 void SetSelectedWeaponSlot(GameData& data, int charId, ItemEquipSlot slot) {
+    if(static_cast<int>(slot) == data.charData.selectedWeaponSlot[charId]) {
+        return;
+    }
     data.charData.selectedWeaponSlot[charId] = static_cast<int>(slot);
     int itemId = GetEquippedItem(data, data.ui.selectedCharacter, slot);
     if(itemId != -1) {
@@ -191,6 +204,12 @@ void SwapWeapons(GameData &data, int charIdx) {
     }
 }
 
+int GetSelectedWeaponItemId(GameData& data, int charId) {
+    int selectedSlot = data.charData.selectedWeaponSlot[charId];
+    int itemId = GetEquippedItem(data, charId, static_cast<ItemEquipSlot>(selectedSlot));
+    return itemId;
+}
+
  WeaponTemplate* GetSelectedWeaponTemplate(GameData& data, int charId) {
     int selectedSlot = data.charData.selectedWeaponSlot[charId];
     int itemId = GetEquippedItem(data, charId, static_cast<ItemEquipSlot>(selectedSlot));
@@ -214,4 +233,12 @@ WeaponRanged* GetSelectedRangedTemplate(GameData& data, int charId) {
         }
     }
     return nullptr;
+}
+
+int GetSkillValue(GameData& data, Skill s, int charId) {
+    return data.charData.skillValues[charId][static_cast<int>(s)];
+}
+
+int GetSkillValue(GameData& data, const std::string& skillName, int charId) {
+    return GetSkillValue(data, SkillIdToEnum(skillName), charId);
 }

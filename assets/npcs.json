@@ -17,6 +17,9 @@
             "HP": 25,
             "LVL": 1
         },
+        "skillValues": {
+            "Melee": 50
+        },
         "equippedItems": {
             "armor": "",
             "weapon 1": "item_weapon_knife"
@@ -40,6 +43,9 @@
             "HP": 25,
             "LVL": 1
         },
+        "skillValues": {
+            "Melee": 50
+        },
         "equippedItems": {
             "armor": "",
             "weapon 1": "item_weapon_club"
@@ -62,6 +68,9 @@
             "LUK": 5,
             "HP": 25,
             "LVL": 10
+        },
+        "skillValues": {
+            "Speech": 75
         }
     }
 ]

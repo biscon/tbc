@@ -45,8 +45,6 @@ add_executable(${PROJECT_NAME}
         sources/graphics/Animation.cpp
         sources/graphics/Animation.h
         sources/reasings.h
-        sources/level/SkillRunner.cpp
-        sources/level/SkillRunner.h
         sources/graphics/SpriteAnimation.cpp
         sources/graphics/SpriteAnimation.h
         sources/level/PlayField.cpp
@@ -110,6 +108,7 @@ add_executable(${PROJECT_NAME}
         sources/data/NpcTemplateData.h
         sources/data/GameData.h
         sources/data/SkillData.h
+        sources/data/SkillData.cpp
         sources/data/StatusEffectData.h
         sources/data/TileMapData.h
         sources/data/AnimationData.h

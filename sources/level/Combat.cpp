@@ -17,6 +17,7 @@
 #include "audio/SoundEffect.h"
 #include "ai/PathFinding.h"
 #include "game/Items.h"
+#include "raymath.h"
 
 bool IsIncapacitated(CharacterData& charData, int character) {
     // Check if the character is stunned
@@ -33,6 +34,18 @@ bool IsIncapacitated(CharacterData& charData, int character) {
 
 // Function for a character to attack another
 AttackResult Attack(GameData& data, Level& level, int attacker, int defender) {
+    WeaponTemplate* weaponTemplate = GetSelectedWeaponTemplate(data, attacker);
+    WeaponRanged* weaponRanged = GetSelectedRangedTemplate(data, attacker);
+
+    CharacterStats& attackerStats = data.charData.stats[attacker];
+    if(weaponRanged != nullptr) {
+        attackerStats.AP -= weaponRanged->fireModes.at(data.ui.actionBar.selectedModeIdx).apCost;
+    } else if(weaponTemplate != nullptr) {
+        attackerStats.AP -= weaponTemplate->apCost;
+    } else {
+        attackerStats.AP -= 3;
+    }
+
     AttackResult result{};
     result.attacker = attacker;
     result.defender = defender;
@@ -198,4 +211,41 @@ void StartCombat(SpriteData& spriteData, CharacterData& charData, Level &level, 
     Animation textAnim{};
     SetupTextAnimation(textAnim, "Entering Combat", 150, 2.0f, 0.0f);
     level.animations.push_back(textAnim);
+}
+
+void CalcHitChance(GameData& data, int charId, int weaponItemId, int fireModeIdx, AttackInfo& info) {
+    /*
+    hitChance = skillValue
+                + (PER / 2)
+                + weapon.weaponAccuracy
+                + fireMode.accuracyMod
+                - target.evasion;
+    */
+    if(weaponItemId != -1) {
+        if (data.itemData.templateData[GetItemTemplateId(data, weaponItemId)].type != ItemType::Weapon) {
+            throw std::runtime_error("Item type must be Weapon");
+        }
+        CharacterStats& stats = data.charData.stats[charId];
+        int weaponTplId = GetItemTypeTemplateId(data, weaponItemId);
+        WeaponTemplate& weaponTemplate = data.weaponData.templateData[weaponTplId];
+        info.apCost = weaponTemplate.apCost;
+        Skill skill = SkillIdToEnum(weaponTemplate.skillUsed);
+        float hitChance = (float) GetSkillValue(data, skill, charId)
+                          + floorf((float) stats.PER / 2)
+                          + weaponTemplate.weaponAccuracy;
+        if(weaponTemplate.rangeDataId != -1) {
+            WeaponRanged& ranged = data.weaponData.rangedData[weaponTemplate.rangeDataId];
+            if(fireModeIdx != -1) {
+                hitChance += ranged.fireModes.at(fireModeIdx).accuracyMod;
+                info.apCost = ranged.fireModes.at(fireModeIdx).apCost;
+            }
+        }
+        info.hitChance = Clamp(hitChance, 5, 95);
+    } else { // unarmed
+        CharacterStats& stats = data.charData.stats[charId];
+        float hitChance = (float) GetSkillValue(data, Skill::Melee, charId)
+                          + floorf((float) stats.PER / 2);
+        info.hitChance = Clamp(hitChance, 5, 95);
+        info.apCost = 3;
+    }
 }
