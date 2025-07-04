@@ -35,7 +35,7 @@
         "critMultiplier": 2.0,
         "weaponAccuracy": 0.0,
         "range": 8,
-        "skillUsed": "SmallGuns",
+        "skillUsed": "Small Guns",
         "type": "Ranged",
         "animationTemplate": "Sword",
         "rangedData": {
@@ -64,7 +64,7 @@
         "critMultiplier": 2.0,
         "weaponAccuracy": -5.0,
         "range": 10,
-        "skillUsed": "SmallGuns",
+        "skillUsed": "Small Guns",
         "type": "Ranged",
         "animationTemplate": "Sword",
         "rangedData": {

@@ -7,8 +7,8 @@
 
 const std::vector<std::string> skillIds = {
         "Melee",
-        "SmallGuns",
-        "EnergyWeapons",
+        "Small Guns",
+        "Energy Weapons",
         "Explosives",
         "Lockpicking",
         "Hacking",
@@ -18,8 +18,8 @@ const std::vector<std::string> skillIds = {
 
 std::unordered_map<std::string, Skill> skillIdToEnum = {
         { "Melee", Skill::Melee },
-        { "SmallGuns", Skill::SmallGuns },
-        { "EnergyWeapons", Skill::EnergyWeapons },
+        { "Small Guns", Skill::SmallGuns },
+        { "Energy Weapons", Skill::EnergyWeapons },
         { "Explosives", Skill::Explosives },
         { "Lockpicking", Skill::LockPicking },
         { "Hacking", Skill::Hacking },
