@@ -39,5 +39,6 @@ WeaponTemplate* GetSelectedWeaponTemplate(GameData& data, int charId);
 WeaponRanged* GetSelectedRangedTemplate(GameData& data, int charId);
 int GetSkillValue(GameData& data, Skill s, int charId);
 int GetSkillValue(GameData& data, const std::string& skillName, int charId);
+void SetSkillValue(GameData& data, Skill s, int charId, int value);
 
 #endif //SANDBOX_CHARACTER_H

@@ -242,3 +242,7 @@ int GetSkillValue(GameData& data, Skill s, int charId) {
 int GetSkillValue(GameData& data, const std::string& skillName, int charId) {
     return GetSkillValue(data, SkillIdToEnum(skillName), charId);
 }
+
+void SetSkillValue(GameData &data, Skill s, int charId, int value) {
+    data.charData.skillValues[charId][static_cast<size_t>(s)] = value;
+}

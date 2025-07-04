@@ -23,5 +23,6 @@ float Distance(Vector2i start, Vector2i end);
 Vector2 CalculateDirection(Vector2 start, Vector2 end);
 Vector2 CalculateDirection(Vector2i start, Vector2i end);
 Vector2 ceilv(Vector2 v);
+float GetRandomFloat01();
 
 #endif //SANDBOX_MATHUTIL_H

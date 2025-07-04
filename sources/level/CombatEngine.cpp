@@ -99,12 +99,12 @@ void UpdateCombat(GameData &data, Level &level, PlayField& playField, float dt) 
             float defenderY = GetCharacterSpritePosY(spriteData, charData.sprite[level.selectedCharacter]);
             int damage = level.attackResult.damage;
             if(damage > 0) {
-                float intensity = (float) GetBloodIntensity(damage, 5);
+                float intensity = (float) GetBloodIntensity(damage, 20);
                 TraceLog(LOG_INFO, "Damage: %d, intensity: %f", damage, intensity);
                 Vector2 bloodPos = {defenderX + (float) RandomInRange(-2,2), defenderY - 8 + (float) RandomInRange(-2,2)};
                 CreateBloodSplatter(*playField.particleManager, bloodPos, 10, intensity);
                 Animation damageNumberAnim{};
-                Color dmgColor = GetDamageColor(damage, 5);
+                Color dmgColor = GetDamageColor(damage, 20);
                 SetupDamageNumberAnimation(damageNumberAnim, TextFormat("%d", damage), defenderX, defenderY-25, dmgColor, level.attackResult.crit ? 20 : 10);
                 level.animations.push_back(damageNumberAnim);
                 PlaySoundEffect(SoundEffectType::HumanPain, 0.25f);
@@ -166,6 +166,7 @@ void UpdateCombat(GameData &data, Level &level, PlayField& playField, float dt) 
             break;
         }
         case TurnState::EndRound: {
+            PublishCloseActionBarEvent(data.ui.eventQueue);
             Animation textAnim{};
             SetupTextAnimation(textAnim, "Next round!", 150, 1.0f, 1.0f);
             level.animations.push_back(textAnim);
@@ -187,10 +188,11 @@ void UpdateCombat(GameData &data, Level &level, PlayField& playField, float dt) 
         if (allEnemiesDefeated && level.turnState != TurnState::Victory) {
             level.turnState = TurnState::Victory;
             //StopSoundEffect(SoundEffectType::Ambience);
-            PlaySoundEffect(SoundEffectType::Victory, 0.5f);
-            PlayPlayerVictoryAnimation(spriteData, charData, level);
+            //PlaySoundEffect(SoundEffectType::Victory, 0.5f);
+            //PlayPlayerVictoryAnimation(spriteData, charData, level);
             auto& levelState = data.levelState[level.name];
             levelState.defeatedGroups.insert(level.currentEnemyGroup);
+            PublishCloseActionBarEvent(data.ui.eventQueue);
         }
         // check defeat condition, all players have zero health
         bool allPlayersDefeated = true;
@@ -206,6 +208,7 @@ void UpdateCombat(GameData &data, Level &level, PlayField& playField, float dt) 
             PlaySoundEffect(SoundEffectType::Defeat, 0.5f);
             PlayEnemyVictoryAnimation(spriteData, charData, level);
             //combat.animations.clear();
+            PublishCloseActionBarEvent(data.ui.eventQueue);
         }
     }
 }

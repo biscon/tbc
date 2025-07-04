@@ -38,20 +38,48 @@ AttackResult Attack(GameData& data, Level& level, int attacker, int defender) {
     WeaponRanged* weaponRanged = GetSelectedRangedTemplate(data, attacker);
 
     CharacterStats& attackerStats = data.charData.stats[attacker];
-    if(weaponRanged != nullptr) {
-        attackerStats.AP -= weaponRanged->fireModes.at(data.ui.actionBar.selectedModeIdx).apCost;
-    } else if(weaponTemplate != nullptr) {
-        attackerStats.AP -= weaponTemplate->apCost;
-    } else {
-        attackerStats.AP -= 3;
-    }
-
     AttackResult result{};
     result.attacker = attacker;
     result.defender = defender;
-    result.hit = true;
+    result.hit = false;
     result.crit = false;
-    result.damage = 1;
+    result.damage = 0;
+
+    if(weaponRanged != nullptr) {
+        attackerStats.AP -= weaponRanged->fireModes.at(data.ui.actionBar.selectedModeIdx).apCost;
+    } else if(weaponTemplate != nullptr) {
+        AttackInfo info{};
+        CalcHitChance(data, attacker, GetSelectedWeaponItemId(data, attacker), data.ui.actionBar.selectedModeIdx, info);
+        int hitRoll = GetRandomValue(1, 100);
+        if(hitRoll <= (int) info.hitChance) {
+            result.hit = true;
+            float totalCritChance = weaponTemplate->critChance + ((float) attackerStats.LUK * 1.0f); // 1% per LUK
+            result.damage = weaponTemplate->baseDamage + (attackerStats.STR / 2);
+            result.crit = GetRandomFloat01() < (totalCritChance/100);
+            if (result.crit) {
+                result.damage = static_cast<int>((float) result.damage * weaponTemplate->critMultiplier);
+            }
+        } else {
+            result.hit = false;
+        }
+        attackerStats.AP -= info.apCost;
+    } else { // unarmed
+        AttackInfo info{};
+        CalcHitChance(data, attacker, GetSelectedWeaponItemId(data, attacker), data.ui.actionBar.selectedModeIdx, info);
+        int hitRoll = GetRandomValue(1, 100);
+        if(hitRoll <= (int) info.hitChance) {
+            result.hit = true;
+            float totalCritChance = 2 + ((float) attackerStats.LUK * 1.0f); // 1% per LUK
+            result.damage = 4 + (attackerStats.STR / 2);
+            result.crit = GetRandomFloat01() < (totalCritChance/100);
+            if (result.crit) {
+                result.damage = static_cast<int>((float) result.damage * 2.0f);
+            }
+        } else {
+            result.hit = false;
+        }
+        attackerStats.AP -= info.apCost;
+    }
     return result;
 }
 

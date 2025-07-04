@@ -21,6 +21,11 @@ void StartNewGame(GameData &data) {
     int id = CreateCharacter(data.charData, CharacterFaction::Player, "Player1", "Fighter");
     InitCharacterSprite(data.spriteData, data.charData.sprite[id], "MaleWarrior", true);
     GiveWeapon(data, id, "item_weapon_knife", ItemEquipSlot::Weapon1);
+    SetSkillValue(data, Skill::Melee, id, 50);
+    SetSkillValue(data, Skill::SmallGuns, id, 50);
+    data.charData.stats[id].STR = 8;
+    data.charData.stats[id].END = 7;
+    data.charData.stats[id].REF = 7;
     data.charData.stats[id].LVL = 5;
     data.charData.stats[id].HP = CalculateCharHealth(data.charData.stats[id]);
     data.charData.stats[id].AP = CalculateCharMaxAP(data.charData.stats[id]);
@@ -29,6 +34,9 @@ void StartNewGame(GameData &data) {
     id = CreateCharacter(data.charData, CharacterFaction::Player, "Player2", "Fighter");
     InitCharacterSprite(data.spriteData, data.charData.sprite[id], "MaleBase", true);
     GiveWeapon(data, id, "item_weapon_club", ItemEquipSlot::Weapon1);
+    SetSkillValue(data, Skill::Melee, id, 50);
+    SetSkillValue(data, Skill::SmallGuns, id, 50);
+    data.charData.stats[id].REF = 8;
     data.charData.stats[id].LVL = 5;
     data.charData.stats[id].HP = CalculateCharHealth(data.charData.stats[id]);
     data.charData.stats[id].AP = CalculateCharMaxAP(data.charData.stats[id]);

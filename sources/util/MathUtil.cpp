@@ -5,6 +5,7 @@
 #include "MathUtil.h"
 #include "raymath.h"
 #include <cmath>
+#include <random>
 
 void to_json(nlohmann::json& j, const Vector2i& v) {
     j = nlohmann::json::array({ v.x, v.y });
@@ -42,4 +43,12 @@ Vector2 CalculateDirection(Vector2i start, Vector2i end) {
 
 Vector2 ceilv(Vector2 v) {
     return { ceilf(v.x), ceilf(v.y) };
+}
+
+float GetRandomFloat01() {
+    static std::random_device rd;                     // for seeding
+    static std::mt19937 rng(rd());                    // Mersenne Twister RNG
+    static std::uniform_real_distribution<float> dist(0.0f, 1.0f); // [0.0, 1.0)
+
+    return dist(rng);
 }
