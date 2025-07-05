@@ -11,12 +11,14 @@
 enum class Skill {
     Melee,
     SmallGuns,
+    BigGuns,
     EnergyWeapons,
     Explosives,
     LockPicking,
-    Hacking,
+    Science,
     Speech,
     Medicine,
+    Repair,
     // ...
     Count
 };

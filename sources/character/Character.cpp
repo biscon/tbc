@@ -25,8 +25,8 @@ int CreateCharacter(CharacterData &data, CharacterFaction faction, const std::st
     stats.PER = 5;
     stats.CHA = 5;
     stats.LUK = 5;
-    stats.HP = CalculateCharHealth(stats);
     stats.LVL = 1;
+    stats.HP = CalculateCharHealth(stats);
     data.stats.emplace_back(stats);
     data.orientation.emplace_back(Orientation::Right);
     data.equippedItemIdx.emplace_back();
@@ -36,7 +36,7 @@ int CreateCharacter(CharacterData &data, CharacterFaction faction, const std::st
     data.selectedWeaponSlot.push_back(static_cast<int>(ItemEquipSlot::Weapon1));
 
     data.skillValues.emplace_back();
-    data.skillValues.back().fill(5);
+    data.skillValues.back().fill(10);
 
     return (int) data.name.size()-1;
 }
@@ -148,7 +148,20 @@ SpriteAnimationType CharacterOrientationToAnimType(GameData& data, int charId) {
 
 int CalculateCharHealth(CharacterStats &stats) {
     // HP = baseHP + (END × hpPerPoint) + (level - 1) × hpPerLevel
-    return 10 + (stats.END * 3) + ((stats.LVL - 1) * (stats.END / 2));
+    //return 10 + (stats.END * 3) + ((stats.LVL - 1) * (stats.END / 2));
+    /*
+     * 15 + 2 * EN + ST
+     * Every time you gain a level this increases by 2 + EN / 2
+     */
+    int hp = 15;
+    hp += 2 * stats.END;
+    hp += stats.STR;
+    //TraceLog(LOG_INFO, "HP before levels: %d", hp);
+    int hpPerLevel = 2 + (stats.END/2);
+    //TraceLog(LOG_INFO, "HP per level: %d", hpPerLevel);
+    hp += (stats.LVL-1) * hpPerLevel;
+    //TraceLog(LOG_INFO, "HP after levels: %d", hp);
+    return hp;
 }
 
 int CalculateCharInitiative(CharacterStats &stats) {
@@ -158,7 +171,7 @@ int CalculateCharInitiative(CharacterStats &stats) {
 
 int CalculateCharMaxAP(CharacterStats &stats) {
     // AP = 4 + (REF / 2)
-    return 4 + (stats.REF / 2);
+    return 5 + (stats.REF / 2);
 }
 
 void SetSelectedWeaponSlot(GameData& data, int charId, ItemEquipSlot slot) {

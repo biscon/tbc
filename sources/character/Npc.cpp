@@ -7,6 +7,7 @@
 #include "util/json.hpp"
 #include "Character.h"
 #include "game/Items.h"
+#include "Skill.h"
 
 void to_json(nlohmann::json& j, const NpcInstance& npc) {
     j = nlohmann::json{
@@ -50,7 +51,7 @@ void InitNpcTemplateData(NpcTemplateData &data, const std::string &filename) {
         }
 
         data.skillValues.emplace_back();
-        data.skillValues.back().fill(5);
+        data.skillValues.back().fill(0);
         if(npcJson.contains("skillValues")) {
             const nlohmann::json &nodes = npcJson.at("skillValues");
             for (nlohmann::json::const_iterator it = nodes.begin(); it != nodes.end(); ++it) {
@@ -85,11 +86,18 @@ int CreateCharacterFromTemplate(GameData& data, const std::string &npcTemplate) 
 
         CharacterStats& stats = data.charData.stats[charIdx];
         stats = data.npcTemplateData.stats[templateIdx];
+        SetInitialSkillValues(data, charIdx);
         stats.HP = CalculateCharHealth(stats);
         stats.AP = CalculateCharMaxAP(stats);
 
-        // Set skill values from template
-        data.charData.skillValues[charIdx] = data.npcTemplateData.skillValues[templateIdx];
+        // Set skill values from template if the are above 0
+        auto& tplSkillValues = data.npcTemplateData.skillValues[templateIdx];
+        auto& charSkillValues = data.charData.skillValues[charIdx];
+        for(int i = 0; i < static_cast<int>(Skill::Count); i++) {
+            if(tplSkillValues[i] > 0) {
+                charSkillValues[i] = tplSkillValues[i];
+            }
+        }
 
         InitCharacterSprite(data.spriteData, data.charData.sprite[charIdx], tplData.characterSprite[templateIdx], true);
 

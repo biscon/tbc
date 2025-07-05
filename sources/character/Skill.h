@@ -5,7 +5,8 @@
 #ifndef SANDBOX_SKILL_H
 #define SANDBOX_SKILL_H
 
-#include "data/SkillData.h"
+#include "data/GameData.h"
 
+void SetInitialSkillValues(GameData& data, int charId);
 
 #endif //SANDBOX_SKILL_H

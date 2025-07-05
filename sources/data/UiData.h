@@ -11,7 +11,6 @@
 #include <unordered_map>
 #include "raylib.h"
 #include "util/GameEventQueue.h"
-#include "character/Skill.h"
 #include "PathFindingData.h"
 
 struct ClickRegion {

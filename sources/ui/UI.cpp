@@ -100,7 +100,7 @@ void RenderCharacterSkills(CharacterData& charData, int character, int x, int y,
     // Prepare label-value pairs
     std::vector<std::pair<std::string, std::string>> lines;
     for(int i = 0; i < static_cast<size_t>(Skill::Count); i++) {
-        lines.emplace_back( EnumToSkillId(static_cast<Skill>(i)), TextFormat("%d", charData.skillValues[character][i]));
+        lines.emplace_back( EnumToSkillId(static_cast<Skill>(i)), TextFormat("%d%%", charData.skillValues[character][i]));
     }
 
     float height = (lines.size() * lineHeight) + 3 * padding;

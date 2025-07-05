@@ -7,6 +7,7 @@
 #include "character/Character.h"
 #include "GameMode.h"
 #include "Items.h"
+#include "character/Skill.h"
 
 void CreateGame(GameData &game, const std::string& levelFileName) {
     game.state = GameState::START_NEW_GAME;
@@ -29,6 +30,7 @@ void StartNewGame(GameData &data) {
     data.charData.stats[id].LVL = 5;
     data.charData.stats[id].HP = CalculateCharHealth(data.charData.stats[id]);
     data.charData.stats[id].AP = CalculateCharMaxAP(data.charData.stats[id]);
+    SetInitialSkillValues(data, id);
     data.party.emplace_back(id);
 
     id = CreateCharacter(data.charData, CharacterFaction::Player, "Player2", "Fighter");
@@ -40,6 +42,7 @@ void StartNewGame(GameData &data) {
     data.charData.stats[id].LVL = 5;
     data.charData.stats[id].HP = CalculateCharHealth(data.charData.stats[id]);
     data.charData.stats[id].AP = CalculateCharMaxAP(data.charData.stats[id]);
+    SetInitialSkillValues(data, id);
     data.party.emplace_back(id);
 
     data.state = GameState::LOAD_LEVEL;

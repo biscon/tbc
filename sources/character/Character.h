@@ -9,7 +9,6 @@
 #include <utility>
 #include <vector>
 #include "graphics/CharacterSprite.h"
-#include "Skill.h"
 #include "StatusEffect.h"
 #include "Weapon.h"
 #include "data/CharacterData.h"
