@@ -1,7 +1,7 @@
 {
     "name": "The Halls of Despair",
-    "map": "indoor_map.json",
-    "tileset": "indoor_tiles.png",
+    "map": "indoor_map2.json",
+    "tileset": "indoor_tiles2.png",
     "ambientLight": "050A1E",
     "spawnPoints": [
         {
@@ -73,7 +73,7 @@
             "intensity": "15",
             "active": true,
             "x": 26,
-            "y": 17,
+            "y": 15,
             "falloff": 1.5,
             "color": "FFE6B4"
         },
@@ -82,7 +82,7 @@
             "intensity": "15",
             "active": true,
             "x": 36,
-            "y": 17,
+            "y": 15,
             "falloff": 1.5,
             "color": "FFE6B4"
         },
@@ -130,6 +130,15 @@
             "y": 37,
             "falloff": 2.5,
             "color": "11FF33"
+        },
+        {
+            "id": "hallwaylight1",
+            "intensity": "15",
+            "active": true,
+            "x": 32,
+            "y": 20,
+            "falloff": 2.5,
+            "color": "FFE6B4"
         }
     ],
     "objects": [
@@ -179,12 +188,12 @@
     "doors": [
         {
             "id": "door1",
-            "sprite": "HorizDoorOpenLeft",
+            "sprite": "HorizDoorOpen",
             "position": [23, 10],
             "open": false,
             "locked": false,
             "blockedTiles": [[23,12], [23,13]],
-            "shadowTiles": [[23,8],[23,9],[23,10],[23,11],[23,12],[23,13],[23,14],[23,15],[23,16]]
+            "shadowTiles": [[23,10],[23,11],[23,12],[23,13]]
         },
         {
             "id": "door2",
@@ -192,17 +201,17 @@
             "position": [31, 16],
             "open": false,
             "locked": false,
-            "blockedTiles": [[31,16],[32,16],[31,17],[32,17]],
-            "shadowTiles": [[28,17],[29,17],[30,17],[31,17],[32,17],[33,17],[34,17],[35,17]]
+            "blockedTiles": [[31,16],[32,16],[31,17],[32,17],[31,18],[32,18]],
+            "shadowTiles": [[31,16],[32,16]]
         },
         {
             "id": "door3",
-            "sprite": "HorizDoorOpenRight",
-            "position": [39, 10],
+            "sprite": "HorizDoorOpen",
+            "position": [40, 9],
             "open": false,
             "locked": false,
-            "blockedTiles": [[39,12], [39,13]],
-            "shadowTiles": [[40,9],[40,10],[40,11],[40,12],[40,13],[40,14],[40,15]]
+            "blockedTiles": [[40,11], [40,12]],
+            "shadowTiles": [[40,9],[40,10],[40,11],[40,12]]
         }
     ]
 }

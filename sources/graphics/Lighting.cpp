@@ -306,7 +306,7 @@ void RenderVisibilityMap(LightingData &data) {
             (Rectangle){ 0, 0, data.mapWidth * tileSize, data.mapHeight * tileSize },
             (Vector2){ 0, 0 },
             0.0f,
-            ColorAlpha(WHITE, 1.0f) // color tint, no alpha applied here
+            WHITE // color tint, no alpha applied here
     );
 }
 

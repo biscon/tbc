@@ -75,14 +75,16 @@ static void DrawGridCharacters(GameData& data, Level &level) {
 
     // Draw characters
     for (auto &character: sortedCharacters) {
-        if(!HasLineOfSightToParty(spriteData, charData, level, character))
+        CharacterSprite& charSprite = charData.sprite[character];
+        auto gridPos = GetCharacterGridPosI(data.spriteData, charSprite);
+        if(!HasLineOfSightToPartyLight(spriteData, charData, level, gridPos))
             continue;
         Vector2 charPos = GetAnimatedCharPos(data, level, character);
         // Draw oval shadow underneath
         if(charData.stats[character].HP > 0 && level.turnState != TurnState::Victory && level.turnState != TurnState::Defeat)
             DrawEllipse((int) charPos.x, (int) charPos.y, 6, 4, Fade(BLACK, 0.25f));
 
-        CharacterSprite& charSprite = charData.sprite[character];
+
         if (IsCharacterVisible(level, character)) {
             Vector2i t = GetCharacterGridPosI(spriteData, charSprite);
             Color v1 = GetVertexLight(level.lighting, level.tileMap, t.x, t.y);     // top-left corner
@@ -106,18 +108,48 @@ static void DrawGridCharacters(GameData& data, Level &level) {
     }
 }
 
+static void DrawSampleCorners(SpriteData& spriteData, Level &level, int animPlayer, Vector2i gridPos) {
+    auto frameInfo = GetFrameInfo(spriteData, animPlayer);
+    Vector2 pos = GridToPixelPosition(gridPos.x, gridPos.y);
+    Vector2 drawPos = pos;
+    pos.x -= 8.0f;
+    pos.y -= 8.0f;
+
+    Vector2 topLeft = pos;
+    Vector2 topRight = {pos.x + frameInfo.srcRect.width, pos.y};
+    Vector2 bottomRight = {pos.x + frameInfo.srcRect.width, pos.y + frameInfo.srcRect.height};
+    Vector2 bottomLeft = {pos.x, pos.y + frameInfo.srcRect.height};
+    Vector2i t1 = PixelToGridPositionI(topLeft.x, topLeft.y);
+    Vector2i t2 = PixelToGridPositionI(topRight.x, topRight.y);
+    Vector2i t3 = PixelToGridPositionI(bottomRight.x, bottomRight.y);
+    Vector2i t4 = PixelToGridPositionI(bottomLeft.x, bottomLeft.y);
+
+    Color v1 = GetVertexLight(level.lighting, level.tileMap, t1.x, t1.y);     // top-left corner
+    Color v2 = GetVertexLight(level.lighting, level.tileMap, t2.x, t2.y);   // top-right
+    Color v3 = GetVertexLight(level.lighting, level.tileMap, t3.x, t3.y); // bottom-right
+    Color v4 = GetVertexLight(level.lighting, level.tileMap, t4.x, t4.y);   // bottom-left
+    DrawSpriteAnimationColors(spriteData, animPlayer, drawPos.x - 8.0f, drawPos.y - 8.0f, v1, v2, v3, v4);
+}
+
+
+// should sample from tile under middle of object
 static void DrawLevelObjects(SpriteData& spriteData, Level &level) {
     for(auto& entry : level.objects) {
         auto& obj = entry.second;
         Vector2 pos = GridToPixelPosition(obj.gridPos.x, obj.gridPos.y);
         if(obj.lit) {
-            Vector2i& t = obj.gridPos;
-            // NOTE: should really sample at all 4 corners if sprite is bigger than a tile
-            Color v1 = GetVertexLight(level.lighting, level.tileMap, t.x, t.y);     // top-left corner
-            Color v2 = GetVertexLight(level.lighting, level.tileMap, t.x+1, t.y);   // top-right
-            Color v3 = GetVertexLight(level.lighting, level.tileMap, t.x+1, t.y+1); // bottom-right
-            Color v4 = GetVertexLight(level.lighting, level.tileMap, t.x, t.y+1);   // bottom-left
-            DrawSpriteAnimationColors(spriteData, obj.animPlayer, pos.x - 8.0f, pos.y - 8.0f, v1, v2, v3, v4);
+            auto frameInfo = GetFrameInfo(spriteData, obj.animPlayer);
+            if(frameInfo.srcRect.width > 16 || frameInfo.srcRect.height > 16) {
+                DrawSampleCorners(spriteData, level, obj.animPlayer, obj.gridPos);
+            } else {
+                Vector2i &t = obj.gridPos;
+                // NOTE: should really sample at all 4 corners if sprite is bigger than a tile
+                Color v1 = GetVertexLight(level.lighting, level.tileMap, t.x, t.y);     // top-left corner
+                Color v2 = GetVertexLight(level.lighting, level.tileMap, t.x + 1, t.y);   // top-right
+                Color v3 = GetVertexLight(level.lighting, level.tileMap, t.x + 1, t.y + 1); // bottom-right
+                Color v4 = GetVertexLight(level.lighting, level.tileMap, t.x, t.y + 1);   // bottom-left
+                DrawSpriteAnimationColors(spriteData, obj.animPlayer, pos.x - 8.0f, pos.y - 8.0f, v1, v2, v3, v4);
+            }
         } else {
             DrawSpriteAnimation(spriteData, obj.animPlayer, pos.x - 8.0f, pos.y - 8.0f);
         }
@@ -125,17 +157,14 @@ static void DrawLevelObjects(SpriteData& spriteData, Level &level) {
     }
 }
 
+// should sample from tile under middle of door
 static void DrawDoors(SpriteData& spriteData, Level &level) {
     for(auto& entry : level.doors) {
         auto& door = entry.second;
-        Vector2 pos = GridToPixelPosition(door.gridPos.x, door.gridPos.y);
-        Vector2i& t = door.gridPos;
-        // NOTE: should really sample at all 4 corners if sprite is bigger than a tile
-        Color v1 = GetVertexLight(level.lighting, level.tileMap, t.x, t.y);     // top-left corner
-        Color v2 = GetVertexLight(level.lighting, level.tileMap, t.x+1, t.y);   // top-right
-        Color v3 = GetVertexLight(level.lighting, level.tileMap, t.x+1, t.y+1); // bottom-right
-        Color v4 = GetVertexLight(level.lighting, level.tileMap, t.x, t.y+1);   // bottom-left
-        DrawSpriteAnimationColors(spriteData, door.animPlayer, pos.x - 8.0f, pos.y - 8.0f, v1, v2, v3, v4);
+
+        DrawSampleCorners(spriteData, level, door.animPlayer, door.gridPos);
+
+
     }
 }
 
@@ -431,7 +460,7 @@ void DrawPlayField(GameData& data, PlayField &playField, Level &level) {
     // Bottom layer
     BeginMode2D(level.camera.camera);
     DrawTileLayer(level.lighting, data.spriteData.sheet, level.tileMap, BOTTOM_LAYER, 0, 0);
-    DrawTileLayer(level.lighting, data.spriteData.sheet, level.tileMap, LIGHT_LAYER, 0, 0);
+    //DrawTileLayer(level.lighting, data.spriteData.sheet, level.tileMap, LIGHT_LAYER, 0, 0);
     EndMode2D();
 
     DrawBloodPools();
@@ -456,8 +485,6 @@ void DrawPlayField(GameData& data, PlayField &playField, Level &level) {
     DrawTileLayer(level.lighting, data.spriteData.sheet, level.tileMap, TOP_LAYER, 0, 0);
     RenderVisibilityMap(level.lighting);
     EndMode2D();
-
-    //RenderLighting(level.lighting);
 }
 
 void MoveCharacter(GameData& data, PlayField &playField, Level &level, int character, Vector2i target) {

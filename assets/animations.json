@@ -966,24 +966,8 @@
         "frameHeight": 64,
         "animations": [
             {
-                "name": "OpenLeft",
+                "name": "Open",
                 "origin": [0, 0],
-                "frames": [
-                    0,
-                    1,
-                    2,
-                    3
-                ],
-                "delays": [
-                    0.10,
-                    0.10,
-                    0.10,
-                    0.10
-                ]
-            },
-            {
-                "name": "OpenRight",
-                "origin": [-8, 0],
                 "frames": [
                     0,
                     1,
@@ -1003,7 +987,7 @@
         "group": "VertDoor",
         "sheet": "vert_door.png",
         "frameWidth": 32,
-        "frameHeight": 32,
+        "frameHeight": 48,
         "animations": [
             {
                 "name": "Open",
