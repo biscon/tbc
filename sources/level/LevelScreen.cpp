@@ -242,23 +242,6 @@ void DrawLevelScreen(GameData& data, Level &level, PlayField &playField) {
     DisplayDamageNumbers(level);
     EndMode2D();
 
-    if (level.turnState == TurnState::Victory) {
-        std::string text = "Victory!";
-        // Draw the enemy selection UI
-        DrawText(text.c_str(), gameScreenHalfWidth - (MeasureText(text.c_str(), 20) / 2), 10, 20, WHITE);
-        if (GuiButton((Rectangle) {gameScreenHalfWidthF - 50, 330, 100, 20}, "End Battle")) {
-            PublishEndCombatEvent(data.ui.eventQueue, true);
-        }
-    }
-    if (level.turnState == TurnState::Defeat) {
-        std::string text = "Defeat!";
-        // Draw the enemy selection UI
-        DrawText(text.c_str(), gameScreenHalfWidth - (MeasureText(text.c_str(), 20) / 2), 10, 20, WHITE);
-        if (GuiButton((Rectangle) {gameScreenHalfWidthF - 50, 330, 100, 20}, "End Battle")) {
-            PublishEndCombatEvent(data.ui.eventQueue, false);
-        }
-    }
-
     DisplayTextAnimations(level);
 
 

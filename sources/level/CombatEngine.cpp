@@ -14,10 +14,46 @@
 #include "graphics/Animation.h"
 #include "LevelCamera.h"
 
+static bool CheckEndCombat(GameData& data, Level& level) {
+    // check victory condition, all enemies have zero health
+    bool allEnemiesDefeated = true;
+    for (auto &enemy: level.enemyCharacters) {
+        if (data.charData.stats[enemy].HP > 0) {
+            allEnemiesDefeated = false;
+            break;
+        }
+    }
+    if (allEnemiesDefeated) {
+        //StopSoundEffect(SoundEffectType::Ambience);
+        //PlaySoundEffect(SoundEffectType::Victory, 0.5f);
+        //PlayPlayerVictoryAnimation(spriteData, charData, level);
+        auto& levelState = data.levelState[level.name];
+        levelState.defeatedGroups.insert(level.currentEnemyGroup);
+        PublishCloseActionBarEvent(data.ui.eventQueue);
+        PublishEndCombatEvent(data.ui.eventQueue, true);
+    }
+    // check defeat condition, all players have zero health
+    bool allPlayersDefeated = true;
+    for (auto &player: level.partyCharacters) {
+        if (data.charData.stats[player].HP > 0) {
+            allPlayersDefeated = false;
+            break;
+        }
+    }
+    if (allPlayersDefeated) {
+        //StopSoundEffect(SoundEffectType::Ambience);
+        PlaySoundEffect(SoundEffectType::Defeat, 0.5f);
+        //PlayEnemyVictoryAnimation(data.spriteData, data.charData, level);
+        //combat.animations.clear();
+        PublishCloseActionBarEvent(data.ui.eventQueue);
+        PublishEndCombatEvent(data.ui.eventQueue, false);
+    }
+    return allEnemiesDefeated || allPlayersDefeated;
+}
+
 void UpdateCombat(GameData &data, Level &level, PlayField& playField, float dt) {
     SpriteData& spriteData = data.spriteData;
     CharacterData& charData = data.charData;
-    WeaponData& weaponData = data.weaponData;
     switch(level.turnState) {
         case TurnState::StartRound: {
             TraceLog(LOG_INFO, "Start round");
@@ -64,8 +100,10 @@ void UpdateCombat(GameData &data, Level &level, PlayField& playField, float dt) 
             break;
         }
         case TurnState::EndTurn: {
-            PublishCloseActionBarEvent(data.ui.eventQueue);
-            NextCharacter(charData, level);
+            //if(!CheckEndCombat(data, level)) {
+                PublishCloseActionBarEvent(data.ui.eventQueue);
+                NextCharacter(charData, level);
+            //}
             break;
         }
         case TurnState::SelectAction: {
@@ -85,9 +123,7 @@ void UpdateCombat(GameData &data, Level &level, PlayField& playField, float dt) 
 
             PlayAttackDefendAnimation(spriteData, charData, level, level.currentCharacter, level.selectedCharacter);
 
-            level.waitTime = 0.25f;
-            level.nextState = TurnState::AttackDone;
-            level.turnState = TurnState::Waiting;
+            WaitTurnState(level, TurnState::AttackDone, 0.25f);
             break;
         }
         case TurnState::AttackDone: {
@@ -110,6 +146,7 @@ void UpdateCombat(GameData &data, Level &level, PlayField& playField, float dt) 
                 SetupDamageNumberAnimation(damageNumberAnim, TextFormat("%d", damage), defenderX, defenderY-25, dmgColor, hit.crit ? 20 : 10, 0);
                 level.animations.push_back(damageNumberAnim);
                 PlaySoundEffect(SoundEffectType::HumanPain, 0.25f);
+                charData.stats[level.attackResult.defender].HP -= damage;
             } else {
                 Animation damageNumberAnim{};
                 SetupDamageNumberAnimation(damageNumberAnim, "MISS", attackerX, attackerY-25, WHITE, 10, 0);
@@ -126,24 +163,7 @@ void UpdateCombat(GameData &data, Level &level, PlayField& playField, float dt) 
                 if(damage > 0)
                     PlaySoundEffect(SoundEffectType::MeleeHit);
             }
-
-            TurnState nextState = IsPlayerCharacter(data.charData, level.currentCharacter) ? TurnState::SelectEnemy : TurnState::EndTurn;
-
-            charData.stats[level.attackResult.defender].HP -= damage;
-            if(charData.stats[level.attackResult.defender].HP <= 0) {
-                Animation speechBubble{};
-                SetupSpeechBubbleAnimation(speechBubble, "Haha!", attackerX, attackerY - 25, 1.5f, 0.0f);
-                level.animations.push_back(speechBubble);
-                RemoveAttackAnimations(level);
-                KillCharacter(spriteData, charData, level, level.attackResult.defender);
-                WaitTurnState(level, nextState, 0.95f);
-            } else {
-                WaitTurnState(level, nextState, 0.60f);
-            }
-            ResetPlayField(playField);
-            if(IsPlayerCharacter(data.charData, level.currentCharacter)) {
-                playField.mode = PlayFieldMode::SelectingEnemyTarget;
-            }
+            level.turnState = TurnState::KillCharacters;
             break;
         }
         case TurnState::AttackRanged: {
@@ -165,13 +185,11 @@ void UpdateCombat(GameData &data, Level &level, PlayField& playField, float dt) 
         case TurnState::AttackRangedDone: {
             assert(level.attackResult.defender == level.selectedCharacter);
             assert(level.attackResult.attacker == level.currentCharacter);
-            float attackerX = GetCharacterSpritePosX(spriteData, charData.sprite[level.currentCharacter]);
-            float attackerY = GetCharacterSpritePosY(spriteData, charData.sprite[level.currentCharacter]);
             float defenderX = GetCharacterSpritePosX(spriteData, charData.sprite[level.selectedCharacter]);
             float defenderY = GetCharacterSpritePosY(spriteData, charData.sprite[level.selectedCharacter]);
             AttackResult& result = level.attackResult;
             float dmgNumDelay = 0.25f;
-            float waitTime = (float) result.hits.size() * dmgNumDelay;
+            float waitTime = 0;
             for(int i = 0; i < result.hits.size(); i++) {
                 AttackHit& hit = result.hits[i];
                 int damage = hit.damage;
@@ -179,31 +197,39 @@ void UpdateCombat(GameData &data, Level &level, PlayField& playField, float dt) 
                     float intensity = (float) GetBloodIntensity(damage, level.attackResult.minDmg, level.attackResult.maxDmg);
                     TraceLog(LOG_INFO, "Damage: %d, intensity: %f", damage, intensity);
                     Vector2 bloodPos = {defenderX + (float) RandomInRange(-2,2), defenderY - 8 + (float) RandomInRange(-2,2)};
-                    CreateBloodSplatter(*playField.particleManager, bloodPos, 10, intensity, (float) i * dmgNumDelay);
+                    CreateBloodSplatter(*playField.particleManager, bloodPos, 10, intensity, waitTime);
                     Animation damageNumberAnim{};
                     Color dmgColor = GetDamageColor(damage, level.attackResult.minDmg, level.attackResult.maxDmg);
-                    SetupDamageNumberAnimation(damageNumberAnim, TextFormat("%d", damage), defenderX, defenderY-25, dmgColor, hit.crit ? 20 : 10, (float) i * dmgNumDelay);
+                    SetupDamageNumberAnimation(damageNumberAnim, TextFormat("%d", damage), defenderX, defenderY-25, dmgColor, hit.crit ? 20 : 10, waitTime);
                     level.animations.push_back(damageNumberAnim);
                     PlaySoundEffect(SoundEffectType::HumanPain, 0.25f);
                 } else {
                     Animation damageNumberAnim{};
-                    SetupDamageNumberAnimation(damageNumberAnim, "MISS", defenderX, defenderY-25, WHITE, 10, (float) i * dmgNumDelay);
+                    SetupDamageNumberAnimation(damageNumberAnim, "MISS", defenderX, defenderY-25, WHITE, 10, waitTime);
                     level.animations.push_back(damageNumberAnim);
                     //PlaySoundEffect(SoundEffectType::MeleeMiss);
                 }
 
                 if(hit.crit) {
                     Animation damageNumberAnim{};
-                    SetupDamageNumberAnimation(damageNumberAnim, "CRITICAL!!!", attackerX, attackerY, WHITE, 20, ((float) i * dmgNumDelay) + dmgNumDelay);
+                    waitTime += dmgNumDelay;
+                    SetupDamageNumberAnimation(damageNumberAnim, "CRITICAL!!!", defenderX, defenderY-25, WHITE, 10, waitTime);
                     level.animations.push_back(damageNumberAnim);
                     //PlaySoundEffect(SoundEffectType::MeleeCrit);
                 } else {
+
                     //if(damage > 0)
                     //    PlaySoundEffect(SoundEffectType::MeleeHit);
                 }
+                waitTime += dmgNumDelay;
                 charData.stats[level.attackResult.defender].HP -= damage;
             }
-
+            WaitTurnState(level, TurnState::KillCharacters, waitTime);
+            break;
+        }
+        case TurnState::KillCharacters: {
+            float attackerX = GetCharacterSpritePosX(spriteData, charData.sprite[level.currentCharacter]);
+            float attackerY = GetCharacterSpritePosY(spriteData, charData.sprite[level.currentCharacter]);
             TurnState nextState = IsPlayerCharacter(data.charData, level.currentCharacter) ? TurnState::SelectEnemy : TurnState::EndTurn;
             if(charData.stats[level.attackResult.defender].HP <= 0) {
                 Animation speechBubble{};
@@ -211,15 +237,15 @@ void UpdateCombat(GameData &data, Level &level, PlayField& playField, float dt) 
                 level.animations.push_back(speechBubble);
                 RemoveAttackAnimations(level);
                 KillCharacter(spriteData, charData, level, level.attackResult.defender);
-                WaitTurnState(level, nextState, waitTime + 0.95f);
+                WaitTurnState(level, nextState, 0.95f);
             } else {
-                WaitTurnState(level, nextState, waitTime + 0.60f);
+                WaitTurnState(level, nextState, 0.60f);
             }
             ResetPlayField(playField);
             if(IsPlayerCharacter(data.charData, level.currentCharacter)) {
                 playField.mode = PlayFieldMode::SelectingEnemyTarget;
             }
-            break;
+            CheckEndCombat(data, level);
         }
         case TurnState::EnemyTurn: {
             TraceLog(LOG_INFO, "Enemy turn");
@@ -250,42 +276,6 @@ void UpdateCombat(GameData &data, Level &level, PlayField& playField, float dt) 
             WaitTurnState(level, TurnState::StartRound, 0.2f);
             UpdateStatusEffects(charData, level);
             break;
-        }
-    }
-
-    if(level.turnState != TurnState::None) {
-        // check victory condition, all enemies have zero health
-        bool allEnemiesDefeated = true;
-        for (auto &enemy: level.enemyCharacters) {
-            if (charData.stats[enemy].HP > 0) {
-                allEnemiesDefeated = false;
-                break;
-            }
-        }
-        if (allEnemiesDefeated && level.turnState != TurnState::Victory) {
-            level.turnState = TurnState::Victory;
-            //StopSoundEffect(SoundEffectType::Ambience);
-            //PlaySoundEffect(SoundEffectType::Victory, 0.5f);
-            //PlayPlayerVictoryAnimation(spriteData, charData, level);
-            auto& levelState = data.levelState[level.name];
-            levelState.defeatedGroups.insert(level.currentEnemyGroup);
-            PublishCloseActionBarEvent(data.ui.eventQueue);
-        }
-        // check defeat condition, all players have zero health
-        bool allPlayersDefeated = true;
-        for (auto &player: level.partyCharacters) {
-            if (charData.stats[player].HP > 0) {
-                allPlayersDefeated = false;
-                break;
-            }
-        }
-        if (allPlayersDefeated && level.turnState != TurnState::Defeat) {
-            level.turnState = TurnState::Defeat;
-            //StopSoundEffect(SoundEffectType::Ambience);
-            PlaySoundEffect(SoundEffectType::Defeat, 0.5f);
-            PlayEnemyVictoryAnimation(spriteData, charData, level);
-            //combat.animations.clear();
-            PublishCloseActionBarEvent(data.ui.eventQueue);
         }
     }
 }

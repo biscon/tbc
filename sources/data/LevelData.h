@@ -42,10 +42,9 @@ enum class TurnState {
     AttackRanged,
     AttackDone,
     AttackRangedDone,
+    KillCharacters,
     EnemyTurn,
     Waiting,
-    Victory,
-    Defeat,
     StartRound,
     EndRound,
 };

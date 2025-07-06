@@ -81,7 +81,7 @@ static void DrawGridCharacters(GameData& data, Level &level) {
             continue;
         Vector2 charPos = GetAnimatedCharPos(data, level, character);
         // Draw oval shadow underneath
-        if(charData.stats[character].HP > 0 && level.turnState != TurnState::Victory && level.turnState != TurnState::Defeat)
+        if(charData.stats[character].HP > 0)
             DrawEllipse((int) charPos.x, (int) charPos.y, 6, 4, Fade(BLACK, 0.25f));
 
 
@@ -100,7 +100,7 @@ static void DrawGridCharacters(GameData& data, Level &level) {
         }
         CharacterStats& stats = charData.stats[character];
         // Draw health bar
-        if(stats.HP > 0 && level.turnState != TurnState::Victory && level.turnState != TurnState::Defeat && level.turnState != TurnState::None) {
+        if(stats.HP > 0 && level.turnState != TurnState::None) {
             DrawHealthBar(charPos.x - 8, charPos.y - 21, 15, (float) stats.HP, (float) CalculateCharHealth(stats));
         } else if(std::count(level.partyCharacters.begin(), level.partyCharacters.end(), character)) {
             DrawHealthBar(charPos.x - 8, charPos.y - 21, 15, (float) stats.HP, (float) CalculateCharHealth(stats));
