@@ -174,11 +174,10 @@ void UpdateCombat(GameData &data, Level &level, PlayField& playField, float dt) 
             //FaceCharacter(spriteData, charData, level.selectedCharacter, level.currentCharacter);
             assert(level.attackResult.defender == level.selectedCharacter);
             assert(level.attackResult.attacker == level.currentCharacter);
-
+            PlayShootAnimation(data.spriteData, data.charData, level.currentCharacter);
             //PlayAttackDefendAnimation(spriteData, charData, level, level.currentCharacter, level.selectedCharacter);
 
-
-            level.waitTime = 0.25f;
+            level.waitTime = 0.15f;
             level.nextState = TurnState::AttackRangedDone;
             level.turnState = TurnState::Waiting;
             break;
@@ -191,11 +190,14 @@ void UpdateCombat(GameData &data, Level &level, PlayField& playField, float dt) 
             AttackResult& result = level.attackResult;
             float dmgNumDelay = 0.25f;
             float waitTime = 0;
+            bool wasInjured = false;
+
             for(int i = 0; i < result.hits.size(); i++) {
                 PlaySoundEffect(SoundEffectType::RifleShot, waitTime);
                 AttackHit& hit = result.hits[i];
                 int damage = hit.damage;
                 if(damage > 0) {
+                    wasInjured = true;
                     PlayGettingShotAnimation(spriteData, charData, level, level.currentCharacter, level.selectedCharacter, waitTime, 0.20f);
                     float intensity = (float) GetBloodIntensity(damage, level.attackResult.minDmg, level.attackResult.maxDmg);
                     TraceLog(LOG_INFO, "Damage: %d, intensity: %f", damage, intensity);
@@ -226,7 +228,9 @@ void UpdateCombat(GameData &data, Level &level, PlayField& playField, float dt) 
                 waitTime += dmgNumDelay;
                 charData.stats[level.attackResult.defender].HP -= damage;
             }
-            PlaySoundEffect(SoundEffectType::HumanPain, waitTime);
+            if(wasInjured) {
+                PlaySoundEffect(SoundEffectType::HumanPain, waitTime);
+            }
             WaitTurnState(level, TurnState::KillCharacters, waitTime);
             break;
         }

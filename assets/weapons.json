@@ -40,7 +40,7 @@
         "range": 8,
         "skillUsed": "Small Guns",
         "type": "Ranged",
-        "animationTemplate": "Sword",
+        "animationTemplate": "Pistol",
         "rangedData": {
             "ammoType": "9mm",
             "magazineSize": 15,
@@ -69,7 +69,7 @@
         "range": 10,
         "skillUsed": "Small Guns",
         "type": "Ranged",
-        "animationTemplate": "Sword",
+        "animationTemplate": "Rifle",
         "rangedData": {
             "ammoType": "5.56mm",
             "magazineSize": 30,

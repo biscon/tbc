@@ -31,6 +31,23 @@ void PlayAttackAnimation(SpriteData& spriteData, CharacterData& charData, Level 
     }
 }
 
+void PlayShootAnimation(SpriteData& spriteData, CharacterData& charData, int attacker) {
+    switch(charData.orientation[attacker]) {
+        case Orientation::Up:
+            PlayCharacterSpriteAnimRestart(spriteData, charData.sprite[attacker], SpriteAnimationType::AttackUp, false);
+            break;
+        case Orientation::Down:
+            PlayCharacterSpriteAnimRestart(spriteData, charData.sprite[attacker], SpriteAnimationType::AttackDown, false);
+            break;
+        case Orientation::Left:
+            PlayCharacterSpriteAnimRestart(spriteData, charData.sprite[attacker], SpriteAnimationType::AttackLeft, false);
+            break;
+        case Orientation::Right:
+            PlayCharacterSpriteAnimRestart(spriteData, charData.sprite[attacker], SpriteAnimationType::AttackRight, false);
+            break;
+    }
+}
+
 void PlayDefendAnimation(SpriteData& spriteData, CharacterData& charData, Level &level, int attacker, int defender) {
     if(charData.stats[defender].HP <= 0) {
         return;

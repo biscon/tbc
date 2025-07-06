@@ -256,6 +256,9 @@ void LevelInit() {
     LoadSoundEffect(SoundEffectType::RifleShot, ASSETS_PATH"sound/rifle_shot_02.ogg", false);
     LoadSoundEffect(SoundEffectType::RifleShot, ASSETS_PATH"sound/rifle_shot_03.ogg", false);
 
+    LoadSoundEffect(SoundEffectType::AssaultRifleAuto, ASSETS_PATH"sound/ar_full_auto_01.wav", false);
+    LoadSoundEffect(SoundEffectType::GunEmpty, ASSETS_PATH"sound/gun_empty.ogg", false);
+
     CreateLevel(level);
     CreateLevelScreen(*game);
     CreateParticleManager(particleManager, {0, 0}, gameScreenWidth, gameScreenHeight);

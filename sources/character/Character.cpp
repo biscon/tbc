@@ -178,6 +178,7 @@ void SetSelectedWeaponSlot(GameData& data, int charId, ItemEquipSlot slot) {
     if(static_cast<int>(slot) == data.charData.selectedWeaponSlot[charId]) {
         return;
     }
+
     data.charData.selectedWeaponSlot[charId] = static_cast<int>(slot);
     int itemId = GetEquippedItem(data, data.ui.selectedCharacter, slot);
     if(itemId != -1) {

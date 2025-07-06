@@ -356,14 +356,20 @@ static void HandleRangedTargetSelection(GameData& data, Level& level, PlayField&
         auto* weaponInstance = GetSelectedWeaponInstance(data, data.ui.selectedCharacter);
         int currentAmmo = weaponInstance->currentAmmo;
 
-        // Check for a mouse click
-        if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT) && ap >= data.ui.playField.attackInfo.apCost && currentAmmo >= data.ui.playField.attackInfo.ammoCost) {
-            PlaySoundEffect(SoundEffectType::Select);
-            level.turnState = TurnState::Waiting;
-            level.waitTime = 0.25f;
-            level.selectedCharacter = playField.selectedCharacter;
-            level.nextState = TurnState::AttackRanged;
-            ResetPlayField(playField);
+
+        if(IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
+            if(currentAmmo < data.ui.playField.attackInfo.ammoCost) {
+                PlaySoundEffect(SoundEffectType::GunEmpty);
+            } else {
+                if (ap >= data.ui.playField.attackInfo.apCost) {
+                    PlaySoundEffect(SoundEffectType::Select);
+                    level.turnState = TurnState::Waiting;
+                    level.waitTime = 0.25f;
+                    level.selectedCharacter = playField.selectedCharacter;
+                    level.nextState = TurnState::AttackRanged;
+                    ResetPlayField(playField);
+                }
+            }
         }
     }
 }

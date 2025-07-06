@@ -26,6 +26,8 @@ enum class SoundEffectType {
     PistolShot,
     RifleReload,
     RifleShot,
+    AssaultRifleAuto,
+    GunEmpty
 };
 
 void InitSoundEffectManager();

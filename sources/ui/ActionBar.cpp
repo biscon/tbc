@@ -8,6 +8,7 @@
 #include "Icons.h"
 #include "UI.h"
 #include "util/StringUtil.h"
+#include "audio/SoundEffect.h"
 
 static const float actionBarWidth = 215;
 static const float actionBarHeight = 54;
@@ -202,7 +203,8 @@ static void UpdateActionBarActions(GameData& data) {
     if(weaponItemId != -1) {
         WeaponInstance& weaponInstance = data.weaponData.instanceData[weaponItemId];
         WeaponRanged* ranged = GetSelectedRangedTemplate(data, data.ui.selectedCharacter);
-        if(weaponInstance.currentAmmo == 0 && ranged != nullptr && data.charData.stats[data.ui.selectedCharacter].AP >= RELOAD_AP_COST) {
+
+        if(ranged != nullptr && weaponInstance.currentAmmo < ranged->magazineSize && data.charData.stats[data.ui.selectedCharacter].AP >= RELOAD_AP_COST) {
             icons[i].enabled = true;
             icons[i].selectable = false;
             icons[i].icon = ICON_RELOAD;
@@ -267,6 +269,7 @@ void ExecuteAction(GameData& data, ActionBarAction action, Level& level, PlayFie
             break;
         }
         case ActionBarAction::Reload: {
+            PlaySoundEffect(SoundEffectType::PistolReload);
             WeaponInstance *weaponInstance = GetSelectedWeaponInstance(data, data.ui.selectedCharacter);
             WeaponRanged *weaponRanged = GetSelectedRangedTemplate(data, data.ui.selectedCharacter);
             if (weaponInstance && weaponRanged) {

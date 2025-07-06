@@ -72,6 +72,8 @@ void LoadGame(GameData &data) {
         int id = CreateCharacter(data.charData, ch.faction, ch.name, ch.ai);
         InitCharacterSprite(data.spriteData, data.charData.sprite[id], ch.spriteTemplate, true);
 
+        SetSelectedWeaponSlot(data, id, static_cast<ItemEquipSlot>(ch.selectedWeaponSlot));
+
         // loop through equipment slots and instantiate items
         for (size_t i = 0; i < static_cast<size_t>(ItemEquipSlot::COUNT); ++i) {
             int itemId = -1;
@@ -85,11 +87,10 @@ void LoadGame(GameData &data) {
         }
         // load skill values
         data.charData.skillValues[id] = ch.skillValues;
-
         ch.stats.AP = CalculateCharMaxAP(ch.stats);
         data.charData.stats[id] = ch.stats;
-        //data.charData.selectedWeaponSlot[id] = ch.selectedWeaponSlot;
-        SetSelectedWeaponSlot(data, id, static_cast<ItemEquipSlot>(ch.selectedWeaponSlot));
+
+        //SetSelectedWeaponSlot(data, id, static_cast<ItemEquipSlot>(ch.selectedWeaponSlot));
         Vector2i savedPos = { ch.tilePosX, ch.tilePosY};
         SetCharacterGridPosI(data.spriteData, data.charData.sprite[id], savedPos);
         data.party.emplace_back(id);
