@@ -34,7 +34,7 @@ void SetupAttackAnimation(Animation &animation, int attacker, float duration, fl
     animation.state.attack.initialDelay = initialDelay;
 }
 
-void SetupDamageNumberAnimation(Animation &animation, const char *text, float x, float y, Color color, int fontSize) {
+void SetupDamageNumberAnimation(Animation &animation, const char *text, float x, float y, Color color, int fontSize, float initialDelay) {
     animation.type = AnimationType::DamageNumber;
     animation.duration = 2.0f;
     animation.time = 0;
@@ -44,6 +44,7 @@ void SetupDamageNumberAnimation(Animation &animation, const char *text, float x,
     animation.state.damageNumber.x = x;
     animation.state.damageNumber.y = y;
     animation.state.damageNumber.fontSize = fontSize;
+    animation.state.damageNumber.initialDelay = initialDelay;
     TraceLog(LOG_INFO, "SetupDamageNumberAnimation: %s", text);
 }
 
@@ -197,6 +198,12 @@ void UpdateAnimation(SpriteData& spriteData, CharacterData& charData, Animation 
             break;
         }
         case AnimationType::DamageNumber: {
+            // Check and decrement initial delay
+            animation.state.damageNumber.initialDelay -= dt;
+            if (animation.state.damageNumber.initialDelay > 0) {
+                animation.time = 0.0f; // Reset animation time while waiting
+                break;
+            }
             // Move the number up
             animation.state.damageNumber.y -= dt * 50.0f;
             break;

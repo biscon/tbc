@@ -84,29 +84,6 @@ void from_json(const nlohmann::json& j, ItemTemplate& item) {
     j.at("stackable").get_to(item.stackable);
 }
 
-void to_json(nlohmann::json& j, const ItemInstance& inst) {
-    const std::string& templateStrId = itemData->indexToTemplateId[inst.templateId];
-    j = nlohmann::json{
-            {"id", inst.id},
-            {"templateId", templateStrId},
-            {"quantity", inst.quantity}
-    };
-}
-
-void from_json(const nlohmann::json& j, ItemInstance& inst) {
-    j.at("id").get_to(inst.id);
-
-    std::string templateStrId;
-    j.at("templateId").get_to(templateStrId);
-
-    auto it = itemData->templateIdToIndex.find(templateStrId);
-    if (it == itemData->templateIdToIndex.end())
-        throw std::runtime_error("Unknown ItemTemplate ID: " + templateStrId);
-
-    inst.templateId = it->second;
-
-    j.at("quantity").get_to(inst.quantity);
-}
 
 void SetDataInstancePtrs(ItemData* itemDataPtr, WeaponData* weaponDataPtr) {
     itemData = itemDataPtr;

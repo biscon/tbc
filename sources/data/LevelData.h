@@ -39,7 +39,9 @@ enum class TurnState {
     SelectAction,
     SelectEnemy,
     Attack,
+    AttackRanged,
     AttackDone,
+    AttackRangedDone,
     EnemyTurn,
     Waiting,
     Victory,
@@ -48,12 +50,17 @@ enum class TurnState {
     EndRound,
 };
 
-struct AttackResult {
+struct AttackHit {
     bool hit;
     bool crit;
     int damage;
+};
+struct AttackResult {
+    int minDmg;
+    int maxDmg;
     int attacker;
     int defender;
+    std::vector<AttackHit> hits;
 };
 
 struct SpawnPoint {

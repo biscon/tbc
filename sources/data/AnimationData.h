@@ -42,6 +42,7 @@ struct DamageNumberAnimationState {
     float x;
     float y;
     int fontSize;
+    float initialDelay;
 };
 
 struct TextAnimationState {

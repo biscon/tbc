@@ -32,6 +32,14 @@ struct LevelSaveState {
 void to_json(nlohmann::json& j, const LevelSaveState& m);
 void from_json(const nlohmann::json& j, LevelSaveState& m);
 
+struct ItemInstanceSaveState {
+    std::string templateId; // Index into the master item templates table
+    int instanceDataIdx;
+};
+
+void to_json(nlohmann::json& j, const ItemInstanceSaveState& m);
+void from_json(const nlohmann::json& j, ItemInstanceSaveState& m);
+
 struct PartyCharacter {
     std::string name;
     std::string ai;
@@ -40,14 +48,14 @@ struct PartyCharacter {
     int tilePosY = 0;
     CharacterFaction faction;
     CharacterStats stats;
-    std::array<std::string, static_cast<size_t>(ItemEquipSlot::COUNT)> equippedItems;
+    std::array<ItemInstanceSaveState, static_cast<size_t>(ItemEquipSlot::COUNT)> equippedItems;
     std::array<int, static_cast<size_t>(Skill::Count)> skillValues;
     int selectedWeaponSlot;
 };
 
 struct InventorySaveState {
     int capacity;
-    std::vector<std::string> itemTemplateIds;
+    std::vector<ItemInstanceSaveState> instances;
 };
 
 void to_json(nlohmann::json& j, const InventorySaveState& s);
@@ -56,12 +64,25 @@ void from_json(const nlohmann::json& j, InventorySaveState& s);
 void to_json(nlohmann::json& j, const PartyCharacter& c);
 void from_json(const nlohmann::json& j, PartyCharacter& c);
 
+struct WeaponInstanceSaveState {
+    std::string templateId;
+    int id;
+    int currentAmmo;
+    bool jammed;
+};
+
+void to_json(nlohmann::json& j, const WeaponInstanceSaveState& s);
+void from_json(const nlohmann::json& j, WeaponInstanceSaveState& s);
+
 struct SaveData {
     std::string currentLevel;
     std::unordered_map<std::string, LevelSaveState> levels;
     std::list<PartyCharacter> party;
     std::unordered_map<std::string, QuestSaveState> quests;
     InventorySaveState partyInventory;
+
+    // type specific item instance data
+    std::vector<WeaponInstanceSaveState> weaponInstances;
 };
 
 bool SaveGameData(SaveData& data, const std::string& filename);

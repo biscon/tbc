@@ -27,13 +27,13 @@ struct FireMode {
 struct WeaponRanged {
     std::string ammoType;
     int magazineSize;
-    int currentAmmo;
     std::vector<FireMode> fireModes;
 };
 
 struct WeaponTemplate {
     std::string name;
-    int baseDamage;
+    int minDamage;
+    int maxDamage;
     float critChance;
     float critMultiplier;
     float weaponAccuracy; // +/- % hit bonus
@@ -45,10 +45,19 @@ struct WeaponTemplate {
     int apCost;
 };
 
+struct WeaponInstance {
+    int templateId = 0;
+    int currentAmmo = 0;
+    bool jammed = false;
+};
+
 struct WeaponData {
     std::vector<WeaponTemplate> templateData;
     std::unordered_map<std::string, int> templateIdToIndex;
     std::vector<std::string> indexToTemplateId;
+
+    std::vector<WeaponInstance> instanceData;
+
     // additional template data for ranged weapon
     std::vector<WeaponRanged> rangedData;
 };

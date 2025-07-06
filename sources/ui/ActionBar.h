@@ -8,6 +8,8 @@
 #include "data/GameData.h"
 #include "util/GameEventQueue.h"
 
+#define RELOAD_AP_COST  2
+
 void InitActionBar(GameData& data);
 void RenderActionBarUI(GameData& data);
 void UpdateActionBar(GameData& data, float dt);

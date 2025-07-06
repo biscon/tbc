@@ -34,6 +34,7 @@ struct ParticleEmitter {
     bool active;
     std::function<void(ParticleEmitter&)> emitCallback; // Custom emission logic
     bool blendAdditive;
+    float initialDelay = 0;
 };
 
 struct ParticleManager {
@@ -55,7 +56,7 @@ void PreRenderParticleManager(const LightingData& lighting, ParticleManager &man
 void DrawParticleManager(ParticleManager &manager);
 
 // Effect-specific functions
-void CreateBloodSplatter(ParticleManager &manager, Vector2 position, int count, float power);
+void CreateBloodSplatter(ParticleManager &manager, Vector2 position, int count, float power, float initialDelay = 0);
 void CreateFireEffect(ParticleManager &manager, Vector2 position, Vector2 direction, float duration, float intensity);
 void CreateSmokeEffect(ParticleManager &manager, Vector2 position, float duration, float intensity);
 void CreateExplosionEffect(ParticleManager &manager, Vector2 position, int count, float power, float duration);

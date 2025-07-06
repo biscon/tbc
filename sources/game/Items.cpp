@@ -4,6 +4,7 @@
 
 #include <fstream>
 #include "Items.h"
+#include "character/Weapon.h"
 
 static GameData* game = nullptr;
 
@@ -52,14 +53,8 @@ void InitItemData(GameData& data, const std::string &filename) {
 }
 
 int CreateItem(GameData& data, const std::string& templateId, int quantity) {
-    int id = (int) data.itemData.instanceData.size();
     int templateIndex = data.itemData.templateIdToIndex.at(templateId);
-    ItemInstance instance{};
-    instance.id = id;
-    instance.quantity = quantity;
-    instance.templateId = templateIndex;
-    data.itemData.instanceData.push_back(instance);
-    return id;
+    return CreateItem(data, templateIndex, quantity);
 }
 
 int CreateItem(GameData& data, int templateId, int quantity) {
@@ -68,6 +63,22 @@ int CreateItem(GameData& data, int templateId, int quantity) {
     instance.id = id;
     instance.quantity = quantity;
     instance.templateId = templateId;
+
+    ItemTemplate &itemTemplate = data.itemData.templateData.at(templateId);
+    switch (itemTemplate.type) {
+        case ItemType::Weapon: {
+            instance.typeInstanceId = CreateWeaponInstance(data.weaponData, itemTemplate.typeTemplateId);
+            break;
+        }
+        case ItemType::Consumable:
+            break;
+        case ItemType::Grenade:
+            break;
+        case ItemType::KeyItem:
+            break;
+        case ItemType::Armor:
+            break;
+    }
     data.itemData.instanceData.push_back(instance);
     return id;
 }
@@ -88,29 +99,6 @@ std::string GetItemTemplateIdString(GameData& data, int itemId) {
     return data.itemData.indexToTemplateId.at(templateId);
 }
 
-void to_json(nlohmann::json &j, const Inventory &inventory) {
-    j = nlohmann::json{
-            {"id", inventory.id},
-            {"capacity", inventory.capacity}
-    };
-    nlohmann::json jItems;
-    for(const int& itemId : inventory.items) {
-        ItemInstance& inst = game->itemData.instanceData[itemId];
-        jItems.push_back(inst);
-    }
-    j["items"] = jItems;
-}
-
-void from_json(const nlohmann::json &j, Inventory &inventory) {
-    j.at("id").get_to(inventory.id);
-    j.at("capacity").get_to(inventory.capacity);
-    nlohmann::json jItems = j.at("items");
-    for(const auto& jItem : jItems) {
-        auto inst = jItem.get<ItemInstance>();
-        int newItemId = CreateItem(*game, inst.templateId, inst.quantity);
-        inventory.items.push_back(newItemId);
-    }
-}
 
 int CreateInventory(GameData &data, int capacity) {
     int id = (int) data.itemData.inventoryData.size();
@@ -121,22 +109,73 @@ int CreateInventory(GameData &data, int capacity) {
     return id;
 }
 
-InventorySaveState InventoryToSaveState(GameData& data, int invId) {
+static void ApplyWeaponInstanceSaveState(GameData& data, SaveData& saveData, const ItemInstanceSaveState& itemState, ItemInstance& itemInstance, ItemTemplate& itemTemplate) {
+    WeaponInstance& weaponInstance = data.weaponData.instanceData[itemInstance.typeInstanceId];
+    WeaponInstanceSaveState weaponState = saveData.weaponInstances[itemState.instanceDataIdx];
+    weaponInstance.currentAmmo = weaponState.currentAmmo;
+    weaponInstance.jammed = weaponState.jammed;
+}
+
+void ApplyItemInstanceSaveState(GameData& data, SaveData& saveData, const ItemInstanceSaveState& itemState, int itemId) {
+    ItemInstance& itemInstance = data.itemData.instanceData[itemId];
+    ItemTemplate& itemTemplate = data.itemData.templateData[itemInstance.templateId];
+    switch(itemTemplate.type) {
+        case ItemType::Weapon:ApplyWeaponInstanceSaveState(data, saveData, itemState, itemInstance, itemTemplate);break;
+        case ItemType::Consumable:break;
+        case ItemType::Grenade:break;
+        case ItemType::KeyItem:break;
+        case ItemType::Armor:break;
+    }
+}
+
+InventorySaveState InventoryToSaveState(GameData& data, int invId, SaveData& saveData) {
     const Inventory& inventory = data.itemData.inventoryData[invId];
     InventorySaveState state;
     state.capacity = inventory.capacity;
     for(const int& itemId : inventory.items) {
         std::string templateId = GetItemTemplateIdString(data, itemId);
-        state.itemTemplateIds.push_back(templateId);
+        ItemInstanceSaveState itemState;
+        itemState.templateId = templateId;
+        itemState.instanceDataIdx = SaveItemInstanceData(data, saveData, itemId);
+        state.instances.push_back(itemState);
     }
     return state;
 }
 
-int InventoryFromSaveState(GameData& data, const InventorySaveState& state) {
+int InventoryFromSaveState(GameData& data, SaveData& saveData, const InventorySaveState& state) {
     int invId = CreateInventory(data, state.capacity);
-    for(const auto& itemTemplateId : state.itemTemplateIds) {
-        int itemId = CreateItem(data, itemTemplateId, 1);
+    for(const auto& itemState : state.instances) {
+        int itemId = CreateItem(data, itemState.templateId, 1);
+        ApplyItemInstanceSaveState(data, saveData, itemState, itemId);
         data.itemData.inventoryData[invId].items.push_back(itemId);
     }
     return invId;
 }
+
+static int SaveWeaponInstanceData(GameData& data, SaveData& saveData, ItemInstance& itemInstance, ItemTemplate& itemTemplate) {
+    WeaponTemplate& weaponTemplate = data.weaponData.templateData[itemTemplate.typeTemplateId];
+    WeaponInstance& weaponInstance = data.weaponData.instanceData[itemInstance.typeInstanceId];
+
+    int id = static_cast<int>(saveData.weaponInstances.size());
+    WeaponInstanceSaveState state;
+    state.templateId = weaponTemplate.name;
+    state.jammed = weaponInstance.jammed;
+    state.currentAmmo = weaponInstance.currentAmmo;
+    saveData.weaponInstances.push_back(state);
+    return id;
+}
+
+int SaveItemInstanceData(GameData& data, SaveData& saveData, int itemId) {
+    ItemInstance& itemInstance = data.itemData.instanceData[itemId];
+    ItemTemplate& itemTemplate = data.itemData.templateData[itemInstance.templateId];
+    switch(itemTemplate.type) {
+        case ItemType::Weapon: return SaveWeaponInstanceData(data, saveData, itemInstance, itemTemplate);
+        case ItemType::Consumable:break;
+        case ItemType::Grenade:break;
+        case ItemType::KeyItem:break;
+        case ItemType::Armor:break;
+    }
+    return -1;
+}
+
+

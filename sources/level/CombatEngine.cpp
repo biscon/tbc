@@ -56,7 +56,7 @@ void UpdateCombat(GameData &data, Level &level, PlayField& playField, float dt) 
                 float charX = GetCharacterSpritePosX(spriteData, sprite);
                 float charY = GetCharacterSpritePosY(spriteData, sprite);
                 Animation anim{};
-                SetupDamageNumberAnimation(anim, "STUNNED", charX, charY-25, WHITE, 10);
+                SetupDamageNumberAnimation(anim, "STUNNED", charX, charY-25, WHITE, 10, 0);
                 level.animations.push_back(anim);
             }
             level.turnState = TurnState::Waiting;
@@ -97,27 +97,29 @@ void UpdateCombat(GameData &data, Level &level, PlayField& playField, float dt) 
             float attackerY = GetCharacterSpritePosY(spriteData, charData.sprite[level.currentCharacter]);
             float defenderX = GetCharacterSpritePosX(spriteData, charData.sprite[level.selectedCharacter]);
             float defenderY = GetCharacterSpritePosY(spriteData, charData.sprite[level.selectedCharacter]);
-            int damage = level.attackResult.damage;
+            AttackResult& result = level.attackResult;
+            AttackHit& hit = result.hits.back();
+            int damage = hit.damage;
             if(damage > 0) {
-                float intensity = (float) GetBloodIntensity(damage, 20);
+                float intensity = (float) GetBloodIntensity(damage, level.attackResult.minDmg, level.attackResult.maxDmg);
                 TraceLog(LOG_INFO, "Damage: %d, intensity: %f", damage, intensity);
                 Vector2 bloodPos = {defenderX + (float) RandomInRange(-2,2), defenderY - 8 + (float) RandomInRange(-2,2)};
                 CreateBloodSplatter(*playField.particleManager, bloodPos, 10, intensity);
                 Animation damageNumberAnim{};
-                Color dmgColor = GetDamageColor(damage, 20);
-                SetupDamageNumberAnimation(damageNumberAnim, TextFormat("%d", damage), defenderX, defenderY-25, dmgColor, level.attackResult.crit ? 20 : 10);
+                Color dmgColor = GetDamageColor(damage, level.attackResult.minDmg, level.attackResult.maxDmg);
+                SetupDamageNumberAnimation(damageNumberAnim, TextFormat("%d", damage), defenderX, defenderY-25, dmgColor, hit.crit ? 20 : 10, 0);
                 level.animations.push_back(damageNumberAnim);
                 PlaySoundEffect(SoundEffectType::HumanPain, 0.25f);
             } else {
                 Animation damageNumberAnim{};
-                SetupDamageNumberAnimation(damageNumberAnim, "MISS", attackerX, attackerY-25, WHITE, 10);
+                SetupDamageNumberAnimation(damageNumberAnim, "MISS", attackerX, attackerY-25, WHITE, 10, 0);
                 level.animations.push_back(damageNumberAnim);
                 PlaySoundEffect(SoundEffectType::MeleeMiss);
             }
 
-            if(level.attackResult.crit) {
+            if(hit.crit) {
                 Animation damageNumberAnim{};
-                SetupDamageNumberAnimation(damageNumberAnim, "CRITICAL!!!", attackerX, attackerY, WHITE, 10);
+                SetupDamageNumberAnimation(damageNumberAnim, "CRITICAL!!!", attackerX, attackerY-25, WHITE, 10, 0.25f);
                 level.animations.push_back(damageNumberAnim);
                 PlaySoundEffect(SoundEffectType::MeleeCrit);
             } else {
@@ -137,6 +139,81 @@ void UpdateCombat(GameData &data, Level &level, PlayField& playField, float dt) 
                 WaitTurnState(level, nextState, 0.95f);
             } else {
                 WaitTurnState(level, nextState, 0.60f);
+            }
+            ResetPlayField(playField);
+            if(IsPlayerCharacter(data.charData, level.currentCharacter)) {
+                playField.mode = PlayFieldMode::SelectingEnemyTarget;
+            }
+            break;
+        }
+        case TurnState::AttackRanged: {
+            TraceLog(LOG_INFO, "AttackRanged");
+
+            level.attackResult = Attack(data, level, level.currentCharacter, level.selectedCharacter);
+            FaceCharacter(spriteData, charData, level.currentCharacter, level.selectedCharacter);
+            //FaceCharacter(spriteData, charData, level.selectedCharacter, level.currentCharacter);
+            assert(level.attackResult.defender == level.selectedCharacter);
+            assert(level.attackResult.attacker == level.currentCharacter);
+
+            //PlayAttackDefendAnimation(spriteData, charData, level, level.currentCharacter, level.selectedCharacter);
+
+            level.waitTime = 0.25f;
+            level.nextState = TurnState::AttackRangedDone;
+            level.turnState = TurnState::Waiting;
+            break;
+        }
+        case TurnState::AttackRangedDone: {
+            assert(level.attackResult.defender == level.selectedCharacter);
+            assert(level.attackResult.attacker == level.currentCharacter);
+            float attackerX = GetCharacterSpritePosX(spriteData, charData.sprite[level.currentCharacter]);
+            float attackerY = GetCharacterSpritePosY(spriteData, charData.sprite[level.currentCharacter]);
+            float defenderX = GetCharacterSpritePosX(spriteData, charData.sprite[level.selectedCharacter]);
+            float defenderY = GetCharacterSpritePosY(spriteData, charData.sprite[level.selectedCharacter]);
+            AttackResult& result = level.attackResult;
+            float dmgNumDelay = 0.25f;
+            float waitTime = (float) result.hits.size() * dmgNumDelay;
+            for(int i = 0; i < result.hits.size(); i++) {
+                AttackHit& hit = result.hits[i];
+                int damage = hit.damage;
+                if(damage > 0) {
+                    float intensity = (float) GetBloodIntensity(damage, level.attackResult.minDmg, level.attackResult.maxDmg);
+                    TraceLog(LOG_INFO, "Damage: %d, intensity: %f", damage, intensity);
+                    Vector2 bloodPos = {defenderX + (float) RandomInRange(-2,2), defenderY - 8 + (float) RandomInRange(-2,2)};
+                    CreateBloodSplatter(*playField.particleManager, bloodPos, 10, intensity, (float) i * dmgNumDelay);
+                    Animation damageNumberAnim{};
+                    Color dmgColor = GetDamageColor(damage, level.attackResult.minDmg, level.attackResult.maxDmg);
+                    SetupDamageNumberAnimation(damageNumberAnim, TextFormat("%d", damage), defenderX, defenderY-25, dmgColor, hit.crit ? 20 : 10, (float) i * dmgNumDelay);
+                    level.animations.push_back(damageNumberAnim);
+                    PlaySoundEffect(SoundEffectType::HumanPain, 0.25f);
+                } else {
+                    Animation damageNumberAnim{};
+                    SetupDamageNumberAnimation(damageNumberAnim, "MISS", defenderX, defenderY-25, WHITE, 10, (float) i * dmgNumDelay);
+                    level.animations.push_back(damageNumberAnim);
+                    //PlaySoundEffect(SoundEffectType::MeleeMiss);
+                }
+
+                if(hit.crit) {
+                    Animation damageNumberAnim{};
+                    SetupDamageNumberAnimation(damageNumberAnim, "CRITICAL!!!", attackerX, attackerY, WHITE, 20, ((float) i * dmgNumDelay) + dmgNumDelay);
+                    level.animations.push_back(damageNumberAnim);
+                    //PlaySoundEffect(SoundEffectType::MeleeCrit);
+                } else {
+                    //if(damage > 0)
+                    //    PlaySoundEffect(SoundEffectType::MeleeHit);
+                }
+                charData.stats[level.attackResult.defender].HP -= damage;
+            }
+
+            TurnState nextState = IsPlayerCharacter(data.charData, level.currentCharacter) ? TurnState::SelectEnemy : TurnState::EndTurn;
+            if(charData.stats[level.attackResult.defender].HP <= 0) {
+                Animation speechBubble{};
+                SetupSpeechBubbleAnimation(speechBubble, "Haha!", attackerX, attackerY - 25, 1.5f, 0.0f);
+                level.animations.push_back(speechBubble);
+                RemoveAttackAnimations(level);
+                KillCharacter(spriteData, charData, level, level.attackResult.defender);
+                WaitTurnState(level, nextState, waitTime + 0.95f);
+            } else {
+                WaitTurnState(level, nextState, waitTime + 0.60f);
             }
             ResetPlayField(playField);
             if(IsPlayerCharacter(data.charData, level.currentCharacter)) {

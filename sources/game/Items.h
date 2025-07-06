@@ -17,10 +17,11 @@ std::string GetItemTemplateIdString(GameData& data, int itemId);
 
 int CreateInventory(GameData& data, int capacity);
 
-void to_json(nlohmann::json& j, const Inventory& inventory);
-void from_json(const nlohmann::json& j, Inventory& inventory);
+InventorySaveState InventoryToSaveState(GameData& data, int invId, SaveData& saveData);
+int InventoryFromSaveState(GameData& data, SaveData& saveData, const InventorySaveState& state);
 
-InventorySaveState InventoryToSaveState(GameData& data, int invId);
-int InventoryFromSaveState(GameData& data, const InventorySaveState& state);
+int SaveItemInstanceData(GameData& data, SaveData& saveData, int itemId);
+
+void ApplyItemInstanceSaveState(GameData& data, SaveData& saveData, const ItemInstanceSaveState& itemState, int itemId);
 
 #endif //SANDBOX_ITEMS_H

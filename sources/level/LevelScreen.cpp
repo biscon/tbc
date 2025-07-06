@@ -48,6 +48,9 @@ static bool IsCharacterVisible(Level &combat, int character) {
 static void DisplayDamageNumbers(Level &combat) {
     for (auto &animation: combat.animations) {
         if (animation.type == AnimationType::DamageNumber) {
+            if(animation.state.damageNumber.initialDelay > 0) {
+                continue;
+            }
             float alpha = 1.0f - animation.time / animation.duration;
             // Draw the baseAttack number
             int w = MeasureText(animation.state.damageNumber.text, animation.state.damageNumber.fontSize);
@@ -366,6 +369,19 @@ static void HandleRangedTargetSelection(GameData& data, Level& level, PlayField&
         CalcHitChance(data, data.ui.selectedCharacter, weaponItemId, data.ui.actionBar.selectedModeIdx, data.ui.playField.attackInfo);
         data.ui.actionBar.previewApUse = data.ui.playField.attackInfo.apCost;
         playField.selectedCharacter = targetId;
+        int ap = data.charData.stats[data.ui.selectedCharacter].AP;
+        auto* weaponInstance = GetSelectedWeaponInstance(data, data.ui.selectedCharacter);
+        int currentAmmo = weaponInstance->currentAmmo;
+
+        // Check for a mouse click
+        if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT) && ap >= data.ui.playField.attackInfo.apCost && currentAmmo >= data.ui.playField.attackInfo.ammoCost) {
+            PlaySoundEffect(SoundEffectType::Select);
+            level.turnState = TurnState::Waiting;
+            level.waitTime = 0.25f;
+            level.selectedCharacter = playField.selectedCharacter;
+            level.nextState = TurnState::AttackRanged;
+            ResetPlayField(playField);
+        }
     }
 }
 

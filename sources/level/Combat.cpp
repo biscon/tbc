@@ -31,56 +31,126 @@ bool IsIncapacitated(CharacterData& charData, int character) {
     return false;
 }
 
+static AttackResult AttackUnarmed(GameData& data, Level& level, int attacker, int defender) {
+    CharacterStats& attackerStats = data.charData.stats[attacker];
+    AttackResult result{};
+    result.attacker = attacker;
+    result.defender = defender;
+    int unarmedMod = attackerStats.STR / 2;
+    result.minDmg = 1 + unarmedMod;
+    result.maxDmg = 3 + unarmedMod;
+    AttackInfo info{};
+    CalcHitChance(data, attacker, GetSelectedWeaponItemId(data, attacker), -1, info);
+    int hitRoll = GetRandomValue(1, 100);
+    AttackHit hit{};
+    hit.hit = false;
+    hit.damage = 0;
+    hit.crit = false;
+    if(hitRoll <= (int) info.hitChance) {
+
+        hit.hit = true;
+        float totalCritChance = 2 + ((float) attackerStats.LUK * 1.0f); // 1% per LUK
+        int rolledDmg = GetRandomValue(result.minDmg, result.maxDmg);
+        hit.damage = rolledDmg + unarmedMod;
+        hit.crit = GetRandomFloat01() < (totalCritChance/100);
+        if (hit.crit) {
+            hit.damage = static_cast<int>((float) hit.damage * 2.0f);
+        }
+    }
+    result.hits.push_back(hit);
+    attackerStats.AP -= info.apCost;
+    return result;
+}
+
+static AttackResult AttackMelee(GameData& data, Level& level, int attacker, int defender, WeaponTemplate& weaponTemplate) {
+    CharacterStats& attackerStats = data.charData.stats[attacker];
+    AttackResult result{};
+    result.attacker = attacker;
+    result.defender = defender;
+    int meleeMod = attackerStats.STR / 2;
+    result.minDmg = weaponTemplate.minDamage + meleeMod;
+    result.maxDmg = weaponTemplate.maxDamage + meleeMod;
+    AttackInfo info{};
+    CalcHitChance(data, attacker, GetSelectedWeaponItemId(data, attacker), data.ui.actionBar.selectedModeIdx, info);
+    int hitRoll = GetRandomValue(1, 100);
+    AttackHit hit{};
+    hit.hit = false;
+    hit.damage = 0;
+    hit.crit = false;
+    if(hitRoll <= (int) info.hitChance) {
+        hit.hit = true;
+        float totalCritChance = weaponTemplate.critChance + ((float) attackerStats.LUK * 1.0f); // 1% per LUK
+        int rolledDmg = GetRandomValue(weaponTemplate.minDamage, weaponTemplate.maxDamage);
+        hit.damage = rolledDmg + meleeMod;
+        hit.crit = GetRandomFloat01() < (totalCritChance/100);
+        if (hit.crit) {
+            hit.damage = static_cast<int>((float) hit.damage * weaponTemplate.critMultiplier);
+        }
+    }
+    result.hits.push_back(hit);
+    attackerStats.AP -= info.apCost;
+    return result;
+}
+
+static AttackResult AttackRanged(GameData& data, Level& level, int attacker, int defender,
+                                 WeaponTemplate& weaponTemplate, WeaponRanged& rangedTemplate,
+                                 WeaponInstance& weaponInstance) {
+    CharacterStats& attackerStats = data.charData.stats[attacker];
+    AttackResult result{};
+    result.attacker = attacker;
+    result.defender = defender;
+
+    //int rangedMod = attackerStats.PER / 2;
+    int rangedMod = 0;
+    result.minDmg = weaponTemplate.minDamage + rangedMod;
+    result.maxDmg = weaponTemplate.maxDamage + rangedMod;
+
+    const FireMode& fm = rangedTemplate.fireModes[data.ui.actionBar.selectedModeIdx];
+    int roundsFired = fm.roundsFired;
+    // fire up to 8 bullets
+    if(roundsFired == -1) {
+        roundsFired = weaponInstance.currentAmmo >= FULL_AUTO_SHOTS ? FULL_AUTO_SHOTS : weaponInstance.currentAmmo;
+    }
+    for(int i = 0; i < roundsFired; i++) {
+        AttackInfo info{};
+        CalcHitChance(data, attacker, GetSelectedWeaponItemId(data, attacker), data.ui.actionBar.selectedModeIdx, info);
+        int hitRoll = GetRandomValue(1, 100);
+        AttackHit hit{};
+        hit.hit = false;
+        hit.damage = 0;
+        hit.crit = false;
+        if(hitRoll <= (int) info.hitChance) {
+            hit.hit = true;
+            float totalCritChance = fm.critChance + ((float) attackerStats.LUK * 1.0f); // 1% per LUK
+            int rolledDmg = GetRandomValue(weaponTemplate.minDamage, weaponTemplate.maxDamage);
+            hit.damage = rolledDmg + rangedMod;
+            hit.crit = GetRandomFloat01() < (totalCritChance/100);
+            if (hit.crit) {
+                hit.damage = static_cast<int>((float) hit.damage * fm.critMultiplier);
+            }
+        }
+        result.hits.push_back(hit);
+    }
+    weaponInstance.currentAmmo = std::max(0, weaponInstance.currentAmmo - roundsFired);
+    attackerStats.AP -= fm.apCost;
+    return result;
+}
 
 // Function for a character to attack another
 AttackResult Attack(GameData& data, Level& level, int attacker, int defender) {
     WeaponTemplate* weaponTemplate = GetSelectedWeaponTemplate(data, attacker);
     WeaponRanged* weaponRanged = GetSelectedRangedTemplate(data, attacker);
+    WeaponInstance* weaponInstance = GetSelectedWeaponInstance(data, attacker);
 
-    CharacterStats& attackerStats = data.charData.stats[attacker];
-    AttackResult result{};
-    result.attacker = attacker;
-    result.defender = defender;
-    result.hit = false;
-    result.crit = false;
-    result.damage = 0;
-
-    if(weaponRanged != nullptr) {
-        attackerStats.AP -= weaponRanged->fireModes.at(data.ui.actionBar.selectedModeIdx).apCost;
-    } else if(weaponTemplate != nullptr) {
-        AttackInfo info{};
-        CalcHitChance(data, attacker, GetSelectedWeaponItemId(data, attacker), data.ui.actionBar.selectedModeIdx, info);
-        int hitRoll = GetRandomValue(1, 100);
-        if(hitRoll <= (int) info.hitChance) {
-            result.hit = true;
-            float totalCritChance = weaponTemplate->critChance + ((float) attackerStats.LUK * 1.0f); // 1% per LUK
-            result.damage = weaponTemplate->baseDamage + (attackerStats.STR / 2);
-            result.crit = GetRandomFloat01() < (totalCritChance/100);
-            if (result.crit) {
-                result.damage = static_cast<int>((float) result.damage * weaponTemplate->critMultiplier);
-            }
-        } else {
-            result.hit = false;
+    if(weaponTemplate == nullptr) {
+        return AttackUnarmed(data, level, attacker, defender);
+    } else {
+        switch(weaponTemplate->type) {
+            case WeaponType::Melee:return AttackMelee(data, level, attacker, defender, *weaponTemplate);
+            case WeaponType::Ranged: return AttackRanged(data, level, attacker, defender, *weaponTemplate, *weaponRanged, *weaponInstance);
         }
-        attackerStats.AP -= info.apCost;
-    } else { // unarmed
-        AttackInfo info{};
-        CalcHitChance(data, attacker, GetSelectedWeaponItemId(data, attacker), data.ui.actionBar.selectedModeIdx, info);
-        int hitRoll = GetRandomValue(1, 100);
-        if(hitRoll <= (int) info.hitChance) {
-            result.hit = true;
-            float totalCritChance = 2 + ((float) attackerStats.LUK * 1.0f); // 1% per LUK
-            result.damage = 4 + (attackerStats.STR / 2);
-            result.crit = GetRandomFloat01() < (totalCritChance/100);
-            if (result.crit) {
-                result.damage = static_cast<int>((float) result.damage * 2.0f);
-            }
-        } else {
-            result.hit = false;
-        }
-        attackerStats.AP -= info.apCost;
     }
-    return result;
+    throw(std::runtime_error("Illegal state"));
 }
 
 int DealDamage(GameData& data, Level& level, int attacker, int defender, int damage) {
@@ -95,9 +165,9 @@ int DealDamage(GameData& data, Level& level, int attacker, int defender, int dam
     int baseDamage = damage;
 
     Animation damageNumberAnim{};
-    Color dmgColor = GetDamageColor(baseDamage, 5);
+    Color dmgColor = GetDamageColor(baseDamage, 1, 20);
     bool isCritical = false;
-    SetupDamageNumberAnimation(damageNumberAnim, TextFormat("%d", baseDamage), defenderX, defenderY-25, dmgColor, isCritical ? 20 : 10);
+    SetupDamageNumberAnimation(damageNumberAnim, TextFormat("%d", baseDamage), defenderX, defenderY-25, dmgColor, isCritical ? 20 : 10, 0);
     level.animations.push_back(damageNumberAnim);
 
     charData.stats[defender].HP -= baseDamage;
@@ -124,8 +194,8 @@ int DealDamageStatusEffect(GameData& data, Level& level, int target, int damage)
     if (baseDamage < 0) baseDamage = 0;  // No negative baseAttack
 
     Animation damageNumberAnim{};
-    Color dmgColor = GetDamageColor(baseDamage, 5);
-    SetupDamageNumberAnimation(damageNumberAnim, TextFormat("%d", baseDamage), targetX, targetY-25, dmgColor, 10);
+    Color dmgColor = WHITE;
+    SetupDamageNumberAnimation(damageNumberAnim, TextFormat("%d", baseDamage), targetX, targetY-25, dmgColor, 10, 0);
     level.animations.push_back(damageNumberAnim);
 
     CharacterStats& stats = charData.stats[target];
@@ -264,8 +334,10 @@ void CalcHitChance(GameData& data, int charId, int weaponItemId, int fireModeIdx
         if(weaponTemplate.rangeDataId != -1) {
             WeaponRanged& ranged = data.weaponData.rangedData[weaponTemplate.rangeDataId];
             if(fireModeIdx != -1) {
-                hitChance += ranged.fireModes.at(fireModeIdx).accuracyMod;
-                info.apCost = ranged.fireModes.at(fireModeIdx).apCost;
+                auto& fm = ranged.fireModes.at(fireModeIdx);
+                hitChance += fm.accuracyMod;
+                info.apCost = fm.apCost;
+                info.ammoCost = fm.roundsFired == -1 ? FULL_AUTO_SHOTS : fm.roundsFired;
             }
         }
         info.hitChance = Clamp(hitChance, 5, 95);

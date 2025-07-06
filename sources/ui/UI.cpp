@@ -265,23 +265,20 @@ void DrawSpeechBubble(float x, float y, const char *text, float alpha) {
     DrawText(text, bubbleX + 10, bubbleY + 5, 10, Fade(BLACK, alpha));
 }
 
-Color GetDamageColor(int dmg, int attackerAttack) {
+Color GetDamageColor(int dmg, int minDmg, int maxDmg) {
     // Define key gradient colors
-    Color white = WHITE;   // Low baseAttack
-    Color yellow = YELLOW; // Medium baseAttack
-    Color red = RED;       // High baseAttack
+    Color white = WHITE;   // Low damage
+    Color yellow = YELLOW; // Medium damage
+    Color red = RED;       // High damage
 
-    // Define dynamic thresholds based on attacker's attack stat
-    int lowThreshold = attackerAttack / 2;     // Low baseAttack threshold (e.g., half of attack)
-    int highThreshold = attackerAttack * 3 / 2; // High baseAttack threshold (e.g., 1.5x attack)
+    // Clamp dmg within min-max range
+    dmg = Clamp(dmg, minDmg, maxDmg);
 
-    // Clamp baseAttack within the calculated range
-    dmg = Clamp(dmg, lowThreshold, highThreshold);
+    int midDmg = (minDmg + maxDmg) / 2;
 
-    // Calculate interpolation factor based on thresholds
-    if (dmg <= attackerAttack) {
-        // Interpolate from white to yellow (low to medium baseAttack)
-        float t = (float)(dmg - lowThreshold) / (attackerAttack - lowThreshold);
+    if (dmg <= midDmg) {
+        // Interpolate from white to yellow
+        float t = (float)(dmg - minDmg) / (midDmg - minDmg);
         return Color{
                 (unsigned char)Lerp(white.r, yellow.r, t),
                 (unsigned char)Lerp(white.g, yellow.g, t),
@@ -289,8 +286,8 @@ Color GetDamageColor(int dmg, int attackerAttack) {
                 255
         };
     } else {
-        // Interpolate from yellow to red (medium to high baseAttack)
-        float t = (float)(dmg - attackerAttack) / (highThreshold - attackerAttack);
+        // Interpolate from yellow to red
+        float t = (float)(dmg - midDmg) / (maxDmg - midDmg);
         return Color{
                 (unsigned char)Lerp(yellow.r, red.r, t),
                 (unsigned char)Lerp(yellow.g, red.g, t),

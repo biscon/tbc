@@ -13,6 +13,6 @@ void PlayAttackDefendAnimation(SpriteData& spriteData, CharacterData& charData, 
 void PlayEnemyVictoryAnimation(SpriteData& spriteData, CharacterData& charData, Level &level);
 void PlayPlayerVictoryAnimation(SpriteData& spriteData, CharacterData& charData, Level& level);
 void RemoveAttackAnimations(Level &level);
-int GetBloodIntensity(int dmg, int attackerAttack);
+int GetBloodIntensity(int dmg, int minDmg, int maxDmg);
 
 #endif //SANDBOX_COMBATANIMATION_H

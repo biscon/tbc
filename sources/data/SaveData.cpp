@@ -84,16 +84,44 @@ void from_json(const nlohmann::json& j, PartyCharacter& c) {
     }
 }
 
+void to_json(nlohmann::json& j, const ItemInstanceSaveState& s) {
+    j = nlohmann::json{
+            {"templateId", s.templateId},
+            {"instanceDataIdx", s.instanceDataIdx},
+    };
+}
+
+void from_json(const nlohmann::json& j, ItemInstanceSaveState& s) {
+    j.at("templateId").get_to(s.templateId);
+    j.at("instanceDataIdx").get_to(s.instanceDataIdx);
+}
+
+
+
 void to_json(nlohmann::json& j, const InventorySaveState& s) {
     j = nlohmann::json{
         {"capacity", s.capacity},
-        {"itemTemplateIds", s.itemTemplateIds},
+        {"instances", s.instances},
     };
 }
 
 void from_json(const nlohmann::json& j, InventorySaveState& s) {
     j.at("capacity").get_to(s.capacity);
-    j.at("itemTemplateIds").get_to(s.itemTemplateIds);
+    j.at("instances").get_to(s.instances);
+}
+
+void to_json(nlohmann::json& j, const WeaponInstanceSaveState& s) {
+    j = nlohmann::json{
+            {"templateId", s.templateId},
+            {"currentAmmo", s.currentAmmo},
+            {"jammed", s.jammed},
+    };
+}
+
+void from_json(const nlohmann::json& j, WeaponInstanceSaveState& s){
+    j.at("templateId").get_to(s.templateId);
+    j.at("currentAmmo").get_to(s.currentAmmo);
+    j.at("jammed").get_to(s.jammed);
 }
 
 bool SaveGameData(SaveData& data, const std::string& filename) {
@@ -102,6 +130,7 @@ bool SaveGameData(SaveData& data, const std::string& filename) {
     j["party"] = data.party;
     j["levels"] = data.levels;
     j["partyInventory"] = data.partyInventory;
+    j["weaponInstances"] = data.weaponInstances;
 
     //const Inventory& partyInventory = game->
 
@@ -128,6 +157,7 @@ bool LoadGameData(SaveData& data, const std::string& filename) {
     j.at("party").get_to(data.party);
     j.at("levels").get_to(data.levels);
     j.at("partyInventory").get_to(data.partyInventory);
+    j.at("weaponInstances").get_to(data.weaponInstances);
 
     // Handle QuestSaveState
     const nlohmann::json& nodes = j.at("quests");

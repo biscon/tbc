@@ -17,7 +17,7 @@ void RenderCharacterSkills(CharacterData& charData, int character, int x, int y,
 void DisplayCharacterStatsFloating(CharacterData& charData, int character, int x, int y, bool isPlayer, Font font);
 void ClampToScreenBounds(Rectangle& bg);
 void DrawSpeechBubble(float x, float y, const char *text, float alpha);
-Color GetDamageColor(int dmg, int attackerAttack);
+Color GetDamageColor(int dmg, int minDmg, int maxDmg);
 void RenderButtons(const std::unordered_map<std::string, Button> &buttons, const Font& font, float fontSize);
 bool HandleInputButtons(std::unordered_map<std::string, Button> &buttons);
 void DrawRectangleCorners(Rectangle& rect, Color color, int cornerSize);

@@ -32,6 +32,7 @@ struct ItemInstance {
     int id; // Unique ID
     int templateId; // Index into the master item templates table
     int quantity;   // For stackables
+    int typeInstanceId;
 };
 
 struct Inventory {
@@ -56,9 +57,6 @@ ItemType ItemTypeFromString(const std::string& str);
 // JSON (de)serialization
 void to_json(nlohmann::json& j, const ItemTemplate& item);
 void from_json(const nlohmann::json& j, ItemTemplate& item);
-
-void to_json(nlohmann::json& j, const ItemInstance& inst);
-void from_json(const nlohmann::json& j, ItemInstance& inst);
 
 void to_json(nlohmann::json& j, const ItemType& type);
 void from_json(const nlohmann::json& j, ItemType& type);

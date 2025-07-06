@@ -108,17 +108,17 @@
             "id": "cornerlight1",
             "intensity": "15",
             "active": true,
-            "x": 18,
+            "x": 17,
             "y": 25,
-            "falloff": 2.5,
+            "falloff": 1.0,
             "color": "FFE6B4"
         },
         {
             "id": "cornerlight2",
             "intensity": "15",
             "active": true,
-            "x": 18,
-            "y": 37,
+            "x": 17,
+            "y": 39,
             "falloff": 2.5,
             "color": "FF3311"
         },
@@ -126,8 +126,8 @@
             "id": "cornerlight3",
             "intensity": "15",
             "active": true,
-            "x": 45,
-            "y": 37,
+            "x": 46,
+            "y": 39,
             "falloff": 2.5,
             "color": "11FF33"
         },

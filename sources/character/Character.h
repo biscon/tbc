@@ -35,6 +35,7 @@ int CalculateCharMaxAP(CharacterStats &stats);
 
 int GetSelectedWeaponItemId(GameData& data, int charId);
 WeaponTemplate* GetSelectedWeaponTemplate(GameData& data, int charId);
+WeaponInstance* GetSelectedWeaponInstance(GameData& data, int charId);
 WeaponRanged* GetSelectedRangedTemplate(GameData& data, int charId);
 int GetSkillValue(GameData& data, Skill s, int charId);
 int GetSkillValue(GameData& data, const std::string& skillName, int charId);

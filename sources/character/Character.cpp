@@ -234,6 +234,16 @@ int GetSelectedWeaponItemId(GameData& data, int charId) {
     return nullptr;
 }
 
+WeaponInstance* GetSelectedWeaponInstance(GameData& data, int charId) {
+    int selectedSlot = data.charData.selectedWeaponSlot[charId];
+    int itemId = GetEquippedItem(data, charId, static_cast<ItemEquipSlot>(selectedSlot));
+    if(itemId != -1) {
+        WeaponInstance* instance = &data.weaponData.instanceData[data.itemData.instanceData[itemId].typeInstanceId];
+        return instance;
+    }
+    return nullptr;
+}
+
 WeaponRanged* GetSelectedRangedTemplate(GameData& data, int charId) {
     int selectedSlot = data.charData.selectedWeaponSlot[charId];
     int itemId = GetEquippedItem(data, charId, static_cast<ItemEquipSlot>(selectedSlot));

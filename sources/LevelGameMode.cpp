@@ -138,6 +138,7 @@ static void processEvents() {
                 game->ui.showActionBar = true;
                 // preselect move
                 game->ui.actionBar.selectedActionIdx = 0;
+                game->ui.actionBar.selectedModeIdx = 0;
                 ExecuteAction(*game, ActionBarAction::Move, level, playField, true);
                 break;
             }

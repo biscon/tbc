@@ -168,6 +168,7 @@ struct ActionBarUI {
 struct AttackInfo {
     float hitChance = 0;
     int apCost = 0;
+    int ammoCost = 0;
 };
 
 struct PlayFieldUI {

@@ -37,7 +37,8 @@ void InitWeaponData(WeaponData& weaponData, const std::string& filename) {
     for (auto& [id, value] : j.items()) {
         WeaponTemplate tmpl;
         tmpl.name = value.at("name");
-        tmpl.baseDamage = value.at("baseDamage");
+        tmpl.minDamage = value.at("minDamage");
+        tmpl.maxDamage = value.at("maxDamage");
         tmpl.critChance = value.at("critChance");
         tmpl.critMultiplier = value.at("critMultiplier");
         tmpl.weaponAccuracy = value.at("weaponAccuracy");
@@ -51,7 +52,6 @@ void InitWeaponData(WeaponData& weaponData, const std::string& filename) {
             WeaponRanged ranged;
             ranged.ammoType = value.at("rangedData").at("ammoType");
             ranged.magazineSize = value.at("rangedData").at("magazineSize");
-            ranged.currentAmmo = value.at("rangedData").at("currentAmmo");
 
             for (auto& mode : value.at("rangedData").at("fireModes")) {
                 FireMode fm;
@@ -81,4 +81,19 @@ void InitWeaponData(WeaponData& weaponData, const std::string& filename) {
         weaponData.indexToTemplateId.push_back(id);
     }
 }
+
+int CreateWeaponInstance(WeaponData &weaponData, int weaponTplId) {
+    int id = static_cast<int>(weaponData.instanceData.size());
+    WeaponInstance instance;
+    instance.templateId = weaponTplId;
+    instance.currentAmmo = 0;
+    const WeaponTemplate& weaponTemplate = weaponData.templateData[weaponTplId];
+    if(weaponTemplate.rangeDataId != -1) {
+        instance.currentAmmo = weaponData.rangedData[weaponTemplate.rangeDataId].magazineSize;
+    }
+    instance.jammed = false;
+    weaponData.instanceData.push_back(instance);
+    return id;
+}
+
 

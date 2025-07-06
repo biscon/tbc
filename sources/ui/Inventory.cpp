@@ -348,13 +348,11 @@ bool HandleInventoryInput(GameData& data) {
     }
 
     if(data.ui.inventory.weapon1Region.ConsumeClick()) {
-        TraceLog(LOG_INFO, "Consuming Single Click");
         SetSelectedWeaponSlot(data, data.ui.selectedCharacter, ItemEquipSlot::Weapon1);
         data.ui.actionBar.selectedModeIdx = 0;
     }
 
     if(data.ui.inventory.weapon1Region.ConsumeDblClick()) {
-        TraceLog(LOG_INFO, "Consuming DBL CLICK");
         int prevItem = GetEquippedItem(data, data.ui.selectedCharacter, ItemEquipSlot::Weapon1);
         if(prevItem != -1) {
             SetEquippedItem(data, data.ui.selectedCharacter, ItemEquipSlot::Weapon1, -1);

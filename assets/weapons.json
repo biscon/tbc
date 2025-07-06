@@ -2,7 +2,8 @@
     "knife_01": {
         "name": "Combat Knife",
         "apCost": 3,
-        "baseDamage": 6,
+        "minDamage": 3,
+        "maxDamage": 6,
         "critChance": 0.05,
         "critMultiplier": 2.0,
         "weaponAccuracy": 5.0,
@@ -16,7 +17,8 @@
     "club_01": {
         "name": "Wooden Club",
         "apCost": 4,
-        "baseDamage": 8,
+        "minDamage": 4,
+        "maxDamage": 8,
         "critChance": 0.03,
         "critMultiplier": 1.75,
         "weaponAccuracy": 2.0,
@@ -30,7 +32,8 @@
     "pistol_01": {
         "name": "9mm Pistol",
         "apCost": 4,
-        "baseDamage": 7,
+        "minDamage": 4,
+        "maxDamage": 7,
         "critChance": 0.07,
         "critMultiplier": 2.0,
         "weaponAccuracy": 0.0,
@@ -41,7 +44,6 @@
         "rangedData": {
             "ammoType": "9mm",
             "magazineSize": 15,
-            "currentAmmo": 15,
             "fireModes": [
                 {
                     "name": "Single",
@@ -59,7 +61,8 @@
     "assault_rifle_01": {
         "name": "AR-42 Assault Rifle",
         "apCost": 4,
-        "baseDamage": 8,
+        "minDamage": 5,
+        "maxDamage": 8,
         "critChance": 0.10,
         "critMultiplier": 2.0,
         "weaponAccuracy": -5.0,
@@ -70,7 +73,6 @@
         "rangedData": {
             "ammoType": "5.56mm",
             "magazineSize": 30,
-            "currentAmmo": 30,
             "fireModes": [
                 {
                     "name": "Single",

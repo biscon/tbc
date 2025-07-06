@@ -22,8 +22,6 @@ void StartNewGame(GameData &data) {
     int id = CreateCharacter(data.charData, CharacterFaction::Player, "Player1", "Fighter");
     InitCharacterSprite(data.spriteData, data.charData.sprite[id], "MaleWarrior", true);
     GiveWeapon(data, id, "item_weapon_knife", ItemEquipSlot::Weapon1);
-    SetSkillValue(data, Skill::Melee, id, 50);
-    SetSkillValue(data, Skill::SmallGuns, id, 50);
     data.charData.stats[id].STR = 8;
     data.charData.stats[id].END = 7;
     data.charData.stats[id].REF = 7;
@@ -31,23 +29,26 @@ void StartNewGame(GameData &data) {
     data.charData.stats[id].HP = CalculateCharHealth(data.charData.stats[id]);
     data.charData.stats[id].AP = CalculateCharMaxAP(data.charData.stats[id]);
     SetInitialSkillValues(data, id);
+    SetSkillValue(data, Skill::Melee, id, 80);
+    SetSkillValue(data, Skill::SmallGuns, id, 80);
     data.party.emplace_back(id);
 
     id = CreateCharacter(data.charData, CharacterFaction::Player, "Player2", "Fighter");
     InitCharacterSprite(data.spriteData, data.charData.sprite[id], "MaleBase", true);
     GiveWeapon(data, id, "item_weapon_club", ItemEquipSlot::Weapon1);
-    SetSkillValue(data, Skill::Melee, id, 50);
-    SetSkillValue(data, Skill::SmallGuns, id, 50);
     data.charData.stats[id].REF = 8;
     data.charData.stats[id].LVL = 5;
     data.charData.stats[id].HP = CalculateCharHealth(data.charData.stats[id]);
     data.charData.stats[id].AP = CalculateCharMaxAP(data.charData.stats[id]);
     SetInitialSkillValues(data, id);
+    SetSkillValue(data, Skill::Melee, id, 80);
+    SetSkillValue(data, Skill::SmallGuns, id, 80);
     data.party.emplace_back(id);
 
     data.state = GameState::LOAD_LEVEL;
     PushGameMode(GameModes::Level);
 }
+
 
 void LoadGame(GameData &data) {
     SaveData saveData;
@@ -60,7 +61,7 @@ void LoadGame(GameData &data) {
     data.levelState = saveData.levels;
     data.questState = saveData.quests;
 
-    data.itemData.partyInventoryId = InventoryFromSaveState(data, saveData.partyInventory);
+    data.itemData.partyInventoryId = InventoryFromSaveState(data, saveData, saveData.partyInventory);
 
     ClearAllCharacters(data.charData);
     data.spriteData.player.animationIdx.clear();
@@ -69,14 +70,14 @@ void LoadGame(GameData &data) {
     data.party.clear();
     for(auto& ch : saveData.party) {
         int id = CreateCharacter(data.charData, ch.faction, ch.name, ch.ai);
-        //AssignSkill(data.charData.skills[id], SkillType::Taunt, "Howling Scream", 1, false, true, 0, 3, 0);
         InitCharacterSprite(data.spriteData, data.charData.sprite[id], ch.spriteTemplate, true);
 
         // loop through equipment slots and instantiate items
         for (size_t i = 0; i < static_cast<size_t>(ItemEquipSlot::COUNT); ++i) {
             int itemId = -1;
-            if(!ch.equippedItems[i].empty()) {
-                itemId = CreateItem(data, ch.equippedItems[i], 1);
+            if(ch.equippedItems[i].instanceDataIdx != -1) {
+                itemId = CreateItem(data, ch.equippedItems[i].templateId, 1);
+                ApplyItemInstanceSaveState(data, saveData, ch.equippedItems[i], itemId);
                 SetEquippedItem(data, id, static_cast<ItemEquipSlot>(i), itemId);
             } else {
                 data.charData.equippedItemIdx[id][i] = itemId;
@@ -97,13 +98,14 @@ void LoadGame(GameData &data) {
     PushGameMode(GameModes::Level);
 }
 
+
+
 void SaveGame(GameData &data) {
     SaveData saveData;
     saveData.currentLevel = data.levelFileName;
     saveData.levels = data.levelState;
     saveData.quests = data.questState;
-    saveData.partyInventory = InventoryToSaveState(data, data.itemData.partyInventoryId);
-
+    saveData.partyInventory = InventoryToSaveState(data, data.itemData.partyInventoryId, saveData);
 
     for(auto& id : data.party) {
         PartyCharacter pc;
@@ -117,8 +119,17 @@ void SaveGame(GameData &data) {
 
         // save item equipment slots
         for (size_t i = 0; i < static_cast<size_t>(ItemEquipSlot::COUNT); ++i) {
-            int itemId =  data.charData.equippedItemIdx[id][i];
-            pc.equippedItems[i] = itemId == -1 ? "" : GetItemTemplateIdString(data, itemId);
+            int itemId = data.charData.equippedItemIdx[id][i];
+
+            ItemInstanceSaveState state;
+            if(itemId != -1) {
+                state.instanceDataIdx = SaveItemInstanceData(data, saveData, itemId);
+                state.templateId = GetItemTemplateIdString(data, itemId);
+            } else {
+                state.instanceDataIdx = -1;
+                state.templateId = "";
+            }
+            pc.equippedItems[i] = state;
         }
 
         // save skills

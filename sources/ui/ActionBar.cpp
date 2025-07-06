@@ -96,25 +96,29 @@ static void RenderWeaponInfo(GameData& data) {
     int selectedSlot = data.charData.selectedWeaponSlot[data.ui.selectedCharacter];
     int itemId = GetEquippedItem(data, data.ui.selectedCharacter, static_cast<ItemEquipSlot>(selectedSlot));
     std::string itemName = "Unarmed";
-    int baseDmg = 0;
+    int minDmg = 1;
+    int maxDmg = 3;
     int currentAmmo = 0;
     int magSize = 0;
     if(itemId != -1) {
         ItemTemplate& tmpl = data.itemData.templateData[GetItemTemplateId(data, itemId)];
+        ItemInstance& itemInstance = data.itemData.instanceData[itemId];
         itemName = tmpl.name;
         int weaponTplId = GetItemTypeTemplateId(data, itemId);
         WeaponTemplate& weaponTpl = data.weaponData.templateData[weaponTplId];
-        baseDmg = weaponTpl.baseDamage;
+        minDmg = weaponTpl.minDamage;
+        maxDmg = weaponTpl.maxDamage;
         if(weaponTpl.rangeDataId != -1) {
             WeaponRanged& weaponRanged = data.weaponData.rangedData[weaponTpl.rangeDataId];
-            currentAmmo = weaponRanged.currentAmmo;
+            WeaponInstance& instance = data.weaponData.instanceData[itemInstance.typeInstanceId];
+            currentAmmo = instance.currentAmmo;
             magSize = weaponRanged.magazineSize;
         }
     }
     DrawTextEx(data.smallFont1, itemName.c_str(), { dividerX + padding + 1, actionBarRect.y + padding + 1}, 5, 1, WHITE);
 
     DrawTextEx(data.smallFont1, "Damage:", { dividerX + padding + 1, actionBarRect.y + padding + 9}, 5, 1, GRAY);
-    std::string value = TextFormat("%d", baseDmg);
+    std::string value = TextFormat("%d-%d", minDmg, maxDmg);
     Vector2 textDims = MeasureTextEx(data.smallFont1, value.c_str(), 5, 1);
 
     DrawTextEx(data.smallFont1, value.c_str(), {(float) weaponRightMargin - textDims.x, actionBarRect.y + padding + 9}, 5, 1, LIGHTGRAY);
@@ -175,6 +179,9 @@ void RenderActionBarUI(GameData &data) {
 
 static void UpdateActionBarActions(GameData& data) {
     auto& icons = data.ui.actionBar.actionIcons;
+    for(auto &action : icons) {
+        action.enabled = false;
+    }
     icons[0].enabled = true;
     icons[0].selectable = true;
     icons[0].icon = ICON_MOVE;
@@ -191,14 +198,16 @@ static void UpdateActionBarActions(GameData& data) {
 
     int i = 2;
 
-    WeaponRanged* ranged = GetSelectedRangedTemplate(data, data.ui.selectedCharacter);
-    if(ranged) {
-        if(ranged->currentAmmo == 0) {
+    int weaponItemId = GetSelectedWeaponItemId(data, data.ui.selectedCharacter);
+    if(weaponItemId != -1) {
+        WeaponInstance& weaponInstance = data.weaponData.instanceData[weaponItemId];
+        WeaponRanged* ranged = GetSelectedRangedTemplate(data, data.ui.selectedCharacter);
+        if(weaponInstance.currentAmmo == 0 && ranged != nullptr && data.charData.stats[data.ui.selectedCharacter].AP >= RELOAD_AP_COST) {
             icons[i].enabled = true;
             icons[i].selectable = false;
             icons[i].icon = ICON_RELOAD;
             icons[i].text = "Rel";
-            icons[i].tooltip = "Reload the currently selected weapon.";
+            icons[i].tooltip = TextFormat("Reload current weapon. (AP: %d)", RELOAD_AP_COST);
             icons[i].action = ActionBarAction::Reload;
             i++;
         }
@@ -239,7 +248,6 @@ static void UpdateModes(GameData& data) {
 void UpdateActionBar(GameData &data, float dt) {
     UpdateActionBarActions(data);
     UpdateModes(data);
-
 }
 
 void ExecuteAction(GameData& data, ActionBarAction action, Level& level, PlayField& playField, bool wasSelected) {
@@ -258,8 +266,15 @@ void ExecuteAction(GameData& data, ActionBarAction action, Level& level, PlayFie
             }
             break;
         }
-        case ActionBarAction::Reload:
+        case ActionBarAction::Reload: {
+            WeaponInstance *weaponInstance = GetSelectedWeaponInstance(data, data.ui.selectedCharacter);
+            WeaponRanged *weaponRanged = GetSelectedRangedTemplate(data, data.ui.selectedCharacter);
+            if (weaponInstance && weaponRanged) {
+                weaponInstance->currentAmmo = weaponRanged->magazineSize;
+            }
+            data.charData.stats[data.ui.selectedCharacter].AP -= RELOAD_AP_COST;
             break;
+        }
         case ActionBarAction::EndTurn: {
             level.turnState = TurnState::EndTurn;
             playField.mode = PlayFieldMode::None;

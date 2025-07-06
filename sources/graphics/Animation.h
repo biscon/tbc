@@ -10,7 +10,7 @@
 
 void SetupBlinkAnimation(Animation &animation, int character, float duration);
 void SetupAttackAnimation(Animation &animation, int attacker, float duration, float startY, float endY, float startX, float endX, float initialDelay = 0.0f);
-void SetupDamageNumberAnimation(Animation &animation, const char *text, float x, float y, Color color, int fontSize);
+void SetupDamageNumberAnimation(Animation &animation, const char *text, float x, float y, Color color, int fontSize, float initialDelay);
 void SetupTextAnimation(Animation &animation, const char *text, float y, float duration, float initialDelay = 0.0f);
 void SetupDeathAnimation(SpriteData& spriteData, CharacterData& charData, Animation &animation, int character, float duration);
 void SetupBloodPoolAnimation(Animation &animation, Vector2 position, float duration);

@@ -472,11 +472,10 @@ void DrawPlayField(GameData& data, PlayField &playField, Level &level) {
     DrawDoors(data.spriteData, level);
     EndMode2D();
 
-
+    // Characters
     BeginMode2D(level.camera.camera);
     DrawGridCharacters(data, level);
     EndMode2D();
-
 
     DrawParticleManager(*playField.particleManager);
 

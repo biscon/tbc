@@ -8,6 +8,8 @@
 #include <map>
 #include "Level.h"
 
+#define FULL_AUTO_SHOTS 8
+
 AttackResult Attack(GameData& data, Level& level, int attacker, int defender);
 int DealDamage(GameData& data, Level& level, int attacker, int defender, int damage);
 int DealDamageStatusEffect(GameData& data, Level& level, int target, int damage);

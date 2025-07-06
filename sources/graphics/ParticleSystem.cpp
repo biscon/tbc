@@ -21,6 +21,7 @@ void DestroyParticleManager(ParticleManager &manager) {
 
 ParticleEmitter* CreateParticleEmitter(ParticleManager &manager, int maxParticles, Vector2 position, float duration) {
     ParticleEmitter* emitter = new ParticleEmitter();
+    emitter->initialDelay = 0;
     emitter->position = position;
     emitter->maxParticles = maxParticles;
     emitter->particles.resize(maxParticles);
@@ -72,6 +73,16 @@ void UpdateParticleManager(ParticleManager &manager, float deltaTime) {
     for (auto it = manager.emitters.begin(); it != manager.emitters.end();) {
         ParticleEmitter* emitter = *it;
 
+        if (emitter->initialDelay > 0) {
+            emitter->initialDelay -= deltaTime;
+            if (emitter->initialDelay > 0) {
+                ++it;
+                continue;
+            } else {
+                emitter->initialDelay = 0;
+            }
+        }
+
         // Handle emission logic
         if (emitter->emitCallback && (emitter->duration > 0 || emitter->duration == -1)) {
             emitter->emitCallback(*emitter);
@@ -112,6 +123,8 @@ void PreRenderParticleManager(const LightingData& lighting, ParticleManager &man
     BeginTextureMode(manager.renderTexture);
     ClearBackground(BLANK);
     for (const auto &emitter : manager.emitters) {
+        if(emitter->initialDelay > 0)
+            continue;
         if(emitter->blendAdditive) BeginBlendMode(BLEND_ADDITIVE);
         for (const auto &particle : emitter->particles) {
             if (particle.active) {
@@ -142,8 +155,9 @@ void DrawParticleManager(ParticleManager &manager) {
     );
 }
 
-void CreateBloodSplatter(ParticleManager &manager, Vector2 position, int count, float power) {
+void CreateBloodSplatter(ParticleManager &manager, Vector2 position, int count, float power, float initialDelay) {
     ParticleEmitter* emitter = CreateParticleEmitter(manager, count * 2, position);
+    emitter->initialDelay = initialDelay;
     emitter->emitCallback = [power](ParticleEmitter &emitter) {
         const Color DARK_BLOOD_RED = Color{139, 0, 0, 255};   // Dark blood red (#8B0000)
         const Color MEDIUM_BLOOD_RED = Color{178, 34, 34, 255};  // Medium blood red (#B22222)

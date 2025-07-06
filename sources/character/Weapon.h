@@ -6,6 +6,8 @@
 #define SANDBOX_WEAPON_H
 
 #include "data/WeaponData.h"
+#include "data/SaveData.h"
 
 void InitWeaponData(WeaponData& weaponData, const std::string& filename);
+int CreateWeaponInstance(WeaponData& weaponData, int weaponTplId);
 #endif //SANDBOX_WEAPON_H
