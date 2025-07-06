@@ -48,6 +48,23 @@ void PlayDefendAnimation(SpriteData& spriteData, CharacterData& charData, Level 
     level.animations.push_back(defenderAnim);
 }
 
+void PlayGettingShotAnimation(SpriteData& spriteData, CharacterData& charData, Level &level, int attacker, int defender, float initialDelay, float duration) {
+    if(charData.stats[defender].HP <= 0) {
+        return;
+    }
+    float defenderX = GetCharacterSpritePosX(spriteData, charData.sprite[defender]);
+    float defenderY = GetCharacterSpritePosY(spriteData, charData.sprite[defender]);
+
+    Vector2 orientationVector = Vector2Normalize(Vector2Subtract(GetCharacterSpritePos(spriteData, charData.sprite[defender]), GetCharacterSpritePos(spriteData, charData.sprite[attacker])));
+    // invert vector
+    orientationVector = Vector2Scale(orientationVector, 5);
+    Vector2 point = Vector2Add(GetCharacterSpritePos(spriteData, charData.sprite[defender]), orientationVector);
+
+    Animation defenderAnim{};
+    SetupAttackAnimation(defenderAnim, defender, duration, defenderY, point.y, defenderX, point.x, initialDelay);
+    level.animations.push_back(defenderAnim);
+}
+
 void PlayAttackDefendAnimation(SpriteData& spriteData, CharacterData& charData, Level &level, int attacker, int defender) {
     PlayAttackAnimation(spriteData, charData, level, attacker, defender);
     PlayDefendAnimation(spriteData, charData, level, attacker, defender);

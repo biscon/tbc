@@ -248,6 +248,13 @@ void LevelInit() {
     SetVolumeSoundEffect(SoundEffectType::StartRound, 0.75f);
     LoadSoundEffect(SoundEffectType::Burning, ASSETS_PATH"sound/burning_01.ogg", false);
     //PlaySoundEffect(SoundEffectType::Ambience);
+    LoadSoundEffect(SoundEffectType::PistolReload, ASSETS_PATH"sound/pistol_reload_01.ogg", false);
+    LoadSoundEffect(SoundEffectType::PistolShot, ASSETS_PATH"sound/pistol_shot_01.ogg", false);
+
+    LoadSoundEffect(SoundEffectType::RifleReload, ASSETS_PATH"sound/pistol_reload_01.ogg", false);
+    LoadSoundEffect(SoundEffectType::RifleShot, ASSETS_PATH"sound/rifle_shot_01.ogg", false);
+    LoadSoundEffect(SoundEffectType::RifleShot, ASSETS_PATH"sound/rifle_shot_02.ogg", false);
+    LoadSoundEffect(SoundEffectType::RifleShot, ASSETS_PATH"sound/rifle_shot_03.ogg", false);
 
     CreateLevel(level);
     CreateLevelScreen(*game);

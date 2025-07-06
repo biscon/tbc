@@ -177,6 +177,7 @@ void UpdateCombat(GameData &data, Level &level, PlayField& playField, float dt) 
 
             //PlayAttackDefendAnimation(spriteData, charData, level, level.currentCharacter, level.selectedCharacter);
 
+
             level.waitTime = 0.25f;
             level.nextState = TurnState::AttackRangedDone;
             level.turnState = TurnState::Waiting;
@@ -191,9 +192,11 @@ void UpdateCombat(GameData &data, Level &level, PlayField& playField, float dt) 
             float dmgNumDelay = 0.25f;
             float waitTime = 0;
             for(int i = 0; i < result.hits.size(); i++) {
+                PlaySoundEffect(SoundEffectType::RifleShot, waitTime);
                 AttackHit& hit = result.hits[i];
                 int damage = hit.damage;
                 if(damage > 0) {
+                    PlayGettingShotAnimation(spriteData, charData, level, level.currentCharacter, level.selectedCharacter, waitTime, 0.20f);
                     float intensity = (float) GetBloodIntensity(damage, level.attackResult.minDmg, level.attackResult.maxDmg);
                     TraceLog(LOG_INFO, "Damage: %d, intensity: %f", damage, intensity);
                     Vector2 bloodPos = {defenderX + (float) RandomInRange(-2,2), defenderY - 8 + (float) RandomInRange(-2,2)};
@@ -202,7 +205,6 @@ void UpdateCombat(GameData &data, Level &level, PlayField& playField, float dt) 
                     Color dmgColor = GetDamageColor(damage, level.attackResult.minDmg, level.attackResult.maxDmg);
                     SetupDamageNumberAnimation(damageNumberAnim, TextFormat("%d", damage), defenderX, defenderY-25, dmgColor, hit.crit ? 20 : 10, waitTime);
                     level.animations.push_back(damageNumberAnim);
-                    PlaySoundEffect(SoundEffectType::HumanPain, 0.25f);
                 } else {
                     Animation damageNumberAnim{};
                     SetupDamageNumberAnimation(damageNumberAnim, "MISS", defenderX, defenderY-25, WHITE, 10, waitTime);
@@ -224,6 +226,7 @@ void UpdateCombat(GameData &data, Level &level, PlayField& playField, float dt) 
                 waitTime += dmgNumDelay;
                 charData.stats[level.attackResult.defender].HP -= damage;
             }
+            PlaySoundEffect(SoundEffectType::HumanPain, waitTime);
             WaitTurnState(level, TurnState::KillCharacters, waitTime);
             break;
         }

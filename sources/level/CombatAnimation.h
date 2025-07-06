@@ -9,6 +9,7 @@
 
 void PlayAttackAnimation(SpriteData& spriteData, CharacterData& charData, Level &level, int attacker, int defender);
 void PlayDefendAnimation(SpriteData& spriteData, CharacterData& charData, Level &level, int attacker, int defender);
+void PlayGettingShotAnimation(SpriteData& spriteData, CharacterData& charData, Level &level, int attacker, int defender, float initialDelay, float duration);
 void PlayAttackDefendAnimation(SpriteData& spriteData, CharacterData& charData, Level &level, int attacker, int defender);
 void PlayEnemyVictoryAnimation(SpriteData& spriteData, CharacterData& charData, Level &level);
 void PlayPlayerVictoryAnimation(SpriteData& spriteData, CharacterData& charData, Level& level);

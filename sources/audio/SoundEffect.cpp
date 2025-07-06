@@ -78,13 +78,13 @@ void PlaySoundEffect(SoundEffectType type, float delay) {
             int randomIndex = rand() % group->effects.size();
             SoundEffect* effect = group->effects[randomIndex].get();
 
-            if (!IsSoundPlaying(effect->sound)) {
+            //if (!IsSoundPlaying(effect->sound)) {
                 effect->delayTimer = delay; // Set the delay timer
                 effect->playing = true;
                 if (delay <= 0.0f) {
                     PlaySound(effect->sound); // Play sound immediately
                 }
-            }
+            //}
             break;
         }
     }
