@@ -1330,5 +1330,77 @@
                 ]
             }
         ]
+    },
+    {
+        "group": "ComputerDesk",
+        "sheet": "desk_01.png",
+        "frameWidth": 48,
+        "frameHeight": 32,
+        "animations": [
+            {
+                "name": "Idle",
+                "origin": [0, 0],
+                "frames": [
+                    0
+                ],
+                "delays": [
+                    0.10
+                ]
+            }
+        ]
+    },
+    {
+        "group": "Trashcan01",
+        "sheet": "trashcan.png",
+        "frameWidth": 16,
+        "frameHeight": 32,
+        "animations": [
+            {
+                "name": "Idle",
+                "origin": [0, 0],
+                "frames": [
+                    0
+                ],
+                "delays": [
+                    0.10
+                ]
+            }
+        ]
+    },
+    {
+        "group": "Toilet",
+        "sheet": "toilet.png",
+        "frameWidth": 32,
+        "frameHeight": 32,
+        "animations": [
+            {
+                "name": "Idle",
+                "origin": [0, 0],
+                "frames": [
+                    0
+                ],
+                "delays": [
+                    0.10
+                ]
+            }
+        ]
+    },
+    {
+        "group": "ToiletSink",
+        "sheet": "toilet_sink.png",
+        "frameWidth": 16,
+        "frameHeight": 48,
+        "animations": [
+            {
+                "name": "Idle",
+                "origin": [0, 0],
+                "frames": [
+                    0
+                ],
+                "delays": [
+                    0.10
+                ]
+            }
+        ]
     }
 ]

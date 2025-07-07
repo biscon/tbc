@@ -26,7 +26,7 @@
     "npcs": [
         {
             "template": "SerDonald",
-            "position": [26, 10],
+            "position": [32, 9],
             "dialogueNode": 1
         }
     ],
@@ -87,12 +87,30 @@
             "color": "FFE6B4"
         },
         {
-            "id": "light4",
+            "id": "light_bathroom_01",
             "intensity": "15",
             "active": true,
             "x": 52,
             "y": 12,
             "falloff": 0.9,
+            "color": "FFE6B4"
+        },
+        {
+            "id": "light_bathroom_02",
+            "intensity": "12",
+            "active": true,
+            "x": 60,
+            "y": 9,
+            "falloff": 2.5,
+            "color": "FFFFFF"
+        },
+        {
+            "id": "light_bathroom_03",
+            "intensity": "14",
+            "active": true,
+            "x": 60,
+            "y": 15,
+            "falloff": 3.5,
             "color": "FFFFFF"
         },
         {
@@ -232,6 +250,76 @@
             "loop": false,
             "lit": true,
             "position": [53, 6]
+        },
+        {
+            "id": "computerDesk1",
+            "sprite": "ComputerDeskIdle",
+            "loop": false,
+            "lit": true,
+            "position": [37, 7]
+        },
+        {
+            "id": "trashcan1",
+            "sprite": "Trashcan01Idle",
+            "loop": false,
+            "lit": true,
+            "position": [34, 7]
+        },
+        {
+            "id": "trashcan2",
+            "sprite": "Trashcan01Idle",
+            "loop": false,
+            "lit": true,
+            "position": [22, 10]
+        },
+        {
+            "id": "trashcan3",
+            "sprite": "Trashcan01Idle",
+            "loop": false,
+            "lit": true,
+            "position": [12, 7]
+        },
+        {
+            "id": "bathroomTrashcan1",
+            "sprite": "Trashcan01Idle",
+            "loop": false,
+            "lit": true,
+            "position": [58, 7]
+        },
+        {
+            "id": "bathroomToilet1",
+            "sprite": "ToiletIdle",
+            "loop": false,
+            "lit": true,
+            "position": [61, 7]
+        },
+        {
+            "id": "bathroomSink1",
+            "sprite": "ToiletSinkIdle",
+            "loop": false,
+            "lit": true,
+            "position": [60, 6]
+        },
+        {
+            "id": "bathroomTrashcan2",
+            "sprite": "Trashcan01Idle",
+            "loop": false,
+            "lit": true,
+            "position": [58, 13]
+        },
+        {
+            "id": "bathroomToilet2",
+            "sprite": "ToiletIdle",
+            "loop": false,
+            "lit": true,
+            "position": [61, 13]
+        },
+        {
+            "id": "bathroomSink2",
+            "sprite": "ToiletSinkIdle",
+            "loop": false,
+            "lit": true,
+            "position": [60, 12]
         }
     ],
     "doors": [
@@ -261,6 +349,24 @@
             "locked": false,
             "blockedTiles": [[40,11], [40,12]],
             "shadowTiles": [[40,9],[40,10],[40,11],[40,12]]
+        },
+        {
+            "id": "bathroomDoor1",
+            "sprite": "HorizDoorOpen",
+            "position": [56, 6],
+            "open": false,
+            "locked": false,
+            "blockedTiles": [[56,8], [56,9]],
+            "shadowTiles": [[56,6], [56,7],[56,8], [56,9]]
+        },
+        {
+            "id": "bathroomDoor2",
+            "sprite": "HorizDoorOpen",
+            "position": [56, 12],
+            "open": false,
+            "locked": false,
+            "blockedTiles": [[56,14], [56,15]],
+            "shadowTiles": [[56,12], [56,13],[56,14], [56,15]]
         }
     ]
 }

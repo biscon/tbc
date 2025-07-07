@@ -11,7 +11,7 @@
 #include <string>
 
 constexpr int portraitSize = 40;
-constexpr int portraitMargin = 8;
+constexpr int portraitMargin = 4;
 constexpr int textHeight = 5;
 constexpr int spacing = 6;
 constexpr Color portraitColor = Color{15, 15, 15, 255};
@@ -59,6 +59,11 @@ void UpdatePartySideBar(GameData& data, float dt) {
 
 void RenderPartySideBarUI(GameData& data) {
     int count = static_cast<int>(data.ui.sideBar.sidebarSlots.size());
+    const Rectangle barRect = {gameScreenWidthF - portraitSize - portraitMargin - portraitMargin, 0,
+                                      gameScreenWidthF - (gameScreenWidthF - portraitSize - portraitMargin - portraitMargin),
+                                      ((float) count * (portraitSize + textHeight + spacing)) + portraitMargin};
+    DrawRectangleRounded(barRect, 0.15f, 4, Color{15, 15, 15, 200});
+
     for (int i = 0; i < count; ++i) {
         auto& slot = data.ui.sideBar.sidebarSlots[i];
         int charId = data.party[i];
