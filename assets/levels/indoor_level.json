@@ -92,7 +92,7 @@
             "active": true,
             "x": 52,
             "y": 12,
-            "falloff": 1.25,
+            "falloff": 0.9,
             "color": "FFFFFF"
         },
         {
@@ -182,7 +182,56 @@
             "sprite": "LockerIdle",
             "loop": false,
             "lit": true,
+            "position": [33, 6]
+        },
+        {
+            "id": "shelves1",
+            "sprite": "WoodShelvesIdle",
+            "loop": false,
+            "lit": true,
             "position": [31, 6]
+        },
+        {
+            "id": "shelves2",
+            "sprite": "WoodShelvesIdle",
+            "loop": false,
+            "lit": true,
+            "position": [14, 6]
+        },
+        {
+            "id": "shelves3",
+            "sprite": "WoodShelvesIdle",
+            "loop": false,
+            "lit": true,
+            "position": [9, 6]
+        },
+        {
+            "id": "locker4",
+            "sprite": "LockerIdle",
+            "loop": false,
+            "lit": true,
+            "position": [13, 6]
+        },
+        {
+            "id": "locker5",
+            "sprite": "LockerIdle",
+            "loop": false,
+            "lit": true,
+            "position": [50, 6]
+        },
+        {
+            "id": "locker6",
+            "sprite": "LockerIdle",
+            "loop": false,
+            "lit": true,
+            "position": [51, 6]
+        },
+        {
+            "id": "shelves4",
+            "sprite": "WoodShelvesIdle",
+            "loop": false,
+            "lit": true,
+            "position": [53, 6]
         }
     ],
     "doors": [

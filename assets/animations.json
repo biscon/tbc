@@ -1312,5 +1312,23 @@
                 ]
             }
         ]
+    },
+    {
+        "group": "WoodShelves",
+        "sheet": "wood_shelves.png",
+        "frameWidth": 32,
+        "frameHeight": 48,
+        "animations": [
+            {
+                "name": "Idle",
+                "origin": [0, 0],
+                "frames": [
+                    0
+                ],
+                "delays": [
+                    0.10
+                ]
+            }
+        ]
     }
 ]
