@@ -83,6 +83,7 @@ struct LevelObject {
     bool loop;
     bool lit;
     int animPlayer;
+    int inventory = -1;
 };
 
 struct LevelDoor {

@@ -15,6 +15,7 @@
 #include "ui/PartySideBar.h"
 #include "LevelCamera.h"
 #include "graphics/Lighting.h"
+#include "game/Items.h"
 
 using json = nlohmann::json;
 
@@ -212,6 +213,17 @@ void LoadLevel(GameData& data, Level &level, const std::string &filename) {
             levelObj.animPlayer = CreateSpriteAnimationPlayer(data.spriteData);
             int anim = GetSpriteAnimation(data.spriteData, levelObj.spriteTemplate);
             PlaySpriteAnimation(data.spriteData, levelObj.animPlayer, anim, levelObj.loop);
+            if(obj.contains("inventory")) {
+                levelObj.inventory = CreateInventory(data, 100);
+                for(const auto &inst : obj["inventory"]) {
+                    std::string itemTemplateId;
+                    inst["template"].get_to(itemTemplateId);
+                    int quantity = inst.value("quantity", 1);
+                    int itemId = CreateItem(data, itemTemplateId, quantity);
+                    data.itemData.inventoryData[levelObj.inventory].items.push_back(itemId);
+                }
+            }
+
             level.objects[levelObj.id] = levelObj;
         }
     }

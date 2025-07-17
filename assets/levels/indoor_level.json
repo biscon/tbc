@@ -186,7 +186,10 @@
             "sprite": "LockerIdle",
             "loop": false,
             "lit": true,
-            "position": [29, 6]
+            "position": [29, 6],
+            "inventory": [
+                {"template" : "item_weapon_pistol", "quantity":  1}
+            ]
         },
         {
             "id": "locker2",
