@@ -218,7 +218,7 @@
         },
         {
             "id": "shelves3",
-            "sprite": "WoodShelvesIdle",
+            "sprite": "BulletinBoardIdle",
             "loop": false,
             "lit": true,
             "position": [9, 6]
@@ -341,6 +341,13 @@
             "loop": false,
             "lit": true,
             "position": [27, 6]
+        },
+        {
+            "id": "cupboard01",
+            "sprite": "CupboardIdle",
+            "loop": false,
+            "lit": true,
+            "position": [8, 11]
         }
     ],
     "doors": [
