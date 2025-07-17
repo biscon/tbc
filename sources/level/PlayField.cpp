@@ -460,7 +460,7 @@ void DrawPlayField(GameData& data, PlayField &playField, Level &level) {
     // Bottom layer
     BeginMode2D(level.camera.camera);
     DrawTileLayer(level.lighting, data.spriteData.sheet, level.tileMap, BOTTOM_LAYER, 0, 0);
-    //DrawTileLayer(level.lighting, data.spriteData.sheet, level.tileMap, LIGHT_LAYER, 0, 0);
+    DrawTileLayer(level.lighting, data.spriteData.sheet, level.tileMap, LIGHT_LAYER, 0, 0);
     EndMode2D();
 
     DrawBloodPools();

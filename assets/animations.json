@@ -1402,5 +1402,41 @@
                 ]
             }
         ]
+    },
+    {
+        "group": "WindowInside",
+        "sheet": "window_inside_01.png",
+        "frameWidth": 32,
+        "frameHeight": 32,
+        "animations": [
+            {
+                "name": "Idle",
+                "origin": [0, 0],
+                "frames": [
+                    0
+                ],
+                "delays": [
+                    0.10
+                ]
+            }
+        ]
+    },
+    {
+        "group": "BulletinBoard",
+        "sheet": "bulletin_board.png",
+        "frameWidth": 32,
+        "frameHeight": 32,
+        "animations": [
+            {
+                "name": "Idle",
+                "origin": [0, 0],
+                "frames": [
+                    0
+                ],
+                "delays": [
+                    0.10
+                ]
+            }
+        ]
     }
 ]
