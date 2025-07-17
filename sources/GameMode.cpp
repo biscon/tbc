@@ -7,6 +7,7 @@
 #include "GameMode.h"
 #include "raylib.h"
 #include "data/GameData.h"
+#include "ui/Icons.h"
 
 static std::unordered_map<GameModes, GameMode> gameModes;
 static std::stack<GameMode*> gameModeStack;
@@ -31,8 +32,8 @@ void StartFadeIn() {
     fadeAlpha = 1.0f;
 }
 
-void CreateGameMode(GameModes gm, void (*Init)(), void (*Update)(float), void (*HandleInput)(), void (*RenderLevel)(), void (*RenderUi)(),
-                    void (*PreRender)(), void (*Shutdown)(), void (*Pause)(), void (*Resume)()) {
+void CreateGameMode(GameModes gm, void (*Init)(GameData&), void (*Update)(GameData&, float), void (*HandleInput)(GameData&), void (*RenderLevel)(GameData&), void (*RenderUi)(GameData&),
+                    void (*PreRender)(GameData&), void (*Shutdown)(GameData&), void (*Pause)(GameData&), void (*Resume)(GameData&)) {
     GameMode mode{};
     mode.Init = Init;
     mode.Update = Update;
@@ -53,7 +54,7 @@ GameMode* GetGameMode(GameModes gm) {
     return &gameModes[gm];
 }
 
-void PushGameMode(GameModes gm) {
+void PushGameMode(GameData& data, GameModes gm) {
     GameMode* mode = GetGameMode(gm);
     if (mode == nullptr) {
         TraceLog(LOG_ERROR, "GameMode not found: %d", gm);
@@ -61,27 +62,27 @@ void PushGameMode(GameModes gm) {
     }
     if (!gameModeStack.empty()) {
         TraceLog(LOG_INFO, "Pausing current game mode");
-        gameModeStack.top()->Pause();
+        gameModeStack.top()->Pause(data);
         StartFadeOut(mode);
     } else {
         gameModeStack.push(mode);
         TraceLog(LOG_INFO, "Pushing and resuming game mode: %d", gm);
-        mode->Resume();
+        mode->Resume(data);
         StartFadeIn();
     }
 }
 
-void PopGameMode() {
+void PopGameMode(GameData& data) {
     if (!gameModeStack.empty()) {
         TraceLog(LOG_INFO, "Pausing current game mode");
-        gameModeStack.top()->Pause();
+        gameModeStack.top()->Pause(data);
         StartFadeOut(nullptr);
     }
 }
 
-void UpdateGameMode(float dt) {
+void UpdateGameMode(GameData& data, float dt) {
     if (!gameModeStack.empty()) {
-        gameModeStack.top()->Update(dt);
+        gameModeStack.top()->Update(data, dt);
     }
 
     if (fading) {
@@ -91,12 +92,12 @@ void UpdateGameMode(float dt) {
             if (pendingGameMode) {
                 gameModeStack.push(pendingGameMode);
                 TraceLog(LOG_INFO, "Switching to new game mode");
-                pendingGameMode->Resume();
+                pendingGameMode->Resume(data);
             } else {
                 gameModeStack.pop();
                 if (!gameModeStack.empty()) {
                     TraceLog(LOG_INFO, "Resuming previous game mode");
-                    gameModeStack.top()->Resume();
+                    gameModeStack.top()->Resume(data);
                 } else {
                     TraceLog(LOG_INFO, "No game mode, quitting game.");
                     RequestQuitGame();
@@ -112,15 +113,16 @@ void UpdateGameMode(float dt) {
     }
 }
 
-void HandleInputGameMode() {
+void HandleInputGameMode(GameData& data) {
+    data.ui.currentCursorIcon = ICON_CURSOR;
     if (!gameModeStack.empty()) {
-        gameModeStack.top()->HandleInput();
+        gameModeStack.top()->HandleInput(data);
     }
 }
 
-void RenderLevelGameMode() {
+void RenderLevelGameMode(GameData& data) {
     if (!gameModeStack.empty()) {
-        gameModeStack.top()->RenderLevel();
+        gameModeStack.top()->RenderLevel(data);
     }
 
     // Render fade effect
@@ -129,26 +131,35 @@ void RenderLevelGameMode() {
     }
 }
 
-void RenderUiGameMode() {
+void RenderUiGameMode(GameData& data) {
     if (!gameModeStack.empty()) {
-        gameModeStack.top()->RenderUi();
+        gameModeStack.top()->RenderUi(data);
     }
 
     // Render fade effect
     if (fading || fadeAlpha > 0.0f) {
         DrawRectangle(0, 0, gameScreenWidth, gameScreenHeight, Fade(BLACK, fadeAlpha));
     }
-}
 
-void PreRenderGameMode() {
-    if (!gameModeStack.empty()) {
-        gameModeStack.top()->PreRender();
+    if(data.ui.currentCursorIcon != -1 && IsCursorOnScreen()) {
+        Vector2 mouse = GetMousePosition();
+        if(data.ui.currentCursorIcon != ICON_CURSOR) {
+            mouse.x -= 8;
+            mouse.y -= 8;
+        }
+        DrawIcon(data, (int) mouse.x, (int) mouse.y, WHITE, data.ui.currentCursorIcon);
     }
 }
 
-void DestroyGameMode() {
+void PreRenderGameMode(GameData& data) {
+    if (!gameModeStack.empty()) {
+        gameModeStack.top()->PreRender(data);
+    }
+}
+
+void DestroyGameMode(GameData& data) {
     for (auto& mode : gameModes) {
-        mode.second.Destroy();
+        mode.second.Destroy(data);
     }
 }
 
@@ -160,9 +171,9 @@ void RequestQuitGame() {
     gameModeFlags.quitGame = true;
 }
 
-void InitGameMode() {
+void InitGameMode(GameData& data) {
     gameModeFlags.quitGame = false;
     for (auto& mode : gameModes) {
-        mode.second.Init();
+        mode.second.Init(data);
     }
 }

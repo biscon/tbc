@@ -189,6 +189,7 @@ struct UiState {
     int iconSpriteSheet;
     int portraitSpriteSheet;
     bool showActionBar = false;
+    int currentCursorIcon = -1;
 };
 
 #endif //SANDBOX_UIDATA_H

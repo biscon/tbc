@@ -226,7 +226,7 @@ static std::shared_ptr<Menu> createMainMenu() {
         MenuItem resume;
         resume.text = "Resume";
         resume.isSubmenu = false;
-        resume.action = [] { PushGameMode(GameModes::Level); };
+        resume.action = [] { PushGameMode(*game, GameModes::Level); };
         menu->items.push_back(resume);
 
         MenuItem save;
@@ -255,22 +255,22 @@ static std::shared_ptr<Menu> createMainMenu() {
     quit.text = "Quit";
     quit.isSubmenu = false;
     quit.action = [] {
-        PopGameMode();
+        PopGameMode(*game);
     };
     menu->items.push_back(quit);
 
     return menu;
 }
 
-void MenuInit() {
+void MenuInit(GameData& data) {
     menuStack = std::stack<std::function<std::shared_ptr<Menu>()>>();
     menuStack.push(&createMainMenu);
 }
 
-void MenuUpdate(float dt) {
+void MenuUpdate(GameData& data, float dt) {
 }
 
-void MenuRenderUi() {
+void MenuRenderUi(GameData& data) {
     ClearBackground(MENU_BG_COLOR);
     if (menuStack.empty()) return;
 
@@ -319,24 +319,24 @@ void MenuRenderUi() {
     }
 }
 
-void MenuRenderLevel() {
+void MenuRenderLevel(GameData& data) {
 
 }
 
-void MenuHandleInput() {
+void MenuHandleInput(GameData& data) {
     if (IsKeyPressed(KEY_ESCAPE)) {
         if (menuStack.size() > 1) {
             menuStack.pop();
         } else {
-            PopGameMode();
+            PopGameMode(data);
         }
     }
 }
 
-void MenuPreRender() { }
-void MenuDestroy() { }
-void MenuPause() { }
-void MenuResume() { }
+void MenuPreRender(GameData& data) { }
+void MenuDestroy(GameData& data) { }
+void MenuPause(GameData& data) { }
+void MenuResume(GameData& data) { }
 
 void SetupMenuGameMode(GameData* gameState) {
     game = gameState;

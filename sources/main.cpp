@@ -67,10 +67,13 @@ int main() {
 
     InitUI(game);
 
-    InitGameMode();
-    PushGameMode(GameModes::Menu);
+    InitGameMode(game);
+    PushGameMode(game, GameModes::Menu);
 
     SettingsData& settings = game.settingsData;
+
+
+    HideCursor();
 
     // Main game loop
     while (!WindowShouldClose())        // Detect window close button or ESC key
@@ -99,25 +102,25 @@ int main() {
         SetMouseScale(mouseScaleX, mouseScaleY);
 
         // handle input
-        HandleInputGameMode();
+        HandleInputGameMode(game);
         float dt = GetFrameTime();
 
         // Update
         UpdateSoundEffects(dt);
-        UpdateGameMode(dt);
+        UpdateGameMode(game, dt);
 
 
-        PreRenderGameMode();
+        PreRenderGameMode(game);
 
         // Render level to level target
         BeginTextureMode(game.levelTarget);
-            RenderLevelGameMode();
+            RenderLevelGameMode(game);
         EndTextureMode();
 
         // Render to UI target
         BeginTextureMode(game.uiTarget);
             ClearBackground(BLANK);
-            RenderUiGameMode();
+            RenderUiGameMode(game);
             if(game.settingsData.showFPS) {
                 DrawTextEx(game.smallFont1, TextFormat("FPS: %i", GetFPS()), (Vector2) {1, 1}, 5, 1, GREEN);
                 DrawTextEx(game.smallFont1, TextFormat("ScreenWidth: %i", GetScreenWidth()), (Vector2) {1, 10}, 5, 1, YELLOW);
@@ -151,7 +154,7 @@ int main() {
         //--------------------------------------------------------------------------------------
     }
 
-    DestroyGameMode();
+    DestroyGameMode(game);
 
     DestroyUI(game);
 

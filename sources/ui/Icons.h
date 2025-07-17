@@ -28,6 +28,11 @@
 #define ICON_DOWN               21
 #define ICON_UP                 22
 
+#define ICON_EXIT               25
+#define ICON_INTERACT           26
+#define ICON_CURSOR             27
+#define ICON_TALK               28
+
 inline void DrawIcon(GameData& data, int x, int y, Color tint, int icon) {
     int sheetId = data.ui.iconSpriteSheet;
     Texture2D tex = data.spriteData.sheet.texture[sheetId];

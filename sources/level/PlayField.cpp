@@ -16,6 +16,7 @@
 #include "graphics/TileMap.h"
 #include "ai/PathFinding.h"
 #include "graphics/Lighting.h"
+#include "ui/Icons.h"
 
 static bool IsCharacterVisible(Level &level, int character) {
     // Check if the character is visible (not blinking)
@@ -379,27 +380,30 @@ static bool handleDoors(GameData& data, Level &level, Vector2i gridPos, Vector2i
     for(auto& entry : level.doors){
         auto& door = entry.second;
         for(auto& doorTile : door.blockedTiles) {
-            if(gridPos == doorTile && IsMouseButtonReleased(MOUSE_BUTTON_LEFT) && Distance(playerPos, gridPos) < 3 && playerPos != doorTile) {
-                DoorSaveState& doorState = data.levelState[level.name].doors[door.id];
-                if(!doorState.open) {
-                    TraceLog(LOG_INFO, "Opening door %s", door.id.c_str());
-                    doorState.open = true;
-                    SetReverseSpriteAnimation(spriteData, door.animPlayer, false);
-                    ResumeSpriteAnimation(spriteData, door.animPlayer);
-                    SetFrame(spriteData, door.animPlayer, 0);
-                } else {
-                    TraceLog(LOG_INFO, "Closing door %s", door.id.c_str());
-                    doorState.open = false;
-                    SetReverseSpriteAnimation(spriteData, door.animPlayer, true);
-                    int anim = spriteData.player.animationIdx[door.animPlayer];
-                    int frames = (int) spriteData.anim.frames[anim].size();
-                    SetFrame(spriteData, door.animPlayer, frames-1);
-                    ResumeSpriteAnimation(spriteData, door.animPlayer);
+            if(gridPos == doorTile && Distance(playerPos, gridPos) < 3 && playerPos != doorTile) {
+                data.ui.currentCursorIcon = ICON_INTERACT;
+                if(IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
+                    DoorSaveState &doorState = data.levelState[level.name].doors[door.id];
+                    if (!doorState.open) {
+                        TraceLog(LOG_INFO, "Opening door %s", door.id.c_str());
+                        doorState.open = true;
+                        SetReverseSpriteAnimation(spriteData, door.animPlayer, false);
+                        ResumeSpriteAnimation(spriteData, door.animPlayer);
+                        SetFrame(spriteData, door.animPlayer, 0);
+                    } else {
+                        TraceLog(LOG_INFO, "Closing door %s", door.id.c_str());
+                        doorState.open = false;
+                        SetReverseSpriteAnimation(spriteData, door.animPlayer, true);
+                        int anim = spriteData.player.animationIdx[door.animPlayer];
+                        int frames = (int) spriteData.anim.frames[anim].size();
+                        SetFrame(spriteData, door.animPlayer, frames - 1);
+                        ResumeSpriteAnimation(spriteData, door.animPlayer);
+                    }
+                    SetTiles(level.tileMap, door.blockedTiles, NAV_LAYER, doorState.open ? 0 : 1);
+                    SetTiles(level.tileMap, door.shadowTiles, SHADOW_LAYER, doorState.open ? 0 : 1);
+                    PropagateLight(level.lighting, level.tileMap);
+                    return true;
                 }
-                SetTiles(level.tileMap, door.blockedTiles, NAV_LAYER, doorState.open ? 0 : 1);
-                SetTiles(level.tileMap, door.shadowTiles, SHADOW_LAYER, doorState.open ? 0 : 1);
-                PropagateLight(level.lighting, level.tileMap);
-                return true;
             }
         }
     }
@@ -438,6 +442,7 @@ static void handleInputPlayFieldExploration(GameData& data, PlayField &playField
             Vector2i npcPos = GetCharacterGridPosI(spriteData, charData.sprite[npcId]);
             if(npcPos == gridPos) {
                 if(Distance(playerPos, npcPos) < 3) {
+                    data.ui.currentCursorIcon = ICON_TALK;
                     playField.hintText = "Talk to " + charData.name[npcId];
                     if(IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
                         PublishInitiateDialogueEvent(data.ui.eventQueue, npcId, level.npcDialogueNodeIds[npcId]);

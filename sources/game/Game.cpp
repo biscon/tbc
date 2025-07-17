@@ -46,7 +46,7 @@ void StartNewGame(GameData &data) {
     data.party.emplace_back(id);
 
     data.state = GameState::LOAD_LEVEL;
-    PushGameMode(GameModes::Level);
+    PushGameMode(data, GameModes::Level);
 }
 
 
@@ -96,7 +96,7 @@ void LoadGame(GameData &data) {
         data.party.emplace_back(id);
     }
 
-    PushGameMode(GameModes::Level);
+    PushGameMode(data, GameModes::Level);
 }
 
 

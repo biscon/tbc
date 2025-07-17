@@ -19,6 +19,7 @@
 #include "level/LevelCamera.h"
 #include "graphics/Lighting.h"
 #include "ui/ActionBar.h"
+#include "ui/Icons.h"
 
 static GameData* game;
 static Level level;
@@ -131,7 +132,7 @@ static void processEvents() {
                 break;
             }
             case GameEventType::OpenMenu: {
-                PopGameMode();
+                PopGameMode(*game);
                 break;
             }
             case GameEventType::OpenActionBar: {
@@ -216,7 +217,7 @@ static void handleCameraMovement() {
     }
 }
 
-void LevelInit() {
+void LevelInit(GameData& data) {
     LoadSoundEffect(SoundEffectType::Ambience, ASSETS_PATH"music/ambience_cave.ogg", true);
     //LoadSoundEffect(SoundEffectType::Ambience, ASSETS_PATH"sound/ambient_forest_01.ogg", true);
     SetVolumeSoundEffect(SoundEffectType::Ambience, 0.75f);
@@ -270,14 +271,14 @@ void LevelInit() {
     InitActionBar(*game);
 }
 
-void LevelDestroy() {
+void LevelDestroy(GameData& data) {
     DestroyParticleManager(particleManager);
     DestroyBloodRendering();
     DestroyLevelScreen(*game);
     DestroyLevel(game->spriteData.sheet, level);
 }
 
-void LevelUpdate(float dt) {
+void LevelUpdate(GameData& data, float dt) {
     UpdateCamera(level.camera, dt);
 
     UpdateCombat(*game, level, playField, dt);
@@ -296,10 +297,10 @@ void LevelUpdate(float dt) {
     //PropagateLight(level.lighting, level.tileMap);
 }
 
-void LevelHandleInput() {
+void LevelHandleInput(GameData& data) {
     processEvents();
     if (IsKeyPressed(KEY_ESCAPE) && (game->state != GameState::INVENTORY)) {
-        PopGameMode();
+        PopGameMode(data);
         return;
     }
     if(game->state == GameState::DIALOGUE) {
@@ -324,7 +325,7 @@ void LevelHandleInput() {
     HandleInputLevelScreen(*game, level, playField);
 }
 
-void LevelRenderLevel() {
+void LevelRenderLevel(GameData& data) {
     /*
     int charId = game->party[0];
     Vector2i pos = GetCharacterGridPosI(game->spriteData, game->charData.sprite[charId]);
@@ -373,7 +374,7 @@ void LevelRenderLevel() {
     }
 }
 
-void LevelRenderUi() {
+void LevelRenderUi(GameData& data) {
     DrawLevelScreen(*game, level, playField);
     RenderPartySideBarUI(*game);
     if(game->ui.showActionBar && game->state != GameState::INVENTORY) {
@@ -384,19 +385,18 @@ void LevelRenderUi() {
     if(game->state == GameState::INVENTORY) {
         RenderInventoryUI(*game);
     }
-
 }
 
-void LevelPreRender() {
+void LevelPreRender(GameData& data) {
     PreRenderBloodPools(level);
     PreRenderParticleManager(level.lighting, particleManager, level.camera.camera);
 }
 
-void LevelPause() {
+void LevelPause(GameData& data) {
 
 }
 
-void LevelResume() {
+void LevelResume(GameData& data) {
     TraceLog(LOG_INFO, "LevelResume");
     if(game->state == GameState::LOAD_LEVEL) {
         LoadLevel(*game, level, game->levelFileName);
