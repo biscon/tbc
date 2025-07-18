@@ -72,7 +72,7 @@ void PublishStartQuestEvent(GameEventQueue &eventQueue, const std::string& quest
 void PublishOpenInventoryEvent(GameEventQueue &eventQueue, int charId) {
     GameEvent event{};
     event.type = GameEventType::OpenInventory;
-    event.endDialogueEvent.npcId = charId;
+    event.openInventoryEvent.charId = charId;
     PublishEvent(eventQueue, event);
 }
 
@@ -97,5 +97,18 @@ void PublishOpenActionBarEvent(GameEventQueue &eventQueue) {
 void PublishCloseActionBarEvent(GameEventQueue &eventQueue) {
     GameEvent event{};
     event.type = GameEventType::CloseActionBar;
+    PublishEvent(eventQueue, event);
+}
+
+void PublishOpenLootInventoryEvent(GameEventQueue &eventQueue, int invId) {
+    GameEvent event{};
+    event.type = GameEventType::OpenLootInventory;
+    event.openLootInventoryEvent.invId = invId;
+    PublishEvent(eventQueue, event);
+}
+
+void PublishCloseLootInventoryEvent(GameEventQueue &eventQueue) {
+    GameEvent event{};
+    event.type = GameEventType::CloseLootInventory;
     PublishEvent(eventQueue, event);
 }

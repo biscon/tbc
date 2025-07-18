@@ -375,33 +375,70 @@ void UpdatePlayField(GameData& data, PlayField &playField, Level &level, float d
     }
 }
 
-static bool handleDoors(GameData& data, Level &level, Vector2i gridPos, Vector2i playerPos) {
+static bool playerInTheWay(GameData& data, LevelDoor& door) {
+    for(auto& tile : door.blockedTiles) {
+        for(auto& partyChar : data.party) {
+            auto partyCharPos = GetCharacterGridPosI(data.spriteData, data.charData.sprite[partyChar]);
+            if(tile == partyCharPos) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+static bool handleDoors(GameData& data, Level &level, Vector2i playerPos, Vector2 mousePos) {
     SpriteData& spriteData = data.spriteData;
     for(auto& entry : level.doors){
         auto& door = entry.second;
-        for(auto& doorTile : door.blockedTiles) {
-            if(gridPos == doorTile && Distance(playerPos, gridPos) < 3 && playerPos != doorTile) {
+        Vector2 pos = GridToPixelPosition(door.gridPos.x, door.gridPos.y);
+        auto frameInfo = GetFrameInfo(data.spriteData, door.animPlayer);
+        Rectangle frameRectWorld = {pos.x - 8.0f, pos.y - 8.0f, frameInfo.srcRect.width, frameInfo.srcRect.height};
+        if(CheckCollisionPointRec(mousePos, frameRectWorld) && Distance(playerPos, door.gridPos) < 5) {
+            if(playerInTheWay(data, door))
+                continue;
+
+            data.ui.currentCursorIcon = ICON_INTERACT;
+            if(IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
+                DoorSaveState &doorState = data.levelState[level.name].doors[door.id];
+                if (!doorState.open) {
+                    TraceLog(LOG_INFO, "Opening door %s", door.id.c_str());
+                    doorState.open = true;
+                    SetReverseSpriteAnimation(spriteData, door.animPlayer, false);
+                    ResumeSpriteAnimation(spriteData, door.animPlayer);
+                    SetFrame(spriteData, door.animPlayer, 0);
+                } else {
+                    TraceLog(LOG_INFO, "Closing door %s", door.id.c_str());
+                    doorState.open = false;
+                    SetReverseSpriteAnimation(spriteData, door.animPlayer, true);
+                    int anim = spriteData.player.animationIdx[door.animPlayer];
+                    int frames = (int) spriteData.anim.frames[anim].size();
+                    SetFrame(spriteData, door.animPlayer, frames - 1);
+                    ResumeSpriteAnimation(spriteData, door.animPlayer);
+                }
+                SetTiles(level.tileMap, door.blockedTiles, NAV_LAYER, doorState.open ? 0 : 1);
+                SetTiles(level.tileMap, door.shadowTiles, SHADOW_LAYER, doorState.open ? 0 : 1);
+                PropagateLight(level.lighting, level.tileMap);
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+static bool handleObjects(GameData& data, Level &level, Vector2i playerPos, Vector2 mousePos) {
+    for(auto& entry : level.objects){
+        auto& obj = entry.second;
+        Vector2 pos = GridToPixelPosition(obj.gridPos.x, obj.gridPos.y);
+        auto frameInfo = GetFrameInfo(data.spriteData, obj.animPlayer);
+        Rectangle frameRectWorld = {pos.x - 8.0f, pos.y - 8.0f, frameInfo.srcRect.width, frameInfo.srcRect.height};
+        if(CheckCollisionPointRec(mousePos, frameRectWorld) && Distance(playerPos, obj.gridPos) < 5) {
+
+            if(data.levelState[level.name].objectInventories.count(obj.id) > 0) {
+                int invId = data.levelState[level.name].objectInventories.at(obj.id);
                 data.ui.currentCursorIcon = ICON_INTERACT;
                 if(IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
-                    DoorSaveState &doorState = data.levelState[level.name].doors[door.id];
-                    if (!doorState.open) {
-                        TraceLog(LOG_INFO, "Opening door %s", door.id.c_str());
-                        doorState.open = true;
-                        SetReverseSpriteAnimation(spriteData, door.animPlayer, false);
-                        ResumeSpriteAnimation(spriteData, door.animPlayer);
-                        SetFrame(spriteData, door.animPlayer, 0);
-                    } else {
-                        TraceLog(LOG_INFO, "Closing door %s", door.id.c_str());
-                        doorState.open = false;
-                        SetReverseSpriteAnimation(spriteData, door.animPlayer, true);
-                        int anim = spriteData.player.animationIdx[door.animPlayer];
-                        int frames = (int) spriteData.anim.frames[anim].size();
-                        SetFrame(spriteData, door.animPlayer, frames - 1);
-                        ResumeSpriteAnimation(spriteData, door.animPlayer);
-                    }
-                    SetTiles(level.tileMap, door.blockedTiles, NAV_LAYER, doorState.open ? 0 : 1);
-                    SetTiles(level.tileMap, door.shadowTiles, SHADOW_LAYER, doorState.open ? 0 : 1);
-                    PropagateLight(level.lighting, level.tileMap);
+                    PublishOpenLootInventoryEvent(data.ui.eventQueue, invId);
                     return true;
                 }
             }
@@ -417,10 +454,14 @@ static void handleInputPlayFieldExploration(GameData& data, PlayField &playField
     playField.selectedTilePos = {-1, -1};
     Vector2 mousePos = GetScreenToWorld2D(GetMousePosition(), level.camera.camera);
     Vector2i gridPos = PixelToGridPositionI(mousePos.x, mousePos.y);
-    auto& playerChar = level.partyCharacters.front();
+    auto& playerChar = data.ui.selectedCharacter;
     Vector2i playerPos = GetCharacterGridPosI(spriteData, charData.sprite[playerChar]);
 
-    if(handleDoors(data, level, gridPos, playerPos)) {
+    if(handleObjects(data, level, playerPos, mousePos)) {
+        return;
+    }
+
+    if(handleDoors(data, level, playerPos, mousePos)) {
         return;
     }
 

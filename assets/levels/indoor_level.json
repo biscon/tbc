@@ -188,6 +188,8 @@
             "lit": true,
             "position": [29, 6],
             "inventory": [
+                {"template" : "item_weapon_knife", "quantity":  1},
+                {"template" : "item_weapon_assault_rifle", "quantity":  1},
                 {"template" : "item_weapon_pistol", "quantity":  1}
             ]
         },

@@ -143,6 +143,8 @@ add_executable(${PROJECT_NAME}
         sources/ui/PartySideBar.h
         sources/ui/Inventory.cpp
         sources/ui/Inventory.h
+        sources/ui/LootInventory.cpp
+        sources/ui/LootInventory.h
         sources/data/UiData.cpp
         sources/data/UiData.h
         sources/data/LevelData.cpp

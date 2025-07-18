@@ -137,6 +137,18 @@ struct InventoryUiState {
     ClickRegion rightTabRegion;
 };
 
+struct LootInventoryUiState {
+    int scrollOffset = 0;
+    int selectedIndex = -1;
+    int hoveredIndex = -1;
+    bool draggingScrollKnob = false;
+    float dragOffsetY = 0;
+    std::unordered_map<std::string, Button> buttons;
+    std::unordered_map<std::string, Button> contextButtons;
+    int inventoryId = -1;
+};
+
+
 enum class ActionBarAction {
     Move,
     Attack,
@@ -181,6 +193,7 @@ struct PlayFieldUI {
 struct UiState {
     PartySideBarData sideBar;
     InventoryUiState inventory;
+    LootInventoryUiState lootInventory;
     ActionBarUI actionBar{};
     PlayFieldUI playField;
     int selectedCharacter = 0;

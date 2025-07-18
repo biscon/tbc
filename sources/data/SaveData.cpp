@@ -23,7 +23,8 @@ void to_json(nlohmann::json& j, const LevelSaveState& m) {
     j = nlohmann::json{
         {"defeatedGroups", m.defeatedGroups},
         {"doors", m.doors},
-        {"flags", m.flags}
+        {"flags", m.flags},
+        {"objectInventories", m.objectInventories}
     };
 }
 
@@ -31,6 +32,7 @@ void from_json(const nlohmann::json& j, LevelSaveState& m) {
     j.at("defeatedGroups").get_to(m.defeatedGroups);
     j.at("doors").get_to(m.doors);
     j.at("flags").get_to(m.flags);
+    j.at("objectInventories").get_to(m.objectInventories);
 }
 
 void to_json(nlohmann::json& j, const PartyCharacter& c) {

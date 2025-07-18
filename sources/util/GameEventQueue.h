@@ -21,6 +21,8 @@ enum class GameEventType {
     OpenMenu,
     OpenActionBar,
     CloseActionBar,
+    OpenLootInventory,
+    CloseLootInventory,
 };
 
 struct MovePartyEvent {
@@ -53,6 +55,10 @@ struct OpenInventoryEvent {
     int charId;
 };
 
+struct OpenLootInventoryEvent {
+    int invId;
+};
+
 struct StartQuestEvent {
     char questId[128];
 };
@@ -68,6 +74,7 @@ struct GameEvent {
         EndDialogueEvent endDialogueEvent;
         StartQuestEvent startQuestEvent;
         OpenInventoryEvent openInventoryEvent;
+        OpenLootInventoryEvent openLootInventoryEvent;
     };
 };
 
@@ -90,5 +97,7 @@ void PublishCloseInventoryEvent(GameEventQueue &eventQueue);
 void PublishOpenMenuEvent(GameEventQueue &eventQueue);
 void PublishOpenActionBarEvent(GameEventQueue &eventQueue);
 void PublishCloseActionBarEvent(GameEventQueue &eventQueue);
+void PublishOpenLootInventoryEvent(GameEventQueue &eventQueue, int invId);
+void PublishCloseLootInventoryEvent(GameEventQueue &eventQueue);
 
 #endif //SANDBOX_GAMEEVENTQUEUE_H

@@ -214,16 +214,19 @@ void LoadLevel(GameData& data, Level &level, const std::string &filename) {
             int anim = GetSpriteAnimation(data.spriteData, levelObj.spriteTemplate);
             PlaySpriteAnimation(data.spriteData, levelObj.animPlayer, anim, levelObj.loop);
             if(obj.contains("inventory")) {
-                levelObj.inventory = CreateInventory(data, 100);
-                for(const auto &inst : obj["inventory"]) {
-                    std::string itemTemplateId;
-                    inst["template"].get_to(itemTemplateId);
-                    int quantity = inst.value("quantity", 1);
-                    int itemId = CreateItem(data, itemTemplateId, quantity);
-                    data.itemData.inventoryData[levelObj.inventory].items.push_back(itemId);
+                // instantiate items if a state doesn't already exist
+                if(data.levelState[level.name].objectInventories.count(levelObj.id) == 0) {
+                    data.levelState[level.name].objectInventories[levelObj.id] = CreateInventory(data, 100);
+                    auto invId = data.levelState[level.name].objectInventories[levelObj.id];
+                    for (const auto &inst: obj["inventory"]) {
+                        std::string itemTemplateId;
+                        inst["template"].get_to(itemTemplateId);
+                        int quantity = inst.value("quantity", 1);
+                        int itemId = CreateItem(data, itemTemplateId, quantity);
+                        data.itemData.inventoryData[invId].items.push_back(itemId);
+                    }
                 }
             }
-
             level.objects[levelObj.id] = levelObj;
         }
     }

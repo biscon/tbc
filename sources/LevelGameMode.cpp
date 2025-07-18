@@ -20,6 +20,7 @@
 #include "graphics/Lighting.h"
 #include "ui/ActionBar.h"
 #include "ui/Icons.h"
+#include "ui/LootInventory.h"
 
 static GameData* game;
 static Level level;
@@ -38,7 +39,7 @@ static void moveParty(Vector2i target) {
     }
 }
 
-static void processEvents() {
+static void processEvents(GameData& data) {
     GameEvent event{};
     while(GetNextEvent(game->ui.eventQueue, event)) {
         switch(event.type) {
@@ -145,6 +146,17 @@ static void processEvents() {
             }
             case GameEventType::CloseActionBar: {
                 game->ui.showActionBar = false;
+                break;
+            }
+            case GameEventType::OpenLootInventory: {
+                data.state = GameState::LOOT_INVENTORY;
+                data.ui.lootInventory.inventoryId = event.openLootInventoryEvent.invId;
+                InitLootInventory(data);
+                break;
+            }
+            case GameEventType::CloseLootInventory: {
+                //playField.mode = PlayFieldMode::Explore;
+                data.state = GameState::PLAY_LEVEL;
                 break;
             }
             default:
@@ -261,21 +273,21 @@ void LevelInit(GameData& data) {
     LoadSoundEffect(SoundEffectType::GunEmpty, ASSETS_PATH"sound/gun_empty.ogg", false);
 
     CreateLevel(level);
-    CreateLevelScreen(*game);
+    CreateLevelScreen(data);
     CreateParticleManager(particleManager, {0, 0}, gameScreenWidth, gameScreenHeight);
 
     CreatePlayField(playField, &particleManager);
 
     InitBloodRendering();
-    InitInventory(*game);
-    InitActionBar(*game);
+    InitInventory(data);
+    InitActionBar(data);
 }
 
 void LevelDestroy(GameData& data) {
     DestroyParticleManager(particleManager);
     DestroyBloodRendering();
-    DestroyLevelScreen(*game);
-    DestroyLevel(game->spriteData.sheet, level);
+    DestroyLevelScreen(data);
+    DestroyLevel(data.spriteData.sheet, level);
 }
 
 void LevelUpdate(GameData& data, float dt) {
@@ -288,6 +300,7 @@ void LevelUpdate(GameData& data, float dt) {
     UpdateDialogue(*game, dt);
     UpdatePartySideBar(*game, dt);
     UpdateInventory(*game, dt);
+    UpdateLootInventory(*game, dt);
     if(game->ui.showActionBar) {
         UpdateActionBar(*game, dt);
     }
@@ -298,8 +311,8 @@ void LevelUpdate(GameData& data, float dt) {
 }
 
 void LevelHandleInput(GameData& data) {
-    processEvents();
-    if (IsKeyPressed(KEY_ESCAPE) && (game->state != GameState::INVENTORY)) {
+    processEvents(data);
+    if (IsKeyPressed(KEY_ESCAPE) && (game->state != GameState::INVENTORY && game->state != GameState::LOOT_INVENTORY)) {
         PopGameMode(data);
         return;
     }
@@ -310,6 +323,10 @@ void LevelHandleInput(GameData& data) {
     if(game->state == GameState::INVENTORY) {
         HandleInventoryInput(*game);
         HandlePartySideBarInput(*game);
+        return;
+    }
+    if(game->state == GameState::LOOT_INVENTORY) {
+        HandleLootInventoryInput(*game);
         return;
     }
     handleCameraMovement();
@@ -384,6 +401,9 @@ void LevelRenderUi(GameData& data) {
     RenderDialogueUI(*game);
     if(game->state == GameState::INVENTORY) {
         RenderInventoryUI(*game);
+    }
+    if(game->state == GameState::LOOT_INVENTORY) {
+        RenderLootInventoryUI(*game);
     }
 }
 

@@ -38,6 +38,7 @@ enum class GameState {
     PLAY_LEVEL,
     DIALOGUE,
     INVENTORY,
+    LOOT_INVENTORY,
 };
 
 
@@ -56,7 +57,7 @@ struct GameData {
     ItemData itemData;
 
     // global save state
-    std::unordered_map<std::string, LevelSaveState> levelState;
+    std::unordered_map<std::string, LevelState> levelState;
     std::unordered_map<std::string, QuestSaveState> questState;
 
     // ui state

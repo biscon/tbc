@@ -20,23 +20,27 @@ struct DoorSaveState {
     bool locked;
 };
 
-void to_json(nlohmann::json& j, const DoorSaveState& m);
-void from_json(const nlohmann::json& j, DoorSaveState& m);
-
-struct LevelSaveState {
-    std::unordered_set<std::string> defeatedGroups;
-    std::unordered_map<std::string, DoorSaveState> doors;
-    std::unordered_map<std::string, bool> flags;
-};
-
-void to_json(nlohmann::json& j, const LevelSaveState& m);
-void from_json(const nlohmann::json& j, LevelSaveState& m);
-
 struct ItemInstanceSaveState {
     std::string templateId; // Index into the master item templates table
     int instanceDataIdx;
 };
 
+struct InventorySaveState {
+    int capacity;
+    std::vector<ItemInstanceSaveState> instances;
+};
+
+struct LevelSaveState {
+    std::unordered_set<std::string> defeatedGroups;
+    std::unordered_map<std::string, DoorSaveState> doors;
+    std::unordered_map<std::string, bool> flags;
+    std::unordered_map<std::string, InventorySaveState> objectInventories;
+};
+
+void to_json(nlohmann::json& j, const DoorSaveState& m);
+void from_json(const nlohmann::json& j, DoorSaveState& m);
+void to_json(nlohmann::json& j, const LevelSaveState& m);
+void from_json(const nlohmann::json& j, LevelSaveState& m);
 void to_json(nlohmann::json& j, const ItemInstanceSaveState& m);
 void from_json(const nlohmann::json& j, ItemInstanceSaveState& m);
 
@@ -53,10 +57,6 @@ struct PartyCharacter {
     int selectedWeaponSlot;
 };
 
-struct InventorySaveState {
-    int capacity;
-    std::vector<ItemInstanceSaveState> instances;
-};
 
 void to_json(nlohmann::json& j, const InventorySaveState& s);
 void from_json(const nlohmann::json& j, InventorySaveState& s);

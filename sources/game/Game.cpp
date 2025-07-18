@@ -58,9 +58,22 @@ void LoadGame(GameData &data) {
     }
     data.levelFileName = saveData.currentLevel;
     data.state = GameState::LOAD_LEVEL_FROM_SAVE;
-    data.levelState = saveData.levels;
-    data.questState = saveData.quests;
 
+    data.levelState.clear();
+    for(const auto& entry : saveData.levels) {
+        const std::string& levelId = entry.first;
+        const LevelSaveState& levelSaveState = entry.second;
+        data.levelState[levelId];
+        data.levelState.at(levelId).defeatedGroups = levelSaveState.defeatedGroups;
+        data.levelState.at(levelId).flags = levelSaveState.flags;
+        data.levelState.at(levelId).doors = levelSaveState.doors;
+
+        for(const auto& objInv : levelSaveState.objectInventories) {
+            data.levelState[levelId].objectInventories[objInv.first] = InventoryFromSaveState(data, saveData, objInv.second);
+        }
+    }
+
+    data.questState = saveData.quests;
     data.itemData.partyInventoryId = InventoryFromSaveState(data, saveData, saveData.partyInventory);
 
     ClearAllCharacters(data.charData);
@@ -104,7 +117,19 @@ void LoadGame(GameData &data) {
 void SaveGame(GameData &data) {
     SaveData saveData;
     saveData.currentLevel = data.levelFileName;
-    saveData.levels = data.levelState;
+    // copy level state
+    for(const auto& entry : data.levelState) {
+        const std::string& levelId = entry.first;
+        const LevelState& levelState = entry.second;
+        saveData.levels[levelId];
+        saveData.levels.at(levelId).defeatedGroups = levelState.defeatedGroups;
+        saveData.levels.at(levelId).flags = levelState.flags;
+        saveData.levels.at(levelId).doors = levelState.doors;
+
+        for(const auto& objInv : data.levelState[levelId].objectInventories) {
+            saveData.levels[levelId].objectInventories[objInv.first] = InventoryToSaveState(data, objInv.second, saveData);
+        }
+    }
     saveData.quests = data.questState;
     saveData.partyInventory = InventoryToSaveState(data, data.itemData.partyInventoryId, saveData);
 

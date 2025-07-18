@@ -8,8 +8,11 @@
 #include <string>
 #include <unordered_map>
 #include "util/MathUtil.h"
-#include "graphics/Animation.h"
+
 #include "LightingData.h"
+#include "AnimationData.h"
+#include "SaveData.h"
+#include "TileMapData.h"
 
 struct LevelCamera {
     Camera2D camera;
@@ -83,7 +86,6 @@ struct LevelObject {
     bool loop;
     bool lit;
     int animPlayer;
-    int inventory = -1;
 };
 
 struct LevelDoor {
@@ -125,5 +127,13 @@ struct Level {
     // lighting
     LightingData lighting;
 };
+
+struct LevelState {
+    std::unordered_set<std::string> defeatedGroups;
+    std::unordered_map<std::string, DoorSaveState> doors;
+    std::unordered_map<std::string, bool> flags;
+    std::unordered_map<std::string, int> objectInventories;
+};
+
 
 #endif //SANDBOX_LEVELDATA_H
