@@ -23,6 +23,14 @@
             "value": false
         }
     ],
+    "exits": [
+        {
+            "level": "outdoor_level.json",
+            "spawnPoint": "default",
+            "x": 11,
+            "y": 18
+        }
+    ],
     "npcs": [
         {
             "template": "SerDonald",

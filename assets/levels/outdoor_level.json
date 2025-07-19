@@ -1,0 +1,51 @@
+{
+    "name": "The Meadow",
+    "map": "outdoor_map.json",
+    "tileset": "indoor_tiles2.png",
+    "ambientLight": "808080",
+    "spawnPoints": [
+        {
+            "name": "default",
+            "x": 32,
+            "y": 28,
+            "radius": 5
+        }
+    ],
+    "flags": [
+        {
+            "id": "testFlag",
+            "value": false
+        }
+    ],
+    "exits": [
+        {
+            "level": "indoor_level.json",
+            "spawnPoint": "default",
+            "x": 10,
+            "y": 10
+        }
+    ],
+    "npcs": [
+
+    ],
+    "enemies": [
+
+    ],
+    "lights": [
+        {
+            "id": "light1",
+            "intensity": "15",
+            "active": true,
+            "x": 11,
+            "y": 7,
+            "falloff": 1.0,
+            "color": "FFE6B4"
+        }
+    ],
+    "objects": [
+
+    ],
+    "doors": [
+
+    ]
+}

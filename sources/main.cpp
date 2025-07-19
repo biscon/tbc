@@ -23,7 +23,7 @@
 //------------------------------------------------------------------------------------
 int main() {
     GameData game;
-    CreateGame(game, "indoor_level.json");
+    CreateGame(game, "outdoor_level.json");
     SetupMenuGameMode(&game);
     SetupLevelGameMode(&game);
 
