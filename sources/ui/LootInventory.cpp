@@ -9,163 +9,73 @@
 #include "Icons.h"
 #include "SharedInventoryUI.h"
 
-static const int separator = 1;
-static const int itemHeightPx = 12;
 static const Rectangle invRect = {140, 8, 340, 160};
-static const int visibleItems = (int)((invRect.height - 50) / itemHeightPx);
-static const int firstRowOffset = 16;
-static const int rowRightMargin = 20;
-static const Rectangle scrollBarRect = {invRect.x + invRect.width - 14, invRect.y + firstRowOffset, 10, invRect.height - firstRowOffset - 24};
-static const int scrollbarMinHeight = 16;
+static const Rectangle invRect2 = {140, 176, 340, 160};
 
+static void UpdateContextButtons(GameData& data) {
+    data.ui.lootInventory.contextButtons.clear();
+    if(data.ui.lootInventory.list1.selectedIndex != -1) {
+        Button takeButton{};
+        takeButton.label = "Take";
+        takeButton.region = CreateClickRegion({invRect.x + 5, invRect.y + invRect.height - 18, 40, 11});
+        takeButton.enabled = true;
+        takeButton.hovered = false;
+        data.ui.lootInventory.contextButtons["take"] = takeButton;
+    }
 
+    if(!data.itemData.inventoryData[data.ui.lootInventory.inventoryId].items.empty()) {
+        Button takeAllButton{};
+        takeAllButton.label = "Take All";
+        takeAllButton.region = CreateClickRegion({invRect.x + invRect.width - 40 - 5, invRect.y + invRect.height - 18, 40, 11});
+        takeAllButton.enabled = true;
+        takeAllButton.hovered = false;
+        data.ui.lootInventory.contextButtons["takeAll"] = takeAllButton;
+    }
+
+    if(data.ui.lootInventory.list2.selectedIndex != -1) {
+        Button button{};
+        button.label = "Put";
+        button.region = CreateClickRegion({invRect2.x + 5, invRect2.y + invRect2.height - 18, 40, 11});
+        button.enabled = true;
+        button.hovered = false;
+        data.ui.lootInventory.contextButtons["put"] = button;
+    }
+}
 
 void InitLootInventory(GameData& data) {
     InitInventoryListState(data.ui.lootInventory.list1, invRect, "Container:");
-    //InitInventoryListState(data.ui.lootInventory.list2);
+    InitInventoryListState(data.ui.lootInventory.list2, invRect2, "Party Inventory:");
 
     data.ui.lootInventory.buttons.clear();
 
     Button closeButton{};
     closeButton.label = "Close";
-    closeButton.region = CreateClickRegion({invRect.x + invRect.width - 40 - 5, invRect.y + invRect.height - 18, 40, 11});
+    closeButton.region = CreateClickRegion({invRect2.x + invRect2.width - 40 - 5, invRect2.y + invRect2.height - 18, 40, 11});
     closeButton.enabled = true;
     closeButton.hovered = false;
     data.ui.lootInventory.buttons["close"] = closeButton;
 
-    Button takeAllButton{};
-    takeAllButton.label = "Take All";
-    takeAllButton.region = CreateClickRegion({invRect.x + invRect.width - 85 - 5, invRect.y + invRect.height - 18, 40, 11});
-    takeAllButton.enabled = true;
-    takeAllButton.hovered = false;
-    data.ui.lootInventory.buttons["takeAll"] = takeAllButton;
-
     data.ui.lootInventory.contextButtons.clear();
-}
-
-static void UpdateContextButtons(GameData& data) {
-    data.ui.lootInventory.contextButtons.clear();
-    if(data.ui.lootInventory.list1.selectedIndex == -1)
-        return;
-
-    Button takeButton{};
-    takeButton.label = "Take";
-    takeButton.region = CreateClickRegion({invRect.x + 5, invRect.y + invRect.height - 18, 40, 11});
-    takeButton.enabled = true;
-    takeButton.hovered = false;
-    data.ui.lootInventory.contextButtons["take"] = takeButton;
+    UpdateContextButtons(data);
 }
 
 void UpdateLootInventory(GameData& data, float dt) {
-    Vector2 mouse = GetMousePosition();
-
-    const auto& partyInventory = data.itemData.inventoryData[data.itemData.partyInventoryId];
-    int maxItems = (int) partyInventory.items.size();
-
-    // Scroll input
-    if (CheckCollisionPointRec(mouse, invRect)) {
-        int wheel = (int) GetMouseWheelMove();
-        data.ui.lootInventory.list1.scrollOffset -= wheel;
-        data.ui.lootInventory.list1.scrollOffset = Clamp(data.ui.lootInventory.list1.scrollOffset, 0, std::max(0, maxItems - visibleItems));
+    if(data.ui.lootInventory.inventoryId != -1) {
+        UpdateInventoryListState(data, data.ui.lootInventory.list1, data.ui.lootInventory.inventoryId);
     }
-
-    // Dragging scrollbar knob
-    float scrollRatio = (float)visibleItems / (float)maxItems;
-    float knobHeight = Clamp(scrollBarRect.height * scrollRatio, (float)scrollbarMinHeight, scrollBarRect.height);
-    float scrollRange = scrollBarRect.height - knobHeight;
-    float knobY = scrollBarRect.y + (scrollRange * data.ui.lootInventory.list1.scrollOffset / std::max(1, maxItems - visibleItems));
-    Rectangle knobRect = {scrollBarRect.x, knobY, scrollBarRect.width, knobHeight};
-
-    if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && CheckCollisionPointRec(mouse, knobRect)) {
-        data.ui.lootInventory.list1.draggingScrollKnob = true;
-        data.ui.lootInventory.list1.dragOffsetY = mouse.y - knobY;
-    }
-
-    if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) {
-        data.ui.lootInventory.list1.draggingScrollKnob = false;
-    }
-
-    if (data.ui.lootInventory.list1.draggingScrollKnob) {
-        float newKnobY = Clamp(mouse.y - data.ui.lootInventory.list1.dragOffsetY, scrollBarRect.y, scrollBarRect.y + scrollRange);
-        float scrollPercent = (newKnobY - scrollBarRect.y) / scrollRange;
-        data.ui.lootInventory.list1.scrollOffset = (int)(scrollPercent * (maxItems - visibleItems));
-    }
-
-    // Hover index
-    data.ui.lootInventory.list1.hoveredIndex = -1;
-    float rowY = invRect.y + firstRowOffset;
-    for (int i = 0; i < visibleItems; ++i) {
-        int idx = i + data.ui.lootInventory.list1.scrollOffset;
-        if (idx >= maxItems) break;
-        Rectangle row = {invRect.x + 4, rowY, invRect.width - rowRightMargin, (float) itemHeightPx};
-        if (CheckCollisionPointRec(mouse, row)) {
-            data.ui.lootInventory.list1.hoveredIndex = idx;
-            break;
-        }
-        rowY += (float) (itemHeightPx + separator);
-    }
-}
-
-static void RenderScrollBar(GameData& data, int maxItems) {
-    DrawRectangleLinesEx(scrollBarRect, 1, DARKGRAY);
-    if (maxItems > visibleItems) {
-        float scrollRatio = (float)visibleItems / (float)maxItems;
-        float knobHeight = Clamp(scrollBarRect.height * scrollRatio, (float)scrollbarMinHeight, scrollBarRect.height);
-        float scrollRange = scrollBarRect.height - knobHeight;
-        float knobY = scrollBarRect.y + (scrollRange * data.ui.lootInventory.list1.scrollOffset / std::max(1, maxItems - visibleItems));
-        Rectangle knobRect = {scrollBarRect.x, knobY, scrollBarRect.width, knobHeight};
-        DrawRectangleRec(knobRect, DARKGRAY);
-        DrawRectangleLinesEx(knobRect, 1, data.ui.lootInventory.list1.draggingScrollKnob ? YELLOW : LIGHTGRAY);
-    }
+    UpdateInventoryListState(data, data.ui.lootInventory.list2, data.itemData.partyInventoryId);
 }
 
 void RenderLootInventoryUI(GameData& data) {
-    Font font = data.smallFont1;
-    float fontSize = 5.0f;
-    float spacing = 1.0f;
+    RenderInventoryListUI(data, data.ui.lootInventory.list1, data.ui.lootInventory.inventoryId);
+    RenderInventoryListUI(data, data.ui.lootInventory.list2, data.itemData.partyInventoryId);
 
-    DrawRectangleRec(invRect, Color{15, 15, 15, 200});
-    DrawRectangleRoundedLinesEx(invRect, 0.02f, 4, 1.0f, DARKGRAY);
 
-    DrawTextEx(font, "Container:", {invRect.x + 5, invRect.y + 6}, fontSize, spacing, WHITE);
-
-    const auto& lootInventory = data.itemData.inventoryData[data.ui.lootInventory.inventoryId];
-    int maxItems = (int) lootInventory.items.size();
-
-    float rowY = invRect.y + firstRowOffset;
-    for (int i = 0; i < visibleItems; ++i) {
-        int idx = i + data.ui.lootInventory.list1.scrollOffset;
-        if (idx >= maxItems) break;
-
-        int itemId = lootInventory.items.at(idx);
-        ItemInstance& inst = data.itemData.instanceData[itemId];
-        ItemTemplate& tmpl = data.itemData.templateData[inst.templateId];
-
-        Rectangle row = {invRect.x + 4, rowY, invRect.width - rowRightMargin, (float) itemHeightPx};
-        bool isSelected = (data.ui.lootInventory.list1.selectedIndex == idx);
-        bool isHovered = (data.ui.lootInventory.list1.hoveredIndex == idx);
-
-        Color border = isSelected ? YELLOW : (isHovered ? GRAY : DARKGRAY);
-        DrawRectangleLinesEx(row, 1, border);
-
-        std::string nameStr = tmpl.name;
-        DrawTextEx(font, nameStr.c_str(), {row.x + 4, row.y + 3}, fontSize, spacing, isSelected ? WHITE : (isHovered ? LIGHTGRAY : GRAY));
-        rowY += (float) (itemHeightPx + separator);
-    }
-
-    RenderScrollBar(data, maxItems);
     RenderButtons(data.ui.lootInventory.buttons, data.smallFont1, 5.0f);
     RenderButtons(data.ui.lootInventory.contextButtons, data.smallFont1, 5.0f);
 
-    // Render tooltips
-    if (data.ui.lootInventory.list1.hoveredIndex >= 0 && data.ui.lootInventory.list1.hoveredIndex < (int)lootInventory.items.size()) {
-        int itemId = lootInventory.items.at(data.ui.lootInventory.list1.hoveredIndex);
-        ItemInstance& inst = data.itemData.instanceData[itemId];
-        ItemTemplate& tmpl = data.itemData.templateData[inst.templateId];
-        std::string tooltip = "Some placeholder tooltip for: " + tmpl.name;
-
-        DrawToolTip(data.smallFont1, 5, 1, tooltip);
-    }
+    RenderInventoryListToolTips(data, data.ui.lootInventory.list1, data.ui.lootInventory.inventoryId);
+    RenderInventoryListToolTips(data, data.ui.lootInventory.list2, data.itemData.partyInventoryId);
 }
 
 bool HandleLootInventoryInput(GameData& data) {
@@ -179,21 +89,18 @@ bool HandleLootInventoryInput(GameData& data) {
     }
 
 
-    if (!CheckCollisionPointRec(mouse, invRect)) return false;
+    if (!CheckCollisionPointRec(mouse, invRect) && !CheckCollisionPointRec(mouse, invRect2)) return false;
 
-    if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
-        float rowY = invRect.y + firstRowOffset;
-        for (int i = 0; i < visibleItems; ++i) {
-            int idx = i + data.ui.lootInventory.list1.scrollOffset;
-            if (idx >= (int)data.itemData.instanceData.size()) break;
-            Rectangle row = {invRect.x + 4, rowY, invRect.width - rowRightMargin, (float) itemHeightPx};
-            if (CheckCollisionPointRec(mouse, row)) {
-                data.ui.lootInventory.list1.selectedIndex = idx;
-                UpdateContextButtons(data);
-                return true;
-            }
-            rowY += (float) (itemHeightPx + separator);
-        }
+    if (HandleInputInventoryList(data, data.ui.lootInventory.list1, data.ui.lootInventory.inventoryId)) {
+        data.ui.lootInventory.list2.selectedIndex = -1;
+        UpdateContextButtons(data);
+        return true;
+    }
+
+    if (HandleInputInventoryList(data, data.ui.lootInventory.list2, data.itemData.partyInventoryId)) {
+        data.ui.lootInventory.list1.selectedIndex = -1;
+        UpdateContextButtons(data);
+        return true;
     }
 
     if(data.ui.lootInventory.buttons["close"].region.ConsumeClick()) {
@@ -201,13 +108,11 @@ bool HandleLootInventoryInput(GameData& data) {
         PublishCloseLootInventoryEvent(data.ui.eventQueue);
     }
 
-    if(data.ui.lootInventory.buttons["takeAll"].region.ConsumeClick()) {
-        data.ui.lootInventory.buttons["takeAll"].hovered = false;
-
+    if(data.ui.lootInventory.contextButtons["takeAll"].region.ConsumeClick()) {
         auto& partyInventory = data.itemData.inventoryData[data.itemData.partyInventoryId];
         auto& lootInventory = data.itemData.inventoryData[data.ui.lootInventory.inventoryId];
         for(auto& itemId : lootInventory.items) {
-            partyInventory.items.push_back(itemId);
+            partyInventory.items.insert(partyInventory.items.begin(), itemId);
         }
         lootInventory.items.clear();
         data.ui.lootInventory.list1.selectedIndex = -1;
@@ -216,11 +121,51 @@ bool HandleLootInventoryInput(GameData& data) {
 
     if(data.ui.lootInventory.contextButtons["take"].region.ConsumeClick()) {
         auto& lootInventory = data.itemData.inventoryData[data.ui.lootInventory.inventoryId];
-        int itemId = lootInventory.items.at(data.ui.lootInventory.list1.selectedIndex);
-        lootInventory.items.erase(lootInventory.items.begin() + data.ui.lootInventory.list1.selectedIndex);
+        int& selectedIndex = data.ui.lootInventory.list1.selectedIndex;
+
+        // Get and remove item from loot
+        int itemId = lootInventory.items.at(selectedIndex);
+        lootInventory.items.erase(lootInventory.items.begin() + selectedIndex);
+
+        // Move item to party inventory
         auto& partyInventory = data.itemData.inventoryData[data.itemData.partyInventoryId];
-        partyInventory.items.push_back(itemId);
-        data.ui.lootInventory.list1.selectedIndex = -1;
+        partyInventory.items.insert(partyInventory.items.begin(), itemId);
+
+        // Update selection
+        if (!lootInventory.items.empty()) {
+            if (selectedIndex >= static_cast<int>(lootInventory.items.size())) {
+                selectedIndex = static_cast<int>(lootInventory.items.size()) - 1;
+            }
+            // else keep selectedIndex as-is
+        } else {
+            selectedIndex = -1;
+        }
+        if(lootInventory.items.empty()) {
+            PublishCloseLootInventoryEvent(data.ui.eventQueue);
+        }
+    }
+
+    if(data.ui.lootInventory.contextButtons["put"].region.ConsumeClick()) {
+        auto& lootInventory = data.itemData.inventoryData[data.ui.lootInventory.inventoryId];
+        auto& partyInventory = data.itemData.inventoryData[data.itemData.partyInventoryId];
+        int& selectedIndex = data.ui.lootInventory.list2.selectedIndex;
+
+        // Get and remove item from party
+        int itemId = partyInventory.items.at(selectedIndex);
+        partyInventory.items.erase(partyInventory.items.begin() + selectedIndex);
+
+        // Move item to loot
+        lootInventory.items.insert(lootInventory.items.begin(), itemId);
+
+        // Update selection
+        if (!partyInventory.items.empty()) {
+            if (selectedIndex >= static_cast<int>(partyInventory.items.size())) {
+                selectedIndex = static_cast<int>(partyInventory.items.size()) - 1;
+            }
+            // else keep selectedIndex as-is
+        } else {
+            selectedIndex = -1;
+        }
         if(lootInventory.items.empty()) {
             PublishCloseLootInventoryEvent(data.ui.eventQueue);
         }
