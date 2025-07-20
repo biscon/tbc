@@ -122,12 +122,20 @@ enum class CharacterTabs {
     COUNT
 };
 
-struct InventoryUiState {
+struct InventoryListState {
     int scrollOffset = 0;
     int selectedIndex = -1;
     int hoveredIndex = -1;
     bool draggingScrollKnob = false;
     float dragOffsetY = 0;
+    Rectangle invRect;
+    Rectangle scrollBarRect;
+    int visibleItems;
+    std::string name;
+};
+
+struct InventoryUiState {
+    InventoryListState list;
     ClickRegion weapon1Region;
     ClickRegion weapon2Region;
     std::unordered_map<std::string, Button> buttons;
@@ -138,11 +146,8 @@ struct InventoryUiState {
 };
 
 struct LootInventoryUiState {
-    int scrollOffset = 0;
-    int selectedIndex = -1;
-    int hoveredIndex = -1;
-    bool draggingScrollKnob = false;
-    float dragOffsetY = 0;
+    InventoryListState list1;
+    InventoryListState list2;
     std::unordered_map<std::string, Button> buttons;
     std::unordered_map<std::string, Button> contextButtons;
     int inventoryId = -1;

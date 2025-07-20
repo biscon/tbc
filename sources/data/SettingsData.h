@@ -26,6 +26,8 @@ struct SettingsData {
     DisplayMode displayMode = DisplayMode::Windowed;
     DisplayMode originalDisplayMode = DisplayMode::Windowed;
     int originalResolutionIndex = 0;
+    int monitor = 0;
+    int originalMonitor = 0;
 
     std::string filename;
     bool needsApply = false;

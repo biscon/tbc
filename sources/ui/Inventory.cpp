@@ -7,23 +7,16 @@
 #include "ui/UI.h"
 #include "game/Items.h"
 #include "Icons.h"
+#include "SharedInventoryUI.h"
 
-static const int separator = 1;
-static const int itemHeightPx = 12;
+
+
 static const Rectangle invRect = {140, 8, gameScreenWidth - 200, gameScreenHeight - 100};
-static const int visibleItems = (int)((invRect.height - 50) / itemHeightPx);
-static const int firstRowOffset = 16;
-static const int rowRightMargin = 20;
-static const Rectangle scrollBarRect = {invRect.x + invRect.width - 14, invRect.y + firstRowOffset, 10, invRect.height - firstRowOffset - 24};
-static const int scrollbarMinHeight = 16;
 static const Rectangle charInfoRect = {8, 8, 125, gameScreenHeight - 100};
 
 void InitInventory(GameData& data) {
-    data.ui.inventory.scrollOffset = 0;
-    data.ui.inventory.selectedIndex = -1;
-    data.ui.inventory.hoveredIndex = -1;
-    data.ui.inventory.draggingScrollKnob = false;
-    data.ui.inventory.dragOffsetY = 0;
+
+    InitInventoryListState(data.ui.inventory.list, invRect, "Party Inventory:");
 
     data.ui.inventory.buttons.clear();
 
@@ -44,7 +37,7 @@ void InitInventory(GameData& data) {
 
 static void UpdateContextButtons(GameData& data) {
     data.ui.inventory.contextButtons.clear();
-    if(data.ui.inventory.selectedIndex == -1)
+    if(data.ui.inventory.list.selectedIndex == -1)
         return;
 
     Button equipButton{};
@@ -56,66 +49,7 @@ static void UpdateContextButtons(GameData& data) {
 }
 
 void UpdateInventory(GameData& data, float dt) {
-    Vector2 mouse = GetMousePosition();
-
-    const auto& partyInventory = data.itemData.inventoryData[data.itemData.partyInventoryId];
-    int maxItems = (int) partyInventory.items.size();
-
-    // Scroll input
-    if (CheckCollisionPointRec(mouse, invRect)) {
-        int wheel = (int) GetMouseWheelMove();
-        data.ui.inventory.scrollOffset -= wheel;
-        data.ui.inventory.scrollOffset = Clamp(data.ui.inventory.scrollOffset, 0, std::max(0, maxItems - visibleItems));
-    }
-
-    // Dragging scrollbar knob
-    float scrollRatio = (float)visibleItems / (float)maxItems;
-    float knobHeight = Clamp(scrollBarRect.height * scrollRatio, (float)scrollbarMinHeight, scrollBarRect.height);
-    float scrollRange = scrollBarRect.height - knobHeight;
-    float knobY = scrollBarRect.y + (scrollRange * data.ui.inventory.scrollOffset / std::max(1, maxItems - visibleItems));
-    Rectangle knobRect = {scrollBarRect.x, knobY, scrollBarRect.width, knobHeight};
-
-    if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && CheckCollisionPointRec(mouse, knobRect)) {
-        data.ui.inventory.draggingScrollKnob = true;
-        data.ui.inventory.dragOffsetY = mouse.y - knobY;
-    }
-
-    if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) {
-        data.ui.inventory.draggingScrollKnob = false;
-    }
-
-    if (data.ui.inventory.draggingScrollKnob) {
-        float newKnobY = Clamp(mouse.y - data.ui.inventory.dragOffsetY, scrollBarRect.y, scrollBarRect.y + scrollRange);
-        float scrollPercent = (newKnobY - scrollBarRect.y) / scrollRange;
-        data.ui.inventory.scrollOffset = (int)(scrollPercent * (maxItems - visibleItems));
-    }
-
-    // Hover index
-    data.ui.inventory.hoveredIndex = -1;
-    float rowY = invRect.y + firstRowOffset;
-    for (int i = 0; i < visibleItems; ++i) {
-        int idx = i + data.ui.inventory.scrollOffset;
-        if (idx >= maxItems) break;
-        Rectangle row = {invRect.x + 4, rowY, invRect.width - rowRightMargin, (float) itemHeightPx};
-        if (CheckCollisionPointRec(mouse, row)) {
-            data.ui.inventory.hoveredIndex = idx;
-            break;
-        }
-        rowY += (float) (itemHeightPx + separator);
-    }
-}
-
-static void RenderScrollBar(GameData& data, int maxItems) {
-    DrawRectangleLinesEx(scrollBarRect, 1, DARKGRAY);
-    if (maxItems > visibleItems) {
-        float scrollRatio = (float)visibleItems / (float)maxItems;
-        float knobHeight = Clamp(scrollBarRect.height * scrollRatio, (float)scrollbarMinHeight, scrollBarRect.height);
-        float scrollRange = scrollBarRect.height - knobHeight;
-        float knobY = scrollBarRect.y + (scrollRange * data.ui.inventory.scrollOffset / std::max(1, maxItems - visibleItems));
-        Rectangle knobRect = {scrollBarRect.x, knobY, scrollBarRect.width, knobHeight};
-        DrawRectangleRec(knobRect, DARKGRAY);
-        DrawRectangleLinesEx(knobRect, 1, data.ui.inventory.draggingScrollKnob ? YELLOW : LIGHTGRAY);
-    }
+    UpdateInventoryListState(data, data.ui.inventory.list, data.itemData.partyInventoryId);
 }
 
 static void RenderStatsTab(GameData& data, int charId) {
@@ -213,68 +147,16 @@ static void RenderCharacterInfo(GameData& data) {
 }
 
 void RenderInventoryUI(GameData& data) {
-    Font font = data.smallFont1;
-    float fontSize = 5.0f;
-    float spacing = 1.0f;
-
-    DrawRectangleRec(invRect, Color{15, 15, 15, 200});
-    DrawRectangleRoundedLinesEx(invRect, 0.02f, 4, 1.0f, DARKGRAY);
-
-    DrawTextEx(font, "Party Inventory", {invRect.x + 5, invRect.y + 6}, fontSize, spacing, WHITE);
-
-    const auto& partyInventory = data.itemData.inventoryData[data.itemData.partyInventoryId];
-    int maxItems = (int) partyInventory.items.size();
-
-    int selectedChar = data.ui.selectedCharacter;
-
-    float rowY = invRect.y + firstRowOffset;
-    for (int i = 0; i < visibleItems; ++i) {
-        int idx = i + data.ui.inventory.scrollOffset;
-        if (idx >= maxItems) break;
-
-        int itemId = partyInventory.items.at(idx);
-        ItemInstance& inst = data.itemData.instanceData[itemId];
-        ItemTemplate& tmpl = data.itemData.templateData[inst.templateId];
-
-        Rectangle row = {invRect.x + 4, rowY, invRect.width - rowRightMargin, (float) itemHeightPx};
-        bool isSelected = (data.ui.inventory.selectedIndex == idx);
-        bool isHovered = (data.ui.inventory.hoveredIndex == idx);
-
-        Color border = isSelected ? YELLOW : (isHovered ? GRAY : DARKGRAY);
-        DrawRectangleLinesEx(row, 1, border);
-
-        std::string nameStr = tmpl.name;
-        /*
-        if (IsItemEquippedByCharacter(inst.id, selectedChar, data)) {
-            nameStr += " (E)";
-        }
-        */
-        DrawTextEx(font, nameStr.c_str(), {row.x + 4, row.y + 3}, fontSize, spacing, isSelected ? WHITE : (isHovered ? LIGHTGRAY : GRAY));
-        rowY += (float) (itemHeightPx + separator);
-    }
-
-    RenderScrollBar(data, maxItems);
+    RenderInventoryListUI(data, data.ui.inventory.list, data.itemData.partyInventoryId);
     RenderButtons(data.ui.inventory.buttons, data.smallFont1, 5.0f);
     RenderButtons(data.ui.inventory.contextButtons, data.smallFont1, 5.0f);
     RenderCharacterInfo(data);
-
-    //DrawRectangleRec(data.ui.inventory.weapon1Region.rect, ColorAlpha(GREEN, 0.5f));
-    //DrawRectangleRec(data.ui.inventory.weapon2Region.rect, ColorAlpha(RED, 0.5f));
-
-    // Render tooltips
-    if (data.ui.inventory.hoveredIndex >= 0 && data.ui.inventory.hoveredIndex < (int)partyInventory.items.size()) {
-        int itemId = partyInventory.items.at(data.ui.inventory.hoveredIndex);
-        ItemInstance& inst = data.itemData.instanceData[itemId];
-        ItemTemplate& tmpl = data.itemData.templateData[inst.templateId];
-        std::string tooltip = "Some placeholder tooltip for: " + tmpl.name;
-
-        DrawToolTip(data.smallFont1, 5, 1, tooltip);
-    }
+    RenderInventoryListToolTips(data, data.ui.inventory.list, data.itemData.partyInventoryId);
 }
 
 static void EquipSelectedItem(GameData& data) {
     auto& partyInventory = data.itemData.inventoryData[data.itemData.partyInventoryId];
-    int itemId = partyInventory.items.at(data.ui.inventory.selectedIndex);
+    int itemId = partyInventory.items.at(data.ui.inventory.list.selectedIndex);
     ItemTemplate& tpl = data.itemData.templateData[GetItemTemplateId(data, itemId)];
     int charId = data.ui.selectedCharacter;
     switch(tpl.type) {
@@ -282,11 +164,11 @@ static void EquipSelectedItem(GameData& data) {
             ItemEquipSlot selectedSlot = static_cast<ItemEquipSlot>(data.charData.selectedWeaponSlot[charId]);
             int prevItem = GetEquippedItem(data, charId, selectedSlot);
             SetEquippedItem(data, charId, selectedSlot, itemId);
-            partyInventory.items.erase(partyInventory.items.begin() + data.ui.inventory.selectedIndex);
+            partyInventory.items.erase(partyInventory.items.begin() + data.ui.inventory.list.selectedIndex);
             if(prevItem != -1) {
                 partyInventory.items.push_back(prevItem);
             }
-            data.ui.inventory.selectedIndex = -1;
+            data.ui.inventory.list.selectedIndex = -1;
             UpdateContextButtons(data);
             break;
         }
@@ -322,19 +204,9 @@ bool HandleInventoryInput(GameData& data) {
 
     auto& partyInventory = data.itemData.inventoryData[data.itemData.partyInventoryId];
 
-    if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
-        float rowY = invRect.y + firstRowOffset;
-        for (int i = 0; i < visibleItems; ++i) {
-            int idx = i + data.ui.inventory.scrollOffset;
-            if (idx >= (int)data.itemData.instanceData.size()) break;
-            Rectangle row = {invRect.x + 4, rowY, invRect.width - rowRightMargin, (float) itemHeightPx};
-            if (CheckCollisionPointRec(mouse, row)) {
-                data.ui.inventory.selectedIndex = idx;
-                UpdateContextButtons(data);
-                return true;
-            }
-            rowY += (float) (itemHeightPx + separator);
-        }
+    if (HandleInputInventoryList(data, data.ui.inventory.list, data.itemData.partyInventoryId)) {
+        UpdateContextButtons(data);
+        return true;
     }
 
     if(data.ui.inventory.buttons["close"].region.ConsumeClick()) {
@@ -358,7 +230,7 @@ bool HandleInventoryInput(GameData& data) {
             SetEquippedItem(data, data.ui.selectedCharacter, ItemEquipSlot::Weapon1, -1);
             data.ui.actionBar.selectedModeIdx = 0;
             partyInventory.items.push_back(prevItem);
-            data.ui.inventory.selectedIndex = -1;
+            data.ui.inventory.list.selectedIndex = -1;
             UpdateContextButtons(data);
         }
     }
@@ -374,7 +246,7 @@ bool HandleInventoryInput(GameData& data) {
             SetEquippedItem(data, data.ui.selectedCharacter, ItemEquipSlot::Weapon2, -1);
             data.ui.actionBar.selectedModeIdx = 0;
             partyInventory.items.push_back(prevItem);
-            data.ui.inventory.selectedIndex = -1;
+            data.ui.inventory.list.selectedIndex = -1;
             UpdateContextButtons(data);
         }
     }

@@ -7,22 +7,22 @@
 #include "ui/UI.h"
 #include "game/Items.h"
 #include "Icons.h"
+#include "SharedInventoryUI.h"
 
 static const int separator = 1;
 static const int itemHeightPx = 12;
-static const Rectangle invRect = {140, 108, gameScreenWidth - 300, gameScreenHeight - 200};
+static const Rectangle invRect = {140, 8, 340, 160};
 static const int visibleItems = (int)((invRect.height - 50) / itemHeightPx);
 static const int firstRowOffset = 16;
 static const int rowRightMargin = 20;
 static const Rectangle scrollBarRect = {invRect.x + invRect.width - 14, invRect.y + firstRowOffset, 10, invRect.height - firstRowOffset - 24};
 static const int scrollbarMinHeight = 16;
 
+
+
 void InitLootInventory(GameData& data) {
-    data.ui.lootInventory.scrollOffset = 0;
-    data.ui.lootInventory.selectedIndex = -1;
-    data.ui.lootInventory.hoveredIndex = -1;
-    data.ui.lootInventory.draggingScrollKnob = false;
-    data.ui.lootInventory.dragOffsetY = 0;
+    InitInventoryListState(data.ui.lootInventory.list1, invRect, "Container:");
+    //InitInventoryListState(data.ui.lootInventory.list2);
 
     data.ui.lootInventory.buttons.clear();
 
@@ -45,7 +45,7 @@ void InitLootInventory(GameData& data) {
 
 static void UpdateContextButtons(GameData& data) {
     data.ui.lootInventory.contextButtons.clear();
-    if(data.ui.lootInventory.selectedIndex == -1)
+    if(data.ui.lootInventory.list1.selectedIndex == -1)
         return;
 
     Button takeButton{};
@@ -65,41 +65,41 @@ void UpdateLootInventory(GameData& data, float dt) {
     // Scroll input
     if (CheckCollisionPointRec(mouse, invRect)) {
         int wheel = (int) GetMouseWheelMove();
-        data.ui.lootInventory.scrollOffset -= wheel;
-        data.ui.lootInventory.scrollOffset = Clamp(data.ui.lootInventory.scrollOffset, 0, std::max(0, maxItems - visibleItems));
+        data.ui.lootInventory.list1.scrollOffset -= wheel;
+        data.ui.lootInventory.list1.scrollOffset = Clamp(data.ui.lootInventory.list1.scrollOffset, 0, std::max(0, maxItems - visibleItems));
     }
 
     // Dragging scrollbar knob
     float scrollRatio = (float)visibleItems / (float)maxItems;
     float knobHeight = Clamp(scrollBarRect.height * scrollRatio, (float)scrollbarMinHeight, scrollBarRect.height);
     float scrollRange = scrollBarRect.height - knobHeight;
-    float knobY = scrollBarRect.y + (scrollRange * data.ui.lootInventory.scrollOffset / std::max(1, maxItems - visibleItems));
+    float knobY = scrollBarRect.y + (scrollRange * data.ui.lootInventory.list1.scrollOffset / std::max(1, maxItems - visibleItems));
     Rectangle knobRect = {scrollBarRect.x, knobY, scrollBarRect.width, knobHeight};
 
     if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && CheckCollisionPointRec(mouse, knobRect)) {
-        data.ui.lootInventory.draggingScrollKnob = true;
-        data.ui.lootInventory.dragOffsetY = mouse.y - knobY;
+        data.ui.lootInventory.list1.draggingScrollKnob = true;
+        data.ui.lootInventory.list1.dragOffsetY = mouse.y - knobY;
     }
 
     if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) {
-        data.ui.lootInventory.draggingScrollKnob = false;
+        data.ui.lootInventory.list1.draggingScrollKnob = false;
     }
 
-    if (data.ui.lootInventory.draggingScrollKnob) {
-        float newKnobY = Clamp(mouse.y - data.ui.lootInventory.dragOffsetY, scrollBarRect.y, scrollBarRect.y + scrollRange);
+    if (data.ui.lootInventory.list1.draggingScrollKnob) {
+        float newKnobY = Clamp(mouse.y - data.ui.lootInventory.list1.dragOffsetY, scrollBarRect.y, scrollBarRect.y + scrollRange);
         float scrollPercent = (newKnobY - scrollBarRect.y) / scrollRange;
-        data.ui.lootInventory.scrollOffset = (int)(scrollPercent * (maxItems - visibleItems));
+        data.ui.lootInventory.list1.scrollOffset = (int)(scrollPercent * (maxItems - visibleItems));
     }
 
     // Hover index
-    data.ui.lootInventory.hoveredIndex = -1;
+    data.ui.lootInventory.list1.hoveredIndex = -1;
     float rowY = invRect.y + firstRowOffset;
     for (int i = 0; i < visibleItems; ++i) {
-        int idx = i + data.ui.lootInventory.scrollOffset;
+        int idx = i + data.ui.lootInventory.list1.scrollOffset;
         if (idx >= maxItems) break;
         Rectangle row = {invRect.x + 4, rowY, invRect.width - rowRightMargin, (float) itemHeightPx};
         if (CheckCollisionPointRec(mouse, row)) {
-            data.ui.lootInventory.hoveredIndex = idx;
+            data.ui.lootInventory.list1.hoveredIndex = idx;
             break;
         }
         rowY += (float) (itemHeightPx + separator);
@@ -112,10 +112,10 @@ static void RenderScrollBar(GameData& data, int maxItems) {
         float scrollRatio = (float)visibleItems / (float)maxItems;
         float knobHeight = Clamp(scrollBarRect.height * scrollRatio, (float)scrollbarMinHeight, scrollBarRect.height);
         float scrollRange = scrollBarRect.height - knobHeight;
-        float knobY = scrollBarRect.y + (scrollRange * data.ui.lootInventory.scrollOffset / std::max(1, maxItems - visibleItems));
+        float knobY = scrollBarRect.y + (scrollRange * data.ui.lootInventory.list1.scrollOffset / std::max(1, maxItems - visibleItems));
         Rectangle knobRect = {scrollBarRect.x, knobY, scrollBarRect.width, knobHeight};
         DrawRectangleRec(knobRect, DARKGRAY);
-        DrawRectangleLinesEx(knobRect, 1, data.ui.lootInventory.draggingScrollKnob ? YELLOW : LIGHTGRAY);
+        DrawRectangleLinesEx(knobRect, 1, data.ui.lootInventory.list1.draggingScrollKnob ? YELLOW : LIGHTGRAY);
     }
 }
 
@@ -134,7 +134,7 @@ void RenderLootInventoryUI(GameData& data) {
 
     float rowY = invRect.y + firstRowOffset;
     for (int i = 0; i < visibleItems; ++i) {
-        int idx = i + data.ui.lootInventory.scrollOffset;
+        int idx = i + data.ui.lootInventory.list1.scrollOffset;
         if (idx >= maxItems) break;
 
         int itemId = lootInventory.items.at(idx);
@@ -142,8 +142,8 @@ void RenderLootInventoryUI(GameData& data) {
         ItemTemplate& tmpl = data.itemData.templateData[inst.templateId];
 
         Rectangle row = {invRect.x + 4, rowY, invRect.width - rowRightMargin, (float) itemHeightPx};
-        bool isSelected = (data.ui.lootInventory.selectedIndex == idx);
-        bool isHovered = (data.ui.lootInventory.hoveredIndex == idx);
+        bool isSelected = (data.ui.lootInventory.list1.selectedIndex == idx);
+        bool isHovered = (data.ui.lootInventory.list1.hoveredIndex == idx);
 
         Color border = isSelected ? YELLOW : (isHovered ? GRAY : DARKGRAY);
         DrawRectangleLinesEx(row, 1, border);
@@ -158,8 +158,8 @@ void RenderLootInventoryUI(GameData& data) {
     RenderButtons(data.ui.lootInventory.contextButtons, data.smallFont1, 5.0f);
 
     // Render tooltips
-    if (data.ui.lootInventory.hoveredIndex >= 0 && data.ui.lootInventory.hoveredIndex < (int)lootInventory.items.size()) {
-        int itemId = lootInventory.items.at(data.ui.lootInventory.hoveredIndex);
+    if (data.ui.lootInventory.list1.hoveredIndex >= 0 && data.ui.lootInventory.list1.hoveredIndex < (int)lootInventory.items.size()) {
+        int itemId = lootInventory.items.at(data.ui.lootInventory.list1.hoveredIndex);
         ItemInstance& inst = data.itemData.instanceData[itemId];
         ItemTemplate& tmpl = data.itemData.templateData[inst.templateId];
         std::string tooltip = "Some placeholder tooltip for: " + tmpl.name;
@@ -184,11 +184,11 @@ bool HandleLootInventoryInput(GameData& data) {
     if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
         float rowY = invRect.y + firstRowOffset;
         for (int i = 0; i < visibleItems; ++i) {
-            int idx = i + data.ui.lootInventory.scrollOffset;
+            int idx = i + data.ui.lootInventory.list1.scrollOffset;
             if (idx >= (int)data.itemData.instanceData.size()) break;
             Rectangle row = {invRect.x + 4, rowY, invRect.width - rowRightMargin, (float) itemHeightPx};
             if (CheckCollisionPointRec(mouse, row)) {
-                data.ui.lootInventory.selectedIndex = idx;
+                data.ui.lootInventory.list1.selectedIndex = idx;
                 UpdateContextButtons(data);
                 return true;
             }
@@ -210,17 +210,17 @@ bool HandleLootInventoryInput(GameData& data) {
             partyInventory.items.push_back(itemId);
         }
         lootInventory.items.clear();
-        data.ui.lootInventory.selectedIndex = -1;
+        data.ui.lootInventory.list1.selectedIndex = -1;
         PublishCloseLootInventoryEvent(data.ui.eventQueue);
     }
 
     if(data.ui.lootInventory.contextButtons["take"].region.ConsumeClick()) {
         auto& lootInventory = data.itemData.inventoryData[data.ui.lootInventory.inventoryId];
-        int itemId = lootInventory.items.at(data.ui.lootInventory.selectedIndex);
-        lootInventory.items.erase(lootInventory.items.begin() + data.ui.lootInventory.selectedIndex);
+        int itemId = lootInventory.items.at(data.ui.lootInventory.list1.selectedIndex);
+        lootInventory.items.erase(lootInventory.items.begin() + data.ui.lootInventory.list1.selectedIndex);
         auto& partyInventory = data.itemData.inventoryData[data.itemData.partyInventoryId];
         partyInventory.items.push_back(itemId);
-        data.ui.lootInventory.selectedIndex = -1;
+        data.ui.lootInventory.list1.selectedIndex = -1;
         if(lootInventory.items.empty()) {
             PublishCloseLootInventoryEvent(data.ui.eventQueue);
         }

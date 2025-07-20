@@ -12,5 +12,6 @@
 void ApplySettings(SettingsData& settings);
 void SaveSettings(const SettingsData& settings);
 void InitSettings(SettingsData& data, const std::string &filename);
+void RefreshResolutions(SettingsData& data);
 
 #endif //SANDBOX_SETTINGS_H

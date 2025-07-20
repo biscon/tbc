@@ -8,7 +8,7 @@
 
 void ApplySettings(SettingsData& settings) {
     Resolution res = settings.availableResolutions[settings.selectedResolutionIndex];
-
+    settings.monitor = GetCurrentMonitor();
     switch (settings.displayMode) {
         case DisplayMode::Windowed: {
             ClearWindowState(FLAG_FULLSCREEN_MODE);
@@ -16,8 +16,8 @@ void ApplySettings(SettingsData& settings) {
             SetWindowSize(res.width, res.height);
 
             // Manually center on primary monitor (assumes monitor starts at 0,0)
-            int monitorWidth = GetMonitorWidth(0);
-            int monitorHeight = GetMonitorHeight(0);
+            int monitorWidth = GetMonitorWidth(settings.monitor);
+            int monitorHeight = GetMonitorHeight(settings.monitor);
             int winX = (monitorWidth - res.width) / 2;
             int winY = (monitorHeight - res.height) / 2;
             SetWindowPosition(winX, winY);
@@ -34,19 +34,18 @@ void ApplySettings(SettingsData& settings) {
         case DisplayMode::Borderless: {
             ClearWindowState(FLAG_FULLSCREEN_MODE);
             SetWindowState(FLAG_BORDERLESS_WINDOWED_MODE);
-            SetWindowSize(GetMonitorWidth(0), GetMonitorHeight(0));
+            SetWindowSize(GetMonitorWidth(settings.monitor), GetMonitorHeight(settings.monitor));
             break;
         }
     }
+    SetWindowMonitor(settings.monitor);
 
     settings.originalResolutionIndex = settings.selectedResolutionIndex;
     settings.originalDisplayMode = settings.displayMode;
 
     if(settings.fpsLock) {
-        TraceLog(LOG_INFO, "Enabling fps lock!!!!!!!!!!!!!!!!!!!!!!!!!!");
         SetTargetFPS(60);                   // Set our game to run at 60 frames-per-second
     } else {
-        TraceLog(LOG_INFO, "Disabling fps lock!!!!!!!!!!!!!!!!!!!!!!!!!!");
         SetTargetFPS(0);
     }
 
@@ -57,6 +56,7 @@ void SaveSettings(const SettingsData& settings) {
     nlohmann::json j;
     j["resolutionIndex"] = settings.selectedResolutionIndex;
     j["displayMode"] = static_cast<int>(settings.displayMode);
+    j["monitor"] = settings.monitor;
     j["showFPS"] = settings.showFPS;
     j["lockFPS"] = settings.fpsLock;
 
@@ -66,8 +66,30 @@ void SaveSettings(const SettingsData& settings) {
     }
 }
 
+void RefreshResolutions(SettingsData& data) {
+    int monitor = GetCurrentMonitor();
+    data.monitor = monitor;
+    // Populate available resolutions
+    data.availableResolutions.clear();
+    const int baseW = gameScreenWidth, baseH = gameScreenHeight;
+    const int scales[] = {1, 2, 3, 4, 6};
+
+    for (int scale : scales) {
+        int w = baseW * scale;
+        int h = baseH * scale;
+        if (w <= GetMonitorWidth(monitor) && h <= GetMonitorHeight(monitor)) {
+            data.availableResolutions.push_back({w, h});
+        }
+    }
+
+    if (data.selectedResolutionIndex >= data.availableResolutions.size()) {
+        data.selectedResolutionIndex = 0;
+    }
+}
+
 void InitSettings(SettingsData& data, const std::string &filename) {
     data.filename = filename;
+    int monitor = GetCurrentMonitor();
 
     // Load from JSON
     std::ifstream file(filename);
@@ -83,27 +105,16 @@ void InitSettings(SettingsData& data, const std::string &filename) {
         if(j.contains("lockFPS")) {
             j["lockFPS"].get_to(data.fpsLock);
         }
+        if(j.contains("monitor")) {
+            j["monitor"].get_to(data.monitor);
+        }
     }
 
     data.originalResolutionIndex = data.selectedResolutionIndex;
     data.originalDisplayMode = data.displayMode;
+    data.originalMonitor = data.monitor;
 
-    // Populate available resolutions
-    data.availableResolutions.clear();
-    const int baseW = gameScreenWidth, baseH = gameScreenHeight;
-    const int scales[] = {1, 2, 3, 4, 6};
-
-    for (int scale : scales) {
-        int w = baseW * scale;
-        int h = baseH * scale;
-        if (w <= GetMonitorWidth(0) && h <= GetMonitorHeight(0)) {
-            data.availableResolutions.push_back({w, h});
-        }
-    }
-
-    if (data.selectedResolutionIndex >= data.availableResolutions.size()) {
-        data.selectedResolutionIndex = 0;
-    }
+    RefreshResolutions(data);
 }
 
 static Color GuiIntToColor(int colInt) {

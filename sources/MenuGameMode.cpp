@@ -52,6 +52,7 @@ static void saveGame() {
 static std::stack<std::function<std::shared_ptr<Menu>()>> menuStack;
 
 static std::shared_ptr<Menu> createResolutionMenu() {
+    RefreshResolutions(game->settingsData);
     // Resolution submenu
     auto resolutionMenu = std::make_shared<Menu>();
     resolutionMenu->title = "Resolution";
