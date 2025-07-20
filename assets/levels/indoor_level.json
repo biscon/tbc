@@ -28,7 +28,9 @@
             "level": "outdoor_level.json",
             "spawnPoint": "default",
             "x": 11,
-            "y": 18
+            "y": 17,
+            "width": 2,
+            "height": 2
         }
     ],
     "npcs": [

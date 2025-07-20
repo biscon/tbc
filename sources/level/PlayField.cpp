@@ -331,10 +331,11 @@ static void checkIfPartySpotted(GameData& data, PlayField &playField, Level &lev
 }
 
 static void checkLevelExits(GameData& data, Level &level) {
-    for(auto& exit : level.exits) {
-        for(auto& c : level.partyCharacters) {
+    for (auto& exit : level.exits) {
+        for (auto& c : level.partyCharacters) {
             Vector2i cGridPos = GetCharacterGridPosI(data.spriteData, data.charData.sprite[c]);
-            if(exit.x == cGridPos.x && exit.y == cGridPos.y) {
+            if (cGridPos.x >= exit.x && cGridPos.x < exit.x + exit.width &&
+                cGridPos.y >= exit.y && cGridPos.y < exit.y + exit.height) {
                 PublishExitLevelEvent(data.ui.eventQueue, exit.levelFile, exit.spawnPoint);
             }
         }
@@ -447,6 +448,17 @@ static bool handleObjects(GameData& data, Level &level, Vector2i playerPos, Vect
     return false;
 }
 
+static void showExits(GameData& data, Level &level, Vector2 mousePos) {
+    for(auto& exit : level.exits){
+        Vector2 pos = GridToPixelPosition(exit.x, exit.y);
+        Rectangle frameRectWorld = {pos.x - 8.0f, pos.y - 8.0f, (float) exit.width * 16, (float) exit.height * 16};
+        if(CheckCollisionPointRec(mousePos, frameRectWorld)) {
+            data.ui.currentCursorIcon = ICON_EXIT;
+            return;
+        }
+    }
+}
+
 static void handleInputPlayFieldExploration(GameData& data, PlayField &playField, Level &level) {
     SpriteData& spriteData = data.spriteData;
     CharacterData& charData = data.charData;
@@ -456,6 +468,8 @@ static void handleInputPlayFieldExploration(GameData& data, PlayField &playField
     Vector2i gridPos = PixelToGridPositionI(mousePos.x, mousePos.y);
     auto& playerChar = data.ui.selectedCharacter;
     Vector2i playerPos = GetCharacterGridPosI(spriteData, charData.sprite[playerChar]);
+
+    showExits(data, level, mousePos);
 
     if(handleObjects(data, level, playerPos, mousePos)) {
         return;

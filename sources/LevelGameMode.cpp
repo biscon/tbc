@@ -21,6 +21,7 @@
 #include "ui/ActionBar.h"
 #include "ui/Icons.h"
 #include "ui/LootInventory.h"
+#include "ai/PathFinding.h"
 
 static GameData* game;
 static Level level;
@@ -404,6 +405,12 @@ void LevelRenderUi(GameData& data) {
     }
     if(game->state == GameState::LOOT_INVENTORY) {
         RenderLootInventoryUI(*game);
+    }
+    if(data.settingsData.showFPS) {
+        Vector2 mousePos = GetScreenToWorld2D(GetMousePosition(), level.camera.camera);
+        Vector2i gridPos = PixelToGridPositionI(mousePos.x, mousePos.y);
+        DrawTextEx(data.smallFont1, TextFormat("GridPos: %i,%i", gridPos.x, gridPos.y), (Vector2) {1, 8}, 5, 1,
+                   YELLOW);
     }
 }
 

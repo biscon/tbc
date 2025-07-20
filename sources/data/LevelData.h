@@ -77,6 +77,8 @@ struct LevelExit {
     std::string spawnPoint;
     int x;
     int y;
+    int width;
+    int height;
 };
 
 struct LevelObject {

@@ -149,6 +149,8 @@ void LoadLevel(GameData& data, Level &level, const std::string &filename) {
         e.spawnPoint = spawnPoint;
         e.x = jExit["x"].get<int>();
         e.y = jExit["y"].get<int>();
+        e.width = jExit.value("width", 1);
+        e.height = jExit.value("height", 1);
         level.exits.emplace_back(e);
     }
 
@@ -238,8 +240,8 @@ void LoadLevel(GameData& data, Level &level, const std::string &filename) {
             LevelDoor door;
             door.id = doorJson.value("id", "");
             door.spriteTemplate = doorJson.value("sprite", "");
-            // create state entry with defaults from level file, if we have not loaded a saved game
-            if(data.state != GameState::LOAD_LEVEL_FROM_SAVE) {
+            // create state entry with defaults from level file, if no state data present
+            if(data.levelState[level.name].doors.count(door.id) == 0) {
                 bool open = doorJson.value("open", false);
                 bool locked = doorJson.value("locked", false);
                 data.levelState[level.name].doors[door.id] = DoorSaveState{door.id, open, locked};

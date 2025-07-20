@@ -113,7 +113,7 @@ static std::shared_ptr<Menu> createDisplayModeMenu() {
         ApplySettings(game->settingsData);
         SaveSettings(game->settingsData);
     };
-    i2.enabled = false;
+    i2.enabled = true;
     menu->items.push_back(i2);
 
     MenuItem i3;
