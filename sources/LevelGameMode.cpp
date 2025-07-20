@@ -425,9 +425,11 @@ void LevelPause(GameData& data) {
 
 void LevelResume(GameData& data) {
     TraceLog(LOG_INFO, "LevelResume");
+
     if(game->state == GameState::LOAD_LEVEL) {
         LoadLevel(*game, level, game->levelFileName);
         AddPartyToLevel(game->spriteData, game->charData, level, game->party, "default");
+        StartCameraPanToTargetCharTime(game->spriteData, game->charData, level.camera, game->party[0], 0.01f);
         game->state = GameState::PLAY_LEVEL;
         playField.mode = PlayFieldMode::Explore;
     }
