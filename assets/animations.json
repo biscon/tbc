@@ -1456,5 +1456,23 @@
                 ]
             }
         ]
+    },
+    {
+        "group": "House01",
+        "sheet": "house_01.png",
+        "frameWidth": 160,
+        "frameHeight": 112,
+        "animations": [
+            {
+                "name": "Idle",
+                "origin": [0, 0],
+                "frames": [
+                    0
+                ],
+                "delays": [
+                    0.10
+                ]
+            }
+        ]
     }
 ]
