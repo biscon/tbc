@@ -61,7 +61,7 @@ void DrawHealthBar(float x, float y, float width, float health, float maxHealth)
     DrawRectangle(x, y, width * (health / maxHealth), 2, GREEN);
 }
 
-static void DrawGridCharacters(GameData& data, Level &level) {
+static void DrawGridCharacters(GameData& data, Level &level, PlayField& playField) {
     SpriteData& spriteData = data.spriteData;
     CharacterData& charData = data.charData;
     // Sort characters by y position
@@ -101,10 +101,12 @@ static void DrawGridCharacters(GameData& data, Level &level) {
         }
         CharacterStats& stats = charData.stats[character];
         // Draw health bar
-        if(stats.HP > 0 && level.turnState != TurnState::None) {
-            DrawHealthBar(charPos.x - 8, charPos.y - 21, 15, (float) stats.HP, (float) CalculateCharHealth(stats));
-        } else if(std::count(level.partyCharacters.begin(), level.partyCharacters.end(), character)) {
-            DrawHealthBar(charPos.x - 8, charPos.y - 21, 15, (float) stats.HP, (float) CalculateCharHealth(stats));
+        if(playField.mode != PlayFieldMode::Explore) {
+            if (stats.HP > 0 && level.turnState != TurnState::None) {
+                DrawHealthBar(charPos.x - 8, charPos.y - 21, 15, (float) stats.HP, (float) CalculateCharHealth(stats));
+            } else if (std::count(level.partyCharacters.begin(), level.partyCharacters.end(), character)) {
+                DrawHealthBar(charPos.x - 8, charPos.y - 21, 15, (float) stats.HP, (float) CalculateCharHealth(stats));
+            }
         }
     }
 }
@@ -534,7 +536,7 @@ void DrawPlayField(GameData& data, PlayField &playField, Level &level) {
 
     // Characters
     BeginMode2D(level.camera.camera);
-    DrawGridCharacters(data, level);
+    DrawGridCharacters(data, level, playField);
     EndMode2D();
 
     DrawParticleManager(*playField.particleManager);

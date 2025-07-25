@@ -15,6 +15,7 @@ Vector2i PixelToGridPositionI(int pixelX, int pixelY);
 Vector2 GridToPixelPosition(int gridX, int gridY);
 bool IsTileOccupied(SpriteData& spriteData, CharacterData& charData, Level &level, int x, int y, int exceptCharacter);
 bool IsTileOccupiedEnemies(SpriteData& spriteData, CharacterData& charData, Level &level, int x, int y, int exceptCharacter);
+bool IsTileOccupiedFriendlies(SpriteData& spriteData, CharacterData& charData, Level &level, int x, int y, int exceptCharacter);
 bool IsTileWalkable(Level &level, int x, int y);
 bool CalcPath(SpriteData& spriteData, CharacterData& charData, Level &level, Path &path, Vector2i start, Vector2i end, int exceptCharacter, CHECK_TILE_FUNC);
 bool CalcPathWithRange(SpriteData& spriteData, CharacterData& charData, Level &level, Path &path, Vector2i start, Vector2i end, int range, int exceptCharacter, CHECK_TILE_FUNC);
@@ -23,6 +24,7 @@ bool CalcPathIgnoreOccupied(Level &level, Path &path, Vector2i start, Vector2i e
 bool HasLineOfSight(Level &level, Vector2i start, Vector2i end);
 bool HasLineOfSight(Level &level, Vector2i start, Vector2i end, int maxDist);
 bool HasLineOfSightLight(Level &level, Vector2i start, Vector2i end, int maxDist);
+bool HasLineOfSightFriendlies(GameData& data, Level &level, Vector2i start, Vector2i end, int maxDist, int exceptCharacter);
 bool HasLineOfSightToParty(SpriteData& spriteData, CharacterData& charData, Level &level, int charId);
 bool HasLineOfSightToPartyLight(SpriteData& spriteData, CharacterData& charData, Level &level, const Vector2i& pos);
 bool IsCharacterAdjacentToPlayer(SpriteData& spriteData, CharacterData& charData, int player, int character);

@@ -118,6 +118,21 @@ bool IsTileOccupiedEnemies(SpriteData& spriteData, CharacterData& charData, Leve
     return false;
 }
 
+bool IsTileOccupiedFriendlies(SpriteData& spriteData, CharacterData& charData, Level &level, int x, int y, int exceptCharacter) {
+    if(GetTileAt(level.tileMap, NAV_LAYER, x, y) != 0) return true;
+    for (auto &character: level.allCharacters) {
+        // skip dead
+        if (charData.stats[character].HP <= 0 || charData.faction[character] != CharacterFaction::Player)
+            continue;
+        Vector2 gridPos = PixelToGridPosition(GetCharacterSpritePosX(spriteData, charData.sprite[character]), GetCharacterSpritePosY(spriteData, charData.sprite[character]));
+        if ((int) gridPos.x == x && (int) gridPos.y == y && character != exceptCharacter) {
+            //TraceLog(LOG_WARNING, "Enemy character in the way, x: %d, y: %d", x, y);
+            return true;
+        }
+    }
+    return false;
+}
+
 bool IsTileWalkable(Level &level, int x, int y) {
     if(GetTileAt(level.tileMap, NAV_LAYER, x, y) != 0) return false;
     return true;
@@ -524,6 +539,50 @@ bool HasLineOfSight(Level &level, Vector2i start, Vector2i end, int maxDist) {
 
     return false; // Max distance reached without reaching the target
 }
+
+
+bool HasLineOfSightFriendlies(GameData& data, Level &level, Vector2i start, Vector2i end, int maxDist, int exceptCharacter) {
+    int x0 = start.x;
+    int y0 = start.y;
+    int x1 = end.x;
+    int y1 = end.y;
+
+    int dx = std::abs(x1 - x0);
+    int dy = std::abs(y1 - y0);
+
+    int sx = (x0 < x1) ? 1 : -1;
+    int sy = (y0 < y1) ? 1 : -1;
+
+    int err = dx - dy;
+    int dist = 0;
+
+    while (dist <= maxDist) {
+        // Check if the current tile blocks line of sight
+        if (IsTileOccupiedFriendlies(data.spriteData, data.charData, level, x0, y0, exceptCharacter)) {
+            return false;
+        }
+
+        // If we reach the end position, return true
+        if (x0 == x1 && y0 == y1) {
+            return true;
+        }
+
+        int e2 = 2 * err;
+        if (e2 > -dy) {
+            err -= dy;
+            x0 += sx;
+        }
+        if (e2 < dx) {
+            err += dx;
+            y0 += sy;
+        }
+
+        dist++;
+    }
+
+    return false; // Max distance reached without reaching the target
+}
+
 
 bool HasLineOfSightLight(Level &level, Vector2i start, Vector2i end, int maxDist) {
     int x0 = start.x;

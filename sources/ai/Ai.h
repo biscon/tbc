@@ -7,18 +7,30 @@
 
 #include "level/PlayField.h"
 
-struct AiInterface {
-    void (*HandleTurn)(SpriteData& spriteData, CharacterData& charData, Level &combat, PlayField &gridState);
+enum class AiState {
+    Idle,
+    Reloading,
+    MovingToRange,
+    Attacking,
+    Retreating,
+    Done
 };
 
-void CreateAiInterface(const std::string& name, void (*HandleTurn)(SpriteData& spriteData, CharacterData& charData, Level& level, PlayField& gridState));
+struct AiInterface {
+    void (*HandleTurn)(GameData&, Level &level, PlayField &playField);
+    void (*StartTurn)(GameData&, Level &level, PlayField &playField);
+};
+
+void CreateAiInterface(const std::string& name, void (*HandleTurn)(GameData& data, Level& level, PlayField& playField),
+                       void (*StartTurn)(GameData& data, Level& level, PlayField& playField));
 AiInterface* GetAiInterface(const std::string& name);
-void HandleTurn(AiInterface& ai, SpriteData& spriteData, CharacterData& charData, Level& level, PlayField& gridState);
-std::vector<int> GetCharactersWithinAttackRange(SpriteData& spriteData, CharacterData& charData, Level &level, int character, int range, CharacterFaction faction);
-std::vector<std::pair<int, Path>> GetCharactersWithinMoveRange(SpriteData& spriteData, CharacterData& charData, Level &level, int character, int attackRange, bool checkPoints, CharacterFaction faction);
-std::vector<std::pair<int, Path>> GetCharactersWithinMoveRangePartial(SpriteData& spriteData, CharacterData& charData, Level &level, int character, int attackRange, bool checkPoints, CharacterFaction faction);
+void HandleTurn(AiInterface& ai, GameData& data, Level& level, PlayField& playField);
+void StartTurn(AiInterface &ai, GameData& data, Level &level, PlayField &playField);
+std::vector<int> GetCharactersWithinAttackRange(GameData& data, Level &level, int character, int range, CharacterFaction faction);
+std::vector<std::pair<int, Path>> GetCharactersWithinMoveRange(GameData& data, Level &level, int character, int attackRange, bool checkPoints, CharacterFaction faction);
+std::vector<std::pair<int, Path>> GetCharactersWithinMoveRangePartial(GameData& data, Level &level, int character, int attackRange, bool checkPoints, CharacterFaction faction);
 void SortCharactersByThreat(Level& level, std::vector<int>& characters);
 void SortCharactersByThreat(Level& level, std::vector<std::pair<int, Path>>& characters);
-std::vector<int> GetAdjacentCharacters(SpriteData& spriteData, CharacterData& charData, Level &level, int character, CharacterFaction faction);
+std::vector<int> GetAdjacentCharacters(GameData& data, Level &level, int character, CharacterFaction faction);
 
 #endif //SANDBOX_AI_H

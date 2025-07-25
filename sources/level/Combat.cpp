@@ -62,7 +62,7 @@ static AttackResult AttackUnarmed(GameData& data, Level& level, int attacker, in
     return result;
 }
 
-static AttackResult AttackMelee(GameData& data, Level& level, int attacker, int defender, WeaponTemplate& weaponTemplate) {
+static AttackResult AttackMelee(GameData& data, Level& level, int attacker, int defender, WeaponTemplate& weaponTemplate, int fireMode) {
     CharacterStats& attackerStats = data.charData.stats[attacker];
     AttackResult result{};
     result.attacker = attacker;
@@ -71,7 +71,7 @@ static AttackResult AttackMelee(GameData& data, Level& level, int attacker, int 
     result.minDmg = weaponTemplate.minDamage + meleeMod;
     result.maxDmg = weaponTemplate.maxDamage + meleeMod;
     AttackInfo info{};
-    CalcHitChance(data, attacker, GetSelectedWeaponItemId(data, attacker), data.ui.actionBar.selectedModeIdx, info);
+    CalcHitChance(data, attacker, GetSelectedWeaponItemId(data, attacker), fireMode, info);
     int hitRoll = GetRandomValue(1, 100);
     AttackHit hit{};
     hit.hit = false;
@@ -94,7 +94,7 @@ static AttackResult AttackMelee(GameData& data, Level& level, int attacker, int 
 
 static AttackResult AttackRanged(GameData& data, Level& level, int attacker, int defender,
                                  WeaponTemplate& weaponTemplate, WeaponRanged& rangedTemplate,
-                                 WeaponInstance& weaponInstance) {
+                                 WeaponInstance& weaponInstance, int fireMode) {
     CharacterStats& attackerStats = data.charData.stats[attacker];
     AttackResult result{};
     result.attacker = attacker;
@@ -105,7 +105,7 @@ static AttackResult AttackRanged(GameData& data, Level& level, int attacker, int
     result.minDmg = weaponTemplate.minDamage + rangedMod;
     result.maxDmg = weaponTemplate.maxDamage + rangedMod;
 
-    const FireMode& fm = rangedTemplate.fireModes[data.ui.actionBar.selectedModeIdx];
+    const FireMode& fm = rangedTemplate.fireModes[fireMode];
     int roundsFired = fm.roundsFired;
     // fire up to 8 bullets
     if(roundsFired == -1) {
@@ -113,7 +113,7 @@ static AttackResult AttackRanged(GameData& data, Level& level, int attacker, int
     }
     for(int i = 0; i < roundsFired; i++) {
         AttackInfo info{};
-        CalcHitChance(data, attacker, GetSelectedWeaponItemId(data, attacker), data.ui.actionBar.selectedModeIdx, info);
+        CalcHitChance(data, attacker, GetSelectedWeaponItemId(data, attacker), fireMode, info);
         int hitRoll = GetRandomValue(1, 100);
         AttackHit hit{};
         hit.hit = false;
@@ -137,7 +137,7 @@ static AttackResult AttackRanged(GameData& data, Level& level, int attacker, int
 }
 
 // Function for a character to attack another
-AttackResult Attack(GameData& data, Level& level, int attacker, int defender) {
+AttackResult Attack(GameData& data, Level& level, int attacker, int defender, int fireMode) {
     WeaponTemplate* weaponTemplate = GetSelectedWeaponTemplate(data, attacker);
     WeaponRanged* weaponRanged = GetSelectedRangedTemplate(data, attacker);
     WeaponInstance* weaponInstance = GetSelectedWeaponInstance(data, attacker);
@@ -146,8 +146,8 @@ AttackResult Attack(GameData& data, Level& level, int attacker, int defender) {
         return AttackUnarmed(data, level, attacker, defender);
     } else {
         switch(weaponTemplate->type) {
-            case WeaponType::Melee:return AttackMelee(data, level, attacker, defender, *weaponTemplate);
-            case WeaponType::Ranged: return AttackRanged(data, level, attacker, defender, *weaponTemplate, *weaponRanged, *weaponInstance);
+            case WeaponType::Melee:return AttackMelee(data, level, attacker, defender, *weaponTemplate, fireMode);
+            case WeaponType::Ranged: return AttackRanged(data, level, attacker, defender, *weaponTemplate, *weaponRanged, *weaponInstance, fireMode);
         }
     }
     throw(std::runtime_error("Illegal state"));
@@ -348,4 +348,22 @@ void CalcHitChance(GameData& data, int charId, int weaponItemId, int fireModeIdx
         info.hitChance = Clamp(hitChance, 5, 95);
         info.apCost = 3;
     }
+}
+
+int GetAttackAPCost(GameData& data, int attacker, int fireMode) {
+    int weaponItemId = GetSelectedWeaponItemId(data, attacker);
+    if (data.itemData.templateData[GetItemTemplateId(data, weaponItemId)].type != ItemType::Weapon) {
+        throw std::runtime_error("Item type must be Weapon");
+    }
+    int weaponTplId = GetItemTypeTemplateId(data, weaponItemId);
+    WeaponTemplate& weaponTemplate = data.weaponData.templateData[weaponTplId];
+    int apCost = weaponTemplate.apCost;
+    if(weaponTemplate.rangeDataId != -1) {
+        WeaponRanged& ranged = data.weaponData.rangedData[weaponTemplate.rangeDataId];
+        if(fireMode != -1) {
+            auto& fm = ranged.fireModes.at(fireMode);
+            apCost = fm.apCost;
+        }
+    }
+    return apCost;
 }

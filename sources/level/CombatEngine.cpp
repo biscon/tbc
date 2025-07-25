@@ -81,6 +81,9 @@ void UpdateCombat(GameData &data, Level &level, PlayField& playField, float dt) 
                 data.ui.selectedCharacter = level.currentCharacter;
                 PublishOpenActionBarEvent(data.ui.eventQueue);
             } else {
+                // obtain AiInterface
+                AiInterface* ai = GetAiInterface(charData.ai[level.currentCharacter]);
+                ai->StartTurn(data, level, playField);
                 SetupBlinkAnimation(blinkAnim, level.currentCharacter, 1.0f);
                 level.nextState = TurnState::EnemyTurn;
             }
@@ -115,7 +118,7 @@ void UpdateCombat(GameData &data, Level &level, PlayField& playField, float dt) 
         case TurnState::Attack: {
             TraceLog(LOG_INFO, "Attack");
 
-            level.attackResult = Attack(data, level, level.currentCharacter, level.selectedCharacter);
+            level.attackResult = Attack(data, level, level.currentCharacter, level.selectedCharacter, -1);
             FaceCharacter(spriteData, charData, level.currentCharacter, level.selectedCharacter);
             FaceCharacter(spriteData, charData, level.selectedCharacter, level.currentCharacter);
             assert(level.attackResult.defender == level.selectedCharacter);
@@ -168,8 +171,11 @@ void UpdateCombat(GameData &data, Level &level, PlayField& playField, float dt) 
         }
         case TurnState::AttackRanged: {
             TraceLog(LOG_INFO, "AttackRanged");
-
-            level.attackResult = Attack(data, level, level.currentCharacter, level.selectedCharacter);
+            int fireMode = -1;
+            if(IsPlayerCharacter(data.charData, level.currentCharacter)) {
+                fireMode = data.ui.actionBar.selectedModeIdx;
+            }
+            level.attackResult = Attack(data, level, level.currentCharacter, level.selectedCharacter, fireMode);
             FaceCharacter(spriteData, charData, level.currentCharacter, level.selectedCharacter);
             //FaceCharacter(spriteData, charData, level.selectedCharacter, level.currentCharacter);
             assert(level.attackResult.defender == level.selectedCharacter);
@@ -237,7 +243,7 @@ void UpdateCombat(GameData &data, Level &level, PlayField& playField, float dt) 
         case TurnState::KillCharacters: {
             float attackerX = GetCharacterSpritePosX(spriteData, charData.sprite[level.currentCharacter]);
             float attackerY = GetCharacterSpritePosY(spriteData, charData.sprite[level.currentCharacter]);
-            TurnState nextState = IsPlayerCharacter(data.charData, level.currentCharacter) ? TurnState::SelectEnemy : TurnState::EndTurn;
+            TurnState nextState = IsPlayerCharacter(data.charData, level.currentCharacter) ? TurnState::SelectEnemy : TurnState::EnemyTurn;
             if(charData.stats[level.attackResult.defender].HP <= 0) {
                 Animation speechBubble{};
                 SetupSpeechBubbleAnimation(speechBubble, "Haha!", attackerX, attackerY - 25, 1.5f, 0.0f);
@@ -253,6 +259,7 @@ void UpdateCombat(GameData &data, Level &level, PlayField& playField, float dt) 
                 playField.mode = PlayFieldMode::SelectingEnemyTarget;
             }
             CheckEndCombat(data, level);
+            break;
         }
         case TurnState::EnemyTurn: {
             TraceLog(LOG_INFO, "Enemy turn");
@@ -260,7 +267,7 @@ void UpdateCombat(GameData &data, Level &level, PlayField& playField, float dt) 
             // obtain AiInterface
             AiInterface* ai = GetAiInterface(charData.ai[level.currentCharacter]);
             if(ai != nullptr) {
-                HandleTurn(*ai, spriteData, charData, level, playField);
+                HandleTurn(*ai, data, level, playField);
             } else {
                 TraceLog(LOG_WARNING, "No AI interface found for %s", charData.ai[level.currentCharacter].c_str());
                 level.turnState = TurnState::EndTurn;
@@ -271,7 +278,6 @@ void UpdateCombat(GameData &data, Level &level, PlayField& playField, float dt) 
             level.waitTime -= dt;
             if (level.waitTime <= 0) {
                 level.turnState = level.nextState;
-                TraceLog(LOG_INFO, "Waiting done");
             }
             break;
         }

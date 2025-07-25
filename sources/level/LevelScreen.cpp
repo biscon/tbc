@@ -347,7 +347,7 @@ static void HandleMeleeTargetSelection(GameData& data, Level& level, PlayField& 
 static void HandleRangedTargetSelection(GameData& data, Level& level, PlayField& playField, WeaponTemplate* weaponTemplate, int targetId) {
     Vector2i start = GetCharacterGridPosI(data.spriteData, data.charData.sprite[data.ui.selectedCharacter]);
     Vector2i end = GetCharacterGridPosI(data.spriteData, data.charData.sprite[targetId]);
-    if(HasLineOfSight(level, start, end, weaponTemplate->range)) {
+    if(HasLineOfSightFriendlies(data, level, start, end, weaponTemplate->range, data.ui.selectedCharacter)) {
         int weaponItemId = GetSelectedWeaponItemId(data, data.ui.selectedCharacter);
         CalcHitChance(data, data.ui.selectedCharacter, weaponItemId, data.ui.actionBar.selectedModeIdx, data.ui.playField.attackInfo);
         data.ui.actionBar.previewApUse = data.ui.playField.attackInfo.apCost;
@@ -355,7 +355,6 @@ static void HandleRangedTargetSelection(GameData& data, Level& level, PlayField&
         int ap = data.charData.stats[data.ui.selectedCharacter].AP;
         auto* weaponInstance = GetSelectedWeaponInstance(data, data.ui.selectedCharacter);
         int currentAmmo = weaponInstance->currentAmmo;
-
 
         if(IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
             if(currentAmmo < data.ui.playField.attackInfo.ammoCost) {
