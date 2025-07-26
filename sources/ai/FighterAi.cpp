@@ -36,6 +36,11 @@ static bool SetupMeleeAttack(GameData& data, Level &level) {
     return false;
 }
 
+static bool CanMoveIntoRange(GameData& data, Level& level, PlayField& playField) {
+    auto playersWithinRange = GetCharactersWithinMoveRangePartial(data, level, level.currentCharacter, 1, false, CharacterFaction::Player);
+    return !playersWithinRange.empty();
+}
+
 static bool SetupMoveIntoRange(GameData& data, Level& level, PlayField& playField) {
     auto playersWithinRange = GetCharactersWithinMoveRangePartial(data, level, level.currentCharacter, 1, false, CharacterFaction::Player);
     //SortCharactersByThreat(level, playersWithinRange);
@@ -186,8 +191,10 @@ static void HandleTurn(GameData& data, Level &level, PlayField &playField) {
             TraceLog(LOG_INFO, "FighterAi state: Idle");
             if(CanMeleeAttack(data, level)) {
                 aiState = AiState::Attacking;
-            } else {
+            } else if(CanMoveIntoRange(data, level, playField)) {
                 aiState = AiState::MovingToRange;
+            } else {
+                aiState = AiState::Done;
             }
             break;
         }
