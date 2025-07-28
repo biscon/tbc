@@ -108,6 +108,7 @@ static bool ShouldRetreat(GameData& data, Level& level, float threshold) {
     return hpRatio < threshold;
 }
 
+/*
 static bool AttackIfPossible(GameData& data, Level &level) {
     auto playersWithinRange = GetAdjacentCharacters(data, level, level.currentCharacter, CharacterFaction::Player);
     if((int) playersWithinRange.size() > 0) {
@@ -183,7 +184,7 @@ static bool PartialMoveIfPossible(GameData& data, Level& level, PlayField& playF
     level.turnState = TurnState::EndTurn;
     return false;
 }
-
+*/
 
 static AiState aiState = AiState::Idle;
 
