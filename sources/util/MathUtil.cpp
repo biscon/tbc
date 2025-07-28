@@ -45,10 +45,12 @@ Vector2 ceilv(Vector2 v) {
     return { ceilf(v.x), ceilf(v.y) };
 }
 
-float GetRandomFloat01() {
-    static std::random_device rd;                     // for seeding
-    static std::mt19937 rng(rd());                    // Mersenne Twister RNG
-    static std::uniform_real_distribution<float> dist(0.0f, 1.0f); // [0.0, 1.0)
-
-    return dist(rng);
+Vector2i ToDirectionVector(Vector2 dir) {
+    if (fabsf(dir.x) > fabsf(dir.y)) {
+        // Horizontal dominates
+        return { (dir.x > 0) ? 1 : -1, 0 };
+    } else {
+        // Vertical dominates
+        return { 0, (dir.y > 0) ? 1 : -1 };
+    }
 }

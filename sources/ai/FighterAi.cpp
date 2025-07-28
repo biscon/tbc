@@ -10,6 +10,8 @@
 #include "level/LevelCamera.h"
 #include "util/Random.h"
 #include "level/Combat.h"
+#include "character/Character.h"
+#include "PathFinding.h"
 
 static bool CanMeleeAttack(GameData& data, Level &level) {
     CharacterStats& stats = data.charData.stats[level.currentCharacter];
@@ -73,6 +75,37 @@ static bool SetupMoveIntoRange(GameData& data, Level& level, PlayField& playFiel
         return true;
     }
     return false;
+}
+
+static bool SetupMoveToTile(GameData& data, Level& level, PlayField& playField, int charId, Vector2i tilePos) {
+    Path path;
+    Vector2i charPos = GetCharacterGridPosI(data.spriteData, data.charData.sprite[charId]);
+    CalcPath(data.spriteData, data.charData, level, path, charPos, tilePos, charId, IsTileOccupied);
+
+    CharacterStats& stats = data.charData.stats[level.currentCharacter];
+    playField.mode = PlayFieldMode::None;
+    playField.path = path;
+    playField.moving = true;
+    stats.AP -= path.cost;
+    // cap at zero
+    if(stats.AP < 0) {
+        stats.AP = 0;
+    }
+    level.turnState = TurnState::Move;
+    auto lastStep = path.path.back();
+    Vector2 lastStepPos = {(float) lastStep.x * 16, (float) lastStep.y * 16};
+    StartCameraPanToTargetPos(level.camera, lastStepPos, 250.0f);
+    return true;
+}
+
+
+static bool ShouldRetreat(GameData& data, Level& level, float threshold) {
+    CharacterStats& stats = data.charData.stats[level.currentCharacter];
+    int maxHP = CalculateCharHealth(stats);
+    if (maxHP <= 0) return false; // safety check to avoid division by zero
+
+    float hpRatio = static_cast<float>(stats.HP) / static_cast<float>(maxHP);
+    return hpRatio < threshold;
 }
 
 static bool AttackIfPossible(GameData& data, Level &level) {
@@ -151,32 +184,6 @@ static bool PartialMoveIfPossible(GameData& data, Level& level, PlayField& playF
     return false;
 }
 
-static void HandleTurnOLD(GameData& data, Level &level, PlayField &playField) {
-    // do something
-    TraceLog(LOG_INFO, "FighterAi::HandleTurn");
-    switch(level.turnState) {
-        case TurnState::EnemyTurn: {
-            if(!AttackIfPossible(data, level)) {
-                TraceLog(LOG_INFO, "Attack not possible, move if possible");
-                if(!MoveIfPossible(data, level, playField)) {
-                    TraceLog(LOG_INFO, "Move not possible, partial move if possible");
-                    if(!PartialMoveIfPossible(data, level, playField)) {
-                        TraceLog(LOG_INFO, "Partial move not possible, end turn");
-                    } else {
-                        TraceLog(LOG_INFO, "Partial move possible, moving");
-                        PlaySoundEffect(SoundEffectType::Footstep);
-                    }
-                } else {
-                    TraceLog(LOG_INFO, "Move possible, moving");
-                    PlaySoundEffect(SoundEffectType::Footstep);
-                }
-            } else {
-                TraceLog(LOG_INFO, "Attack possible, attacking");
-            }
-            break;
-        }
-    }
-}
 
 static AiState aiState = AiState::Idle;
 
@@ -189,7 +196,9 @@ static void HandleTurn(GameData& data, Level &level, PlayField &playField) {
     switch(aiState) {
         case AiState::Idle: {
             TraceLog(LOG_INFO, "FighterAi state: Idle");
-            if(CanMeleeAttack(data, level)) {
+            if(ShouldRetreat(data, level, 0.2f)) {
+                aiState = AiState::Retreating;
+            } else if(CanMeleeAttack(data, level)) {
                 aiState = AiState::Attacking;
             } else if(CanMoveIntoRange(data, level, playField)) {
                 aiState = AiState::MovingToRange;
@@ -222,6 +231,11 @@ static void HandleTurn(GameData& data, Level &level, PlayField &playField) {
         }
         case AiState::Retreating: {
             TraceLog(LOG_INFO, "FighterAi state: Retreating");
+            CharacterStats& stats = data.charData.stats[level.currentCharacter];
+            Vector2i fleeTile = ChooseBestFleeTile(data, level, level.currentCharacter, stats.AP);
+            if(fleeTile != GetCharacterGridPosI(data.spriteData, data.charData.sprite[level.currentCharacter]))
+                SetupMoveToTile(data, level, playField, level.currentCharacter, fleeTile);
+            aiState = AiState::Done;
             break;
         }
         case AiState::Done: {

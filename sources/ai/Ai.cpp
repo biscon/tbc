@@ -6,6 +6,7 @@
 #include "Ai.h"
 #include "PathFinding.h"
 #include "graphics/CharacterSprite.h"
+#include "raymath.h"
 
 static std::map<std::string, AiInterface> aiInterfaces;
 
@@ -142,4 +143,77 @@ std::vector<int> GetAdjacentCharacters(GameData& data, Level &level, int charact
         }
     }
     return charactersInRange;
+}
+
+bool IsAdjacentToCharacter(GameData& data, Level &level, Vector2i gridPos, CharacterFaction faction) {
+    std::vector<int> charactersInRange;
+    for(auto &c : level.allCharacters) {
+        // skip same and death characters
+        if(data.charData.stats[c].HP <= 0 || data.charData.faction[c] != faction) {
+            continue;
+        }
+        Vector2i cCharPos = GetCharacterSpritePosI(data.spriteData, data.charData.sprite[c]);
+        Vector2i cGridPos = PixelToGridPositionI(cCharPos.x, cCharPos.y);
+        if(abs(cGridPos.x - gridPos.x) <= 1 && abs(cGridPos.y - gridPos.y) <= 1) {
+            return true;
+        }
+    }
+    return false;
+}
+
+float GetDistanceToClosestCharacter(GameData& data, Level& level, Vector2i gridPos, CharacterFaction faction) {
+    float distance = INFINITY;
+    for(auto &c : level.allCharacters) {
+        // skip same and death characters
+        if(data.charData.stats[c].HP <= 0 || data.charData.faction[c] != faction) {
+            continue;
+        }
+        Vector2i cCharPos = GetCharacterSpritePosI(data.spriteData, data.charData.sprite[c]);
+        Vector2i cGridPos = PixelToGridPositionI(cCharPos.x, cCharPos.y);
+        float d = Distance(gridPos, cGridPos);
+        if(d < distance) {
+            distance = d;
+        }
+    }
+    return distance;
+}
+
+Vector2i ComputeFleeDirection(GameData& data, Level& level, int aiCharId) {
+    Vector2 center = {0, 0};
+    int count = 0;
+    Vector2i aiPos = GetCharacterSpritePosI(data.spriteData, data.charData.sprite[aiCharId]);
+    for (auto& pc : level.partyCharacters) {
+        Vector2i pcPos = GetCharacterSpritePosI(data.spriteData, data.charData.sprite[pc]);
+        if(HasLineOfSight(level, aiPos, pcPos, 16)) {
+            center.x += (float) pcPos.x;
+            center.y += (float) pcPos.y;
+            count++;
+        }
+    }
+    if (count == 0) return {0, 0}; // No enemies seen
+    center.x /= (float) count;
+    center.y /= (float) count;
+
+    Vector2 fleeVec = Vector2Normalize(Vector2{aiPos.x - center.x, aiPos.y - center.y});
+    return ToDirectionVector(fleeVec); // E.g. snap to 8-dir unit vector
+}
+
+Vector2i ChooseBestFleeTile(GameData& data,  Level& level, int aiCharId, int maxAP) {
+    Vector2i aiPos = GetCharacterGridPosI(data.spriteData, data.charData.sprite[aiCharId]);
+    std::vector<Vector2i> reachable = GetReachableTiles(level, aiPos, maxAP);
+    Vector2i bestTile = aiPos;
+    float bestScore = -INFINITY;
+
+    for (auto& tile : reachable) {
+        float distToClosestEnemy = GetDistanceToClosestCharacter(data, level, tile, CharacterFaction::Player);
+
+        if (IsAdjacentToCharacter(data, level, tile, CharacterFaction::Player)) distToClosestEnemy -= 2.0f;
+        float score = distToClosestEnemy;
+
+        if (score > bestScore) {
+            bestScore = score;
+            bestTile = tile;
+        }
+    }
+    return bestTile;
 }

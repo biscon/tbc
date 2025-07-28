@@ -540,6 +540,12 @@ bool HasLineOfSight(Level &level, Vector2i start, Vector2i end, int maxDist) {
     return false; // Max distance reached without reaching the target
 }
 
+bool HasLineOfSight(GameData& data, Level &level, int firstChar, int secondChar, int maxDist) {
+    Vector2i firstPos = GetCharacterGridPosI(data.spriteData, data.charData.sprite[firstChar]);
+    Vector2i secondPos = GetCharacterGridPosI(data.spriteData, data.charData.sprite[secondChar]);
+    return HasLineOfSight(level, firstPos, secondPos, maxDist);
+}
+
 
 bool HasLineOfSightFriendlies(GameData& data, Level &level, Vector2i start, Vector2i end, int maxDist, int exceptCharacter) {
     int x0 = start.x;
@@ -722,5 +728,61 @@ std::vector<int> GetTargetsInLine(SpriteData& spriteData, CharacterData& charDat
         }
     }
     return affectedCharacters;
+}
+
+std::vector<Vector2i> GetReachableTiles(Level& level, Vector2i start, int maxCost) {
+    std::vector<Vector2i> reachableTiles;
+    std::vector<std::vector<bool>> visited(level.tileMap.width, std::vector<bool>(level.tileMap.height, false));
+    std::vector<std::vector<Node*>> allNodes(level.tileMap.width, std::vector<Node*>(level.tileMap.height, nullptr));
+
+    std::queue<Node*> openSet;
+
+    Node* startNode = nodePool.acquireNode(start, 0, 0);
+    openSet.push(startNode);
+    visited[start.x][start.y] = true;
+    allNodes[start.x][start.y] = startNode;
+    reachableTiles.push_back(start);  // include starting tile
+
+    const std::vector<Vector2i> directions = {
+            {0, 1},  // north
+            {1, 0},  // east
+            {0, -1}, // south
+            {-1, 0}  // west
+    };
+
+    while (!openSet.empty()) {
+        Node* current = openSet.front();
+        openSet.pop();
+
+        for (const Vector2i& dir : directions) {
+            Vector2i neighborPos = current->position + dir;
+
+            // Bounds check
+            if (neighborPos.x < 0 || neighborPos.y < 0 || neighborPos.x >= level.tileMap.width || neighborPos.y >= level.tileMap.height)
+                continue;
+
+            if (visited[neighborPos.x][neighborPos.y])
+                continue;
+
+            if (!IsTileWalkable(level, neighborPos.x, neighborPos.y))
+                continue;
+
+            // Optional: skip occupied tiles if needed
+            // if (IsTileOccupied(level, neighborPos)) continue;
+
+            int newCost = current->gCost + 1;
+            if (newCost > maxCost)
+                continue;
+
+            Node* neighbor = nodePool.acquireNode(neighborPos, newCost, 0, current);
+            allNodes[neighborPos.x][neighborPos.y] = neighbor;
+            visited[neighborPos.x][neighborPos.y] = true;
+            reachableTiles.push_back(neighborPos);
+            openSet.push(neighbor);
+        }
+    }
+
+    nodePool.reset();
+    return reachableTiles;
 }
 

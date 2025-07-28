@@ -13,6 +13,13 @@ struct Vector2i {
     Vector2i(int x = 0, int y = 0) : x(x), y(y) {}
     bool operator==(const Vector2i& other) const { return x == other.x && y == other.y; }
     bool operator!=(const Vector2i& other) const { return !(*this == other); }
+    Vector2i operator+(const Vector2i& other) const {
+        return Vector2i(x + other.x, y + other.y);
+    }
+
+    Vector2i operator-(const Vector2i& other) const {
+        return Vector2i(x - other.x, y - other.y);
+    }
 };
 
 void to_json(nlohmann::json& j, const Vector2i& v);
@@ -23,6 +30,6 @@ float Distance(Vector2i start, Vector2i end);
 Vector2 CalculateDirection(Vector2 start, Vector2 end);
 Vector2 CalculateDirection(Vector2i start, Vector2i end);
 Vector2 ceilv(Vector2 v);
-float GetRandomFloat01();
+Vector2i ToDirectionVector(Vector2 dir);
 
 #endif //SANDBOX_MATHUTIL_H

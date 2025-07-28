@@ -32,5 +32,8 @@ std::vector<std::pair<int, Path>> GetCharactersWithinMoveRangePartial(GameData& 
 void SortCharactersByThreat(Level& level, std::vector<int>& characters);
 void SortCharactersByThreat(Level& level, std::vector<std::pair<int, Path>>& characters);
 std::vector<int> GetAdjacentCharacters(GameData& data, Level &level, int character, CharacterFaction faction);
+bool IsAdjacentToCharacter(GameData& data, Level &level, int character, CharacterFaction faction);
+Vector2i ComputeFleeDirection(GameData& data, Level& level, int aiCharId);
+Vector2i ChooseBestFleeTile(GameData& data,  Level& level, int aiCharId, int maxAP);
 
 #endif //SANDBOX_AI_H

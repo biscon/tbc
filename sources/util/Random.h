@@ -24,4 +24,6 @@ T& GetRandomElement(std::vector<T>& vec) {
     return vec[dist(gen)];
 }
 
+float GetRandomFloat01();
+
 #endif //SANDBOX_RANDOM_H
