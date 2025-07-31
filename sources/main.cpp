@@ -14,6 +14,7 @@
 #include "game/Settings.h"
 #include "game/Items.h"
 #include "ui/UI.h"
+#include "ai/RangedAi.h"
 
 #define MAX(a, b) ((a)>(b)? (a) : (b))
 #define MIN(a, b) ((a)<(b)? (a) : (b))
@@ -56,6 +57,7 @@ int main() {
 
     // Create AI
     CreateFighterAi("Fighter");
+    CreateRangedAi("Ranged");
 
     InitDialogueData(game.dialogueData, ASSETS_PATH"dialogue.json");
     InitQuestData(game, ASSETS_PATH"quests.json");

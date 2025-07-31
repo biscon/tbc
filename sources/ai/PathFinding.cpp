@@ -741,7 +741,7 @@ std::vector<Vector2i> GetReachableTiles(Level& level, Vector2i start, int maxCos
     openSet.push(startNode);
     visited[start.x][start.y] = true;
     allNodes[start.x][start.y] = startNode;
-    reachableTiles.push_back(start);  // include starting tile
+    //reachableTiles.push_back(start);  // include starting tile
 
     const std::vector<Vector2i> directions = {
             {0, 1},  // north

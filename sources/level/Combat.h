@@ -20,5 +20,6 @@ void NextCharacter(CharacterData& charData, Level &level);
 void StartCombat(SpriteData& spriteData, CharacterData& charData, Level &level, int spotter);
 void CalcHitChance(GameData& data, int charId, int weaponItemId, int fireModeIdx, AttackInfo& info);
 int GetAttackAPCost(GameData& data, int attacker, int fireMode);
+int GetCurrentWeaponRange(GameData& data, int charId);
 
 #endif //SANDBOX_COMBAT_H

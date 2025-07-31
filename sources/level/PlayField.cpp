@@ -323,7 +323,7 @@ static void checkIfPartySpotted(GameData& data, PlayField &playField, Level &lev
         Vector2i enemyGridPos = GetCharacterGridPosI(data.spriteData, data.charData.sprite[c]);
         for(auto& partyChar : level.partyCharacters) {
             Vector2i partyGridPos = GetCharacterGridPosI(data.spriteData, data.charData.sprite[partyChar]);
-            if(HasLineOfSight(level, enemyGridPos, partyGridPos, 5)) {
+            if(HasLineOfSight(level, enemyGridPos, partyGridPos, 16)) {
                 TraceLog(LOG_INFO, "Party last spotted by %s", data.charData.name[c].c_str());
                 PublishPartySpottedEvent(data.ui.eventQueue, c);
                 return;

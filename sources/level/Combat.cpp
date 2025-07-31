@@ -367,3 +367,13 @@ int GetAttackAPCost(GameData& data, int attacker, int fireMode) {
     }
     return apCost;
 }
+
+int GetCurrentWeaponRange(GameData &data, int charId) {
+    int weaponItemId = GetSelectedWeaponItemId(data, charId);
+    if (data.itemData.templateData[GetItemTemplateId(data, weaponItemId)].type != ItemType::Weapon) {
+        throw std::runtime_error("Item type must be Weapon");
+    }
+    int weaponTplId = GetItemTypeTemplateId(data, weaponItemId);
+    WeaponTemplate& weaponTemplate = data.weaponData.templateData[weaponTplId];
+    return weaponTemplate.range;
+}

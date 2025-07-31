@@ -178,6 +178,25 @@ float GetDistanceToClosestCharacter(GameData& data, Level& level, Vector2i gridP
     return distance;
 }
 
+int GetClosestCharacter(GameData& data, Level& level, Vector2i gridPos, CharacterFaction faction) {
+    float distance = INFINITY;
+    int foundChar = -1;
+    for(auto &c : level.allCharacters) {
+        // skip same and death characters
+        if(data.charData.stats[c].HP <= 0 || data.charData.faction[c] != faction) {
+            continue;
+        }
+        Vector2i cCharPos = GetCharacterSpritePosI(data.spriteData, data.charData.sprite[c]);
+        Vector2i cGridPos = PixelToGridPositionI(cCharPos.x, cCharPos.y);
+        float d = Distance(gridPos, cGridPos);
+        if(d < distance) {
+            foundChar = c;
+        }
+    }
+    return foundChar;
+}
+
+
 Vector2i ComputeFleeDirection(GameData& data, Level& level, int aiCharId) {
     Vector2 center = {0, 0};
     int count = 0;
@@ -217,3 +236,40 @@ Vector2i ChooseBestFleeTile(GameData& data,  Level& level, int aiCharId, int max
     }
     return bestTile;
 }
+
+std::vector<int> GetCharactersWithinShootingRange(GameData &data, Level &level, int charId, int range, CharacterFaction faction) {
+    Vector2i charPos = GetCharacterGridPosI(data.spriteData, data.charData.sprite[charId]);
+
+    // Pair distance with character ID
+    std::vector<std::pair<float, int>> charactersWithDistance;
+
+    for (int c : level.allCharacters) {
+        // Skip dead characters and wrong faction
+        if (c == charId || data.charData.stats[c].HP <= 0 || data.charData.faction[c] != faction) {
+            continue;
+        }
+        // Skip if no LoS
+        if (!HasLineOfSight(data, level, charId, c, range)) {
+            continue;
+        }
+
+        Vector2i otherCharPos = GetCharacterGridPosI(data.spriteData, data.charData.sprite[c]);
+        float d = Distance(charPos, otherCharPos);
+
+        if (d <= range) {
+            charactersWithDistance.emplace_back(d, c);
+        }
+    }
+
+    // Sort by distance (nearest first)
+    std::sort(charactersWithDistance.begin(), charactersWithDistance.end());
+
+    // Extract only the character IDs
+    std::vector<int> sortedCharacters;
+    for (const auto& [dist, id] : charactersWithDistance) {
+        sortedCharacters.push_back(id);
+    }
+
+    return sortedCharacters;
+}
+

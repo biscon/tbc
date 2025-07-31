@@ -171,7 +171,7 @@ void UpdateCombat(GameData &data, Level &level, PlayField& playField, float dt) 
         }
         case TurnState::AttackRanged: {
             TraceLog(LOG_INFO, "AttackRanged");
-            int fireMode = -1;
+            int fireMode = 0;
             if(IsPlayerCharacter(data.charData, level.currentCharacter)) {
                 fireMode = data.ui.actionBar.selectedModeIdx;
             }

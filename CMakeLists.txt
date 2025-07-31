@@ -157,6 +157,8 @@ add_executable(${PROJECT_NAME}
         sources/ui/portraits.h
         sources/ui/SharedInventoryUI.cpp
         sources/ui/SharedInventoryUI.h
+        sources/ai/RangedAi.cpp
+        sources/ai/RangedAi.h
 )
 target_sources(${PROJECT_NAME} PRIVATE ${PROJECT_SOURCES})
 target_include_directories(${PROJECT_NAME} PRIVATE ${PROJECT_INCLUDE})
