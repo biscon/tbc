@@ -1,0 +1,61 @@
+{
+    "name": "Fort Arlen",
+    "map": "fort_arlen_map.json",
+    "tileset": "indoor_tiles2.png",
+    "ambientLight": "FFFFFF",
+    "spawnPoints": [
+        {
+            "name": "default",
+            "x": 31,
+            "y": 29,
+            "radius": 3
+        },
+        {
+            "name": "mainEntrance",
+            "x": 32,
+            "y": 12,
+            "radius": 2
+        }
+    ],
+    "flags": [
+        {
+            "id": "testFlag",
+            "value": false
+        }
+    ],
+    "exits": [
+        {
+            "level": "indoor_level.json",
+            "spawnPoint": "default",
+            "x": 31,
+            "y": 8,
+            "width": 2,
+            "height": 2
+        }
+    ],
+    "npcs": [
+
+    ],
+    "enemies": [
+
+    ],
+    "objects": [
+        {
+            "id": "background",
+            "sprite": "FortArlenBackground",
+            "loop": true,
+            "lit": false,
+            "position": [0, 0]
+        },
+        {
+            "id": "house01",
+            "sprite": "House01Idle",
+            "loop": true,
+            "lit": true,
+            "position": [8, 17]
+        }
+    ],
+    "doors": [
+
+    ]
+}

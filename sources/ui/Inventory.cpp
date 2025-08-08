@@ -94,7 +94,7 @@ static void RenderCharacterInfo(GameData& data) {
     int charId = data.party[data.ui.selectedCharacter];
     auto& sprite = data.charData.sprite[charId];
 
-    DrawRectangleRec(charInfoRect, Color{15, 15, 15, 200});
+    DrawRectangleRec(charInfoRect, Color{15, 15, 15, 230});
     DrawRectangleRoundedLinesEx(charInfoRect, 0.03f, 4, 1.0f, DARKGRAY);
     float halfWidth = charInfoRect.width/2;
     float halfHeight = charInfoRect.height/2;

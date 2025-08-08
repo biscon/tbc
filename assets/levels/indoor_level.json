@@ -25,8 +25,8 @@
     ],
     "exits": [
         {
-            "level": "outdoor_level.json",
-            "spawnPoint": "default",
+            "level": "fort_arlen_level.json",
+            "spawnPoint": "mainEntrance",
             "x": 11,
             "y": 17,
             "width": 2,

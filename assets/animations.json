@@ -1474,5 +1474,23 @@
                 ]
             }
         ]
+    },
+    {
+        "group": "FortArlen",
+        "sheet": "fort_arlen.png",
+        "frameWidth": 1024,
+        "frameHeight": 512,
+        "animations": [
+            {
+                "name": "Background",
+                "origin": [0, 0],
+                "frames": [
+                    0
+                ],
+                "delays": [
+                    0.10
+                ]
+            }
+        ]
     }
 ]

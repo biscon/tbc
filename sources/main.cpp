@@ -24,7 +24,8 @@
 //------------------------------------------------------------------------------------
 int main() {
     GameData game;
-    CreateGame(game, "outdoor_level.json");
+    //CreateGame(game, "outdoor_level.json");
+    CreateGame(game, "fort_arlen_level.json");
     SetupMenuGameMode(&game);
     SetupLevelGameMode(&game);
 
