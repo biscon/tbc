@@ -2,66 +2,70 @@
 // Created by bison on 21-01-25.
 //
 
+#include <fstream>
 #include "TileMap.h"
 
-#define CUTE_TILED_IMPLEMENTATION
-#include "util/cute_tiled.h"
+//#define CUTE_TILED_IMPLEMENTATION
+//#include "util/cute_tiled.h"
 #include "rlgl.h"
 #include "Lighting.h"
 #include "Rendering.h"
 
-void LoadTileMap(TileMap &tileMap, const char *filename, int tileSet) {
+using json = nlohmann::json;
+
+void LoadTileMap(TileMap &tileMap, const std::string& filename, int tileSet) {
     tileMap.layers.clear();
     tileMap.tileSet = tileSet;
-    int fileLength = GetFileLength(filename);
-    if(fileLength == 0) {
-        TraceLog(LOG_ERROR, "Failed to load tile map %s", filename);
+
+    std::ifstream file(filename);
+    if (!file) {
+        TraceLog(LOG_ERROR, "Failed to open map file: %s", filename.c_str());
+        std::abort();
         return;
     }
-    unsigned char* buffer = LoadFileData(filename, &fileLength);
 
-    cute_tiled_map_t* map = cute_tiled_load_map_from_memory(buffer, fileLength, nullptr);
-    if(map == nullptr) {
-        TraceLog(LOG_ERROR, "Failed to parse tile map %s", filename);
-        return;
+    json j;
+    file >> j;
+    tileMap.width = j["width"].get<int>();
+    tileMap.height = j["height"].get<int>();
+    tileMap.tileWidth = j["tilewidth"].get<int>();
+    tileMap.tileHeight = j["tileheight"].get<int>();
+
+    for (auto &jLayer : j["layers"]) {
+        std::string type = jLayer["type"].get<std::string>();
+        std::string name = jLayer["name"].get<std::string>();
+        TraceLog(LOG_INFO, "Reading map layer %s (type = %s)", name.c_str(), type.c_str());
+        if(type == "tilelayer") {
+            TileMapLayer mapLayer{};
+            mapLayer.width = tileMap.width;
+            mapLayer.height = tileMap.height;
+            mapLayer.data = (int*) malloc(sizeof(int) * (tileMap.width * tileMap.height));
+            int index = 0;
+            for (int value : jLayer["data"]) {
+                mapLayer.data[index] = value;
+                index++;
+            }
+            if(name == "bottom") tileMap.layers[BOTTOM_LAYER] = mapLayer;
+            if(name == "middle") tileMap.layers[MIDDLE_LAYER] = mapLayer;
+            if(name == "light") tileMap.layers[LIGHT_LAYER] = mapLayer;
+            if(name == "top") tileMap.layers[TOP_LAYER] = mapLayer;
+            if(name == "nav") tileMap.layers[NAV_LAYER] = mapLayer;
+            if(name == "shadow") tileMap.layers[SHADOW_LAYER] = mapLayer;
+        }
     }
-    UnloadFileData(buffer);
 
-    tileMap.width = map->width;
-    tileMap.height = map->height;
-    tileMap.tileWidth = map->tilewidth;
-    tileMap.tileHeight = map->tileheight;
-
-    // loop over the map's layers
-    cute_tiled_layer_t* layer = map->layers;
-    while (layer)
-    {
-        int* data = layer->data;
-        int data_count = layer->data_count;
-
-        TileMapLayer mapLayer{};
-        mapLayer.width = layer->height;
-        mapLayer.height = layer->height;
-        mapLayer.data = (int*) malloc(sizeof(int) * data_count);
-        memcpy(mapLayer.data, data, sizeof(int) * data_count);
-        tileMap.layers.push_back(mapLayer);
-
-        layer = layer->next;
-    }
-
-    TraceLog(LOG_INFO, "Loaded tile map %s (%dx%d), parsed %d layers", filename, tileMap.width, tileMap.height, tileMap.layers.size());
-    cute_tiled_free_map(map);
+    TraceLog(LOG_INFO, "Loaded tile map %s (%dx%d), parsed %d layers", filename.c_str(), tileMap.width, tileMap.height, tileMap.layers.size());
 }
 
 void UnloadTileMap(TileMap &tileMap) {
     // free tile layers
     for(auto &layer : tileMap.layers) {
-        free(layer.data);
-        layer.data = nullptr;
+        free(layer.second.data);
+        layer.second.data = nullptr;
     }
 }
 
-int GetTileAt(const TileMap &tileMap, int layer, int x, int y) {
+int GetTileAt(TileMap &tileMap, int layer, int x, int y) {
     if(layer < 0 || layer >= tileMap.layers.size()) {
         return -1;
     }

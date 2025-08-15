@@ -2,7 +2,14 @@
     "name": "Fort Arlen",
     "map": "fort_arlen_map.json",
     "tileset": "indoor_tiles2.png",
-    "ambientLight": "FFFFFF",
+    "ambientLight": "888888",
+    "imageLayers": [
+        {
+            "zIndex": 0,
+            "position": [0, 0],
+            "image": "fort_arlen.png"
+        }
+    ],
     "spawnPoints": [
         {
             "name": "default",
@@ -39,20 +46,24 @@
     "enemies": [
 
     ],
+    "lights": [
+        {
+            "id": "light1",
+            "intensity": "15",
+            "active": true,
+            "x": 30,
+            "y": 10,
+            "falloff": 1.0,
+            "color": "FFE6B4"
+        }
+    ],
     "objects": [
         {
             "id": "background",
             "sprite": "FortArlenBackground",
             "loop": true,
-            "lit": false,
-            "position": [0, 0]
-        },
-        {
-            "id": "house01",
-            "sprite": "House01Idle",
-            "loop": true,
             "lit": true,
-            "position": [8, 17]
+            "position": [0, 0]
         }
     ],
     "doors": [

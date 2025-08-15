@@ -15,10 +15,10 @@
 
 void MoveLight(LightSource& light, int x, int y);
 void AddLight(LightingData& data, std::string id, int x, int y, uint8_t intensity, float falloff, Color color, bool active);
-void InitLightingData(LightingData& data, const TileMap& map);
-void PropagateLight(LightingData& data, const TileMap& map);
+void InitLightingData(LightingData& data, TileMap& map);
+void PropagateLight(LightingData& data, TileMap& map);
 Color GetVertexLight(const LightingData& data, int vx, int vy);
-Color GetVertexLight(const LightingData& data, const TileMap& map, int vx, int vy);
+Color GetVertexLight(const LightingData& data, TileMap& map, int vx, int vy);
 Color GetVertexLightWeighted(const LightingData& data, int vx, int vy);
 void RenderVisibilityMap(LightingData &data);
 void UpdateVisibilityTexture(LightingData& data);

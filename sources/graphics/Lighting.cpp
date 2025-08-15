@@ -53,7 +53,7 @@ static void ResizeTileLighting(LightingData &data, int newWidth, int newHeight) 
     }
 }
 
-void PropagateLight(LightingData& data, const TileMap& map) {
+void PropagateLight(LightingData& data, TileMap& map) {
     struct LightNode {
         int x;
         int y;
@@ -186,7 +186,7 @@ Color GetVertexLight(const LightingData& data, int vx, int vy) {
     };
 }
 
-Color GetVertexLight(const LightingData& data, const TileMap& map, int vx, int vy) {
+Color GetVertexLight(const LightingData& data, TileMap& map, int vx, int vy) {
     float r = 0.0f, g = 0.0f, b = 0.0f;
     int count = 0;
 
@@ -318,7 +318,7 @@ Texture2D GenerateVisibilityTexture(int width, int height) {
     return tex;
 }
 
-void InitLightingData(LightingData &data, const TileMap& map) {
+void InitLightingData(LightingData &data, TileMap& map) {
     //data.ambient = DARKBLUE;
     Color torchLightWarm1 = { 255, 220, 140, 255 };  // Soft creamy yellow
     Color torchLightWarm2 = { 255, 230, 180, 255 };  // Brighter warm yellow-white

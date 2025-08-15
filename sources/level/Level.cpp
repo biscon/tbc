@@ -349,6 +349,12 @@ void UpdateVisibilityMap(GameData& data, Level& level) {
         for(int x = 0; x < level.tileMap.width; x++) {
             int tileIndex = GetTileAt(level.tileMap, BOTTOM_LAYER, x, y) + GetTileAt(level.tileMap, MIDDLE_LAYER, x, y) + GetTileAt(level.tileMap, TOP_LAYER, x, y);
             Vector2i gridPos = {x,y};
+            if(HasLineOfSightToPartyLight(data.spriteData, data.charData, level, gridPos)) {
+                level.lighting.visibilityMap[x][y] = true;
+            } else {
+                level.lighting.visibilityMap[x][y] = false;
+            }
+            /*
             if(tileIndex > 0) {
                 if(HasLineOfSightToPartyLight(data.spriteData, data.charData, level, gridPos)) {
                     level.lighting.visibilityMap[x][y] = true;
@@ -358,6 +364,7 @@ void UpdateVisibilityMap(GameData& data, Level& level) {
             } else {
                 level.lighting.visibilityMap[x][y] = false;
             }
+            */
         }
     }
 }

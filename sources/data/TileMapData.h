@@ -14,10 +14,25 @@ const int TOP_LAYER = 3;
 const int NAV_LAYER = 4;
 const int SHADOW_LAYER = 5;
 
-struct TileMapLayer {
+enum class TileLayerType {
+    TILE, IMAGE
+};
+
+struct TileLayerData {
     int width;
     int height;
     int* data;
+};
+
+struct ImageLayerData {
+    int width;
+    int height;
+    Texture2D texture;
+};
+
+struct TileMapLayer {
+    TileLayerType type;
+    int dataIdx;
 };
 
 struct TileMap {
@@ -26,7 +41,11 @@ struct TileMap {
     int tileWidth;
     int tileHeight;
     int tileSet;
-    std::vector<TileMapLayer> layers;
+    std::vector<TileMapLayer> backLayers;
+    std::vector<TileMapLayer> frontLayers;
+    std::unordered_map<int, TileMapLayer> metaLayers;
+    std::vector<TileLayerData> tileLayerData;
+    std::vector<ImageLayerData> imageLayerData;
 };
 
 #endif //SANDBOX_TILEMAPDATA_H
