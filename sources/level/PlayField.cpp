@@ -519,17 +519,15 @@ void HandleInputPlayField(GameData& data, PlayField &playField, Level &level) {
 }
 
 void DrawPlayField(GameData& data, PlayField &playField, Level &level) {
-    // Bottom layer
+    // Back layers
     BeginMode2D(level.camera.camera);
-    DrawTileLayer(level.lighting, data.spriteData.sheet, level.tileMap, BOTTOM_LAYER, 0, 0);
-    DrawTileLayer(level.lighting, data.spriteData.sheet, level.tileMap, LIGHT_LAYER, 0, 0);
+    DrawLayers(level.lighting, data.spriteData.sheet, level.tileMap, level.tileMap.backLayers, 0, 0);
     EndMode2D();
 
     DrawBloodPools();
 
-    // Middle layer
+    // Doors and level objects
     BeginMode2D(level.camera.camera);
-    DrawTileLayer(level.lighting, data.spriteData.sheet, level.tileMap, MIDDLE_LAYER, 0, 0);
     DrawLevelObjects(data.spriteData, level);
     DrawDoors(data.spriteData, level);
     EndMode2D();
@@ -541,9 +539,9 @@ void DrawPlayField(GameData& data, PlayField &playField, Level &level) {
 
     DrawParticleManager(*playField.particleManager);
 
-    // Top layer
+    // Front layers
     BeginMode2D(level.camera.camera);
-    DrawTileLayer(level.lighting, data.spriteData.sheet, level.tileMap, TOP_LAYER, 0, 0);
+    DrawLayers(level.lighting, data.spriteData.sheet, level.tileMap, level.tileMap.frontLayers, 0, 0);
     RenderVisibilityMap(level.lighting);
     EndMode2D();
 }

@@ -347,7 +347,7 @@ void DestroyLevel(SpriteSheetData& sheetData, Level &level) {
 void UpdateVisibilityMap(GameData& data, Level& level) {
     for(int y = 0; y < level.tileMap.height; y++) {
         for(int x = 0; x < level.tileMap.width; x++) {
-            int tileIndex = GetTileAt(level.tileMap, BOTTOM_LAYER, x, y) + GetTileAt(level.tileMap, MIDDLE_LAYER, x, y) + GetTileAt(level.tileMap, TOP_LAYER, x, y);
+            //int tileIndex = GetTileAt(level.tileMap, BOTTOM_LAYER, x, y) + GetTileAt(level.tileMap, MIDDLE_LAYER, x, y) + GetTileAt(level.tileMap, TOP_LAYER, x, y);
             Vector2i gridPos = {x,y};
             if(HasLineOfSightToPartyLight(data.spriteData, data.charData, level, gridPos)) {
                 level.lighting.visibilityMap[x][y] = true;

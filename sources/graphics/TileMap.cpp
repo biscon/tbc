@@ -13,8 +13,79 @@
 
 using json = nlohmann::json;
 
+static void LoadLayers(TileMap &tileMap, std::vector<TileMapLayer>& stack, const json& jLayers) {
+    for (auto &jLayer : jLayers) {
+        std::string type = jLayer["type"].get<std::string>();
+        std::string name = jLayer["name"].get<std::string>();
+        if(type == "tilelayer") {
+            TraceLog(LOG_INFO, "Reading tile layer %s (type = %s)", name.c_str(), type.c_str());
+            TileLayerData layerData{};
+            TileMapLayer layer{};
+            layer.type = TileLayerType::TILE;
+            layerData.width = jLayer["width"].get<int>();
+            layerData.height = jLayer["height"].get<int>();
+            layerData.data = (int*) malloc(sizeof(int) * (layerData.width * layerData.height));
+            int index = 0;
+            for (int value : jLayer["data"]) {
+                layerData.data[index] = value;
+                index++;
+            }
+            tileMap.tileLayerData.push_back(layerData);
+            layer.dataIdx = static_cast<int>(tileMap.tileLayerData.size());
+            stack.push_back(layer);
+        }
+        if(type == "imagelayer") {
+            TraceLog(LOG_INFO, "Reading image layer %s (type = %s)", name.c_str(), type.c_str());
+            ImageLayerData layerData{};
+            TileMapLayer layer{};
+            layer.type = TileLayerType::IMAGE;
+            layerData.width = jLayer["imagewidth"].get<int>();
+            layerData.height = jLayer["imageheight"].get<int>();
+            layerData.x = jLayer["x"].get<int>();
+            layerData.y = jLayer["y"].get<int>();
+            std::string imagefile = jLayer["image"].get<std::string>();
+            layerData.texture = LoadTexture(imagefile.c_str());
+
+            layer.dataIdx = static_cast<int>(tileMap.imageLayerData.size());
+            tileMap.imageLayerData.push_back(layerData);
+            stack.push_back(layer);
+        }
+    }
+}
+
+static void LoadMetaLayers(TileMap& tileMap, const json& jLayers) {
+    for (auto &jLayer : jLayers) {
+        std::string type = jLayer["type"].get<std::string>();
+        std::string name = jLayer["name"].get<std::string>();
+        if(type == "tilelayer") {
+            TraceLog(LOG_INFO, "Reading meta layer %s (type = %s)", name.c_str(), type.c_str());
+            TileLayerData layerData{};
+            TileMapLayer layer{};
+            layer.type = TileLayerType::TILE;
+            layerData.width = jLayer["width"].get<int>();
+            layerData.height = jLayer["height"].get<int>();
+            layerData.data = (int*) malloc(sizeof(int) * (layerData.width * layerData.height));
+            int index = 0;
+            for (int value : jLayer["data"]) {
+                layerData.data[index] = value;
+                index++;
+            }
+            layer.dataIdx = static_cast<int>(tileMap.tileLayerData.size());
+            tileMap.tileLayerData.push_back(layerData);
+
+            if(name == "nav") tileMap.metaLayers[NAV_LAYER] = layer;
+            if(name == "shadow") tileMap.metaLayers[SHADOW_LAYER] = layer;
+        }
+    }
+}
+
 void LoadTileMap(TileMap &tileMap, const std::string& filename, int tileSet) {
-    tileMap.layers.clear();
+    UnloadTileMap(tileMap);
+    tileMap.backLayers.clear();
+    tileMap.frontLayers.clear();
+    tileMap.metaLayers.clear();
+    tileMap.tileLayerData.clear();
+    tileMap.imageLayerData.clear();
     tileMap.tileSet = tileSet;
 
     std::ifstream file(filename);
@@ -35,6 +106,16 @@ void LoadTileMap(TileMap &tileMap, const std::string& filename, int tileSet) {
         std::string type = jLayer["type"].get<std::string>();
         std::string name = jLayer["name"].get<std::string>();
         TraceLog(LOG_INFO, "Reading map layer %s (type = %s)", name.c_str(), type.c_str());
+        if(type == "group" && name == "back_layers") {
+            LoadLayers(tileMap, tileMap.backLayers, jLayer["layers"]);
+        }
+        if(type == "group" && name == "front_layers") {
+            LoadLayers(tileMap, tileMap.frontLayers, jLayer["layers"]);
+        }
+        if(type == "group" && name == "meta_layers") {
+            LoadMetaLayers(tileMap, jLayer["layers"]);
+        }
+        /*
         if(type == "tilelayer") {
             TileMapLayer mapLayer{};
             mapLayer.width = tileMap.width;
@@ -52,37 +133,33 @@ void LoadTileMap(TileMap &tileMap, const std::string& filename, int tileSet) {
             if(name == "nav") tileMap.layers[NAV_LAYER] = mapLayer;
             if(name == "shadow") tileMap.layers[SHADOW_LAYER] = mapLayer;
         }
+        */
     }
 
-    TraceLog(LOG_INFO, "Loaded tile map %s (%dx%d), parsed %d layers", filename.c_str(), tileMap.width, tileMap.height, tileMap.layers.size());
+    TraceLog(LOG_INFO, "Loaded tile map %s (%dx%d)", filename.c_str(), tileMap.width, tileMap.height);
 }
 
 void UnloadTileMap(TileMap &tileMap) {
     // free tile layers
-    for(auto &layer : tileMap.layers) {
-        free(layer.second.data);
-        layer.second.data = nullptr;
+    for(auto &layerData : tileMap.tileLayerData) {
+        free(layerData.data);
+        layerData.data = nullptr;
     }
 }
 
 int GetTileAt(TileMap &tileMap, int layer, int x, int y) {
-    if(layer < 0 || layer >= tileMap.layers.size()) {
+    TileLayerData& layerData = tileMap.tileLayerData[tileMap.metaLayers[layer].dataIdx];
+    if(x < 0 || x >= layerData.width || y < 0 || y >= layerData.height) {
         return -1;
     }
-    if(x < 0 || x >= tileMap.width || y < 0 || y >= tileMap.height) {
-        return -1;
-    }
-    return tileMap.layers[layer].data[y * tileMap.width + x];
+    return layerData.data[y * layerData.width + x];
 }
 
-
-void DrawTileLayer(LightingData& lightData, SpriteSheetData& sheetData, TileMap &tileMap, int layer, int x, int y) {
-    if(layer < 0 || layer >= tileMap.layers.size()) {
-        return;
-    }
+static void DrawTileLayer(LightingData& lightData, SpriteSheetData& sheetData, TileMap& tileMap, TileMapLayer& tileMapLayer, int x, int y) {
+    TileLayerData& layerData = tileMap.tileLayerData[tileMapLayer.dataIdx];
     for(int ty = 0; ty < tileMap.height; ty++) {
         for(int tx = 0; tx < tileMap.width; tx++) {
-            int tileIndex = GetTileAt(tileMap, layer, tx, ty);
+            int tileIndex = layerData.data[ty * tileMap.width + tx];
             if(tileIndex > 0) {
                 auto& texture = sheetData.texture[tileMap.tileSet];
                 auto& texRect = sheetData.frameRects[tileMap.tileSet][tileIndex-1];
@@ -110,16 +187,27 @@ void DrawTileLayer(LightingData& lightData, SpriteSheetData& sheetData, TileMap 
     }
 }
 
-void SetTiles(TileMap &tileMap, const std::vector<Vector2i> &positions, int layer, int value) {
-    for(const auto& pos : positions) {
-        if(layer < 0 || layer >= tileMap.layers.size()) {
-            TraceLog(LOG_ERROR, "Tilemap layer %i is out of bounds", layer);
-            return;
+void DrawLayers(LightingData& lightData, SpriteSheetData& sheetData, TileMap &tileMap, std::vector<TileMapLayer>& stack, int x, int y) {
+    if(stack.empty())
+        return;
+    for(auto& layer : stack) {
+        if(layer.type == TileLayerType::TILE) {
+            DrawTileLayer(lightData, sheetData, tileMap, layer, x, y);
         }
-        if(pos.x < 0 || pos.x >= tileMap.width || pos.y < 0 || pos.y >= tileMap.height) {
+        if(layer.type == TileLayerType::IMAGE) {
+
+        }
+    }
+}
+
+void SetTiles(TileMap &tileMap, const std::vector<Vector2i> &positions, int layer, int value) {
+    TileLayerData& layerData = tileMap.tileLayerData[tileMap.metaLayers[layer].dataIdx];
+    for(const auto& pos : positions) {
+        if(pos.x < 0 || pos.x >= layerData.width || pos.y < 0 || pos.y >= layerData.height) {
             TraceLog(LOG_ERROR, "Tilemap %i,%i is out of bounds", pos.x, pos.y);
             return;
         }
-        tileMap.layers[layer].data[pos.y * tileMap.width + pos.x] = value;
+
+        layerData.data[pos.y * tileMap.width + pos.x] = value;
     }
 }
