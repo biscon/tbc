@@ -45,9 +45,10 @@ static void LoadLayers(TileMap &tileMap, std::vector<TileMapLayer>& stack, const
             layerData.x = jLayer["x"].get<int>();
             layerData.y = jLayer["y"].get<int>();
             std::string imagefile = jLayer["image"].get<std::string>();
-            imagefile = ResolveRelativeToCwd(curFilePath, imagefile);
-            TraceLog(LOG_INFO, "Expanded imagepath: %s", imagefile.c_str());
-            layerData.texture = LoadTexture(imagefile.c_str());
+            //imagefile = ResolveRelativeToCwd(curFilePath, imagefile);
+            auto imagePath = ResolveRelativeToCwd(curFilePath, imagefile);
+            TraceLog(LOG_INFO, "Expanded imagepath: %s", imagePath.string().c_str());
+            layerData.texture = LoadTexture(imagePath.string().c_str());
 
             tileMap.imageLayerData.push_back(layerData);
             layer.dataIdx = static_cast<int>(tileMap.imageLayerData.size())-1;
