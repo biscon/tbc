@@ -54,3 +54,18 @@ Vector2i ToDirectionVector(Vector2 dir) {
         return { 0, (dir.y > 0) ? 1 : -1 };
     }
 }
+
+Color LerpColor(const Color& a, const Color& b, float t) {
+    return {
+            (unsigned char)(a.r + (b.r - a.r) * t),
+            (unsigned char)(a.g + (b.g - a.g) * t),
+            (unsigned char)(a.b + (b.b - a.b) * t),
+            255
+    };
+}
+
+float EaseInOutCubic(float t) {
+    return t < 0.5f
+           ? 4.0f * t * t * t
+           : 1.0f - powf(-2.0f * t + 2.0f, 3.0f) / 2.0f;
+}

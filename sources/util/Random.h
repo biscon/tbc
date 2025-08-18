@@ -25,5 +25,6 @@ T& GetRandomElement(std::vector<T>& vec) {
 }
 
 float GetRandomFloat01();
+float RandomFloat(float min, float max);
 
 #endif //SANDBOX_RANDOM_H

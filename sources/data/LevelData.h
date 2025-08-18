@@ -13,6 +13,7 @@
 #include "AnimationData.h"
 #include "SaveData.h"
 #include "TileMapData.h"
+#include "WeatherData.h"
 
 struct LevelCamera {
     Camera2D camera;
@@ -128,6 +129,8 @@ struct Level {
     std::unordered_map<std::string, LevelDoor> doors;
     // lighting
     LightingData lighting;
+    float hourOfDay = 6;
+    WeatherData weather;
 };
 
 struct LevelState {

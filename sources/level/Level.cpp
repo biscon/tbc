@@ -16,6 +16,7 @@
 #include "LevelCamera.h"
 #include "graphics/Lighting.h"
 #include "game/Items.h"
+#include "Weather.h"
 
 using json = nlohmann::json;
 
@@ -310,6 +311,8 @@ void LoadLevel(GameData& data, Level &level, const std::string &filename) {
         }
     }
     PropagateLight(level.lighting, level.tileMap);
+
+    InitWeather(level.weather, 300, level.tileMap.width * level.tileMap.tileWidth, level.tileMap.height * level.tileMap.tileHeight);
 
     InitPartySideBar(data);
 

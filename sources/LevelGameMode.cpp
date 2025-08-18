@@ -22,6 +22,7 @@
 #include "ui/Icons.h"
 #include "ui/LootInventory.h"
 #include "ai/PathFinding.h"
+#include "level/Weather.h"
 
 static GameData* game;
 static Level level;
@@ -292,8 +293,19 @@ void LevelDestroy(GameData& data) {
 }
 
 void LevelUpdate(GameData& data, float dt) {
-    UpdateCamera(level.camera, dt);
+    level.hourOfDay += dt;
+    if(level.hourOfDay > 24)
+        level.hourOfDay = 0;
 
+
+    // Example: press UP/DOWN to control rain intensity
+    if (IsKeyDown(KEY_UP))   level.weather.intensity = fminf(level.weather.intensity + dt, 1.0f);
+    if (IsKeyDown(KEY_DOWN)) level.weather.intensity = fmaxf(level.weather.intensity - dt, 0.0f);
+
+    UpdateWeather(level.weather, dt);
+    //level.hourOfDay = 21;
+
+    UpdateCamera(level.camera, dt);
     UpdateCombat(*game, level, playField, dt);
     UpdateParticleManager(particleManager, dt);
     UpdateLevelScreen(*game, level, dt);
@@ -387,6 +399,13 @@ void LevelRenderLevel(GameData& data) {
     // Only apply scissor if there's a valid area
     if (scissorW > 0 && scissorH > 0) {
         BeginScissorMode(scissorX, scissorY, scissorW, scissorH);
+        Color ambient = CalcOutdoorAmbientColorCubic(level.hourOfDay);
+        if (level.weather.lightningActive) {
+            float s = level.weather.lightningStrength;
+            ambient = LerpColor(ambient, {220, 220, 255, 255}, s);
+        }
+        level.lighting.ambient = ambient;
+        PropagateLight(level.lighting, level.tileMap);
         DrawPlayField(*game, playField, level);
         EndScissorMode();
     }
@@ -410,6 +429,10 @@ void LevelRenderUi(GameData& data) {
         Vector2 mousePos = GetScreenToWorld2D(GetMousePosition(), level.camera.camera);
         Vector2i gridPos = PixelToGridPositionI(mousePos.x, mousePos.y);
         DrawTextEx(data.smallFont1, TextFormat("GridPos: %i,%i", gridPos.x, gridPos.y), (Vector2) {1, 8}, 5, 1,
+                   YELLOW);
+        DrawTextEx(data.smallFont1, TextFormat("Time: %.2f", level.hourOfDay), (Vector2) {1, 16}, 5, 1,
+                   YELLOW);
+        DrawTextEx(data.smallFont1, TextFormat("Weather intensity: %.2f", level.weather.intensity), (Vector2) {1, 24}, 5, 1,
                    YELLOW);
     }
 }

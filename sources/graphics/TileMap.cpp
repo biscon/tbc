@@ -10,10 +10,11 @@
 #include "rlgl.h"
 #include "Lighting.h"
 #include "Rendering.h"
+#include "util/FileUtil.h"
 
 using json = nlohmann::json;
 
-static void LoadLayers(TileMap &tileMap, std::vector<TileMapLayer>& stack, const json& jLayers) {
+static void LoadLayers(TileMap &tileMap, std::vector<TileMapLayer>& stack, const json& jLayers, const std::string curFilePath) {
     for (auto &jLayer : jLayers) {
         std::string type = jLayer["type"].get<std::string>();
         std::string name = jLayer["name"].get<std::string>();
@@ -31,7 +32,7 @@ static void LoadLayers(TileMap &tileMap, std::vector<TileMapLayer>& stack, const
                 index++;
             }
             tileMap.tileLayerData.push_back(layerData);
-            layer.dataIdx = static_cast<int>(tileMap.tileLayerData.size());
+            layer.dataIdx = static_cast<int>(tileMap.tileLayerData.size())-1;
             stack.push_back(layer);
         }
         if(type == "imagelayer") {
@@ -44,10 +45,12 @@ static void LoadLayers(TileMap &tileMap, std::vector<TileMapLayer>& stack, const
             layerData.x = jLayer["x"].get<int>();
             layerData.y = jLayer["y"].get<int>();
             std::string imagefile = jLayer["image"].get<std::string>();
+            imagefile = ResolveRelativeToCwd(curFilePath, imagefile);
+            TraceLog(LOG_INFO, "Expanded imagepath: %s", imagefile.c_str());
             layerData.texture = LoadTexture(imagefile.c_str());
 
-            layer.dataIdx = static_cast<int>(tileMap.imageLayerData.size());
             tileMap.imageLayerData.push_back(layerData);
+            layer.dataIdx = static_cast<int>(tileMap.imageLayerData.size())-1;
             stack.push_back(layer);
         }
     }
@@ -70,11 +73,12 @@ static void LoadMetaLayers(TileMap& tileMap, const json& jLayers) {
                 layerData.data[index] = value;
                 index++;
             }
-            layer.dataIdx = static_cast<int>(tileMap.tileLayerData.size());
             tileMap.tileLayerData.push_back(layerData);
+            layer.dataIdx = static_cast<int>(tileMap.tileLayerData.size()-1);
 
             if(name == "nav") tileMap.metaLayers[NAV_LAYER] = layer;
             if(name == "shadow") tileMap.metaLayers[SHADOW_LAYER] = layer;
+            if(name == "light") tileMap.metaLayers[LIGHT_LAYER] = layer;
         }
     }
 }
@@ -107,33 +111,15 @@ void LoadTileMap(TileMap &tileMap, const std::string& filename, int tileSet) {
         std::string name = jLayer["name"].get<std::string>();
         TraceLog(LOG_INFO, "Reading map layer %s (type = %s)", name.c_str(), type.c_str());
         if(type == "group" && name == "back_layers") {
-            LoadLayers(tileMap, tileMap.backLayers, jLayer["layers"]);
+            LoadLayers(tileMap, tileMap.backLayers, jLayer["layers"], filename);
         }
+
         if(type == "group" && name == "front_layers") {
-            LoadLayers(tileMap, tileMap.frontLayers, jLayer["layers"]);
+            LoadLayers(tileMap, tileMap.frontLayers, jLayer["layers"], filename);
         }
         if(type == "group" && name == "meta_layers") {
             LoadMetaLayers(tileMap, jLayer["layers"]);
         }
-        /*
-        if(type == "tilelayer") {
-            TileMapLayer mapLayer{};
-            mapLayer.width = tileMap.width;
-            mapLayer.height = tileMap.height;
-            mapLayer.data = (int*) malloc(sizeof(int) * (tileMap.width * tileMap.height));
-            int index = 0;
-            for (int value : jLayer["data"]) {
-                mapLayer.data[index] = value;
-                index++;
-            }
-            if(name == "bottom") tileMap.layers[BOTTOM_LAYER] = mapLayer;
-            if(name == "middle") tileMap.layers[MIDDLE_LAYER] = mapLayer;
-            if(name == "light") tileMap.layers[LIGHT_LAYER] = mapLayer;
-            if(name == "top") tileMap.layers[TOP_LAYER] = mapLayer;
-            if(name == "nav") tileMap.layers[NAV_LAYER] = mapLayer;
-            if(name == "shadow") tileMap.layers[SHADOW_LAYER] = mapLayer;
-        }
-        */
     }
 
     TraceLog(LOG_INFO, "Loaded tile map %s (%dx%d)", filename.c_str(), tileMap.width, tileMap.height);
@@ -187,6 +173,54 @@ static void DrawTileLayer(LightingData& lightData, SpriteSheetData& sheetData, T
     }
 }
 
+static void DrawImageLayer(
+        LightingData& lightData,
+        TileMap& tileMap,
+        TileMapLayer& imageMapLayer,
+        int x, int y
+) {
+    ImageLayerData& layerData = tileMap.imageLayerData[imageMapLayer.dataIdx];
+
+    int tileW = tileMap.tileWidth;
+    int tileH = tileMap.tileHeight;
+
+    // how many tiles fit inside the image
+    int tilesWide  = layerData.width  / tileW;
+    int tilesHigh  = layerData.height / tileH;
+
+    // pixel offset converted to *tile-space* offset
+    float tileOffsetX = (float)layerData.x / (float)tileW;
+    float tileOffsetY = (float)layerData.y / (float)tileH;
+
+    for (int ty = 0; ty < tilesHigh; ty++) {
+        for (int tx = 0; tx < tilesWide; tx++) {
+            // slice source rect from image
+            Rectangle texRect{
+                    (float)(tx * tileW),
+                    (float)(ty * tileH),
+                    (float)tileW,
+                    (float)tileH
+            };
+
+            // destination rect in world space (apply global offset + layer offset)
+            Rectangle dstRect{
+                    (float)(x + layerData.x + tx * tileW),
+                    (float)(y + layerData.y + ty * tileH),
+                    (float)tileW,
+                    (float)tileH
+            };
+
+            // sample lighting with *float tile offsets*
+            Color v1 = GetVertexLightWeighted(lightData, tx + tileOffsetX,     ty + tileOffsetY);
+            Color v2 = GetVertexLightWeighted(lightData, tx + 1 + tileOffsetX, ty + tileOffsetY);
+            Color v3 = GetVertexLightWeighted(lightData, tx + 1 + tileOffsetX, ty + 1 + tileOffsetY);
+            Color v4 = GetVertexLightWeighted(lightData, tx + tileOffsetX,     ty + 1 + tileOffsetY);
+
+            DrawTexturedQuadWithVertexColors(layerData.texture, texRect, dstRect, v1, v2, v3, v4);
+        }
+    }
+}
+
 void DrawLayers(LightingData& lightData, SpriteSheetData& sheetData, TileMap &tileMap, std::vector<TileMapLayer>& stack, int x, int y) {
     if(stack.empty())
         return;
@@ -195,7 +229,7 @@ void DrawLayers(LightingData& lightData, SpriteSheetData& sheetData, TileMap &ti
             DrawTileLayer(lightData, sheetData, tileMap, layer, x, y);
         }
         if(layer.type == TileLayerType::IMAGE) {
-
+            DrawImageLayer(lightData, tileMap, layer, 0, 0);
         }
     }
 }

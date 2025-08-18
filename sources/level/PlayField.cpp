@@ -17,6 +17,7 @@
 #include "ai/PathFinding.h"
 #include "graphics/Lighting.h"
 #include "ui/Icons.h"
+#include "Weather.h"
 
 static bool IsCharacterVisible(Level &level, int character) {
     // Check if the character is visible (not blinking)
@@ -421,6 +422,7 @@ static bool handleDoors(GameData& data, Level &level, Vector2i playerPos, Vector
                 }
                 SetTiles(level.tileMap, door.blockedTiles, NAV_LAYER, doorState.open ? 0 : 1);
                 SetTiles(level.tileMap, door.shadowTiles, SHADOW_LAYER, doorState.open ? 0 : 1);
+                SetTiles(level.tileMap, door.shadowTiles, LIGHT_LAYER, doorState.open ? 0 : 1);
                 PropagateLight(level.lighting, level.tileMap);
                 return true;
             }
@@ -535,6 +537,10 @@ void DrawPlayField(GameData& data, PlayField &playField, Level &level) {
     // Characters
     BeginMode2D(level.camera.camera);
     DrawGridCharacters(data, level, playField);
+
+    //DrawWeather(level.weather, {200, 200, 255, 120});
+    DrawWeather(level.weather, level.lighting.ambient);
+
     EndMode2D();
 
     DrawParticleManager(*playField.particleManager);

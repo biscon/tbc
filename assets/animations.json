@@ -1458,37 +1458,19 @@
         ]
     },
     {
-        "group": "House01",
-        "sheet": "house_01.png",
-        "frameWidth": 160,
-        "frameHeight": 112,
+        "group": "TrashcanFire",
+        "sheet": "trashcan_fire.png",
+        "frameWidth": 16,
+        "frameHeight": 32,
         "animations": [
             {
                 "name": "Idle",
                 "origin": [0, 0],
                 "frames": [
-                    0
+                    0,1,2,3
                 ],
                 "delays": [
-                    0.10
-                ]
-            }
-        ]
-    },
-    {
-        "group": "FortArlen",
-        "sheet": "fort_arlen.png",
-        "frameWidth": 1024,
-        "frameHeight": 512,
-        "animations": [
-            {
-                "name": "Background",
-                "origin": [0, 0],
-                "frames": [
-                    0
-                ],
-                "delays": [
-                    0.10
+                    0.10,0.10,0.10,0.10
                 ]
             }
         ]

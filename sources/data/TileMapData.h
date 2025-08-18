@@ -9,6 +9,7 @@
 
 const int NAV_LAYER = 0;
 const int SHADOW_LAYER = 1;
+const int LIGHT_LAYER = 2;
 
 enum class TileLayerType {
     TILE, IMAGE

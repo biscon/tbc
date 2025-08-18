@@ -59,7 +59,6 @@ add_executable(${PROJECT_NAME}
         sources/ai/Ai.h
         sources/ai/FighterAi.cpp
         sources/ai/FighterAi.h
-        sources/util/cute_tiled.h
         sources/ai/PathFinding.cpp
         sources/ai/PathFinding.h
         sources/graphics/TileMap.cpp
@@ -159,6 +158,11 @@ add_executable(${PROJECT_NAME}
         sources/ui/SharedInventoryUI.h
         sources/ai/RangedAi.cpp
         sources/ai/RangedAi.h
+        sources/util/FileUtil.cpp
+        sources/util/FileUtil.h
+        sources/level/Weather.cpp
+        sources/level/Weather.h
+        sources/data/WeatherData.h
 )
 target_sources(${PROJECT_NAME} PRIVATE ${PROJECT_SOURCES})
 target_include_directories(${PROJECT_NAME} PRIVATE ${PROJECT_INCLUDE})

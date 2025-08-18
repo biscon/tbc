@@ -2,14 +2,7 @@
     "name": "Fort Arlen",
     "map": "fort_arlen_map.json",
     "tileset": "indoor_tiles2.png",
-    "ambientLight": "888888",
-    "imageLayers": [
-        {
-            "zIndex": 0,
-            "position": [0, 0],
-            "image": "fort_arlen.png"
-        }
-    ],
+    "ambientLight": "FFF8E7",
     "spawnPoints": [
         {
             "name": "default",
@@ -51,19 +44,115 @@
             "id": "light1",
             "intensity": "15",
             "active": true,
-            "x": 30,
-            "y": 10,
-            "falloff": 1.0,
+            "x": 28,
+            "y": 9,
+            "falloff": 2.0,
+            "color": "FFE6B4"
+        },
+        {
+            "id": "light2",
+            "intensity": "15",
+            "active": true,
+            "x": 35,
+            "y": 9,
+            "falloff": 2.0,
+            "color": "FFE6B4"
+        },
+        {
+            "id": "light3",
+            "intensity": "15",
+            "active": true,
+            "x": 37,
+            "y": 17,
+            "falloff": 2.0,
+            "color": "FFE6B4"
+        },
+        {
+            "id": "light4",
+            "intensity": "15",
+            "active": true,
+            "x": 49,
+            "y": 18,
+            "falloff": 2.0,
+            "color": "FFE6B4"
+        },
+        {
+            "id": "light5",
+            "intensity": "15",
+            "active": true,
+            "x": 57,
+            "y": 17,
+            "falloff": 2.0,
+            "color": "FFE6B4"
+        },
+        {
+            "id": "light6",
+            "intensity": "15",
+            "active": true,
+            "x": 15,
+            "y": 19,
+            "falloff": 2.0,
+            "color": "FFE6B4"
+        },
+        {
+            "id": "light7",
+            "intensity": "15",
+            "active": true,
+            "x": 6,
+            "y": 18,
+            "falloff": 2.0,
             "color": "FFE6B4"
         }
     ],
     "objects": [
         {
-            "id": "background",
-            "sprite": "FortArlenBackground",
+            "id": "trashcan_fire_1",
+            "sprite": "TrashcanFireIdle",
             "loop": true,
             "lit": true,
-            "position": [0, 0]
+            "position": [28, 9]
+        },
+        {
+            "id": "trashcan_fire_2",
+            "sprite": "TrashcanFireIdle",
+            "loop": true,
+            "lit": true,
+            "position": [35, 9]
+        },
+        {
+            "id": "trashcan_fire_3",
+            "sprite": "TrashcanFireIdle",
+            "loop": true,
+            "lit": true,
+            "position": [37, 17]
+        },
+        {
+            "id": "trashcan_fire_4",
+            "sprite": "TrashcanFireIdle",
+            "loop": true,
+            "lit": true,
+            "position": [49, 18]
+        },
+        {
+            "id": "trashcan_fire_5",
+            "sprite": "TrashcanFireIdle",
+            "loop": true,
+            "lit": true,
+            "position": [57, 17]
+        },
+        {
+            "id": "trashcan_fire_6",
+            "sprite": "TrashcanFireIdle",
+            "loop": true,
+            "lit": true,
+            "position": [15, 19]
+        },
+        {
+            "id": "trashcan_fire_7",
+            "sprite": "TrashcanFireIdle",
+            "loop": true,
+            "lit": true,
+            "position": [6, 18]
         }
     ],
     "doors": [
