@@ -3,6 +3,7 @@
     "map": "fort_arlen_map.json",
     "tileset": "indoor_tiles2.png",
     "ambientLight": "FFF8E7",
+    "outdoor": true,
     "spawnPoints": [
         {
             "name": "default",
@@ -25,7 +26,7 @@
     ],
     "exits": [
         {
-            "level": "indoor_level.json",
+            "level": "fort_arlen_interior_level.json",
             "spawnPoint": "default",
             "x": 31,
             "y": 8,

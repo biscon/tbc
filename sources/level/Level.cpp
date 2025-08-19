@@ -122,6 +122,9 @@ void LoadLevel(GameData& data, Level &level, const std::string &filename) {
     level.name = n;
     data.currentLevelId = n;
     TraceLog(LOG_INFO, "Level name: %s", n.c_str());
+
+    level.outdoor = j["outdoor"].get<bool>();
+
     if(level.tileSet != -1) {
         UnloadSpriteSheet(data.spriteData.sheet, level.tileSet);
     }
@@ -295,6 +298,8 @@ void LoadLevel(GameData& data, Level &level, const std::string &filename) {
     if (j.contains("ambientLight")) {
         level.lighting.ambient = HexToColor(j["ambientLight"]);
     }
+
+    AddLight(level.lighting, "partyLight", 10, 10, 8.0f, 1.5f, Color{255,230,180,255}, true);
 
     // Load lights
     if (j.contains("lights") && j["lights"].is_array()) {

@@ -539,8 +539,6 @@ void DrawPlayField(GameData& data, PlayField &playField, Level &level) {
     DrawGridCharacters(data, level, playField);
 
     //DrawWeather(level.weather, {200, 200, 255, 120});
-    DrawWeather(level.weather, level.lighting.ambient);
-
     EndMode2D();
 
     DrawParticleManager(*playField.particleManager);
@@ -548,7 +546,11 @@ void DrawPlayField(GameData& data, PlayField &playField, Level &level) {
     // Front layers
     BeginMode2D(level.camera.camera);
     DrawLayers(level.lighting, data.spriteData.sheet, level.tileMap, level.tileMap.frontLayers, 0, 0);
-    RenderVisibilityMap(level.lighting);
+    if(level.outdoor) {
+        DrawWeather(level.weather, level.lighting.ambient);
+    } else {
+        RenderVisibilityMap(level.lighting);
+    }
     EndMode2D();
 }
 

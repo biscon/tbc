@@ -131,6 +131,7 @@ struct Level {
     LightingData lighting;
     float hourOfDay = 6;
     WeatherData weather;
+    bool outdoor = true;
 };
 
 struct LevelState {

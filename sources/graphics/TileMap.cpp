@@ -42,8 +42,16 @@ static void LoadLayers(TileMap &tileMap, std::vector<TileMapLayer>& stack, const
             layer.type = TileLayerType::IMAGE;
             layerData.width = jLayer["imagewidth"].get<int>();
             layerData.height = jLayer["imageheight"].get<int>();
-            layerData.x = jLayer["x"].get<int>();
-            layerData.y = jLayer["y"].get<int>();
+            if(jLayer.contains("offsetx"))
+                layerData.x = (int) jLayer["offsetx"].get<float>();
+            else
+                layerData.x = 0;
+
+            if(jLayer.contains("offsety"))
+                layerData.y = (int) jLayer["offsety"].get<float>();
+            else
+                layerData.y = 0;
+            
             std::string imagefile = jLayer["image"].get<std::string>();
             //imagefile = ResolveRelativeToCwd(curFilePath, imagefile);
             auto imagePath = ResolveRelativeToCwd(curFilePath, imagefile);

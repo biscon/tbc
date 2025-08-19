@@ -1,0 +1,177 @@
+{
+    "name": "Fort Arlen Interior",
+    "map": "fort_arlen_interior_map.json",
+    "tileset": "indoor_tiles2.png",
+    "ambientLight": "050A1E",
+    "outdoor": false,
+    "spawnPoints": [
+        {
+            "name": "default",
+            "x": 3,
+            "y": 15,
+            "radius": 3
+        }
+    ],
+    "flags": [
+        {
+            "id": "testFlag",
+            "value": false
+        }
+    ],
+    "exits": [
+        {
+            "level": "fort_arlen_level.json",
+            "spawnPoint": "mainEntrance",
+            "x": 0,
+            "y": 13,
+            "width": 1,
+            "height": 6
+        }
+    ],
+    "npcs": [
+
+    ],
+    "enemies": [
+
+    ],
+    "lights": [
+        {
+            "id": "light1",
+            "intensity": "15",
+            "active": true,
+            "x": 2,
+            "y": 12,
+            "falloff": 1.5,
+            "color": "FFE6B4"
+        },
+        {
+            "id": "light2",
+            "intensity": "15",
+            "active": true,
+            "x": 2,
+            "y": 18,
+            "falloff": 1.5,
+            "color": "FFE6B4"
+        },
+        {
+            "id": "light3",
+            "intensity": "15",
+            "active": true,
+            "x": 5,
+            "y": 5,
+            "falloff": 1.5,
+            "color": "FFE6B4"
+        },
+        {
+            "id": "light4",
+            "intensity": "15",
+            "active": true,
+            "x": 11,
+            "y": 5,
+            "falloff": 1.5,
+            "color": "FFE6B4"
+        },
+        {
+            "id": "light5",
+            "intensity": "15",
+            "active": true,
+            "x": 5,
+            "y": 25,
+            "falloff": 1.5,
+            "color": "FFE6B4"
+        },
+        {
+            "id": "light6",
+            "intensity": "15",
+            "active": true,
+            "x": 11,
+            "y": 25,
+            "falloff": 1.5,
+            "color": "FFE6B4"
+        },
+        {
+            "id": "light7",
+            "intensity": "15",
+            "active": true,
+            "x": 14,
+            "y": 12,
+            "falloff": 1.5,
+            "color": "FFE6B4"
+        },
+        {
+            "id": "light8",
+            "intensity": "15",
+            "active": true,
+            "x": 14,
+            "y": 18,
+            "falloff": 1.5,
+            "color": "FFE6B4"
+        },
+        {
+            "id": "light8",
+            "intensity": "15",
+            "active": true,
+            "x": 27,
+            "y": 12,
+            "falloff": 1.0,
+            "color": "FFE6B4"
+        }
+    ],
+    "objects": [
+        {
+            "id": "walltorch1",
+            "sprite": "WallTorchFront",
+            "loop": true,
+            "lit": false,
+            "position": [2, 12]
+        },
+        {
+            "id": "walltorch2",
+            "sprite": "WallTorchFront",
+            "loop": true,
+            "lit": false,
+            "position": [5, 5]
+        },
+        {
+            "id": "walltorch3",
+            "sprite": "WallTorchFront",
+            "loop": true,
+            "lit": false,
+            "position": [11, 5]
+        },
+        {
+            "id": "walltorch4",
+            "sprite": "WallTorchFront",
+            "loop": true,
+            "lit": false,
+            "position": [14, 12]
+        },
+        {
+            "id": "walltorch5",
+            "sprite": "WallTorchFront",
+            "loop": true,
+            "lit": false,
+            "position": [27, 12]
+        }
+    ],
+    "doors": [
+        {
+            "id": "door1",
+            "sprite": "HorizDoorOpen",
+            "position": [32, 3],
+            "open": false,
+            "locked": false,
+            "blockedTiles": [[32,5], [32,6]],
+            "shadowTiles": [[32,3],[32,4],[32,5],[32,6]]
+        },
+        {
+            "id": "door2",
+            "sprite": "HorizDoorOpen",
+            "position": [32, 23],
+            "open": false,
+            "locked": false,
+            "blockedTiles": [[32,25], [32,26]],
+            "shadowTiles": [[32,23],[32,24],[32,25],[32,26]]
+        }
+    ]
+}

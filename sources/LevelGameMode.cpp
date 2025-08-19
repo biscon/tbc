@@ -293,17 +293,20 @@ void LevelDestroy(GameData& data) {
 }
 
 void LevelUpdate(GameData& data, float dt) {
-    level.hourOfDay += dt;
-    if(level.hourOfDay > 24)
-        level.hourOfDay = 0;
+    if(IsKeyDown(KEY_SPACE)) {
+        level.hourOfDay += dt;
+        if (level.hourOfDay > 24)
+            level.hourOfDay = 0;
+    }
 
+    //level.hourOfDay = 1;
 
-    // Example: press UP/DOWN to control rain intensity
-    if (IsKeyDown(KEY_UP))   level.weather.intensity = fminf(level.weather.intensity + dt, 1.0f);
-    if (IsKeyDown(KEY_DOWN)) level.weather.intensity = fmaxf(level.weather.intensity - dt, 0.0f);
-
-    UpdateWeather(level.weather, dt);
-    //level.hourOfDay = 21;
+    if(level.outdoor) {
+        // Example: press UP/DOWN to control rain intensity
+        if (IsKeyDown(KEY_UP))   level.weather.intensity = fminf(level.weather.intensity + dt, 1.0f);
+        if (IsKeyDown(KEY_DOWN)) level.weather.intensity = fmaxf(level.weather.intensity - dt, 0.0f);
+        UpdateWeather(level.weather, dt);
+    }
 
     UpdateCamera(level.camera, dt);
     UpdateCombat(*game, level, playField, dt);
@@ -318,8 +321,15 @@ void LevelUpdate(GameData& data, float dt) {
         UpdateActionBar(*game, dt);
     }
 
-    UpdateVisibilityMap(*game, level);
-    UpdateVisibilityTexture(level.lighting);
+    if(!level.outdoor) {
+        UpdateVisibilityMap(*game, level);
+        UpdateVisibilityTexture(level.lighting);
+    }
+    Vector2i partyPos = GetCharacterGridPosI(data.spriteData, data.charData.sprite[data.ui.selectedCharacter]);
+    if(!level.lighting.lights.empty()) {
+        level.lighting.lights[0].x = partyPos.x;
+        level.lighting.lights[0].y = partyPos.y;
+    }
     //PropagateLight(level.lighting, level.tileMap);
 }
 
@@ -399,12 +409,15 @@ void LevelRenderLevel(GameData& data) {
     // Only apply scissor if there's a valid area
     if (scissorW > 0 && scissorH > 0) {
         BeginScissorMode(scissorX, scissorY, scissorW, scissorH);
-        Color ambient = CalcOutdoorAmbientColorCubic(level.hourOfDay);
-        if (level.weather.lightningActive) {
-            float s = level.weather.lightningStrength;
-            ambient = LerpColor(ambient, {220, 220, 255, 255}, s);
+        if(level.outdoor) {
+            Color ambient = CalcOutdoorAmbientColorCubic(level.hourOfDay);
+            // lightning flash
+            if (level.weather.lightningActive) {
+                float s = level.weather.lightningStrength;
+                ambient = LerpColor(ambient, {220, 220, 255, 255}, s);
+            }
+            level.lighting.ambient = ambient;
         }
-        level.lighting.ambient = ambient;
         PropagateLight(level.lighting, level.tileMap);
         DrawPlayField(*game, playField, level);
         EndScissorMode();
