@@ -129,7 +129,7 @@ struct Level {
     std::unordered_map<std::string, LevelDoor> doors;
     // lighting
     LightingData lighting;
-    float hourOfDay = 6;
+    float hourOfDay = 12;
     WeatherData weather;
     bool outdoor = true;
 };

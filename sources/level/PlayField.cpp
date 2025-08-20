@@ -523,7 +523,7 @@ void HandleInputPlayField(GameData& data, PlayField &playField, Level &level) {
 void DrawPlayField(GameData& data, PlayField &playField, Level &level) {
     // Back layers
     BeginMode2D(level.camera.camera);
-    DrawLayers(level.lighting, data.spriteData.sheet, level.tileMap, level.tileMap.backLayers, 0, 0);
+    DrawLayers(data, level.lighting, data.spriteData.sheet, level.tileMap, level.tileMap.backLayers, 0, 0);
     EndMode2D();
 
     DrawBloodPools();
@@ -545,7 +545,7 @@ void DrawPlayField(GameData& data, PlayField &playField, Level &level) {
 
     // Front layers
     BeginMode2D(level.camera.camera);
-    DrawLayers(level.lighting, data.spriteData.sheet, level.tileMap, level.tileMap.frontLayers, 0, 0);
+    DrawLayers(data, level.lighting, data.spriteData.sheet, level.tileMap, level.tileMap.frontLayers, 0, 0);
     if(level.outdoor) {
         DrawWeather(level.weather, level.lighting.ambient);
     } else {

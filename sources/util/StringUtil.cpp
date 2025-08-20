@@ -35,3 +35,7 @@ std::string TruncateWithEllipsis(const std::string& input, size_t maxLength) {
         return input.substr(0, maxLength) + "..";
     return input;
 }
+
+bool startsWith(const std::string &s, const std::string &prefix) {
+    return s.size() >= prefix.size() && s.compare(0, prefix.size(), prefix) == 0;
+}

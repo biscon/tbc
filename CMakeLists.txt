@@ -163,6 +163,8 @@ add_executable(${PROJECT_NAME}
         sources/level/Weather.cpp
         sources/level/Weather.h
         sources/data/WeatherData.h
+        sources/util/GraphicUtil.cpp
+        sources/util/GraphicUtil.h
 )
 target_sources(${PROJECT_NAME} PRIVATE ${PROJECT_SOURCES})
 target_include_directories(${PROJECT_NAME} PRIVATE ${PROJECT_INCLUDE})

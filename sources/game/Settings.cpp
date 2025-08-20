@@ -59,6 +59,7 @@ void SaveSettings(const SettingsData& settings) {
     j["monitor"] = settings.monitor;
     j["showFPS"] = settings.showFPS;
     j["lockFPS"] = settings.fpsLock;
+    j["exposure"] = settings.exposure;
 
     std::ofstream file(settings.filename);
     if (file) {
@@ -107,6 +108,9 @@ void InitSettings(SettingsData& data, const std::string &filename) {
         }
         if(j.contains("monitor")) {
             j["monitor"].get_to(data.monitor);
+        }
+        if(j.contains("exposure")) {
+            j["exposure"].get_to(data.exposure);
         }
     }
 

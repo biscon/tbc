@@ -22,7 +22,12 @@ using MenuBuilder = std::function<std::shared_ptr<Menu>()>;
 struct MenuItem {
     std::string text;
     bool isSubmenu = false;
-    std::function<void()> action;             // only used if !isSubmenu
+    bool isSlider = false;
+    std::function<void()> action;               // only used if !isSubmenu
+    std::function<float()> getValue;            // slider value getter
+    std::function<void(float)> setValue;        // slider value setter
+    float sliderMin = 0.0f;  // slider range
+    float sliderMax = 1.0f;
     MenuBuilder submenuBuilder = nullptr;
     Color color = LIGHTGRAY;
     bool enabled = true;
@@ -165,6 +170,35 @@ static std::shared_ptr<Menu> createDebugMenu() {
     return debugMenu;
 }
 
+static std::shared_ptr<Menu> createExposureMenu() {
+    auto menu = std::make_shared<Menu>();
+    menu->title = "Exposure";
+    menu->hint = "Increase to make the game world look brighter.";
+
+    MenuItem exposureSlider;
+    exposureSlider.text = "Exposure";
+    exposureSlider.isSlider = true;
+    exposureSlider.sliderMin = 0.5;
+    exposureSlider.sliderMax = 2.5;
+    exposureSlider.getValue = []() { return game->settingsData.exposure; };
+    exposureSlider.setValue = [](float v) {
+        game->settingsData.exposure = v;
+        TraceLog(LOG_INFO, "exposure = %f", game->settingsData.exposure);
+    };
+    menu->items.push_back(exposureSlider);
+
+    MenuItem back;
+    back.text = "Back";
+    back.isSubmenu = false;
+    back.action = [] {
+        SaveSettings(game->settingsData);
+        if (!menuStack.empty()) menuStack.pop();
+    };
+    menu->items.push_back(back);
+
+    return menu;
+}
+
 static std::shared_ptr<Menu> createSettingsMenu() {
     // Settings submenu
     auto settingsMenu = std::make_shared<Menu>();
@@ -180,6 +214,12 @@ static std::shared_ptr<Menu> createSettingsMenu() {
     displayMode.isSubmenu = true;
     displayMode.submenuBuilder = createDisplayModeMenu;
     settingsMenu->items.push_back(displayMode);
+
+    MenuItem exposure;
+    exposure.text = "Exposure";
+    exposure.isSubmenu = true;
+    exposure.submenuBuilder = createExposureMenu;
+    settingsMenu->items.push_back(exposure);
 
     MenuItem debugOptions;
     debugOptions.text = "Debug Options";
@@ -271,6 +311,8 @@ void MenuInit(GameData& data) {
 void MenuUpdate(GameData& data, float dt) {
 }
 
+//static MenuItem* activeSlider = nullptr;
+
 void MenuRenderUi(GameData& data) {
     ClearBackground(MENU_BG_COLOR);
     if (menuStack.empty()) return;
@@ -290,6 +332,7 @@ void MenuRenderUi(GameData& data) {
     if(!menu->hint.empty()) {
         DrawText(menu->hint.c_str(), menuX - (MeasureText(menu->hint.c_str(), 10) / 2), 255, 10, LIGHTGRAY);
     }
+    static bool dragging = false;
 
     for (int i = 0; i < (int)menu->items.size(); ++i) {
         bool enabled = menu->items[i].enabled;
@@ -300,21 +343,62 @@ void MenuRenderUi(GameData& data) {
         bool hovered = enabled && CheckCollisionPointRec(GetMousePosition(), rect);
         bool clicked = hovered && IsMouseButtonPressed(MOUSE_LEFT_BUTTON);
 
-        DrawRectangleRec(rect, hovered ? Fade(WHITE, 0.1f) : Fade(WHITE, 0.05f));
-        DrawRectangleLinesEx(rect, 1.0f, hovered ? YELLOW : DARKGRAY);
-        if(enabled) {
-            DrawText(menu->items[i].text.c_str(), (int) (x + 10), (int) (y + 4), 10,
-                     hovered ? YELLOW : menu->items[i].color);
-        } else {
-            DrawText(menu->items[i].text.c_str(), (int) (x + 10), (int) (y + 4), 10,DARKGRAY);
+        if (!menu->items[i].isSlider) {
+            DrawRectangleRec(rect, hovered ? Fade(WHITE, 0.1f) : Fade(WHITE, 0.05f));
+            DrawRectangleLinesEx(rect, 1.0f, hovered ? YELLOW : DARKGRAY);
+            if (enabled) {
+                DrawText(menu->items[i].text.c_str(), (int) (x + 10), (int) (y + 4), 10,
+                         hovered ? YELLOW : menu->items[i].color);
+            } else {
+                DrawText(menu->items[i].text.c_str(), (int) (x + 10), (int) (y + 4), 10, DARKGRAY);
+            }
+
+            if (clicked) {
+                auto &item = menu->items[i];
+                if (item.isSubmenu && item.submenuBuilder) {
+                    menuStack.push(item.submenuBuilder);
+                } else if (item.action) {
+                    item.action();
+                }
+            }
         }
 
-        if (clicked) {
-            auto& item = menu->items[i];
-            if (item.isSubmenu && item.submenuBuilder) {
-                menuStack.push(item.submenuBuilder);
-            } else if (item.action) {
-                item.action();
+        if (menu->items[i].isSlider) {
+            float sliderWidth = itemWidth - 20;
+            float sliderHeight = 6;
+            float sliderX = x + 10;
+            float sliderY = y;
+
+            // normalize value 0..1
+            float rawValue = menu->items[i].getValue();
+            float value = (rawValue - menu->items[i].sliderMin) / (menu->items[i].sliderMax - menu->items[i].sliderMin);
+            value = fminf(fmaxf(value, 0.0f), 1.0f);
+
+            float knobX = sliderX + value * sliderWidth;
+
+            // track
+            DrawRectangle(sliderX, sliderY, sliderWidth, sliderHeight, DARKGRAY);
+            DrawRectangle(knobX - 5, sliderY - 2, 10, sliderHeight + 4, YELLOW);
+
+            // numeric value
+            char buf[16];
+            snprintf(buf, sizeof(buf), "%.2f", rawValue);
+            DrawText(buf, sliderX + sliderWidth + 10, sliderY-2, 10, WHITE);
+
+            // mouse interaction
+            if (CheckCollisionPointRec(GetMousePosition(), {sliderX, sliderY - 4, sliderWidth, sliderHeight + 8})
+                && IsMouseButtonDown(MOUSE_LEFT_BUTTON) && !dragging) {
+                dragging = true;
+            }
+            if(dragging) {
+                float newValue = (GetMousePosition().x - sliderX) / sliderWidth;
+                newValue = fminf(fmaxf(newValue, 0.0f), 1.0f);
+                // map back to raw range
+                newValue = menu->items[i].sliderMin + newValue * (menu->items[i].sliderMax - menu->items[i].sliderMin);
+                menu->items[i].setValue(newValue);
+                if(!IsMouseButtonDown(MOUSE_LEFT_BUTTON)) {
+                    dragging = false;
+                }
             }
         }
     }

@@ -75,6 +75,11 @@ int main() {
 
     SettingsData& settings = game.settingsData;
 
+    Shader postProcessShader = LoadShader(nullptr, "../shaders/post_process.fs.glsl");
+    int exposureLoc = GetShaderLocation(postProcessShader, "exposure");
+    SetShaderValue(postProcessShader, exposureLoc, &settings.exposure, SHADER_UNIFORM_FLOAT);
+
+    game.windShader = LoadShader("../shaders/vegetation_wind.vs.glsl", "../shaders/vegetation_wind.fs.glsl");
 
     HideCursor();
 
@@ -112,12 +117,13 @@ int main() {
         UpdateSoundEffects(dt);
         UpdateGameMode(game, dt);
 
-
         PreRenderGameMode(game);
 
         // Render level to level target
         BeginTextureMode(game.levelTarget);
+            BeginBlendMode(BLEND_ALPHA_PREMULTIPLY);
             RenderLevelGameMode(game);
+            EndBlendMode();
         EndTextureMode();
 
         // Render to UI target
@@ -132,15 +138,18 @@ int main() {
         EndTextureMode();
 
         BeginDrawing();
-            ClearBackground(BLACK);     // Clear screen background
-            DrawTexturePro(
-                    game.levelTarget.texture,
-                    (Rectangle){ 0, 0, gameScreenWidth, -gameScreenHeight },   // Render texture source (Y flipped)
-                    (Rectangle){ finalX, finalY, (float) renderWidth, (float) renderHeight }, // Upscaled target rectangle
-                    (Vector2){ 0, 0 },
-                    0.0f,
-                    WHITE
-            );
+            SetShaderValue(postProcessShader, exposureLoc, &settings.exposure, SHADER_UNIFORM_FLOAT);
+            BeginShaderMode(postProcessShader);
+                ClearBackground(BLACK);     // Clear screen background
+                DrawTexturePro(
+                        game.levelTarget.texture,
+                        (Rectangle){ 0, 0, gameScreenWidth, -gameScreenHeight },   // Render texture source (Y flipped)
+                        (Rectangle){ finalX, finalY, (float) renderWidth, (float) renderHeight }, // Upscaled target rectangle
+                        (Vector2){ 0, 0 },
+                        0.0f,
+                        WHITE
+                );
+            EndShaderMode();
 
             DrawTexturePro(
                     game.uiTarget.texture,

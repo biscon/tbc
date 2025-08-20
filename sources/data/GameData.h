@@ -66,6 +66,9 @@ struct GameData {
     RenderTexture2D levelTarget;
     RenderTexture2D uiTarget;
     Font smallFont1;
+
+    Shader windShader;
+    float shaderTime = 0.0f;
 };
 
 #endif //SANDBOX_GAMEDATA_H

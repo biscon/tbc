@@ -26,6 +26,7 @@ struct ImageLayerData {
     int height;
     int x;
     int y;
+    bool windShader;
     Texture2D texture;
 };
 

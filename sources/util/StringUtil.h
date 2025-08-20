@@ -10,5 +10,6 @@
 
 Color HexToColor(const std::string& hex);
 std::string TruncateWithEllipsis(const std::string& input, size_t maxLength);
+bool startsWith(const std::string &s, const std::string &prefix);
 
 #endif //SANDBOX_STRINGUTIL_H

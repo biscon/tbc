@@ -293,6 +293,8 @@ void LevelDestroy(GameData& data) {
 }
 
 void LevelUpdate(GameData& data, float dt) {
+    data.shaderTime += dt;
+
     if(IsKeyDown(KEY_SPACE)) {
         level.hourOfDay += dt;
         if (level.hourOfDay > 24)

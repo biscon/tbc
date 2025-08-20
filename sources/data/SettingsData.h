@@ -33,6 +33,7 @@ struct SettingsData {
     bool needsApply = false;
     bool showFPS = false;
     bool fpsLock = true;
+    float exposure = 1.1;
 };
 
 

@@ -11,6 +11,8 @@
 #include "Lighting.h"
 #include "Rendering.h"
 #include "util/FileUtil.h"
+#include "util/GraphicUtil.h"
+#include "util/StringUtil.h"
 
 using json = nlohmann::json;
 
@@ -42,6 +44,13 @@ static void LoadLayers(TileMap &tileMap, std::vector<TileMapLayer>& stack, const
             layer.type = TileLayerType::IMAGE;
             layerData.width = jLayer["imagewidth"].get<int>();
             layerData.height = jLayer["imageheight"].get<int>();
+
+            if(startsWith(name, "wind_")) {
+                layerData.windShader = true;
+            } else {
+                layerData.windShader = false;
+            }
+
             if(jLayer.contains("offsetx"))
                 layerData.x = (int) jLayer["offsetx"].get<float>();
             else
@@ -56,7 +65,7 @@ static void LoadLayers(TileMap &tileMap, std::vector<TileMapLayer>& stack, const
             //imagefile = ResolveRelativeToCwd(curFilePath, imagefile);
             auto imagePath = ResolveRelativeToCwd(curFilePath, imagefile);
             TraceLog(LOG_INFO, "Expanded imagepath: %s", imagePath.string().c_str());
-            layerData.texture = LoadTexture(imagePath.string().c_str());
+            layerData.texture = LoadTexturePreMultiplied(imagePath.string().c_str());
 
             tileMap.imageLayerData.push_back(layerData);
             layer.dataIdx = static_cast<int>(tileMap.imageLayerData.size())-1;
@@ -183,6 +192,7 @@ static void DrawTileLayer(LightingData& lightData, SpriteSheetData& sheetData, T
 }
 
 static void DrawImageLayer(
+        GameData& data,
         LightingData& lightData,
         TileMap& tileMap,
         TileMapLayer& imageMapLayer,
@@ -193,33 +203,65 @@ static void DrawImageLayer(
     int tileW = tileMap.tileWidth;
     int tileH = tileMap.tileHeight;
 
-    // how many tiles fit inside the image
-    int tilesWide  = layerData.width  / tileW;
-    int tilesHigh  = layerData.height / tileH;
+    // how many tiles fit inside the image (at least 1)
+    int tilesWide = std::max(1, (layerData.width  + tileW - 1) / tileW);
+    int tilesHigh = std::max(1, (layerData.height + tileH - 1) / tileH);
 
     // pixel offset converted to *tile-space* offset
     float tileOffsetX = (float)layerData.x / (float)tileW;
     float tileOffsetY = (float)layerData.y / (float)tileH;
 
+    if(layerData.windShader) {
+        auto &windShader = data.windShader;
+
+        int locTime = GetShaderLocation(windShader, "time");
+        int locStrength = GetShaderLocation(windShader, "windStrength");
+        int locAmplitude = GetShaderLocation(windShader, "windAmplitude");
+        int locSpeed = GetShaderLocation(windShader, "windSpeed");
+        int locLayerTopY = GetShaderLocation(windShader, "layerTopY");
+        int locLayerHeight = GetShaderLocation(windShader, "layerHeight");
+
+
+        float windStrength = 1.0f; // tweak
+        float windAmplitude = 5.0f; // tweak
+        float windSpeed = 2.0f; // tweak
+
+        BeginShaderMode(windShader);
+
+
+        // setup uniforms
+        SetShaderValue(windShader, locTime, &data.shaderTime, SHADER_UNIFORM_FLOAT);
+        SetShaderValue(windShader, locStrength, &windStrength, SHADER_UNIFORM_FLOAT);
+        SetShaderValue(windShader, locAmplitude, &windAmplitude, SHADER_UNIFORM_FLOAT);
+        SetShaderValue(windShader, locSpeed, &windSpeed, SHADER_UNIFORM_FLOAT);
+        float topY = y + layerData.y;                 // world Y of layer top
+        float height = (float) layerData.height;      // total layer height
+        SetShaderValue(windShader, locLayerTopY, &topY, SHADER_UNIFORM_FLOAT);
+        SetShaderValue(windShader, locLayerHeight, &height, SHADER_UNIFORM_FLOAT);
+    }
+
     for (int ty = 0; ty < tilesHigh; ty++) {
         for (int tx = 0; tx < tilesWide; tx++) {
-            // slice source rect from image
+            // Clamp width/height so we don’t go past the image
+            float srcW = std::min((float)tileW, (float)(layerData.width  - tx * tileW));
+            float srcH = std::min((float)tileH, (float)(layerData.height - ty * tileH));
+
+            if (srcW <= 0 || srcH <= 0) continue;
+
             Rectangle texRect{
                     (float)(tx * tileW),
                     (float)(ty * tileH),
-                    (float)tileW,
-                    (float)tileH
+                    srcW,
+                    srcH
             };
 
-            // destination rect in world space (apply global offset + layer offset)
             Rectangle dstRect{
                     (float)(x + layerData.x + tx * tileW),
                     (float)(y + layerData.y + ty * tileH),
-                    (float)tileW,
-                    (float)tileH
+                    srcW,
+                    srcH
             };
 
-            // sample lighting with *float tile offsets*
             Color v1 = GetVertexLightWeighted(lightData, tx + tileOffsetX,     ty + tileOffsetY);
             Color v2 = GetVertexLightWeighted(lightData, tx + 1 + tileOffsetX, ty + tileOffsetY);
             Color v3 = GetVertexLightWeighted(lightData, tx + 1 + tileOffsetX, ty + 1 + tileOffsetY);
@@ -228,9 +270,12 @@ static void DrawImageLayer(
             DrawTexturedQuadWithVertexColors(layerData.texture, texRect, dstRect, v1, v2, v3, v4);
         }
     }
+    if(layerData.windShader) {
+        EndShaderMode();
+    }
 }
 
-void DrawLayers(LightingData& lightData, SpriteSheetData& sheetData, TileMap &tileMap, std::vector<TileMapLayer>& stack, int x, int y) {
+void DrawLayers(GameData& data, LightingData& lightData, SpriteSheetData& sheetData, TileMap &tileMap, std::vector<TileMapLayer>& stack, int x, int y) {
     if(stack.empty())
         return;
     for(auto& layer : stack) {
@@ -238,7 +283,7 @@ void DrawLayers(LightingData& lightData, SpriteSheetData& sheetData, TileMap &ti
             DrawTileLayer(lightData, sheetData, tileMap, layer, x, y);
         }
         if(layer.type == TileLayerType::IMAGE) {
-            DrawImageLayer(lightData, tileMap, layer, 0, 0);
+            DrawImageLayer(data, lightData, tileMap, layer, 0, 0);
         }
     }
 }
