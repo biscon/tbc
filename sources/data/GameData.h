@@ -21,6 +21,7 @@
 #include "UiData.h"
 #include "LevelData.h"
 #include "PlayFieldData.h"
+#include "SoundData.h"
 
 const int gameScreenWidth = 640;
 const int gameScreenHeight = 360;
@@ -55,6 +56,7 @@ struct GameData {
     SettingsData settingsData;
     QuestData questData;
     ItemData itemData;
+    SoundData soundData;
 
     // global save state
     std::unordered_map<std::string, LevelState> levelState;

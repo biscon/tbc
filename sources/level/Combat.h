@@ -13,7 +13,7 @@
 AttackResult Attack(GameData& data, Level& level, int attacker, int defender, int fireMode);
 int DealDamage(GameData& data, Level& level, int attacker, int defender, int damage);
 int DealDamageStatusEffect(GameData& data, Level& level, int target, int damage);
-void KillCharacter(SpriteData& spriteData, CharacterData& charData, Level &level, int character);
+void KillCharacter(GameData& data, Level &level, int character);
 bool IsPlayerCharacter(CharacterData& charData, int character);
 bool IsIncapacitated(CharacterData& charData, int character);
 void NextCharacter(CharacterData& charData, Level &level);

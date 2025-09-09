@@ -14,10 +14,10 @@
 #include "raylib.h"
 #include "ui/UI.h"
 #include "LevelScreen.h"
-#include "audio/SoundEffect.h"
 #include "ai/PathFinding.h"
 #include "game/Items.h"
 #include "raymath.h"
+#include "audio/Sound.h"
 
 bool IsIncapacitated(CharacterData& charData, int character) {
     // Check if the character is stunned
@@ -175,7 +175,7 @@ int DealDamage(GameData& data, Level& level, int attacker, int defender, int dam
     // Ensure health does not drop below 0
     if (charData.stats[defender].HP < 0) charData.stats[defender].HP = 0;
 
-    PlaySoundEffect(SoundEffectType::HumanPain, 0.25f);
+    PlaySfx(data.soundData, "humanPain", false, 0.25f);
     return baseDamage;
 }
 
@@ -207,21 +207,21 @@ int DealDamageStatusEffect(GameData& data, Level& level, int target, int damage)
     return baseDamage;
 }
 
-void KillCharacter(SpriteData& spriteData, CharacterData& charData, Level &level, int character) {
-    std::string logMessage = charData.name[character] + " is defeated!";
+void KillCharacter(GameData& data, Level &level, int character) {
+    std::string logMessage = data.charData.name[character] + " is defeated!";
     level.log.push_back(logMessage);
     Animation deathAnim{};
-    SetupDeathAnimation(spriteData, charData, deathAnim, character, 0.5f);
+    SetupDeathAnimation(data.spriteData, data.charData, deathAnim, character, 0.5f);
     level.animations.push_back(deathAnim);
-    charData.stats[character].HP = 0;
+    data.charData.stats[character].HP = 0;
     // Remove character from turn order
     //combat.turnOrder.erase(std::remove(combat.turnOrder.begin(), combat.turnOrder.end(), &character), combat.turnOrder.end());
     Animation bloodAnim{};
-    Vector2 bloodPos = GetCharacterSpritePos(spriteData, charData.sprite[character]);
+    Vector2 bloodPos = GetCharacterSpritePos(data.spriteData, data.charData.sprite[character]);
     //bloodPos = GetWorldToScreen2D(bloodPos, combat.camera.camera);
     SetupBloodPoolAnimation(bloodAnim, bloodPos, 5.0f);
     level.animations.push_back(bloodAnim);
-    PlaySoundEffect(SoundEffectType::HumanDeath, 0.5f);
+    PlaySfx(data.soundData, "humanDeath", false, 0.5f);
 }
 
 bool IsPlayerCharacter(CharacterData& charData, int character) {

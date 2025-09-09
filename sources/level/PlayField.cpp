@@ -11,13 +11,13 @@
 #include "raymath.h"
 #include "graphics/BloodPool.h"
 #include "graphics/ParticleSystem.h"
-#include "audio/SoundEffect.h"
 #include "level/Combat.h"
 #include "graphics/TileMap.h"
 #include "ai/PathFinding.h"
 #include "graphics/Lighting.h"
 #include "ui/Icons.h"
 #include "Weather.h"
+#include "audio/Sound.h"
 
 static bool IsCharacterVisible(Level &level, int character) {
     // Check if the character is visible (not blinking)
@@ -172,7 +172,7 @@ static void DrawDoors(SpriteData& spriteData, Level &level) {
     }
 }
 
-static void updateTurnBasedMove(SpriteData& spriteData, CharacterData& charData, PlayField &playField, Level &level, float dt) {
+static void updateTurnBasedMove(GameData& data, PlayField &playField, Level &level, float dt) {
     if (playField.moving) {
         playField.path.moveTime += dt;
 
@@ -188,29 +188,29 @@ static void updateTurnBasedMove(SpriteData& spriteData, CharacterData& charData,
                     playField.path.path[playField.path.currentStep + 1].x,
                     playField.path.path[playField.path.currentStep + 1].y);
 
-            CharacterSprite& sprite = charData.sprite[level.currentCharacter];
+            CharacterSprite& sprite = data.charData.sprite[level.currentCharacter];
             // Lerp the x and y components separately
-            SetCharacterSpritePosX(spriteData, sprite, Lerp(start.x, end.x, t));
-            SetCharacterSpritePosY(spriteData, sprite, Lerp(start.y, end.y, t));
+            SetCharacterSpritePosX(data.spriteData, sprite, Lerp(start.x, end.x, t));
+            SetCharacterSpritePosY(data.spriteData, sprite, Lerp(start.y, end.y, t));
 
             // Determine the direction of movement and set the appropriate animation
             if (fabs(end.x - start.x) > fabs(end.y - start.y)) {
                 // Horizontal movement
                 if (end.x > start.x) {
-                    PlayCharacterSpriteAnim(spriteData, sprite, SpriteAnimationType::WalkRight, true);
-                    charData.orientation[level.currentCharacter] = Orientation::Right;
+                    PlayCharacterSpriteAnim(data.spriteData, sprite, SpriteAnimationType::WalkRight, true);
+                    data.charData.orientation[level.currentCharacter] = Orientation::Right;
                 } else {
-                    PlayCharacterSpriteAnim(spriteData, sprite, SpriteAnimationType::WalkLeft, true);
-                    charData.orientation[level.currentCharacter] = Orientation::Left;
+                    PlayCharacterSpriteAnim(data.spriteData, sprite, SpriteAnimationType::WalkLeft, true);
+                    data.charData.orientation[level.currentCharacter] = Orientation::Left;
                 }
             } else {
                 // Vertical movement
                 if (end.y > start.y) {
-                    PlayCharacterSpriteAnim(spriteData, sprite, SpriteAnimationType::WalkDown, true);
-                    charData.orientation[level.currentCharacter] = Orientation::Down;
+                    PlayCharacterSpriteAnim(data.spriteData, sprite, SpriteAnimationType::WalkDown, true);
+                    data.charData.orientation[level.currentCharacter] = Orientation::Down;
                 } else {
-                    PlayCharacterSpriteAnim(spriteData, sprite, SpriteAnimationType::WalkUp, true);
-                    charData.orientation[level.currentCharacter] = Orientation::Up;
+                    PlayCharacterSpriteAnim(data.spriteData, sprite, SpriteAnimationType::WalkUp, true);
+                    data.charData.orientation[level.currentCharacter] = Orientation::Up;
                 }
             }
 
@@ -221,17 +221,17 @@ static void updateTurnBasedMove(SpriteData& spriteData, CharacterData& charData,
 
                 // If the last step is reached, stop moving
                 if (playField.path.currentStep >= playField.path.path.size() - 1) {
-                    StopSoundEffect(SoundEffectType::Footstep);
+                    StopSfx(data.soundData, level.footStepsHandle);
                     playField.moving = false;
-                    PauseCharacterSpriteAnim(spriteData, sprite);
+                    PauseCharacterSpriteAnim(data.spriteData, sprite);
 
-                    SetCharacterSpriteFrame(spriteData, sprite, 0);
+                    SetCharacterSpriteFrame(data.spriteData, sprite, 0);
                     // set final position
                     auto finalPos = playField.path.path[playField.path.path.size() - 1];
-                    SetCharacterSpritePos(spriteData, sprite, GridToPixelPosition(finalPos.x, finalPos.y));
+                    SetCharacterSpritePos(data.spriteData, sprite, GridToPixelPosition(finalPos.x, finalPos.y));
 
                     ResetPlayField(playField);
-                    if (IsPlayerCharacter(charData, level.currentCharacter)) {
+                    if (IsPlayerCharacter(data.charData, level.currentCharacter)) {
                         level.turnState = TurnState::SelectDestination;
                         playField.mode = PlayFieldMode::SelectingTile;
                     } else {
@@ -243,7 +243,7 @@ static void updateTurnBasedMove(SpriteData& spriteData, CharacterData& charData,
     }
 }
 
-static void updateActiveMovement(SpriteData& spriteData, CharacterData& charData, PlayField &playField, float dt) {
+static void updateActiveMovement(GameData& data, PlayField &playField, Level& level, float dt) {
     for(auto& move : playField.activeMoves) {
         move.path.moveTime += dt;
 
@@ -259,29 +259,29 @@ static void updateActiveMovement(SpriteData& spriteData, CharacterData& charData
                     move.path.path[move.path.currentStep + 1].x,
                     move.path.path[move.path.currentStep + 1].y);
 
-            CharacterSprite& sprite = charData.sprite[move.character];
+            CharacterSprite& sprite = data.charData.sprite[move.character];
             // Lerp the x and y components separately
-            SetCharacterSpritePosX(spriteData, sprite, Lerp(start.x, end.x, t));
-            SetCharacterSpritePosY(spriteData, sprite, Lerp(start.y, end.y, t));
+            SetCharacterSpritePosX(data.spriteData, sprite, Lerp(start.x, end.x, t));
+            SetCharacterSpritePosY(data.spriteData, sprite, Lerp(start.y, end.y, t));
 
             // Determine the direction of movement and set the appropriate animation
             if (fabs(end.x - start.x) > fabs(end.y - start.y)) {
                 // Horizontal movement
                 if (end.x > start.x) {
-                    PlayCharacterSpriteAnim(spriteData, sprite, SpriteAnimationType::WalkRight, true);
-                    charData.orientation[move.character] = Orientation::Right;
+                    PlayCharacterSpriteAnim(data.spriteData, sprite, SpriteAnimationType::WalkRight, true);
+                    data.charData.orientation[move.character] = Orientation::Right;
                 } else {
-                    PlayCharacterSpriteAnim(spriteData, sprite, SpriteAnimationType::WalkLeft, true);
-                    charData.orientation[move.character] = Orientation::Left;
+                    PlayCharacterSpriteAnim(data.spriteData, sprite, SpriteAnimationType::WalkLeft, true);
+                    data.charData.orientation[move.character] = Orientation::Left;
                 }
             } else {
                 // Vertical movement
                 if (end.y > start.y) {
-                    PlayCharacterSpriteAnim(spriteData, sprite, SpriteAnimationType::WalkDown, true);
-                    charData.orientation[move.character] = Orientation::Down;
+                    PlayCharacterSpriteAnim(data.spriteData, sprite, SpriteAnimationType::WalkDown, true);
+                    data.charData.orientation[move.character] = Orientation::Down;
                 } else {
-                    PlayCharacterSpriteAnim(spriteData, sprite, SpriteAnimationType::WalkUp, true);
-                    charData.orientation[move.character] = Orientation::Up;
+                    PlayCharacterSpriteAnim(data.spriteData, sprite, SpriteAnimationType::WalkUp, true);
+                    data.charData.orientation[move.character] = Orientation::Up;
                 }
             }
 
@@ -292,12 +292,12 @@ static void updateActiveMovement(SpriteData& spriteData, CharacterData& charData
 
                 // If the last step is reached, stop moving
                 if (move.path.currentStep >= move.path.path.size() - 1) {
-                    StopSoundEffect(SoundEffectType::Footstep);
-                    PauseCharacterSpriteAnim(spriteData, sprite);
-                    SetCharacterSpriteFrame(spriteData, sprite, 0);
+                    StopSfx(data.soundData, level.footStepsHandle);
+                    PauseCharacterSpriteAnim(data.spriteData, sprite);
+                    SetCharacterSpriteFrame(data.spriteData, sprite, 0);
                     // set final position
                     auto finalPos = move.path.path[move.path.path.size() - 1];
-                    SetCharacterSpritePos(spriteData, sprite, GridToPixelPosition(finalPos.x, finalPos.y));
+                    SetCharacterSpritePos(data.spriteData, sprite, GridToPixelPosition(finalPos.x, finalPos.y));
                     move.isDone = true;
                     TraceLog(LOG_INFO, "Move done");
                 }
@@ -358,8 +358,8 @@ void UpdatePlayField(GameData& data, PlayField &playField, Level &level, float d
             playField.increasing = true;
         }
     }
-    updateActiveMovement(data.spriteData, data.charData, playField, dt);
-    updateTurnBasedMove(data.spriteData, data.charData, playField, level, dt);
+    updateActiveMovement(data, playField, level, dt);
+    updateTurnBasedMove(data, playField, level, dt);
 
     // Update animations for all characters
     for (auto &character: level.allCharacters) {

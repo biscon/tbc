@@ -16,7 +16,7 @@
 
 using json = nlohmann::json;
 
-static void LoadLayers(TileMap &tileMap, std::vector<TileMapLayer>& stack, const json& jLayers, const std::string curFilePath) {
+static void LoadLayers(TileMap &tileMap, std::vector<TileMapLayer>& stack, const json& jLayers, const std::string& curFilePath) {
     for (auto &jLayer : jLayers) {
         std::string type = jLayer["type"].get<std::string>();
         std::string name = jLayer["name"].get<std::string>();

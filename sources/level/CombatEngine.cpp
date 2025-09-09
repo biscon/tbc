@@ -6,13 +6,13 @@
 #include <cmath>
 #include "CombatEngine.h"
 #include "StatusEffectRunner.h"
-#include "audio/SoundEffect.h"
 #include "CombatAnimation.h"
 #include "ai/Ai.h"
 #include "util/Random.h"
 #include "ui/UI.h"
 #include "graphics/Animation.h"
 #include "LevelCamera.h"
+#include "audio/Sound.h"
 
 static bool CheckEndCombat(GameData& data, Level& level) {
     // check victory condition, all enemies have zero health
@@ -42,7 +42,6 @@ static bool CheckEndCombat(GameData& data, Level& level) {
     }
     if (allPlayersDefeated) {
         //StopSoundEffect(SoundEffectType::Ambience);
-        PlaySoundEffect(SoundEffectType::Defeat, 0.5f);
         //PlayEnemyVictoryAnimation(data.spriteData, data.charData, level);
         //combat.animations.clear();
         PublishCloseActionBarEvent(data.ui.eventQueue);
@@ -59,7 +58,7 @@ void UpdateCombat(GameData &data, Level &level, PlayField& playField, float dt) 
             TraceLog(LOG_INFO, "Start round");
             WaitTurnState(level, TurnState::StartTurn, 1.0f);
             ApplyStatusEffects(data, level, playField);
-            PlaySoundEffect(SoundEffectType::StartRound);
+            PlaySfx(data.soundData, "startRound", false, 0.5f);
             break;
         }
         case TurnState::StartTurn: {
@@ -148,23 +147,23 @@ void UpdateCombat(GameData &data, Level &level, PlayField& playField, float dt) 
                 Color dmgColor = GetDamageColor(damage, level.attackResult.minDmg, level.attackResult.maxDmg);
                 SetupDamageNumberAnimation(damageNumberAnim, TextFormat("%d", damage), defenderX, defenderY-25, dmgColor, hit.crit ? 20 : 10, 0);
                 level.animations.push_back(damageNumberAnim);
-                PlaySoundEffect(SoundEffectType::HumanPain, 0.25f);
+                PlaySfx(data.soundData, "humanPain", false, 0.25f);
                 charData.stats[level.attackResult.defender].HP -= damage;
             } else {
                 Animation damageNumberAnim{};
                 SetupDamageNumberAnimation(damageNumberAnim, "MISS", attackerX, attackerY-25, WHITE, 10, 0);
                 level.animations.push_back(damageNumberAnim);
-                PlaySoundEffect(SoundEffectType::MeleeMiss);
+                PlaySfx(data.soundData, "meleeMiss");
             }
 
             if(hit.crit) {
                 Animation damageNumberAnim{};
                 SetupDamageNumberAnimation(damageNumberAnim, "CRITICAL!!!", attackerX, attackerY-25, WHITE, 10, 0.25f);
                 level.animations.push_back(damageNumberAnim);
-                PlaySoundEffect(SoundEffectType::MeleeCrit);
+                PlaySfx(data.soundData, "meleeCrit");
             } else {
                 if(damage > 0)
-                    PlaySoundEffect(SoundEffectType::MeleeHit);
+                    PlaySfx(data.soundData, "meleeHit");
             }
             level.turnState = TurnState::KillCharacters;
             break;
@@ -199,7 +198,7 @@ void UpdateCombat(GameData &data, Level &level, PlayField& playField, float dt) 
             bool wasInjured = false;
 
             for(int i = 0; i < result.hits.size(); i++) {
-                PlaySoundEffect(SoundEffectType::RifleShot, waitTime);
+                PlaySfx(data.soundData, "rifleShot", false, waitTime);
                 AttackHit& hit = result.hits[i];
                 int damage = hit.damage;
                 if(damage > 0) {
@@ -235,7 +234,7 @@ void UpdateCombat(GameData &data, Level &level, PlayField& playField, float dt) 
                 charData.stats[level.attackResult.defender].HP -= damage;
             }
             if(wasInjured) {
-                PlaySoundEffect(SoundEffectType::HumanPain, waitTime);
+                PlaySfx(data.soundData, "humanPain", false, waitTime);
             }
             WaitTurnState(level, TurnState::KillCharacters, waitTime);
             break;
@@ -249,7 +248,7 @@ void UpdateCombat(GameData &data, Level &level, PlayField& playField, float dt) 
                 SetupSpeechBubbleAnimation(speechBubble, "Haha!", attackerX, attackerY - 25, 1.5f, 0.0f);
                 level.animations.push_back(speechBubble);
                 RemoveAttackAnimations(level);
-                KillCharacter(spriteData, charData, level, level.attackResult.defender);
+                KillCharacter(data, level, level.attackResult.defender);
                 WaitTurnState(level, nextState, 0.95f);
             } else {
                 WaitTurnState(level, nextState, 0.60f);

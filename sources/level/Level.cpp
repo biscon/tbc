@@ -17,6 +17,7 @@
 #include "graphics/Lighting.h"
 #include "game/Items.h"
 #include "Weather.h"
+#include "audio/Sound.h"
 
 using json = nlohmann::json;
 
@@ -100,11 +101,13 @@ void AddEnemiesToLevel(SpriteData& spriteData, CharacterData& charData, Level &l
 }
 
 void LoadLevel(GameData& data, Level &level, const std::string &filename) {
+    StopAllLooping(data.soundData);
     level.animations.clear();
     level.partyCharacters.clear();
     level.allCharacters.clear();
     level.currentCharacter = -1;
     level.selectedCharacter = -1;
+    level.footStepsHandle = -1;
     level.turnState = TurnState::None;
     std::string filePath = GetFilePath(filename);
     TraceLog(LOG_INFO, "Loading level from %s", filePath.c_str());

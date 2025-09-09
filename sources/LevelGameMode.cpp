@@ -4,7 +4,6 @@
 
 #include <cassert>
 #include "LevelGameMode.h"
-#include "audio/SoundEffect.h"
 #include "character/Character.h"
 #include "level/Level.h"
 #include "level/LevelScreen.h"
@@ -23,6 +22,7 @@
 #include "ui/LootInventory.h"
 #include "ai/PathFinding.h"
 #include "level/Weather.h"
+#include "audio/Sound.h"
 
 static GameData* game;
 static Level level;
@@ -48,8 +48,9 @@ static void processEvents(GameData& data) {
             case GameEventType::MoveParty: {
                 StartCameraPanToTilePos(level.camera, event.moveParty.target, 250.0f);
                 moveParty(event.moveParty.target);
-                PlaySoundEffect(SoundEffectType::Select);
-                PlaySoundEffect(SoundEffectType::Footstep);
+                StopSfx(data.soundData, level.footStepsHandle);
+                level.footStepsHandle = PlaySfx(data.soundData, "footstep", true);
+
                 /*
                 Animation anim{};
                 SetupFancyTextAnimation(anim,
@@ -232,48 +233,6 @@ static void handleCameraMovement() {
 }
 
 void LevelInit(GameData& data) {
-    LoadSoundEffect(SoundEffectType::Ambience, ASSETS_PATH"music/ambience_cave.ogg", true);
-    //LoadSoundEffect(SoundEffectType::Ambience, ASSETS_PATH"sound/ambient_forest_01.ogg", true);
-    SetVolumeSoundEffect(SoundEffectType::Ambience, 0.75f);
-    LoadSoundEffect(SoundEffectType::Footstep, ASSETS_PATH"sound/footstep_dirt_03.wav", true, 0.075f);
-    SetVolumeSoundEffect(SoundEffectType::Footstep, 0.75f);
-    LoadSoundEffect(SoundEffectType::Select, ASSETS_PATH"sound/select_01.wav", false);
-    LoadSoundEffect(SoundEffectType::MeleeHit, ASSETS_PATH"sound/melee_hit_01.ogg", false);
-    LoadSoundEffect(SoundEffectType::MeleeHit, ASSETS_PATH"sound/melee_hit_02.ogg", false);
-    LoadSoundEffect(SoundEffectType::MeleeHit, ASSETS_PATH"sound/melee_hit_03.ogg", false);
-    LoadSoundEffect(SoundEffectType::MeleeHit, ASSETS_PATH"sound/melee_hit_04.ogg", false);
-    LoadSoundEffect(SoundEffectType::MeleeCrit, ASSETS_PATH"sound/melee_crit_01.ogg", false);
-    LoadSoundEffect(SoundEffectType::MeleeCrit, ASSETS_PATH"sound/melee_crit_02.ogg", false);
-    LoadSoundEffect(SoundEffectType::MeleeMiss, ASSETS_PATH"sound/melee_miss_01.wav", false);
-    LoadSoundEffect(SoundEffectType::MeleeMiss, ASSETS_PATH"sound/melee_miss_02.wav", false);
-    LoadSoundEffect(SoundEffectType::MeleeMiss, ASSETS_PATH"sound/melee_miss_03.wav", false);
-    SetVolumeSoundEffect(SoundEffectType::MeleeMiss, 0.65f);
-    LoadSoundEffect(SoundEffectType::HumanDeath, ASSETS_PATH"sound/human_die_01.wav", false);
-    LoadSoundEffect(SoundEffectType::HumanDeath, ASSETS_PATH"sound/human_die_02.wav", false);
-    LoadSoundEffect(SoundEffectType::HumanPain, ASSETS_PATH"sound/human_pain_01.wav", false);
-    LoadSoundEffect(SoundEffectType::HumanPain, ASSETS_PATH"sound/human_pain_02.wav", false);
-    LoadSoundEffect(SoundEffectType::HumanPain, ASSETS_PATH"sound/human_pain_03.wav", false);
-    LoadSoundEffect(SoundEffectType::HumanPain, ASSETS_PATH"sound/human_pain_04.wav", false);
-    LoadSoundEffect(SoundEffectType::HumanPain, ASSETS_PATH"sound/human_pain_05.wav", false);
-    LoadSoundEffect(SoundEffectType::HumanPain, ASSETS_PATH"sound/human_pain_06.wav", false);
-    SetVolumeSoundEffect(SoundEffectType::HumanPain, 0.50f);
-    LoadSoundEffect(SoundEffectType::Victory, ASSETS_PATH"sound/jingle_victory.wav", false);
-    LoadSoundEffect(SoundEffectType::Defeat, ASSETS_PATH"sound/jingle_defeat.wav", false);
-    LoadSoundEffect(SoundEffectType::StartRound, ASSETS_PATH"sound/start_round.wav", false);
-    SetVolumeSoundEffect(SoundEffectType::StartRound, 0.75f);
-    LoadSoundEffect(SoundEffectType::Burning, ASSETS_PATH"sound/burning_01.ogg", false);
-    //PlaySoundEffect(SoundEffectType::Ambience);
-    LoadSoundEffect(SoundEffectType::PistolReload, ASSETS_PATH"sound/pistol_reload_01.ogg", false);
-    LoadSoundEffect(SoundEffectType::PistolShot, ASSETS_PATH"sound/pistol_shot_01.ogg", false);
-
-    LoadSoundEffect(SoundEffectType::RifleReload, ASSETS_PATH"sound/pistol_reload_01.ogg", false);
-    LoadSoundEffect(SoundEffectType::RifleShot, ASSETS_PATH"sound/rifle_shot_01.ogg", false);
-    LoadSoundEffect(SoundEffectType::RifleShot, ASSETS_PATH"sound/rifle_shot_02.ogg", false);
-    LoadSoundEffect(SoundEffectType::RifleShot, ASSETS_PATH"sound/rifle_shot_03.ogg", false);
-
-    LoadSoundEffect(SoundEffectType::AssaultRifleAuto, ASSETS_PATH"sound/ar_full_auto_01.wav", false);
-    LoadSoundEffect(SoundEffectType::GunEmpty, ASSETS_PATH"sound/gun_empty.ogg", false);
-
     CreateLevel(level);
     CreateLevelScreen(data);
     CreateParticleManager(particleManager, {0, 0}, gameScreenWidth, gameScreenHeight);

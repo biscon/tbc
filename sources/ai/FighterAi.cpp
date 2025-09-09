@@ -6,7 +6,6 @@
 #include "FighterAi.h"
 #include "level/PlayField.h"
 #include "Ai.h"
-#include "audio/SoundEffect.h"
 #include "level/LevelCamera.h"
 #include "util/Random.h"
 #include "level/Combat.h"

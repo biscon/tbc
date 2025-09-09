@@ -1,0 +1,112 @@
+[
+    {
+        "groupId": "footstep",
+        "file": "sound/footstep_dirt_03.wav",
+        "volume": 1.0,
+        "restartDelay": 0.075
+    },
+    {
+        "groupId": "meleeHit",
+        "file": "sound/melee_hit_01.ogg"
+    },
+    {
+        "groupId": "meleeHit",
+        "file": "sound/melee_hit_02.ogg"
+    },
+    {
+        "groupId": "meleeHit",
+        "file": "sound/melee_hit_03.ogg"
+    },
+    {
+        "groupId": "meleeHit",
+        "file": "sound/melee_hit_04.ogg"
+    },
+    {
+        "groupId": "meleeCrit",
+        "file": "sound/melee_crit_01.ogg"
+    },
+    {
+        "groupId": "meleeCrit",
+        "file": "sound/melee_crit_02.ogg"
+    },
+    {
+        "groupId": "meleeMiss",
+        "file": "sound/melee_miss_01.wav"
+    },
+    {
+        "groupId": "meleeMiss",
+        "file": "sound/melee_miss_02.wav"
+    },
+    {
+        "groupId": "meleeMiss",
+        "file": "sound/melee_miss_03.wav"
+    },
+    {
+        "groupId": "humanDeath",
+        "file": "sound/human_die_01.wav"
+    },
+    {
+        "groupId": "humanDeath",
+        "file": "sound/human_die_02.wav"
+    },
+    {
+        "groupId": "humanPain",
+        "file": "sound/human_pain_01.wav"
+    },
+    {
+        "groupId": "humanPain",
+        "file": "sound/human_pain_02.wav"
+    },
+    {
+        "groupId": "humanPain",
+        "file": "sound/human_pain_03.wav"
+    },
+    {
+        "groupId": "humanPain",
+        "file": "sound/human_pain_04.wav"
+    },
+    {
+        "groupId": "humanPain",
+        "file": "sound/human_pain_05.wav"
+    },
+    {
+        "groupId": "humanPain",
+        "file": "sound/human_pain_06.wav"
+    },
+    {
+        "groupId": "startRound",
+        "file": "sound/start_round.wav"
+    },
+    {
+        "groupId": "pistolReload",
+        "file": "sound/pistol_reload_01.ogg"
+    },
+    {
+        "groupId": "pistolShot",
+        "file": "sound/pistol_shot_01.ogg"
+    },
+    {
+        "groupId": "rifleReload",
+        "file": "sound/pistol_reload_01.ogg"
+    },
+    {
+        "groupId": "rifleShot",
+        "file": "sound/rifle_shot_01.ogg"
+    },
+    {
+        "groupId": "rifleShot",
+        "file": "sound/rifle_shot_02.ogg"
+    },
+    {
+        "groupId": "rifleShot",
+        "file": "sound/rifle_shot_03.ogg"
+    },
+    {
+        "groupId": "rifleFullAuto",
+        "file": "sound/ar_full_auto_01.wav"
+    },
+    {
+        "groupId": "gunEmpty",
+        "file": "sound/gun_empty.ogg"
+    }
+]

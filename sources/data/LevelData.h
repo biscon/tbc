@@ -132,6 +132,7 @@ struct Level {
     float hourOfDay = 12;
     WeatherData weather;
     bool outdoor = true;
+    int footStepsHandle = -1;
 };
 
 struct LevelState {

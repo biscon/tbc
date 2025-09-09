@@ -14,13 +14,13 @@
 #include "PlayField.h"
 #include "ui/UI.h"
 #include "level/CombatAnimation.h"
-#include "audio/SoundEffect.h"
 #include "graphics/Animation.h"
 #include "Combat.h"
 #include "ai/PathFinding.h"
 #include "LevelCamera.h"
 #include "raymath.h"
 #include "ui/Icons.h"
+#include "audio/Sound.h"
 #include <cassert>
 
 void CreateLevelScreen(GameData& data) {
@@ -317,8 +317,8 @@ static void HandleInputPathSelection(GameData& data, PlayField &playField, Level
                     stats.AP = 0;
                 }
                 level.turnState = TurnState::Move;
-                PlaySoundEffect(SoundEffectType::Select);
-                PlaySoundEffect(SoundEffectType::Footstep);
+                StopSfx(data.soundData, level.footStepsHandle);
+                level.footStepsHandle = PlaySfx(data.soundData, "footstep", true);
                 StartCameraPanToTargetPos(level.camera, mousePos, 250.0f);
             }
         }
@@ -334,7 +334,6 @@ static void HandleMeleeTargetSelection(GameData& data, Level& level, PlayField& 
         int ap = data.charData.stats[data.ui.selectedCharacter].AP;
         // Check for a mouse click
         if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT) && ap >= data.ui.playField.attackInfo.apCost) {
-            PlaySoundEffect(SoundEffectType::Select);
             level.turnState = TurnState::Waiting;
             level.waitTime = 0.25f;
             level.selectedCharacter = playField.selectedCharacter;
@@ -358,10 +357,9 @@ static void HandleRangedTargetSelection(GameData& data, Level& level, PlayField&
 
         if(IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
             if(currentAmmo < data.ui.playField.attackInfo.ammoCost) {
-                PlaySoundEffect(SoundEffectType::GunEmpty);
+                PlaySfx(data.soundData, "gunEmpty");
             } else {
                 if (ap >= data.ui.playField.attackInfo.apCost) {
-                    PlaySoundEffect(SoundEffectType::Select);
                     level.turnState = TurnState::Waiting;
                     level.waitTime = 0.25f;
                     level.selectedCharacter = playField.selectedCharacter;

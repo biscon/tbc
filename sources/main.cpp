@@ -3,7 +3,6 @@
 #include "raymath.h"        // Required for: Vector2Clamp()
 #include "graphics/SpriteAnimation.h"
 #include "ai/FighterAi.h"
-#include "audio/SoundEffect.h"
 #include "character/Weapon.h"
 #include "LevelGameMode.h"
 #include "MenuGameMode.h"
@@ -15,6 +14,7 @@
 #include "game/Items.h"
 #include "ui/UI.h"
 #include "ai/RangedAi.h"
+#include "audio/Sound.h"
 
 #define MAX(a, b) ((a)>(b)? (a) : (b))
 #define MIN(a, b) ((a)<(b)? (a) : (b))
@@ -41,7 +41,7 @@ int main() {
     ApplySettings(game.settingsData);
 
     InitAudioDevice();      // Initialize audio device
-    InitSoundEffectManager();
+    InitSoundData(game.soundData, ASSETS_PATH"sounds.json");
 
     // Render texture initialization, used to hold the rendering result so we can easily resize it
     game.levelTarget = LoadRenderTexture(gameScreenWidth, gameScreenHeight);
@@ -114,7 +114,7 @@ int main() {
         float dt = GetFrameTime();
 
         // Update
-        UpdateSoundEffects(dt);
+        UpdateSoundData(game.soundData, dt);
         UpdateGameMode(game, dt);
 
         PreRenderGameMode(game);
@@ -176,7 +176,7 @@ int main() {
     UnloadFont(game.smallFont1);                   // Unload custom font
 
     DestroySpriteAnimationData(game.spriteData);
-    DestroySoundEffectManager();
+    UnloadAllSounds(game.soundData);
     CloseAudioDevice();     // Close audio device
 
     CloseWindow();                      // Close window and OpenGL context

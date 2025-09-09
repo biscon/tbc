@@ -8,7 +8,7 @@
 #include "Icons.h"
 #include "UI.h"
 #include "util/StringUtil.h"
-#include "audio/SoundEffect.h"
+#include "audio/Sound.h"
 
 static const float actionBarWidth = 215;
 static const float actionBarHeight = 54;
@@ -269,7 +269,7 @@ void ExecuteAction(GameData& data, ActionBarAction action, Level& level, PlayFie
             break;
         }
         case ActionBarAction::Reload: {
-            PlaySoundEffect(SoundEffectType::PistolReload);
+            PlaySfx(data.soundData, "pistolReload");
             WeaponInstance *weaponInstance = GetSelectedWeaponInstance(data, data.ui.selectedCharacter);
             WeaponRanged *weaponRanged = GetSelectedRangedTemplate(data, data.ui.selectedCharacter);
             if (weaponInstance && weaponRanged) {

@@ -43,7 +43,7 @@ static void ApplyStatusEffect(GameData& data, Level &combat, PlayField &gridStat
     }
     // check if dead
     if(charData.stats[character].HP <= 0) {
-        KillCharacter(spriteData, charData, combat, character);
+        KillCharacter(data, combat, character);
     }
 }
 

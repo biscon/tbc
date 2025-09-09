@@ -75,8 +75,6 @@ add_executable(${PROJECT_NAME}
         sources/level/StatusEffectRunner.h
         sources/level/CombatAnimation.cpp
         sources/level/CombatAnimation.h
-        sources/audio/SoundEffect.cpp
-        sources/audio/SoundEffect.h
         sources/graphics/CharacterSprite.cpp
         sources/graphics/CharacterSprite.h
         sources/graphics/SpriteSheet.cpp
@@ -165,6 +163,9 @@ add_executable(${PROJECT_NAME}
         sources/data/WeatherData.h
         sources/util/GraphicUtil.cpp
         sources/util/GraphicUtil.h
+        sources/audio/Sound.cpp
+        sources/audio/Sound.h
+        sources/data/SoundData.h
 )
 target_sources(${PROJECT_NAME} PRIVATE ${PROJECT_SOURCES})
 target_include_directories(${PROJECT_NAME} PRIVATE ${PROJECT_INCLUDE})
