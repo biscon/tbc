@@ -33,7 +33,6 @@ struct InventorySaveState {
 struct LevelSaveState {
     std::unordered_set<std::string> defeatedGroups;
     std::unordered_map<std::string, DoorSaveState> doors;
-    std::unordered_map<std::string, bool> flags;
     std::unordered_map<std::string, InventorySaveState> objectInventories;
 };
 
@@ -83,6 +82,7 @@ struct SaveData {
 
     // type specific item instance data
     std::vector<WeaponInstanceSaveState> weaponInstances;
+    std::unordered_map<std::string, bool> flags;
 };
 
 bool SaveGameData(SaveData& data, const std::string& filename);

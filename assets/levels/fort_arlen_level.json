@@ -1,6 +1,7 @@
 {
     "name": "Fort Arlen",
     "map": "fort_arlen_map.json",
+    "script": "fort_arlen.wren",
     "tileset": "indoor_tiles2.png",
     "ambientLight": "FFF8E7",
     "outdoor": true,

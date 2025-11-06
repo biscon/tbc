@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0)
-project(sandbox CXX)
+project(sandbox C CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -166,7 +166,17 @@ add_executable(${PROJECT_NAME}
         sources/audio/Sound.cpp
         sources/audio/Sound.h
         sources/data/SoundData.h
+        sources/wren/wren.h
+        sources/wren/wren.c
+        sources/data/ScriptData.h
+        sources/game/ScriptSystem.cpp
+        sources/game/ScriptSystem.h
 )
+
+
+# Mark Wren as C source
+set_source_files_properties(sources/wren/wren.c PROPERTIES LANGUAGE C)
+
 target_sources(${PROJECT_NAME} PRIVATE ${PROJECT_SOURCES})
 target_include_directories(${PROJECT_NAME} PRIVATE ${PROJECT_INCLUDE})
 target_link_libraries(${PROJECT_NAME} PRIVATE raylib)

@@ -24,6 +24,6 @@ Color GetVertexLightWeighted(const LightingData& data, float vx, float vy);
 void RenderVisibilityMap(LightingData &data);
 void UpdateVisibilityTexture(LightingData& data);
 Color CalcOutdoorAmbientColor(float hour);
-Color CalcOutdoorAmbientColorCubic(float hour);
+Color CalcOutdoorAmbientColorCubic(float hour, WeatherType weatherType);
 
 #endif //SANDBOX_LIGHTING_H

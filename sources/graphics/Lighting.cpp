@@ -485,12 +485,11 @@ static const KeyPoint keysSunny[] = {
         {24.0f,  {5,10,30,255}}
 };
 
-
-Color CalcOutdoorAmbientColorCubic(float hour) {
+Color CalcOutdoorAmbientColorCubicOld(float hour, WeatherType weatherType) {
     if(hour < 0) hour += 24;
     if(hour >= 24) hour -= 24;
 
-    auto& keys = keysOvercast;
+    auto& keys = keysSunny;
 
     int numKeys = sizeof(keys)/sizeof(keys[0]);
 
@@ -507,3 +506,41 @@ Color CalcOutdoorAmbientColorCubic(float hour) {
     t = EaseInOutCubic(t);
     return LerpColor(keys[numKeys - 1].col, keys[0].col, t);
 }
+
+Color CalcOutdoorAmbientColorCubic(float hour, WeatherType weatherType) {
+    if (hour < 0) hour += 24;
+    if (hour >= 24) hour -= 24;
+
+    const KeyPoint* keys = nullptr;
+    int numKeys = 0;
+
+    switch (weatherType) {
+        case WeatherType::Rain:
+        case WeatherType::Thunder:
+        case WeatherType::Overcast: {
+            keys = keysOvercast;
+            numKeys = static_cast<int>(sizeof(keysOvercast) / sizeof(keysOvercast[0]));
+            break;
+        }
+        case WeatherType::Sunny:
+        default:
+            keys = keysSunny;
+            numKeys = static_cast<int>(sizeof(keysSunny) / sizeof(keysSunny[0]));
+            break;
+    }
+
+    for (int i = 0; i < numKeys - 1; ++i) {
+        if (hour >= keys[i].hour && hour < keys[i + 1].hour) {
+            float t = (hour - keys[i].hour) / (keys[i + 1].hour - keys[i].hour);
+            t = EaseInOutCubic(t); // apply cubic easing
+            return LerpColor(keys[i].col, keys[i + 1].col, t);
+        }
+    }
+
+    // Wrap-around: last key → first key
+    float t = (hour - keys[numKeys - 1].hour) /
+              ((24.0f + keys[0].hour) - keys[numKeys - 1].hour);
+    t = EaseInOutCubic(t);
+    return LerpColor(keys[numKeys - 1].col, keys[0].col, t);
+}
+

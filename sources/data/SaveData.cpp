@@ -23,7 +23,6 @@ void to_json(nlohmann::json& j, const LevelSaveState& m) {
     j = nlohmann::json{
         {"defeatedGroups", m.defeatedGroups},
         {"doors", m.doors},
-        {"flags", m.flags},
         {"objectInventories", m.objectInventories}
     };
 }
@@ -31,7 +30,6 @@ void to_json(nlohmann::json& j, const LevelSaveState& m) {
 void from_json(const nlohmann::json& j, LevelSaveState& m) {
     j.at("defeatedGroups").get_to(m.defeatedGroups);
     j.at("doors").get_to(m.doors);
-    j.at("flags").get_to(m.flags);
     j.at("objectInventories").get_to(m.objectInventories);
 }
 
@@ -133,6 +131,7 @@ bool SaveGameData(SaveData& data, const std::string& filename) {
     j["levels"] = data.levels;
     j["partyInventory"] = data.partyInventory;
     j["weaponInstances"] = data.weaponInstances;
+    j["flags"] = data.flags;
 
     //const Inventory& partyInventory = game->
 
@@ -160,6 +159,9 @@ bool LoadGameData(SaveData& data, const std::string& filename) {
     j.at("levels").get_to(data.levels);
     j.at("partyInventory").get_to(data.partyInventory);
     j.at("weaponInstances").get_to(data.weaponInstances);
+    if(j.contains("flags")) {
+        j.at("flags").get_to(data.flags);
+    }
 
     // Handle QuestSaveState
     const nlohmann::json& nodes = j.at("quests");

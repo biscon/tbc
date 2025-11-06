@@ -65,7 +65,6 @@ void LoadGame(GameData &data) {
         const LevelSaveState& levelSaveState = entry.second;
         data.levelState[levelId];
         data.levelState.at(levelId).defeatedGroups = levelSaveState.defeatedGroups;
-        data.levelState.at(levelId).flags = levelSaveState.flags;
         data.levelState.at(levelId).doors = levelSaveState.doors;
 
         for(const auto& objInv : levelSaveState.objectInventories) {
@@ -108,6 +107,8 @@ void LoadGame(GameData &data) {
         SetCharacterGridPosI(data.spriteData, data.charData.sprite[id], savedPos);
         data.party.emplace_back(id);
     }
+    // Load flags
+    data.scriptData.flags = saveData.flags;
 
     PushGameMode(data, GameModes::Level);
 }
@@ -123,7 +124,6 @@ void SaveGame(GameData &data) {
         const LevelState& levelState = entry.second;
         saveData.levels[levelId];
         saveData.levels.at(levelId).defeatedGroups = levelState.defeatedGroups;
-        saveData.levels.at(levelId).flags = levelState.flags;
         saveData.levels.at(levelId).doors = levelState.doors;
 
         for(const auto& objInv : data.levelState[levelId].objectInventories) {
@@ -168,6 +168,9 @@ void SaveGame(GameData &data) {
 
         saveData.party.push_back(pc);
     }
+
+    // save flags
+    saveData.flags = data.scriptData.flags;
 
     SaveGameData(saveData, "savegame.json");
 }

@@ -18,6 +18,7 @@
 #include "game/Items.h"
 #include "Weather.h"
 #include "audio/Sound.h"
+#include "game/ScriptSystem.h"
 
 using json = nlohmann::json;
 
@@ -323,6 +324,14 @@ void LoadLevel(GameData& data, Level &level, const std::string &filename) {
     InitWeather(level.weather, 300, level.tileMap.width * level.tileMap.tileWidth, level.tileMap.height * level.tileMap.tileHeight);
 
     InitPartySideBar(data);
+
+    // Scripting
+    ScriptSystemShutdown(data.scriptData);
+    ScriptSystemInit(data);
+    if(j["script"].is_string()) {
+        ScriptSystemRunFile(data.scriptData, level.name, GetFilePath(j["script"].get<std::string>()));
+        ScriptSystemCallFunction(data.scriptData, level.name, "Level.onEnter()");
+    }
 
     Animation anim1{};
     Animation anim2{};

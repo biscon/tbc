@@ -371,7 +371,7 @@ void LevelRenderLevel(GameData& data) {
     if (scissorW > 0 && scissorH > 0) {
         BeginScissorMode(scissorX, scissorY, scissorW, scissorH);
         if(level.outdoor) {
-            Color ambient = CalcOutdoorAmbientColorCubic(level.hourOfDay);
+            Color ambient = CalcOutdoorAmbientColorCubic(level.hourOfDay, level.weather.weatherType);
             // lightning flash
             if (level.weather.lightningActive) {
                 float s = level.weather.lightningStrength;

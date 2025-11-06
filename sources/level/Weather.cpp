@@ -25,44 +25,49 @@ void InitWeather(WeatherData &weather, int maxDrops, float mapWidth, float mapHe
         d.velocity.y = (float)GetRandomValue(300, 500);                // fall px/s
         d.length = (float)GetRandomValue(4, 8);
     }
+
+    weather.weatherType = WeatherType::Rain;
 }
 
 // Update active raindrops based on dt and intensity
 void UpdateWeather(WeatherData &weather, float dt) {
-    int activeDrops = (int)(weather.drops.size() * weather.intensity);
+    if(weather.weatherType == WeatherType::Thunder || weather.weatherType == WeatherType::Rain) {
+        int activeDrops = (int) (weather.drops.size() * weather.intensity);
+        for (int i = 0; i < activeDrops; i++) {
+            RainDrop &d = weather.drops[i];
+            d.position.x += d.velocity.x * dt;
+            d.position.y += d.velocity.y * dt;
 
-    for (int i = 0; i < activeDrops; i++) {
-        RainDrop &d = weather.drops[i];
-        d.position.x += d.velocity.x * dt;
-        d.position.y += d.velocity.y * dt;
-
-        // recycle if offscreen
-        if (d.position.x > weather.mapWidth || d.position.y > weather.mapHeight) {
-            d.position.x = (float)GetRandomValue(0, (int)weather.mapWidth);
-            d.position.y = 0.0f;
-            d.velocity.x = (float)GetRandomValue(0, 100) / 100.0f * 60.0f;
-            d.velocity.y = (float)GetRandomValue(300, 500);
-            d.length = (float)GetRandomValue(4, 8);
+            // recycle if offscreen
+            if (d.position.x > weather.mapWidth || d.position.y > weather.mapHeight) {
+                d.position.x = (float) GetRandomValue(0, (int) weather.mapWidth);
+                d.position.y = 0.0f;
+                d.velocity.x = (float) GetRandomValue(0, 100) / 100.0f * 60.0f;
+                d.velocity.y = (float) GetRandomValue(300, 500);
+                d.length = (float) GetRandomValue(4, 8);
+            }
         }
     }
 
-    // Thunder timing
-    weather.thunderTimer += dt;
-    if (weather.thunderTimer >= weather.nextThunderTime) {
-        weather.lightningActive = true;
-        weather.lightningStrength = 1.0f;
-        weather.thunderTimer = 0.0f;
-        weather.nextThunderTime = RandomFloat(5, 15);
-        // Play thunder sound after delay here if you want
-        TraceLog(LOG_INFO, "LIGHTNING STRIKE!!!");
-    }
+    if(weather.weatherType == WeatherType::Thunder) {
+        // Thunder timing
+        weather.thunderTimer += dt;
+        if (weather.thunderTimer >= weather.nextThunderTime) {
+            weather.lightningActive = true;
+            weather.lightningStrength = 1.0f;
+            weather.thunderTimer = 0.0f;
+            weather.nextThunderTime = RandomFloat(5, 15);
+            // Play thunder sound after delay here if you want
+            TraceLog(LOG_INFO, "LIGHTNING STRIKE!!!");
+        }
 
-    // Lightning fade
-    if (weather.lightningActive) {
-        weather.lightningStrength -= dt * 3.0f; // ~0.3s fade
-        if (weather.lightningStrength <= 0.0f) {
-            weather.lightningStrength = 0.0f;
-            weather.lightningActive = false;
+        // Lightning fade
+        if (weather.lightningActive) {
+            weather.lightningStrength -= dt * 3.0f; // ~0.3s fade
+            if (weather.lightningStrength <= 0.0f) {
+                weather.lightningStrength = 0.0f;
+                weather.lightningActive = false;
+            }
         }
     }
 }
@@ -102,20 +107,23 @@ static Color RainColorWithAmbient3(Color ambient) {
 void DrawWeather(const WeatherData &weather, Color ambientColor) {
     Color color = RainColorWithAmbient(ambientColor);
 
-    // Ambient lightning flash overlay
-    if (weather.lightningActive) {
-        float s = weather.lightningStrength;
-        color = LerpColor(color, {220, 220, 255, 255}, s);
+    if(weather.weatherType == WeatherType::Thunder) {
+        // Ambient lightning flash overlay
+        if (weather.lightningActive) {
+            float s = weather.lightningStrength;
+            color = LerpColor(color, {220, 220, 255, 255}, s);
+        }
     }
 
-    int activeDrops = (int)(weather.drops.size() * weather.intensity);
-
-    for (int i = 0; i < activeDrops; i++) {
-        const RainDrop &d = weather.drops[i];
-        Vector2 end = {
-                d.position.x + d.velocity.x / d.velocity.y * d.length, // keep slant
-                d.position.y + d.length
-        };
-        DrawLineV(d.position, end, color);
+    if(weather.weatherType == WeatherType::Thunder || weather.weatherType == WeatherType::Rain) {
+        int activeDrops = (int) (weather.drops.size() * weather.intensity);
+        for (int i = 0; i < activeDrops; i++) {
+            const RainDrop &d = weather.drops[i];
+            Vector2 end = {
+                    d.position.x + d.velocity.x / d.velocity.y * d.length, // keep slant
+                    d.position.y + d.length
+            };
+            DrawLineV(d.position, end, color);
+        }
     }
 }

@@ -8,6 +8,13 @@
 #include <vector>
 #include "raylib.h"
 
+enum class WeatherType {
+    Sunny,
+    Overcast,
+    Rain,
+    Thunder
+};
+
 struct RainDrop {
     Vector2 position;
     Vector2 velocity;
@@ -25,6 +32,8 @@ struct WeatherData {
     float nextThunderTime;
     bool lightningActive;
     float lightningStrength; // 0–1 fade
+
+    WeatherType weatherType;
 };
 
 #endif //SANDBOX_WEATHERDATA_H
