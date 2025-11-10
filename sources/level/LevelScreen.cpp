@@ -317,7 +317,8 @@ static void HandleInputPathSelection(GameData& data, PlayField &playField, Level
                     stats.AP = 0;
                 }
                 level.turnState = TurnState::Move;
-                StopSfx(data.soundData, level.footStepsHandle);
+                if(level.footStepsHandle != -1)
+                    StopSfx(data.soundData, level.footStepsHandle);
                 level.footStepsHandle = PlaySfx(data.soundData, "footstep", true);
                 StartCameraPanToTargetPos(level.camera, mousePos, 250.0f);
             }

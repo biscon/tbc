@@ -5,9 +5,37 @@
 #include "Weather.h"
 #include "util/Random.h"
 #include "util/MathUtil.h"
+#include "audio/Sound.h"
+
+void StartWeatherSound(SoundData& soundData, WeatherData &weather, bool outdoor) {
+    if(outdoor) {
+        if(weather.weatherType == WeatherType::Rain || weather.weatherType == WeatherType::Thunder) {
+            weather.windSound = PlaySfx(soundData, "wind", true);
+            weather.rainSound = PlaySfx(soundData, "rain", true);
+        }
+    } else {
+        if(weather.weatherType == WeatherType::Rain || weather.weatherType == WeatherType::Thunder) {
+            weather.windSound = PlaySfx(soundData, "windIndoor", true);
+            weather.rainSound = PlaySfx(soundData, "rainIndoor", true);
+        }
+    }
+}
+
+void StopWeatherSound(SoundData& soundData, WeatherData &weather) {
+    if(weather.rainSound != -1) {
+        StopSfx(soundData, weather.rainSound);
+    }
+    if(weather.windSound != -1) {
+        StopSfx(soundData, weather.windSound);
+    }
+    if(weather.thunderStrikeSound != -1) {
+        StopSfx(soundData, weather.thunderStrikeSound);
+    }
+}
 
 // Initialize weather system with max raindrops
-void InitWeather(WeatherData &weather, int maxDrops, float mapWidth, float mapHeight) {
+void InitWeather(GameData& data, int maxDrops, float mapWidth, float mapHeight) {
+    WeatherData &weather = data.weatherData;
     weather.mapWidth = mapWidth;
     weather.mapHeight = mapHeight;
     weather.intensity = 1.0f;
@@ -25,13 +53,12 @@ void InitWeather(WeatherData &weather, int maxDrops, float mapWidth, float mapHe
         d.velocity.y = (float)GetRandomValue(300, 500);                // fall px/s
         d.length = (float)GetRandomValue(4, 8);
     }
-
-    weather.weatherType = WeatherType::Rain;
 }
 
 // Update active raindrops based on dt and intensity
-void UpdateWeather(WeatherData &weather, float dt) {
-    if(weather.weatherType == WeatherType::Thunder || weather.weatherType == WeatherType::Rain) {
+void UpdateWeather(GameData& data, bool outdoor, float dt) {
+    WeatherData &weather = data.weatherData;
+    if(weather.weatherType == WeatherType::Thunder || weather.weatherType == WeatherType::Rain && outdoor) {
         int activeDrops = (int) (weather.drops.size() * weather.intensity);
         for (int i = 0; i < activeDrops; i++) {
             RainDrop &d = weather.drops[i];
@@ -59,6 +86,11 @@ void UpdateWeather(WeatherData &weather, float dt) {
             weather.nextThunderTime = RandomFloat(5, 15);
             // Play thunder sound after delay here if you want
             TraceLog(LOG_INFO, "LIGHTNING STRIKE!!!");
+            if(outdoor) {
+                weather.thunderStrikeSound = PlaySfx(data.soundData, "thunderStrike", false);
+            } else {
+                weather.thunderStrikeSound = PlaySfx(data.soundData, "thunderStrikeIndoor", false);
+            }
         }
 
         // Lightning fade
@@ -126,4 +158,11 @@ void DrawWeather(const WeatherData &weather, Color ambientColor) {
             DrawLineV(d.position, end, color);
         }
     }
+}
+
+void SetWeatherType(GameData &data, WeatherType type, bool outdoor) {
+    WeatherData &weather = data.weatherData;
+    StopWeatherSound(data.soundData, weather);
+    weather.weatherType = type;
+    StartWeatherSound(data.soundData, data.weatherData, outdoor);
 }

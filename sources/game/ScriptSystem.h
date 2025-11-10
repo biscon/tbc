@@ -10,7 +10,7 @@
 #include "data/GameData.h"
 
 // Initialize once at game startup
-void ScriptSystemInit(GameData& script);
+void ScriptSystemInit(GameData& script, Level& currentLevel);
 
 // Shutdown when quitting
 void ScriptSystemShutdown(ScriptData& script);

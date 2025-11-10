@@ -33,7 +33,10 @@ struct WeatherData {
     bool lightningActive;
     float lightningStrength; // 0–1 fade
 
-    WeatherType weatherType;
+    WeatherType weatherType = WeatherType::Sunny;
+    int rainSound = -1;
+    int windSound = -1;
+    int thunderStrikeSound = -1;
 };
 
 #endif //SANDBOX_WEATHERDATA_H

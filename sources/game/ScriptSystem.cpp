@@ -4,6 +4,7 @@
 
 #include "ScriptSystem.h"
 #include "data/GameData.h"
+#include "level/Weather.h"
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -14,6 +15,7 @@
 // -----------------------------------------------------------------------------
 // Simple in-memory game flags for demo. Replace with your real game state.
 static GameData* gameData = nullptr;
+static Level* level = nullptr;
 
 // -----------------------------------------------------------------------------
 // Wren output / error callbacks
@@ -42,8 +44,21 @@ static void ErrorFn(WrenVM*, WrenErrorType type, const char* module, int line, c
 static void C_setWeather(WrenVM* vm) {
     const char* weather = wrenGetSlotString(vm, 1);
     if (weather) {
-        // Replace this with real engine call
+        if(strcmp(weather, "sunny") == 0) SetWeatherType(*gameData, WeatherType::Sunny, level->outdoor);
+        if(strcmp(weather, "overcast") == 0) SetWeatherType(*gameData, WeatherType::Overcast, level->outdoor);
+        if(strcmp(weather, "rain") == 0) SetWeatherType(*gameData, WeatherType::Rain, level->outdoor);
+        if(strcmp(weather, "thunder") == 0) SetWeatherType(*gameData, WeatherType::Thunder, level->outdoor);
         std::cout << "[GAME] Weather set to: " << weather << "\n";
+    }
+}
+
+static void C_setHourOfDay(WrenVM* vm) {
+    auto hod = (float) wrenGetSlotDouble(vm, 1);
+    if(hod >= 0 && hod <= 24) {
+        std::cout << "[GAME] Hour of day set to: " << hod << "\n";
+        level->hourOfDay = hod;
+    } else {
+        std::cerr << "[GAME] setHourOfDay argument must be between 0-24\n";
     }
 }
 
@@ -91,6 +106,7 @@ static WrenForeignMethodFn BindForeignMethod(WrenVM* vm,
     // We expose a single foreign class: Game
     if (strcmp(module, "game") == 0 && strcmp(className, "Game") == 0) {
         if (strcmp(signature, "setWeather(_)") == 0) return C_setWeather;
+        if (strcmp(signature, "setHourOfDay(_)") == 0) return C_setHourOfDay;
         if (strcmp(signature, "showText(_)") == 0)   return C_showText;
         if (strcmp(signature, "setFlag(_,_)") == 0)  return C_setFlag;
         if (strcmp(signature, "flag(_)") == 0)       return C_flag;
@@ -107,6 +123,7 @@ static void ScriptSystemRegisterAPI_Internal(ScriptData& script) {
     const char* decls = R"(
         foreign class Game {
             foreign static setWeather(weather)
+            foreign static setHourOfDay(hour)
             foreign static showText(text)
             foreign static setFlag(name, value)
             foreign static flag(name)
@@ -119,8 +136,9 @@ static void ScriptSystemRegisterAPI_Internal(ScriptData& script) {
 
 // -----------------------------------------------------------------------------
 // Initialize & shutdown
-void ScriptSystemInit(GameData& data) {
+void ScriptSystemInit(GameData& data, Level& currentLevel) {
     gameData = &data;
+    level = &currentLevel;
     WrenConfiguration config;
     wrenInitConfiguration(&config);
 

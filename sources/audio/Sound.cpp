@@ -98,12 +98,11 @@ int PlaySfx(SoundData& sd, const std::string& groupId, bool loop, float startDel
     const SoundEntry& entry = group.entries[chosenIndex];
 
     for (int i = 0; i < MAX_ALIASES; i++) {
-        if (!sd.aliases[i].inUse || !IsSoundPlaying(sd.aliases[i].alias)) {
-            if (!sd.aliases[i].inUse) {
-                sd.aliases[i].alias = LoadSoundAlias(entry.sound);
-                sd.aliases[i].inUse = true;
-            }
-
+        if (!sd.aliases[i].inUse) {
+            TraceLog(LOG_INFO, "Allocating sound alias #%i to soundgroup %s", i, groupId.c_str());
+            sd.aliases[i].alias = LoadSoundAlias(entry.sound);
+            sd.aliases[i].inUse = true;
+            sd.aliases[i].hasPlayed = false;
             sd.aliases[i].looping = loop;
             sd.aliases[i].volume = entry.volume;
             sd.aliases[i].restartDelay = entry.restartDelay;
@@ -114,6 +113,7 @@ int PlaySfx(SoundData& sd, const std::string& groupId, bool loop, float startDel
                 PlaySound(sd.aliases[i].alias);
                 SetSoundVolume(sd.aliases[i].alias, entry.volume);
                 sd.aliases[i].restartTimer = entry.restartDelay;
+                sd.aliases[i].hasPlayed = true;
             }
 
             return i;
@@ -158,12 +158,18 @@ void UpdateSoundData(SoundData& sd, float dt) {
                         sd.aliases[i].restartTimer = sd.aliases[i].restartDelay;
                     }
                 } else {
-                    if (sd.aliases[i].restartTimer <= 0.0f) {
+                    if (sd.aliases[i].restartTimer <= 0.0f && !sd.aliases[i].hasPlayed) {
                         PlaySound(sd.aliases[i].alias);
                         SetSoundVolume(sd.aliases[i].alias, sd.aliases[i].volume);
                         sd.aliases[i].restartTimer = -1.0f;
+                        sd.aliases[i].hasPlayed = true;
                     }
                 }
+            }
+            // Cleanup finished one-shots
+            if (!sd.aliases[i].looping && sd.aliases[i].hasPlayed && !IsSoundPlaying(sd.aliases[i].alias)) {
+                sd.aliases[i].inUse = false;
+                TraceLog(LOG_INFO, "Marking sound alias #%i as not in use!!!!!!!!!!!", i);
             }
         }
     }

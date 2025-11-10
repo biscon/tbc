@@ -222,6 +222,7 @@ static void updateTurnBasedMove(GameData& data, PlayField &playField, Level &lev
                 // If the last step is reached, stop moving
                 if (playField.path.currentStep >= playField.path.path.size() - 1) {
                     StopSfx(data.soundData, level.footStepsHandle);
+                    level.footStepsHandle = -1;
                     playField.moving = false;
                     PauseCharacterSpriteAnim(data.spriteData, sprite);
 
@@ -293,6 +294,7 @@ static void updateActiveMovement(GameData& data, PlayField &playField, Level& le
                 // If the last step is reached, stop moving
                 if (move.path.currentStep >= move.path.path.size() - 1) {
                     StopSfx(data.soundData, level.footStepsHandle);
+                    level.footStepsHandle = -1;
                     PauseCharacterSpriteAnim(data.spriteData, sprite);
                     SetCharacterSpriteFrame(data.spriteData, sprite, 0);
                     // set final position
@@ -547,7 +549,7 @@ void DrawPlayField(GameData& data, PlayField &playField, Level &level) {
     BeginMode2D(level.camera.camera);
     DrawLayers(data, level.lighting, data.spriteData.sheet, level.tileMap, level.tileMap.frontLayers, 0, 0);
     if(level.outdoor) {
-        DrawWeather(level.weather, level.lighting.ambient);
+        DrawWeather(data.weatherData, level.lighting.ambient);
     } else {
         RenderVisibilityMap(level.lighting);
     }

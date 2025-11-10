@@ -16,6 +16,7 @@ struct SoundAlias {
     Sound alias;
     bool inUse;
     bool looping;
+    bool hasPlayed;
     float volume;
     float restartDelay;
     float restartTimer;

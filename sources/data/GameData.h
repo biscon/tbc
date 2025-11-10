@@ -59,6 +59,7 @@ struct GameData {
     ItemData itemData;
     SoundData soundData;
     ScriptData scriptData;
+    WeatherData weatherData;
 
     // global save state
     std::unordered_map<std::string, LevelState> levelState;

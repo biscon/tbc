@@ -108,5 +108,52 @@
     {
         "groupId": "gunEmpty",
         "file": "sound/gun_empty.ogg"
+    },
+    {
+        "groupId": "rain",
+        "volume": 0.85,
+        "file": "sound/rain_01.ogg"
+    },
+    {
+        "groupId": "rainIndoor",
+        "volume": 0.85,
+        "file": "sound/rain_indoor_01.ogg"
+    },
+    {
+        "groupId": "wind",
+        "volume": 0.5,
+        "file": "sound/wind_01.ogg"
+    },
+    {
+        "groupId": "windIndoor",
+        "volume": 0.25,
+        "file": "sound/wind_indoor_01.ogg"
+    },
+    {
+        "groupId": "thunderStrike",
+        "file": "sound/thunder_strike_01.ogg"
+    },
+    {
+        "groupId": "thunderStrike",
+        "file": "sound/thunder_strike_02.ogg"
+    },
+    {
+        "groupId": "thunderStrike",
+        "file": "sound/thunder_strike_03.ogg"
+    },
+    {
+        "groupId": "thunderStrikeIndoor",
+        "volume": 0.75,
+        "file": "sound/thunder_strike_indoor_01.ogg"
+    },
+    {
+        "groupId": "thunderStrikeIndoor",
+        "volume": 0.75,
+        "file": "sound/thunder_strike_indoor_02.ogg"
+    },
+    {
+        "groupId": "thunderStrikeIndoor",
+        "volume": 0.75,
+        "file": "sound/thunder_strike_indoor_03.ogg"
     }
 ]

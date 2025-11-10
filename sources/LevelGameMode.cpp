@@ -48,7 +48,9 @@ static void processEvents(GameData& data) {
             case GameEventType::MoveParty: {
                 StartCameraPanToTilePos(level.camera, event.moveParty.target, 250.0f);
                 moveParty(event.moveParty.target);
-                StopSfx(data.soundData, level.footStepsHandle);
+                if(level.footStepsHandle != -1) {
+                    StopSfx(data.soundData, level.footStepsHandle);
+                }
                 level.footStepsHandle = PlaySfx(data.soundData, "footstep", true);
 
                 /*
@@ -262,12 +264,11 @@ void LevelUpdate(GameData& data, float dt) {
 
     //level.hourOfDay = 1;
 
-    if(level.outdoor) {
-        // Example: press UP/DOWN to control rain intensity
-        if (IsKeyDown(KEY_UP))   level.weather.intensity = fminf(level.weather.intensity + dt, 1.0f);
-        if (IsKeyDown(KEY_DOWN)) level.weather.intensity = fmaxf(level.weather.intensity - dt, 0.0f);
-        UpdateWeather(level.weather, dt);
-    }
+
+    // Example: press UP/DOWN to control rain intensity
+    if (IsKeyDown(KEY_UP))   data.weatherData.intensity = fminf(data.weatherData.intensity + dt, 1.0f);
+    if (IsKeyDown(KEY_DOWN)) data.weatherData.intensity = fmaxf(data.weatherData.intensity - dt, 0.0f);
+    UpdateWeather(data, level.outdoor, dt);
 
     UpdateCamera(level.camera, dt);
     UpdateCombat(*game, level, playField, dt);
@@ -371,10 +372,10 @@ void LevelRenderLevel(GameData& data) {
     if (scissorW > 0 && scissorH > 0) {
         BeginScissorMode(scissorX, scissorY, scissorW, scissorH);
         if(level.outdoor) {
-            Color ambient = CalcOutdoorAmbientColorCubic(level.hourOfDay, level.weather.weatherType);
+            Color ambient = CalcOutdoorAmbientColorCubic(level.hourOfDay, data.weatherData.weatherType);
             // lightning flash
-            if (level.weather.lightningActive) {
-                float s = level.weather.lightningStrength;
+            if (data.weatherData.lightningActive) {
+                float s = data.weatherData.lightningStrength;
                 ambient = LerpColor(ambient, {220, 220, 255, 255}, s);
             }
             level.lighting.ambient = ambient;
@@ -406,7 +407,7 @@ void LevelRenderUi(GameData& data) {
                    YELLOW);
         DrawTextEx(data.smallFont1, TextFormat("Time: %.2f", level.hourOfDay), (Vector2) {1, 16}, 5, 1,
                    YELLOW);
-        DrawTextEx(data.smallFont1, TextFormat("Weather intensity: %.2f", level.weather.intensity), (Vector2) {1, 24}, 5, 1,
+        DrawTextEx(data.smallFont1, TextFormat("Weather intensity: %.2f", data.weatherData.intensity), (Vector2) {1, 24}, 5, 1,
                    YELLOW);
     }
 }

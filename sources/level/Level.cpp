@@ -321,13 +321,15 @@ void LoadLevel(GameData& data, Level &level, const std::string &filename) {
     }
     PropagateLight(level.lighting, level.tileMap);
 
-    InitWeather(level.weather, 300, level.tileMap.width * level.tileMap.tileWidth, level.tileMap.height * level.tileMap.tileHeight);
+    InitWeather(data, 300, level.tileMap.width * level.tileMap.tileWidth, level.tileMap.height * level.tileMap.tileHeight);
+    StopWeatherSound(data.soundData, data.weatherData);
+    StartWeatherSound(data.soundData, data.weatherData, level.outdoor);
 
     InitPartySideBar(data);
 
     // Scripting
     ScriptSystemShutdown(data.scriptData);
-    ScriptSystemInit(data);
+    ScriptSystemInit(data, level);
     if(j["script"].is_string()) {
         ScriptSystemRunFile(data.scriptData, level.name, GetFilePath(j["script"].get<std::string>()));
         ScriptSystemCallFunction(data.scriptData, level.name, "Level.onEnter()");
