@@ -8,7 +8,6 @@
 #include <string>
 #include "data/DialogueData.h"
 #include "data/GameData.h"
-#include "util/GameEventQueue.h"
 
 void InitDialogueData(DialogueData& data, const std::string &filename);
 void RenderDialogueUI(GameData& data);

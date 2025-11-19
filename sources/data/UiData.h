@@ -10,7 +10,6 @@
 #include <string>
 #include <unordered_map>
 #include "raylib.h"
-#include "util/GameEventQueue.h"
 #include "PathFindingData.h"
 
 struct ClickRegion {
@@ -202,7 +201,6 @@ struct UiState {
     ActionBarUI actionBar{};
     PlayFieldUI playField;
     int selectedCharacter = 0;
-    GameEventQueue eventQueue;
     bool inCombat = false;
     int iconSpriteSheet;
     int portraitSpriteSheet;

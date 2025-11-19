@@ -76,10 +76,12 @@ struct SpawnPoint {
 struct LevelExit {
     std::string levelFile;
     std::string spawnPoint;
+    std::string onEnterFunc;
     int x;
     int y;
     int width;
     int height;
+    Vector2i interactionPos;
 };
 
 struct LevelObject {
@@ -89,6 +91,7 @@ struct LevelObject {
     bool loop;
     bool lit;
     int animPlayer;
+    Vector2i interactionPos;
 };
 
 struct LevelDoor {
@@ -98,6 +101,7 @@ struct LevelDoor {
     std::vector<Vector2i> blockedTiles;
     std::vector<Vector2i> shadowTiles;
     int animPlayer;
+    Vector2i interactionPos;
 };
 
 struct Level {

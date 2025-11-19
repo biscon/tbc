@@ -7,7 +7,6 @@
 
 #include "util/MathUtil.h"
 #include "graphics/ParticleSystem.h"
-#include "util/GameEventQueue.h"
 #include "Level.h"
 
 void CreatePlayField(PlayField &playField, ParticleManager* particleManager);

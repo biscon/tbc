@@ -13,6 +13,7 @@
 #include "graphics/Animation.h"
 #include "LevelCamera.h"
 #include "audio/Sound.h"
+#include "game/ActionSystem.h"
 
 static bool CheckEndCombat(GameData& data, Level& level) {
     // check victory condition, all enemies have zero health
@@ -29,8 +30,8 @@ static bool CheckEndCombat(GameData& data, Level& level) {
         //PlayPlayerVictoryAnimation(spriteData, charData, level);
         auto& levelState = data.levelState[level.name];
         levelState.defeatedGroups.insert(level.currentEnemyGroup);
-        PublishCloseActionBarEvent(data.ui.eventQueue);
-        PublishEndCombatEvent(data.ui.eventQueue, true);
+        PushCloseActionBar(data.actionQueue);
+        PushEndCombat(data.actionQueue, true);
     }
     // check defeat condition, all players have zero health
     bool allPlayersDefeated = true;
@@ -44,8 +45,8 @@ static bool CheckEndCombat(GameData& data, Level& level) {
         //StopSoundEffect(SoundEffectType::Ambience);
         //PlayEnemyVictoryAnimation(data.spriteData, data.charData, level);
         //combat.animations.clear();
-        PublishCloseActionBarEvent(data.ui.eventQueue);
-        PublishEndCombatEvent(data.ui.eventQueue, false);
+        PushCloseActionBar(data.actionQueue);
+        PushEndCombat(data.actionQueue, false);
     }
     return allEnemiesDefeated || allPlayersDefeated;
 }
@@ -78,7 +79,7 @@ void UpdateCombat(GameData &data, Level &level, PlayField& playField, float dt) 
                 SetupBlinkAnimation(blinkAnim, level.currentCharacter, 2.0f);
                 level.nextState = TurnState::SelectAction;
                 data.ui.selectedCharacter = level.currentCharacter;
-                PublishOpenActionBarEvent(data.ui.eventQueue);
+                PushOpenActionBar(data.actionQueue);
             } else {
                 // obtain AiInterface
                 AiInterface* ai = GetAiInterface(charData.ai[level.currentCharacter]);
@@ -103,8 +104,8 @@ void UpdateCombat(GameData &data, Level &level, PlayField& playField, float dt) 
         }
         case TurnState::EndTurn: {
             //if(!CheckEndCombat(data, level)) {
-                PublishCloseActionBarEvent(data.ui.eventQueue);
-                NextCharacter(charData, level);
+            PushCloseActionBar(data.actionQueue);
+            NextCharacter(charData, level);
             //}
             break;
         }
@@ -281,7 +282,7 @@ void UpdateCombat(GameData &data, Level &level, PlayField& playField, float dt) 
             break;
         }
         case TurnState::EndRound: {
-            PublishCloseActionBarEvent(data.ui.eventQueue);
+            PushCloseActionBar(data.actionQueue);
             Animation textAnim{};
             SetupTextAnimation(textAnim, "Next round!", 150, 1.0f, 1.0f);
             level.animations.push_back(textAnim);

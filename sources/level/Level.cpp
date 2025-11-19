@@ -159,6 +159,15 @@ void LoadLevel(GameData& data, Level &level, const std::string &filename) {
         e.y = jExit["y"].get<int>();
         e.width = jExit.value("width", 1);
         e.height = jExit.value("height", 1);
+
+        if(jExit.contains("interactionPos"))
+            jExit["interactionPos"].get_to(e.interactionPos);
+        else
+            e.interactionPos = {-1,-1};
+
+        if(jExit.contains("onEnterFunc"))
+            e.onEnterFunc = jExit["onEnterFunc"].get<std::string>();
+        SetTileRect(level.tileMap, e.x, e.y, e.width, e.height, NAV_LAYER, -1);
         level.exits.emplace_back(e);
     }
 
@@ -220,6 +229,11 @@ void LoadLevel(GameData& data, Level &level, const std::string &filename) {
             levelObj.loop = obj.value("loop", true);
             levelObj.lit = obj.value("lit", true);
             obj["position"].get_to(levelObj.gridPos);
+            if(obj.contains("interactionPos"))
+                obj["interactionPos"].get_to(levelObj.interactionPos);
+            else
+                levelObj.interactionPos = {-1,-1};
+
             levelObj.animPlayer = CreateSpriteAnimationPlayer(data.spriteData);
             int anim = GetSpriteAnimation(data.spriteData, levelObj.spriteTemplate);
             PlaySpriteAnimation(data.spriteData, levelObj.animPlayer, anim, levelObj.loop);
@@ -256,6 +270,12 @@ void LoadLevel(GameData& data, Level &level, const std::string &filename) {
             }
             DoorSaveState& doorState = data.levelState[level.name].doors[door.id];
             doorJson["position"].get_to(door.gridPos);
+
+            if(doorJson.contains("interactionPos"))
+                doorJson["interactionPos"].get_to(door.interactionPos);
+            else
+                door.interactionPos = {-1,-1};
+
             if (doorJson.contains("blockedTiles") && doorJson["blockedTiles"].is_array()) {
                 for (const auto& item : doorJson["blockedTiles"]) {
                     door.blockedTiles.push_back(item.get<Vector2i>());

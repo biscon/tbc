@@ -17,6 +17,7 @@ void UnloadTileMap(TileMap &tileMap);
 int GetTileAt(TileMap &tileMap, int layer, int x, int y);
 //void DrawTileLayer(LightingData& lightData, SpriteSheetData& sheetData, TileMap &tileMap, int layer, int x, int y);
 void SetTiles(TileMap &tileMap, const std::vector<Vector2i>& positions, int layer, int value);
+void SetTileRect(TileMap &tileMap, int x, int y, int w, int h, int layer, int value);
 void DrawLayers(GameData& data, LightingData& lightData, SpriteSheetData& sheetData, TileMap &tileMap, std::vector<TileMapLayer>& stack, int x, int y);
 
 #endif //SANDBOX_TILEMAP_H

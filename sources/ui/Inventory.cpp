@@ -8,7 +8,7 @@
 #include "game/Items.h"
 #include "Icons.h"
 #include "SharedInventoryUI.h"
-
+#include "game/ActionSystem.h"
 
 
 static const Rectangle invRect = {140, 8, gameScreenWidth - 200, gameScreenHeight - 100};
@@ -195,7 +195,7 @@ bool HandleInventoryInput(GameData& data) {
     data.ui.inventory.rightTabRegion.Update(mouse);
 
     if (IsKeyPressed(KEY_ESCAPE)) {
-        PublishCloseInventoryEvent(data.ui.eventQueue);
+        PushCloseInventory(data.actionQueue);
         return true;
     }
 
@@ -211,7 +211,7 @@ bool HandleInventoryInput(GameData& data) {
 
     if(data.ui.inventory.buttons["close"].region.ConsumeClick()) {
         data.ui.inventory.buttons["close"].hovered = false;
-        PublishCloseInventoryEvent(data.ui.eventQueue);
+        PushCloseInventory(data.actionQueue);
     }
 
     if(data.ui.inventory.contextButtons["equip"].region.ConsumeClick()) {

@@ -91,8 +91,6 @@ add_executable(${PROJECT_NAME}
         sources/level/LevelCamera.h
         sources/game/Game.cpp
         sources/game/Game.h
-        sources/util/GameEventQueue.cpp
-        sources/util/GameEventQueue.h
         sources/util/EventBus.cpp
         sources/util/EventBus.h
         sources/level/CombatEngine.cpp
@@ -171,6 +169,12 @@ add_executable(${PROJECT_NAME}
         sources/data/ScriptData.h
         sources/game/ScriptSystem.cpp
         sources/game/ScriptSystem.h
+        sources/data/InputData.h
+        sources/game/Input.cpp
+        sources/game/Input.h
+        sources/data/ActionData.h
+        sources/game/ActionSystem.cpp
+        sources/game/ActionSystem.h
 )
 
 

@@ -15,6 +15,8 @@ void ScriptSystemInit(GameData& script, Level& currentLevel);
 // Shutdown when quitting
 void ScriptSystemShutdown(ScriptData& script);
 
+std::string SanitizeModuleName(const std::string& input);
+
 // Execute a Wren script file inside a module (e.g. "map_forest")
 bool ScriptSystemRunFile(ScriptData& script, const std::string& moduleName, const std::string& filePath);
 
@@ -22,7 +24,11 @@ bool ScriptSystemCallFunction(ScriptData& script,
                               const std::string& moduleName,
                               const std::string& functionName);
 
-std::string SanitizeModuleName(const std::string& input);
+
+bool ScriptSystemCallFunctionBool(ScriptData& script,
+                                  const std::string& moduleName,
+                                  const std::string& functionName,
+                                  bool& outResult);
 
 
 #endif //SANDBOX_SCRIPTSYSTEM_H

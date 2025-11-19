@@ -6,7 +6,6 @@
 #define SANDBOX_ACTIONBAR_H
 
 #include "data/GameData.h"
-#include "util/GameEventQueue.h"
 
 #define RELOAD_AP_COST  2
 

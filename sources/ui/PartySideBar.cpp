@@ -7,6 +7,7 @@
 #include "util/StringUtil.h"
 #include "ui/UI.h"
 #include "portraits.h"
+#include "game/ActionSystem.h"
 #include <vector>
 #include <string>
 
@@ -117,14 +118,14 @@ bool HandlePartySideBarInput(GameData& data) {
     }
     if(data.ui.sideBar.buttons["inventory"].region.ConsumeClick()) {
         if(data.state != GameState::INVENTORY) {
-            PublishOpenInventoryEvent(data.ui.eventQueue, data.ui.selectedCharacter);
+            PushOpenInventory(data.actionQueue, data.ui.selectedCharacter);
         } else {
-            PublishCloseInventoryEvent(data.ui.eventQueue);
+            PushCloseInventory(data.actionQueue);
         }
         return true;
     }
     if(data.ui.sideBar.buttons["menu"].region.ConsumeClick()) {
-        PublishOpenMenuEvent(data.ui.eventQueue);
+        PushOpenMenu(data.actionQueue);
         return true;
     }
 

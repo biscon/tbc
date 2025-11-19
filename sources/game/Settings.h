@@ -7,7 +7,6 @@
 
 #include <string>
 #include "data/GameData.h"
-#include "util/GameEventQueue.h"
 
 void ApplySettings(SettingsData& settings);
 void SaveSettings(const SettingsData& settings);

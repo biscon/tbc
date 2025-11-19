@@ -6,8 +6,8 @@
 #include <sstream>
 #include "Dialogue.h"
 #include "raylib.h"
-#include "util/GameEventQueue.h"
 #include "graphics/SpriteAnimation.h"
+#include "game/ActionSystem.h"
 
 static bool EvaluateQuestStatusEquals(GameData& data, const Condition& condition) {
     const std::string& questId = condition.param;
@@ -54,14 +54,14 @@ static bool AllConditionsPass(GameData& data, const std::vector<Condition>& cond
     return true;
 }
 
-static void ExecuteEffects(GameData& data, const std::vector<Effect>& effects, GameEventQueue& eventQueue) {
+static void ExecuteEffects(GameData& data, const std::vector<Effect>& effects) {
     for(const auto& effect : effects) {
         switch(effect.type) {
             case EffectType::StartQuest: {
                 data.questState[effect.param].status = QuestStatus::Active;
                 data.questState[effect.param].stage = 0;
                 TraceLog(LOG_INFO, "Quest id '%s' started.", effect.param.c_str());
-                PublishStartQuestEvent(eventQueue, effect.param);
+                PushStartQuest(data.actionQueue, effect.param);
                 break;
             }
             case EffectType::CompleteQuest: {
@@ -278,23 +278,23 @@ static int ResolveEntryNode(GameData& data, int nodeId) {
     return nodeId; // Regular node
 }
 
-static void AdvanceDialogue(GameData& data, int virtualNodeId, GameEventQueue& eventQueue) {
+static void AdvanceDialogue(GameData& data, int virtualNodeId) {
     int nodeId = ResolveEntryNode(data, virtualNodeId);
     data.dialogueData.currentDialogueNode = nodeId;
     if(nodeId == -1) {
         TraceLog(LOG_ERROR, "Could not resolve a dialogue node for virtual node id: %i. Aborting dialogue.", virtualNodeId);
-        PublishEndDialogueEvent(eventQueue, data.dialogueData.currentNpc);
+        PushEndDialogue(data.actionQueue, data.dialogueData.currentNpc);
         data.dialogueData.currentNpc = -1; // Exit dialogue mode
     }
 }
 
-static void handlePlayerResponse(GameData& data, int responseId, GameEventQueue& eventQueue) {
+static void handlePlayerResponse(GameData& data, int responseId) {
     auto& dlg = data.dialogueData;
     auto& response = dlg.dialogueResponses[responseId];
 
     // execute effects
-    ExecuteEffects(data, response.effects, eventQueue);
-    AdvanceDialogue(data, response.nextNodeId, eventQueue);
+    ExecuteEffects(data, response.effects);
+    AdvanceDialogue(data, response.nextNodeId);
 }
 
 void HandleDialogueInput(GameData& data) {
@@ -306,7 +306,7 @@ void HandleDialogueInput(GameData& data) {
 
         for (const auto& [rect, responseId] : dlg.responseClickTargets) {
             if (CheckCollisionPointRec(mouse, rect)) {
-                handlePlayerResponse(data, responseId, data.ui.eventQueue);
+                handlePlayerResponse(data, responseId);
                 break;
             }
         }
@@ -319,5 +319,5 @@ void InitiateDialogue(GameData &data, int nodeId, int npcId) {
     data.dialogueData.idleAnimPlayer = CreateSpriteAnimationPlayer(data.spriteData);
     int idleAnim = GetSpriteAnimation(data.spriteData, "SerDonaldPortraitTalkTalk");
     PlaySpriteAnimation(data.spriteData, data.dialogueData.idleAnimPlayer, idleAnim, true);
-    AdvanceDialogue(data, nodeId, data.ui.eventQueue);
+    AdvanceDialogue(data, nodeId);
 }

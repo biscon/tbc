@@ -299,3 +299,21 @@ void SetTiles(TileMap &tileMap, const std::vector<Vector2i> &positions, int laye
         layerData.data[pos.y * tileMap.width + pos.x] = value;
     }
 }
+
+void SetTileRect(TileMap &tileMap, int x, int y, int w, int h, int layer, int value) {
+    TileLayerData& layerData = tileMap.tileLayerData[tileMap.metaLayers[layer].dataIdx];
+
+    // Bounds check for the full rectangle (fail fast)
+    if (x < 0 || y < 0 || x + w > layerData.width || y + h > layerData.height) {
+        TraceLog(LOG_ERROR, "Tilemap rectangle (%d,%d) w=%d h=%d is out of bounds", x, y, w, h);
+        return;
+    }
+
+    // Write the rectangle
+    for (int ty = y; ty < y + h; ++ty) {
+        for (int tx = x; tx < x + w; ++tx) {
+            layerData.data[ty * tileMap.width + tx] = value;
+        }
+    }
+}
+

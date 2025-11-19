@@ -8,6 +8,7 @@
 #include "game/Items.h"
 #include "Icons.h"
 #include "SharedInventoryUI.h"
+#include "game/ActionSystem.h"
 
 static const Rectangle invRect = {140, 8, 340, 160};
 static const Rectangle invRect2 = {140, 176, 340, 160};
@@ -84,7 +85,7 @@ bool HandleLootInventoryInput(GameData& data) {
     HandleInputButtons(data.ui.lootInventory.contextButtons);
 
     if (IsKeyPressed(KEY_ESCAPE)) {
-        PublishCloseLootInventoryEvent(data.ui.eventQueue);
+        PushCloseLootInventory(data.actionQueue);
         return true;
     }
 
@@ -105,7 +106,7 @@ bool HandleLootInventoryInput(GameData& data) {
 
     if(data.ui.lootInventory.buttons["close"].region.ConsumeClick()) {
         data.ui.lootInventory.buttons["close"].hovered = false;
-        PublishCloseLootInventoryEvent(data.ui.eventQueue);
+        PushCloseLootInventory(data.actionQueue);
     }
 
     if(data.ui.lootInventory.contextButtons["takeAll"].region.ConsumeClick()) {
@@ -116,7 +117,7 @@ bool HandleLootInventoryInput(GameData& data) {
         }
         lootInventory.items.clear();
         data.ui.lootInventory.list1.selectedIndex = -1;
-        PublishCloseLootInventoryEvent(data.ui.eventQueue);
+        PushCloseLootInventory(data.actionQueue);
     }
 
     if(data.ui.lootInventory.contextButtons["take"].region.ConsumeClick()) {
@@ -141,7 +142,7 @@ bool HandleLootInventoryInput(GameData& data) {
             selectedIndex = -1;
         }
         if(lootInventory.items.empty()) {
-            PublishCloseLootInventoryEvent(data.ui.eventQueue);
+            PushCloseLootInventory(data.actionQueue);
         }
     }
 
@@ -167,7 +168,7 @@ bool HandleLootInventoryInput(GameData& data) {
             selectedIndex = -1;
         }
         if(lootInventory.items.empty()) {
-            PublishCloseLootInventoryEvent(data.ui.eventQueue);
+            PushCloseLootInventory(data.actionQueue);
         }
     }
 

@@ -18,6 +18,8 @@
 #include "ui/Icons.h"
 #include "Weather.h"
 #include "audio/Sound.h"
+#include "game/Input.h"
+#include "game/ActionSystem.h"
 
 static bool IsCharacterVisible(Level &level, int character) {
     // Check if the character is visible (not blinking)
@@ -328,24 +330,54 @@ static void checkIfPartySpotted(GameData& data, PlayField &playField, Level &lev
             Vector2i partyGridPos = GetCharacterGridPosI(data.spriteData, data.charData.sprite[partyChar]);
             if(HasLineOfSight(level, enemyGridPos, partyGridPos, 16)) {
                 TraceLog(LOG_INFO, "Party last spotted by %s", data.charData.name[c].c_str());
-                PublishPartySpottedEvent(data.ui.eventQueue, c);
+                PushPartySpotted(data.actionQueue, c);
                 return;
             }
         }
     }
 }
 
-static void checkLevelExits(GameData& data, Level &level) {
-    for (auto& exit : level.exits) {
-        for (auto& c : level.partyCharacters) {
-            Vector2i cGridPos = GetCharacterGridPosI(data.spriteData, data.charData.sprite[c]);
-            if (cGridPos.x >= exit.x && cGridPos.x < exit.x + exit.width &&
-                cGridPos.y >= exit.y && cGridPos.y < exit.y + exit.height) {
-                PublishExitLevelEvent(data.ui.eventQueue, exit.levelFile, exit.spawnPoint);
+static void CheckLevelExits(GameData& data, Level& level)
+{
+    for (InputEvent& evt : FilterEvents(data.inputData, true, InputEventType::MouseClick))
+    {
+        if (evt.mouse.button != MOUSE_LEFT_BUTTON) continue;
+
+        Vector2 world = evt.mouse.worldPos;
+        Vector2i clickGrid = PixelToGridPositionI((int)world.x, (int)world.y);
+
+        for (auto& exit : level.exits) {
+
+            // click inside exit rect?
+            if (clickGrid.x < exit.x || clickGrid.x >= exit.x + exit.width ||
+                clickGrid.y < exit.y || clickGrid.y >= exit.y + exit.height)
+                continue;
+
+            // check character proximity
+            for (auto& c : level.partyCharacters) {
+
+                Vector2i cPos = GetCharacterGridPosI(
+                        data.spriteData,
+                        data.charData.sprite[c]
+                );
+
+                bool close = false;
+
+                for (int y = exit.y; y < exit.y + exit.height && !close; ++y)
+                    for (int x = exit.x; x < exit.x + exit.width && !close; ++x)
+                        if (Distance(cPos, {x, y}) <= 1.0f)
+                            close = true;
+
+                if (close) {
+                    ConsumeEvent(evt);
+                    PushExitLevel(data.actionQueue, exit.levelFile, exit.spawnPoint);
+                    return;
+                }
             }
         }
     }
 }
+
 
 void UpdatePlayField(GameData& data, PlayField &playField, Level &level, float dt) {
     // Update the pulsing alpha
@@ -369,7 +401,7 @@ void UpdatePlayField(GameData& data, PlayField &playField, Level &level, float d
     }
     if(level.turnState == TurnState::None) {
         checkIfPartySpotted(data, playField, level);
-        checkLevelExits(data, level);
+        //checkLevelExits(data, level);
     }
     for(auto& entry : level.objects) {
         auto& obj = entry.second;
@@ -395,64 +427,213 @@ static bool playerInTheWay(GameData& data, LevelDoor& door) {
 
 static bool handleDoors(GameData& data, Level &level, Vector2i playerPos, Vector2 mousePos) {
     SpriteData& spriteData = data.spriteData;
-    for(auto& entry : level.doors){
+
+    for (auto& entry : level.doors) {
         auto& door = entry.second;
+
+        // door world pixel rect
         Vector2 pos = GridToPixelPosition(door.gridPos.x, door.gridPos.y);
         auto frameInfo = GetFrameInfo(data.spriteData, door.animPlayer);
-        Rectangle frameRectWorld = {pos.x - 8.0f, pos.y - 8.0f, frameInfo.srcRect.width, frameInfo.srcRect.height};
-        if(CheckCollisionPointRec(mousePos, frameRectWorld) && Distance(playerPos, door.gridPos) < 5) {
-            if(playerInTheWay(data, door))
+
+        Rectangle frameRectWorld = {
+                pos.x - 8.0f,
+                pos.y - 8.0f,
+                frameInfo.srcRect.width,
+                frameInfo.srcRect.height
+        };
+
+        // Cheap distance check
+        if (Distance(playerPos, door.gridPos) >= 5)
+            continue;
+
+        // Hover sets the cursor icon
+        if (CheckCollisionPointRec(mousePos, frameRectWorld)) {
+            data.ui.currentCursorIcon = ICON_INTERACT;
+        }
+
+        // Now process input events
+        for (auto& ev : FilterEvents(data.inputData, true, InputEventType::MouseClick)) {
+            if (ev.mouse.button != MOUSE_LEFT_BUTTON) continue;
+
+            // Check if click is on this door
+            if (!CheckCollisionPointRec(ev.mouse.worldPos, frameRectWorld))
                 continue;
 
+            // Extra block: avoid opening doors the player is blocking
+            if (playerInTheWay(data, door))
+                continue;
+
+            // ---- Handle door interaction ----
+            ConsumeEvent(ev);
+            DoorSaveState &doorState = data.levelState[level.name].doors[door.id];
+
+            if (!doorState.open) {
+                TraceLog(LOG_INFO, "Opening door %s", door.id.c_str());
+                doorState.open = true;
+                SetReverseSpriteAnimation(spriteData, door.animPlayer, false);
+                ResumeSpriteAnimation(spriteData, door.animPlayer);
+                SetFrame(spriteData, door.animPlayer, 0);
+            } else {
+                TraceLog(LOG_INFO, "Closing door %s", door.id.c_str());
+                doorState.open = false;
+                SetReverseSpriteAnimation(spriteData, door.animPlayer, true);
+                int anim = spriteData.player.animationIdx[door.animPlayer];
+                int frames = (int)spriteData.anim.frames[anim].size();
+                SetFrame(spriteData, door.animPlayer, frames - 1);
+                ResumeSpriteAnimation(spriteData, door.animPlayer);
+            }
+
+            // Update tile layers
+            SetTiles(level.tileMap, door.blockedTiles, NAV_LAYER, doorState.open ? 0 : 1);
+            SetTiles(level.tileMap, door.shadowTiles, SHADOW_LAYER, doorState.open ? 0 : 1);
+            SetTiles(level.tileMap, door.shadowTiles, LIGHT_LAYER, doorState.open ? 0 : 1);
+
+            PropagateLight(level.lighting, level.tileMap);
+
+            return true;    // one door handled
+        }
+    }
+
+    return false;
+}
+
+static bool handleObjects(GameData& data, Level &level, Vector2i playerPos)
+{
+    // iterate only unhandled left-click events
+    for (InputEvent& evt : FilterEvents(data.inputData, true, InputEventType::MouseClick))
+    {
+        if (evt.mouse.button != MOUSE_LEFT_BUTTON)
+            continue;
+
+        Vector2 clickPos = evt.mouse.worldPos; // always use event’s world pos
+
+        for (auto& entry : level.objects)
+        {
+            auto& obj = entry.second;
+
+            // position and bounds
+            Vector2 pos = GridToPixelPosition(obj.gridPos.x, obj.gridPos.y);
+            auto frameInfo = GetFrameInfo(data.spriteData, obj.animPlayer);
+
+            Rectangle frameRectWorld = {
+                    pos.x - 8.0f,
+                    pos.y - 8.0f,
+                    frameInfo.srcRect.width,
+                    frameInfo.srcRect.height
+            };
+
+            // require click on object + proximity
+            if (!CheckCollisionPointRec(clickPos, frameRectWorld))
+                continue;
+
+            if (Distance(playerPos, obj.gridPos) >= 5)
+                continue;
+
+            // object has inventory?
+            auto& state = data.levelState[level.name];
+            if (state.objectInventories.count(obj.id) == 0)
+                continue;
+
+            int invId = state.objectInventories.at(obj.id);
+
+            // cursor update
             data.ui.currentCursorIcon = ICON_INTERACT;
-            if(IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
-                DoorSaveState &doorState = data.levelState[level.name].doors[door.id];
-                if (!doorState.open) {
-                    TraceLog(LOG_INFO, "Opening door %s", door.id.c_str());
-                    doorState.open = true;
-                    SetReverseSpriteAnimation(spriteData, door.animPlayer, false);
-                    ResumeSpriteAnimation(spriteData, door.animPlayer);
-                    SetFrame(spriteData, door.animPlayer, 0);
-                } else {
-                    TraceLog(LOG_INFO, "Closing door %s", door.id.c_str());
-                    doorState.open = false;
-                    SetReverseSpriteAnimation(spriteData, door.animPlayer, true);
-                    int anim = spriteData.player.animationIdx[door.animPlayer];
-                    int frames = (int) spriteData.anim.frames[anim].size();
-                    SetFrame(spriteData, door.animPlayer, frames - 1);
-                    ResumeSpriteAnimation(spriteData, door.animPlayer);
-                }
-                SetTiles(level.tileMap, door.blockedTiles, NAV_LAYER, doorState.open ? 0 : 1);
-                SetTiles(level.tileMap, door.shadowTiles, SHADOW_LAYER, doorState.open ? 0 : 1);
-                SetTiles(level.tileMap, door.shadowTiles, LIGHT_LAYER, doorState.open ? 0 : 1);
-                PropagateLight(level.lighting, level.tileMap);
+
+            // consume event & open loot
+            ConsumeEvent(evt);
+            PushOpenLootInventory(data.actionQueue, invId);
+            return true;
+        }
+    }
+
+    return false;
+}
+
+static bool handleMovementClick(GameData& data,
+                                PlayField& playField,
+                                Level& level,
+                                Vector2i playerPos,
+                                Vector2i gridPos)
+{
+    SpriteData& spriteData = data.spriteData;
+    CharacterData& charData = data.charData;
+
+    int playerChar = data.ui.selectedCharacter;
+
+    // Construct player sprite position in pixel space
+    Vector2i playerPixel = {
+            (int)GetCharacterSpritePosX(spriteData, charData.sprite[playerChar]),
+            (int)GetCharacterSpritePosY(spriteData, charData.sprite[playerChar])
+    };
+
+    Path path;
+    if (!CalcPath(spriteData, charData, level, path,
+                  PixelToGridPositionI(playerPixel.x, playerPixel.y),
+                  gridPos,
+                  playerChar,
+                  IsTileOccupiedEnemies))
+    {
+        return false;
+    }
+
+    // highlight tile
+    playField.selectedTilePos = gridPos;
+
+    // handle left-click event
+    for (InputEvent& evt : FilterEvents(data.inputData, true, InputEventType::MouseClick))
+    {
+        if (evt.mouse.button != MOUSE_LEFT_BUTTON) continue;
+
+        ConsumeEvent(evt);
+        PushMoveParty(data.actionQueue, gridPos);
+        return true;
+    }
+
+    return false;
+}
+
+static bool handleDialogueClick(GameData& data,
+                                PlayField& playField,
+                                Level& level,
+                                Vector2i playerPos,
+                                Vector2i gridPos)
+{
+    SpriteData& spriteData = data.spriteData;
+    CharacterData& charData = data.charData;
+
+    for (int npcId : level.npcCharacters)
+    {
+        Vector2i npcPos = GetCharacterGridPosI(spriteData, charData.sprite[npcId]);
+
+        if (npcPos != gridPos)
+            continue;
+
+        // NPC found on clicked tile
+        if (Distance(playerPos, npcPos) < 3)
+        {
+            playField.hintText = "Talk to " + charData.name[npcId];
+            data.ui.currentCursorIcon = ICON_TALK;
+
+            // click-to-talk
+            for (InputEvent& evt : FilterEvents(data.inputData, true, InputEventType::MouseClick))
+            {
+                if (evt.mouse.button != MOUSE_LEFT_BUTTON) continue;
+
+                ConsumeEvent(evt);
+                PushInitiateDialogue(data.actionQueue, npcId, level.npcDialogueNodeIds[npcId]);
                 return true;
             }
         }
-    }
-    return false;
-}
-
-static bool handleObjects(GameData& data, Level &level, Vector2i playerPos, Vector2 mousePos) {
-    for(auto& entry : level.objects){
-        auto& obj = entry.second;
-        Vector2 pos = GridToPixelPosition(obj.gridPos.x, obj.gridPos.y);
-        auto frameInfo = GetFrameInfo(data.spriteData, obj.animPlayer);
-        Rectangle frameRectWorld = {pos.x - 8.0f, pos.y - 8.0f, frameInfo.srcRect.width, frameInfo.srcRect.height};
-        if(CheckCollisionPointRec(mousePos, frameRectWorld) && Distance(playerPos, obj.gridPos) < 5) {
-
-            if(data.levelState[level.name].objectInventories.count(obj.id) > 0) {
-                int invId = data.levelState[level.name].objectInventories.at(obj.id);
-                data.ui.currentCursorIcon = ICON_INTERACT;
-                if(IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
-                    PublishOpenLootInventoryEvent(data.ui.eventQueue, invId);
-                    return true;
-                }
-            }
+        else
+        {
+            playField.hintText = "Too far away!";
         }
     }
+
     return false;
 }
+
+
 
 static void showExits(GameData& data, Level &level, Vector2 mousePos) {
     for(auto& exit : level.exits){
@@ -465,56 +646,52 @@ static void showExits(GameData& data, Level &level, Vector2 mousePos) {
     }
 }
 
-static void handleInputPlayFieldExploration(GameData& data, PlayField &playField, Level &level) {
+static void handleInputPlayFieldExploration(GameData& data,
+                                            PlayField &playField,
+                                            Level &level)
+{
     SpriteData& spriteData = data.spriteData;
     CharacterData& charData = data.charData;
-    // check if mouse is over tile
+
     playField.selectedTilePos = {-1, -1};
-    Vector2 mousePos = GetScreenToWorld2D(GetMousePosition(), level.camera.camera);
-    Vector2i gridPos = PixelToGridPositionI(mousePos.x, mousePos.y);
-    auto& playerChar = data.ui.selectedCharacter;
-    Vector2i playerPos = GetCharacterGridPosI(spriteData, charData.sprite[playerChar]);
 
-    showExits(data, level, mousePos);
+    Vector2 mouseWorld = GetScreenToWorld2D(GetMousePosition(), level.camera.camera);
+    Vector2i gridPos = PixelToGridPositionI((int) mouseWorld.x, (int) mouseWorld.y);
 
-    if(handleObjects(data, level, playerPos, mousePos)) {
-        return;
+    int playerChar = data.ui.selectedCharacter;
+    Vector2i playerPos =
+            GetCharacterGridPosI(spriteData, charData.sprite[playerChar]);
+
+    // Show exits and check them (existing logic)
+    showExits(data, level, mouseWorld);
+    if (level.turnState == TurnState::None) {
+        CheckLevelExits(data, level);
     }
 
-    if(handleDoors(data, level, playerPos, mousePos)) {
+    // Objects take priority
+    if (handleObjects(data, level, playerPos))
         return;
+
+    // Doors next
+    if (handleDoors(data, level, playerPos, mouseWorld))
+        return;
+
+    // Movement or dialogue
+    if (!IsTileOccupied(spriteData, charData, level,
+                        gridPos.x, gridPos.y, -1))
+    {
+        // movement handler
+        if (handleMovementClick(data, playField, level, playerPos, gridPos))
+            return;
     }
-
-    if (!IsTileOccupied(spriteData, charData, level, gridPos.x, gridPos.y, -1)) {
-        // calculate a path and draw it as lines
-        Path path;
-        Vector2i target = PixelToGridPositionI(static_cast<int>(mousePos.x), static_cast<int>(mousePos.y));
-        if (CalcPath(spriteData, charData, level, path, PixelToGridPositionI((int) GetCharacterSpritePosX(spriteData, charData.sprite[playerChar]),
-                                                       (int) GetCharacterSpritePosY(spriteData, charData.sprite[playerChar])),
-                     target, playerChar, IsTileOccupiedEnemies)) {
-            playField.selectedTilePos = gridPos;
-            if(IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
-                PublishMovePartyEvent(data.ui.eventQueue, gridPos);
-            }
-        }
-    } else {
-
-        for(int npcId : level.npcCharacters) {
-            Vector2i npcPos = GetCharacterGridPosI(spriteData, charData.sprite[npcId]);
-            if(npcPos == gridPos) {
-                if(Distance(playerPos, npcPos) < 3) {
-                    data.ui.currentCursorIcon = ICON_TALK;
-                    playField.hintText = "Talk to " + charData.name[npcId];
-                    if(IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
-                        PublishInitiateDialogueEvent(data.ui.eventQueue, npcId, level.npcDialogueNodeIds[npcId]);
-                    }
-                } else {
-                    playField.hintText = "Too far away!";
-                }
-            }
-        }
+    else
+    {
+        // dialogue handler
+        if (handleDialogueClick(data, playField, level, playerPos, gridPos))
+            return;
     }
 }
+
 
 void HandleInputPlayField(GameData& data, PlayField &playField, Level &level) {
     if(playField.mode == PlayFieldMode::Explore) {

@@ -6,7 +6,6 @@
 #define SANDBOX_PARTYSIDEBAR_H
 
 #include "data/GameData.h"
-#include "util/GameEventQueue.h"
 
 void InitPartySideBar(GameData& data); // call after level is loaded to setup the sidebar
 void RenderPartySideBarUI(GameData& data);

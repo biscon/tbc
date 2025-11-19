@@ -23,6 +23,8 @@
 #include "PlayFieldData.h"
 #include "SoundData.h"
 #include "ScriptData.h"
+#include "InputData.h"
+#include "ActionData.h"
 
 const int gameScreenWidth = 640;
 const int gameScreenHeight = 360;
@@ -60,6 +62,8 @@ struct GameData {
     SoundData soundData;
     ScriptData scriptData;
     WeatherData weatherData;
+    InputData inputData;
+    ActionQueue actionQueue;
 
     // global save state
     std::unordered_map<std::string, LevelState> levelState;

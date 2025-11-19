@@ -7,8 +7,6 @@
 
 #include "PlayField.h"
 #include "graphics/ParticleSystem.h"
-#include "util/GameEventQueue.h"
-
 
 void CreateLevelScreen(GameData& data);
 void DestroyLevelScreen(GameData& data);

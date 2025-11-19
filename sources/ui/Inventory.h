@@ -6,7 +6,6 @@
 #define SANDBOX_INVENTORY_H
 
 #include "data/GameData.h"
-#include "util/GameEventQueue.h"
 
 void InitInventory(GameData& data);
 void RenderInventoryUI(GameData& data);

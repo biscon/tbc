@@ -21,4 +21,9 @@ class Level {
         */
         //System.print("flag = %(Game.flag("flag"))")
     }
+
+    static onEnter_mallExit() {
+        System.print("mallExit called")
+        return true
+    }
 }

@@ -32,7 +32,9 @@
             "x": 31,
             "y": 8,
             "width": 2,
-            "height": 2
+            "height": 1,
+            "interactionPos": [31, 9],
+            "onEnterFunc": "onEnter_mallExit()"
         }
     ],
     "npcs": [

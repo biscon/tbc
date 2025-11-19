@@ -15,6 +15,7 @@
 #include "ui/UI.h"
 #include "ai/RangedAi.h"
 #include "audio/Sound.h"
+#include "game/Input.h"
 
 #define MAX(a, b) ((a)>(b)? (a) : (b))
 #define MIN(a, b) ((a)<(b)? (a) : (b))
@@ -69,6 +70,7 @@ int main() {
     InitNpcTemplateData(game.npcTemplateData, ASSETS_PATH"npcs.json");
 
     InitUI(game);
+    InitInput(game.inputData);
 
     InitGameMode(game);
     PushGameMode(game, GameModes::Menu);

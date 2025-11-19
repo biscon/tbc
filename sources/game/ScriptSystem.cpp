@@ -207,7 +207,7 @@ std::string SanitizeModuleName(const std::string& input)
     return out;
 }
 
-bool ScriptSystemCallFunction(ScriptData& script,
+bool ScriptSystemCallFunctionOLD(ScriptData& script,
                               const std::string& moduleName,
                               const std::string& functionName)
 {
@@ -254,3 +254,116 @@ bool ScriptSystemCallFunction(ScriptData& script,
 
     return true;
 }
+
+
+static bool ScriptSystemCallFunctionInternal(
+        ScriptData& script,
+        const std::string& moduleName,
+        const std::string& functionName,
+        WrenHandle*& outHandle,
+        std::string& outSig,
+        std::string& outClassName,
+        std::string& outSafeModule)
+{
+    if (!script.vm) return false;
+
+    // Sanitize module name (unchanged)
+    outSafeModule = SanitizeModuleName(moduleName);
+
+    // Extract class + signature
+    size_t dot = functionName.find('.');
+    if (dot == std::string::npos) {
+        std::cerr << "[WREN] Internal error: malformed signature '" << functionName << "'\n";
+        return false;
+    }
+
+    outSig = functionName.substr(dot + 1);
+    outClassName = functionName.substr(0, dot);
+
+    // Create call handle
+    outHandle = wrenMakeCallHandle(script.vm, outSig.c_str());
+    if (!outHandle) {
+        std::cerr << "[WREN] Failed to create call handle for '" << outSig << "'\n";
+        return false;
+    }
+
+    // Prepare slot 0 with the class
+    wrenEnsureSlots(script.vm, 1);
+    wrenGetVariable(script.vm, outSafeModule.c_str(), outClassName.c_str(), 0);
+
+    WrenType type = wrenGetSlotType(script.vm, 0);
+    if (type == WREN_TYPE_NULL) {
+        std::cerr << "[WREN] Class '" << outClassName
+                  << "' not found in module '" << outSafeModule << "'\n";
+        wrenReleaseHandle(script.vm, outHandle);
+        outHandle = nullptr;
+        return false;
+    }
+
+    return true;
+}
+
+bool ScriptSystemCallFunction(ScriptData& script,
+                              const std::string& moduleName,
+                              const std::string& functionName)
+{
+    WrenHandle* callHandle = nullptr;
+    std::string sig, className, safeModule;
+
+    if (!ScriptSystemCallFunctionInternal(
+            script, moduleName, functionName,
+            callHandle, sig, className, safeModule))
+    {
+        return false;
+    }
+
+    WrenInterpretResult result = wrenCall(script.vm, callHandle);
+    wrenReleaseHandle(script.vm, callHandle);
+
+    if (result != WREN_RESULT_SUCCESS) {
+        std::cerr << "[WREN] Call to " << sig
+                  << " in module '" << safeModule
+                  << "' failed with code " << result << "\n";
+        return false;
+    }
+
+    return true;
+}
+
+bool ScriptSystemCallFunctionBool(ScriptData& script,
+                                  const std::string& moduleName,
+                                  const std::string& functionName,
+                                  bool& outResult)
+{
+    WrenHandle* callHandle = nullptr;
+    std::string sig, className, safeModule;
+
+    if (!ScriptSystemCallFunctionInternal(
+            script, moduleName, functionName,
+            callHandle, sig, className, safeModule))
+    {
+        return false;
+    }
+
+    WrenInterpretResult result = wrenCall(script.vm, callHandle);
+    wrenReleaseHandle(script.vm, callHandle);
+
+    if (result != WREN_RESULT_SUCCESS) {
+        std::cerr << "[WREN] Call to " << sig
+                  << " in module '" << safeModule
+                  << "' failed with code " << result << "\n";
+        return false;
+    }
+
+    // Extract bool return value from slot 0
+    WrenType type = wrenGetSlotType(script.vm, 0);
+    if (type != WREN_TYPE_BOOL) {
+        std::cerr << "[WREN] Expected bool return from '" << sig
+                  << "' but got type " << type << "\n";
+        return false;
+    }
+
+    outResult = wrenGetSlotBool(script.vm, 0);
+    return true;
+}
+

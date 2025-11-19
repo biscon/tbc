@@ -9,166 +9,23 @@
 #include "level/LevelScreen.h"
 #include "graphics/BloodPool.h"
 #include "rcamera.h"
-#include "util/GameEventQueue.h"
 #include "level/CombatEngine.h"
 #include "ui/Dialogue.h"
-#include "graphics/Animation.h"
 #include "ui/PartySideBar.h"
 #include "ui/Inventory.h"
 #include "level/LevelCamera.h"
 #include "graphics/Lighting.h"
 #include "ui/ActionBar.h"
-#include "ui/Icons.h"
 #include "ui/LootInventory.h"
 #include "ai/PathFinding.h"
 #include "level/Weather.h"
-#include "audio/Sound.h"
+#include "game/Input.h"
+#include "game/ActionSystem.h"
 
 static GameData* game;
 static Level level;
 static ParticleManager particleManager;
 static PlayField playField{};
-
-static void moveParty(Vector2i target) {
-    TraceLog(LOG_INFO, "MoveParty event,target: %d,%d", target.x, target.y);
-    playField.activeMoves.clear();
-    MoveCharacter(*game, playField, level, game->ui.selectedCharacter, target);
-    // move the rest partially
-    for(int i = 0; i < (int)level.partyCharacters.size(); i++) {
-        if(level.partyCharacters[i] != game->ui.selectedCharacter) {
-            MoveCharacterPartial(*game, playField, level, level.partyCharacters[i], target);
-        }
-    }
-}
-
-static void processEvents(GameData& data) {
-    GameEvent event{};
-    while(GetNextEvent(game->ui.eventQueue, event)) {
-        switch(event.type) {
-            case GameEventType::MoveParty: {
-                StartCameraPanToTilePos(level.camera, event.moveParty.target, 250.0f);
-                moveParty(event.moveParty.target);
-                if(level.footStepsHandle != -1) {
-                    StopSfx(data.soundData, level.footStepsHandle);
-                }
-                level.footStepsHandle = PlaySfx(data.soundData, "footstep", true);
-
-                /*
-                Animation anim{};
-                SetupFancyTextAnimation(anim,
-                                        "The system is compromised!",
-                                        300,
-                                        2.0f,   // holdDuration
-                                        0.5f,     // initialDelay
-                                        0.05f,    // letterPause (reveal speed)
-                                        1.0f);    // fadeOut
-                level.animations.push_back(anim);
-                 */
-                break;
-            }
-            case GameEventType::PartySpotted: {
-                game->ui.inCombat = true;
-                playField.mode = PlayFieldMode::None;
-                StartCombat(game->spriteData, game->charData, level, event.partySpotted.spotter);
-                break;
-            }
-            case GameEventType::EndCombat: {
-                level.turnState = TurnState::None;
-                playField.mode = PlayFieldMode::Explore;
-                game->ui.inCombat = false;
-                for(auto& c : level.partyCharacters) {
-                    // Set initial animation to paused
-                    CharacterSprite& sprite = game->charData.sprite[c];
-                    StartPausedCharacterSpriteAnim(game->spriteData, sprite, SpriteAnimationType::WalkDown, true);
-                    game->charData.orientation[c] = Orientation::Down;
-                    game->charData.statusEffects[c].clear();
-                    // revive dead party chars
-                    if(game->charData.stats[c].HP <= 0) {
-                        game->charData.stats[c].HP = CalculateCharHealth(game->charData.stats[c]);
-                        SetCharacterSpriteRotation(game->spriteData, sprite, 0);
-                    }
-                }
-                break;
-            }
-            case GameEventType::ExitLevel: {
-                TraceLog(LOG_INFO, "ExitLevel: %s, spawnPoint: %s", event.exitLevelEvent.levelFile, event.exitLevelEvent.spawnPoint);
-                game->levelFileName = std::string(event.exitLevelEvent.levelFile);
-                ResetPlayField(playField);
-                LoadLevel(*game, level, game->levelFileName);
-                std::string spawnPoint = std::string(event.exitLevelEvent.spawnPoint);
-                AddPartyToLevel(game->spriteData, game->charData, level, game->party, spawnPoint);
-                StartCameraPanToTargetCharTime(game->spriteData, game->charData, level.camera, game->party[0], 0.01f);
-                game->state = GameState::PLAY_LEVEL;
-                playField.mode = PlayFieldMode::Explore;
-                break;
-            }
-            case GameEventType::InitiateDialogue: {
-                playField.mode = PlayFieldMode::None;
-                game->state = GameState::DIALOGUE;
-                TraceLog(LOG_INFO, "InitiateDialogue: npcId = %i, dialogueNodeId = %i", event.initiateDialogueEvent.npcId, event.initiateDialogueEvent.dialogueNodeId);
-                InitiateDialogue(*game, event.initiateDialogueEvent.dialogueNodeId, event.initiateDialogueEvent.npcId);
-                break;
-            }
-            case GameEventType::EndDialogue: {
-                TraceLog(LOG_INFO, "EndDialogue: npcId = %i", event.endDialogueEvent.npcId);
-                playField.mode = PlayFieldMode::Explore;
-                game->state = GameState::PLAY_LEVEL;
-                break;
-            }
-            case GameEventType::StartQuest: {
-                const Quest& quest = game->questData.quests[event.startQuestEvent.questId];
-                Animation textAnim1{};
-                Animation textAnim2{};
-                SetupFancyTextAnimation(textAnim1, "Quest started:", 10, 285, 2.0f, 0.5f, 0.05f, 1.0f);
-                SetupFancyTextAnimation(textAnim2, quest.title.c_str(), 20, 300, 2.0f, 1.0f, 0.05f, 1.0f);
-                level.animations.push_back(textAnim1);
-                level.animations.push_back(textAnim2);
-                break;
-            }
-            case GameEventType::OpenInventory: {
-                //playField.mode = PlayFieldMode::None;
-                game->state = GameState::INVENTORY;
-                game->ui.selectedCharacter = event.openInventoryEvent.charId;
-                //InitInventory(*game);
-                break;
-            }
-            case GameEventType::CloseInventory: {
-                //playField.mode = PlayFieldMode::Explore;
-                game->state = GameState::PLAY_LEVEL;
-                break;
-            }
-            case GameEventType::OpenMenu: {
-                PopGameMode(*game);
-                break;
-            }
-            case GameEventType::OpenActionBar: {
-                game->ui.showActionBar = true;
-                // preselect move
-                game->ui.actionBar.selectedActionIdx = 0;
-                game->ui.actionBar.selectedModeIdx = 0;
-                ExecuteAction(*game, ActionBarAction::Move, level, playField, true);
-                break;
-            }
-            case GameEventType::CloseActionBar: {
-                game->ui.showActionBar = false;
-                break;
-            }
-            case GameEventType::OpenLootInventory: {
-                data.state = GameState::LOOT_INVENTORY;
-                data.ui.lootInventory.inventoryId = event.openLootInventoryEvent.invId;
-                InitLootInventory(data);
-                break;
-            }
-            case GameEventType::CloseLootInventory: {
-                //playField.mode = PlayFieldMode::Explore;
-                data.state = GameState::PLAY_LEVEL;
-                break;
-            }
-            default:
-                break;
-        }
-    }
-}
 
 static void handleCameraMovement() {
     float dt = GetFrameTime();
@@ -264,7 +121,6 @@ void LevelUpdate(GameData& data, float dt) {
 
     //level.hourOfDay = 1;
 
-
     // Example: press UP/DOWN to control rain intensity
     if (IsKeyDown(KEY_UP))   data.weatherData.intensity = fminf(data.weatherData.intensity + dt, 1.0f);
     if (IsKeyDown(KEY_DOWN)) data.weatherData.intensity = fmaxf(data.weatherData.intensity - dt, 0.0f);
@@ -296,7 +152,12 @@ void LevelUpdate(GameData& data, float dt) {
 }
 
 void LevelHandleInput(GameData& data) {
-    processEvents(data);
+    UpdateInput(data.inputData, level.camera.camera);
+    if(ProcessActions(data, level, playField, data.actionQueue, GetFrameTime())) {
+        PopGameMode(data);
+        return;
+    }
+    //processEvents(data);
     if (IsKeyPressed(KEY_ESCAPE) && (game->state != GameState::INVENTORY && game->state != GameState::LOOT_INVENTORY)) {
         PopGameMode(data);
         return;
