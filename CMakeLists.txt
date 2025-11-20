@@ -121,7 +121,6 @@ add_executable(${PROJECT_NAME}
         sources/game/Quest.h
         sources/game/Settings.cpp
         sources/game/Settings.h
-        sources/data/SettingsData.cpp
         sources/data/SettingsData.h
         sources/graphics/Lighting.cpp
         sources/graphics/Lighting.h
@@ -142,9 +141,7 @@ add_executable(${PROJECT_NAME}
         sources/ui/LootInventory.h
         sources/data/UiData.cpp
         sources/data/UiData.h
-        sources/data/LevelData.cpp
         sources/data/LevelData.h
-        sources/data/PlayFieldData.cpp
         sources/data/PlayFieldData.h
         sources/ui/ActionBar.cpp
         sources/ui/ActionBar.h
@@ -175,6 +172,8 @@ add_executable(${PROJECT_NAME}
         sources/data/ActionData.h
         sources/game/ActionSystem.cpp
         sources/game/ActionSystem.h
+        sources/level/LevelRenderer.cpp
+        sources/level/LevelRenderer.h
 )
 
 

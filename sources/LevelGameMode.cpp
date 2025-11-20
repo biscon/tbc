@@ -2,7 +2,6 @@
 // Created by bison on 29-01-25.
 //
 
-#include <cassert>
 #include "LevelGameMode.h"
 #include "character/Character.h"
 #include "level/Level.h"
@@ -21,13 +20,6 @@
 #include "level/Weather.h"
 #include "game/Input.h"
 #include "game/ActionSystem.h"
-
-/*
-static GameData* game;
-static Level level;
-static ParticleManager particleManager;
-static PlayField playField{};
-*/
 
 void LevelInit(GameData& data) {
     GameMode* gm = GetGameMode(GameModes::Level);
