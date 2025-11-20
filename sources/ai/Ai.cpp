@@ -10,8 +10,8 @@
 
 static std::map<std::string, AiInterface> aiInterfaces;
 
-void CreateAiInterface(const std::string& name, void (*HandleTurn)(GameData&, Level &, PlayField &),
-                       void (*StartTurn)(GameData&, Level &, PlayField &)) {
+void CreateAiInterface(const std::string& name, void (*HandleTurn)(GameData&, Level &, LevelSystemData &),
+                       void (*StartTurn)(GameData&, Level &, LevelSystemData &)) {
     AiInterface ai{};
     ai.HandleTurn = HandleTurn;
     ai.StartTurn = StartTurn;
@@ -26,11 +26,11 @@ AiInterface* GetAiInterface(const std::string& name) {
     return nullptr; // Key not found, return nullptr
 }
 
-void HandleTurn(AiInterface &ai, GameData& data, Level &level, PlayField &playField) {
+void HandleTurn(AiInterface &ai, GameData& data, Level &level, LevelSystemData &playField) {
     ai.HandleTurn(data, level, playField);
 }
 
-void StartTurn(AiInterface &ai, GameData& data, Level &level, PlayField &playField) {
+void StartTurn(AiInterface &ai, GameData& data, Level &level, LevelSystemData &playField) {
     ai.StartTurn(data, level, playField);
 }
 

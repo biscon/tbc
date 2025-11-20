@@ -120,11 +120,11 @@ static void DisplaySpeechBubbleAnimations(Level &combat) {
 }
 
 
-static void DrawPathSelection(GameData& data, PlayField &playField, Level &level) {
+static void DrawPathSelection(GameData& data, LevelSystemData &playField, Level &level) {
     Vector2 mousePos = GetScreenToWorld2D(GetMousePosition(), level.camera.camera);
     Vector2 gridPos = PixelToGridPosition(mousePos.x, mousePos.y);
-    if(data.ui.playField.validMovePath) {
-        Path& path = data.ui.playField.movePath;
+    if(data.ui.level.validMovePath) {
+        Path& path = data.ui.level.movePath;
         Color pathColor = Fade(YELLOW, playField.highlightAlpha);
         DrawIcon(data, gridPos.x * 16, gridPos.y * 16, pathColor, ICON_SQUARE);
 
@@ -158,9 +158,9 @@ static void DrawSelectTargetAttackInfo(Font& font, float fontSize, float spacing
     DrawTextEx(font, text.c_str(), {rect.x + 3, rect.y + 3}, fontSize, spacing, WHITE);
 }
 
-static void DrawSelectTargetCharacter(GameData& data, PlayField &playField, Level &level) {
+static void DrawSelectTargetCharacter(GameData& data, LevelSystemData &playField, Level &level) {
     if (playField.selectedCharacter != -1) {
-        AttackInfo& info = data.ui.playField.attackInfo;
+        AttackInfo& info = data.ui.level.attackInfo;
         int ap = data.charData.stats[data.ui.selectedCharacter].AP;
         Vector2i gridPos = GetCharacterGridPosI(data.spriteData, data.charData.sprite[playField.selectedCharacter]);
         if(ap < info.apCost) {
@@ -168,23 +168,23 @@ static void DrawSelectTargetCharacter(GameData& data, PlayField &playField, Leve
         } else {
             DrawIcon(data, gridPos.x * 16, gridPos.y * 16, ColorAlpha(YELLOW, playField.highlightAlpha), ICON_ATTACK);
             Vector2 infoPos = GridToPixelPosition(gridPos.x, gridPos.y);
-            DrawSelectTargetAttackInfo(data.smallFont1, 5, 1, data.ui.playField.attackInfo, infoPos);
+            DrawSelectTargetAttackInfo(data.smallFont1, 5, 1, data.ui.level.attackInfo, infoPos);
         }
     }
 }
 
-static void DrawPathAndSelection(GameData& data, PlayField &playField, Level &level) {
+static void DrawPathAndSelection(GameData& data, LevelSystemData &playField, Level &level) {
     if(data.state == GameState::PLAY_LEVEL && !data.ui.actionBar.hovered) {
-        if (playField.mode == PlayFieldMode::SelectingTile) {
+        if (playField.mode == LevelMode::SelectingTile) {
             DrawPathSelection(data, playField, level);
         }
-        if (playField.mode == PlayFieldMode::SelectingEnemyTarget) {
+        if (playField.mode == LevelMode::SelectingEnemyTarget) {
             DrawSelectTargetCharacter(data, playField, level);
         }
     }
 }
 
-static void DrawTileSelection(GameData& data, PlayField &playField, Level &level) {
+static void DrawTileSelection(GameData& data, LevelSystemData &playField, Level &level) {
     if(playField.selectedTilePos != Vector2i{-1, -1}) {
         Color pathColor = Fade(YELLOW, playField.highlightAlpha);
         Vector2i& gridPos = playField.selectedTilePos;
@@ -207,17 +207,17 @@ static void RenderActiveCharacterIndicator(GameData& data, float alpha, int char
     DrawRectangleCorners(rect, ColorAlpha(YELLOW, alpha), 4);
 }
 
-static void DrawSelectActionHighlight(GameData& data, Level &level, PlayField &playField) {
+static void DrawSelectActionHighlight(GameData& data, Level &level, LevelSystemData &playField) {
     // Draw a highlight for the current character if not moving
     if (level.currentCharacter != -1 && (level.turnState == TurnState::SelectAction || level.turnState == TurnState::SelectEnemy || level.turnState == TurnState::SelectDestination)) {
         RenderActiveCharacterIndicator(data, playField.highlightAlpha, level.currentCharacter);
     }
 }
 
-void DrawLevelScreen(GameData& data, Level &level, PlayField &playField) {
+void DrawLevelScreen(GameData& data, Level &level, LevelSystemData &playField) {
     BeginMode2D(level.camera.camera);
     DrawSelectActionHighlight(data, level, playField);
-    if(playField.mode == PlayFieldMode::Explore) {
+    if(playField.mode == LevelMode::Explore) {
         DrawTileSelection(data, playField, level);
         RenderActiveCharacterIndicator(data, playField.highlightAlpha, data.ui.selectedCharacter);
     } else {
@@ -238,7 +238,7 @@ void DrawLevelScreen(GameData& data, Level &level, PlayField &playField) {
 }
 
 void RenderFloatingStats(GameData& data, Level& level) {
-    int statsCharId = data.ui.playField.floatingStatsCharacter;
+    int statsCharId = data.ui.level.floatingStatsCharacter;
     if (data.state != GameState::DIALOGUE && statsCharId != -1 && (level.turnState == TurnState::None || level.turnState == TurnState::SelectAction ||
                                                                    level.turnState == TurnState::SelectEnemy || level.turnState == TurnState::SelectDestination)) {
         float x = GetCharacterSpritePosX(data.spriteData, data.charData.sprite[statsCharId]);
@@ -271,7 +271,7 @@ void DrawHealthBar(float x, float y, float width, float health, float maxHealth)
     DrawRectangle(x, y, width * (health / maxHealth), 2, GREEN);
 }
 
-static void DrawGridCharacters(GameData& data, Level &level, PlayField& playField) {
+static void DrawGridCharacters(GameData& data, Level &level, LevelSystemData& playField) {
     SpriteData& spriteData = data.spriteData;
     CharacterData& charData = data.charData;
     // Sort characters by y position
@@ -311,7 +311,7 @@ static void DrawGridCharacters(GameData& data, Level &level, PlayField& playFiel
         }
         CharacterStats& stats = charData.stats[character];
         // Draw health bar
-        if(playField.mode != PlayFieldMode::Explore) {
+        if(playField.mode != LevelMode::Explore) {
             if (stats.HP > 0 && level.turnState != TurnState::None) {
                 DrawHealthBar(charPos.x - 8, charPos.y - 21, 15, (float) stats.HP, (float) CalculateCharHealth(stats));
             } else if (std::count(level.partyCharacters.begin(), level.partyCharacters.end(), character)) {
@@ -381,7 +381,7 @@ static void DrawDoors(SpriteData& spriteData, Level &level) {
     }
 }
 
-void DrawPlayField(GameData& data, PlayField &playField, Level &level) {
+void DrawPlayField(GameData& data, LevelSystemData &playField, Level &level) {
     // Back layers
     BeginMode2D(level.camera.camera);
     DrawLayers(data, level.lighting, data.spriteData.sheet, level.tileMap, level.tileMap.backLayers, 0, 0);

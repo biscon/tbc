@@ -30,7 +30,7 @@ void LevelInit(GameData& data) {
     CreateLevel(state->level);
     CreateParticleManager(state->particleManager, {0, 0}, gameScreenWidth, gameScreenHeight);
 
-    CreatePlayField(state->playField, &state->particleManager);
+    InitLevelSystem(state->playField, &state->particleManager);
 
     InitBloodRendering();
     InitInventory(data);
@@ -47,7 +47,7 @@ void LevelDestroy(GameData& data) {
 }
 
 
-static void UpdateWorld(GameData& data, Level& level, PlayField& playField, float dt) {
+static void UpdateWorld(GameData& data, Level& level, LevelSystemData& playField, float dt) {
     //level.hourOfDay = 1;
     if(IsKeyDown(KEY_SPACE)) {
         level.hourOfDay += dt;
@@ -63,7 +63,7 @@ static void UpdateWorld(GameData& data, Level& level, PlayField& playField, floa
 
     UpdateCombat(data, level, playField, dt);
     UpdateLevelSystem(data, level, dt);
-    UpdatePlayField(data, playField, level, dt);
+    UpdateLevelSystem(data, playField, level, dt);
 }
 
 static void UpdateUI(GameData& data, float dt) {
@@ -113,7 +113,7 @@ static bool HandleGlobalInput(GameData& data) {
     return false;
 }
 
-static bool HandleUIInput(GameData& data, Level& level, PlayField& playField) {
+static bool HandleUIInput(GameData& data, Level& level, LevelSystemData& playField) {
     if(data.state == GameState::DIALOGUE) {
         HandleDialogueInput(data);
         return true;
@@ -269,14 +269,14 @@ void LevelResume(GameData& data) {
         AddPartyToLevel(data.spriteData, data.charData, level, data.party, "default");
         StartCameraPanToTargetCharTime(data.spriteData, data.charData, level.camera, data.party[0], 0.01f);
         data.state = GameState::PLAY_LEVEL;
-        state->playField.mode = PlayFieldMode::Explore;
+        state->playField.mode = LevelMode::Explore;
     }
     if(data.state == GameState::LOAD_LEVEL_FROM_SAVE) {
         LoadLevel(data, level, data.levelFileName);
         AddPartyToLevelNoPositioning(data.spriteData, data.charData, level, data.party);
         StartCameraPanToTargetCharTime(data.spriteData, data.charData, level.camera, data.party[0], 0.01f);
         data.state = GameState::PLAY_LEVEL;
-        state->playField.mode = PlayFieldMode::Explore;
+        state->playField.mode = LevelMode::Explore;
     }
 }
 

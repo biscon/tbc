@@ -91,7 +91,7 @@ void PushCloseLootInventory(ActionQueue& q) {
 // ACTION PROCESSING
 // -----------------------------------------------------------------------------
 
-void ProcessActionsOLD(GameData& data, Level& level, PlayField& playField, ActionQueue& queue, float dt)
+void ProcessActionsOLD(GameData& data, Level& level, LevelSystemData& playField, ActionQueue& queue, float dt)
 {
     GameAction a;
     while (queue.pop(a))
@@ -163,7 +163,7 @@ void ProcessActionsOLD(GameData& data, Level& level, PlayField& playField, Actio
 }
 
 // return true if the gamemode should be popped
-bool ProcessActions(GameData& data, Level& level, PlayField& playField,
+bool ProcessActions(GameData& data, Level& level, LevelSystemData& playField,
                     ActionQueue& queue, float dt)
 {
     GameAction a;
@@ -207,7 +207,7 @@ bool ProcessActions(GameData& data, Level& level, PlayField& playField,
                 auto& ev = std::get<PartySpottedAction>(a.payload);
 
                 data.ui.inCombat = true;
-                playField.mode = PlayFieldMode::None;
+                playField.mode = LevelMode::None;
                 StartCombat(data.spriteData, data.charData, level, ev.spotter);
 
                 break;
@@ -221,7 +221,7 @@ bool ProcessActions(GameData& data, Level& level, PlayField& playField,
                 auto& ev = std::get<EndCombatAction>(a.payload);
 
                 level.turnState = TurnState::None;
-                playField.mode = PlayFieldMode::Explore;
+                playField.mode = LevelMode::Explore;
                 data.ui.inCombat = false;
 
                 for (auto& c : level.partyCharacters)
@@ -260,7 +260,7 @@ bool ProcessActions(GameData& data, Level& level, PlayField& playField,
 
                 data.levelFileName = ev.levelFile;
 
-                ResetPlayField(playField);
+                ResetLevelSystem(playField);
                 LoadLevel(data, level, data.levelFileName);
 
                 AddPartyToLevel(
@@ -280,7 +280,7 @@ bool ProcessActions(GameData& data, Level& level, PlayField& playField,
                 );
 
                 data.state = GameState::PLAY_LEVEL;
-                playField.mode = PlayFieldMode::Explore;
+                playField.mode = LevelMode::Explore;
 
                 break;
             }
@@ -292,7 +292,7 @@ bool ProcessActions(GameData& data, Level& level, PlayField& playField,
             {
                 auto& ev = std::get<InitiateDialogueAction>(a.payload);
 
-                playField.mode = PlayFieldMode::None;
+                playField.mode = LevelMode::None;
                 data.state = GameState::DIALOGUE;
 
                 TraceLog(LOG_INFO,
@@ -314,7 +314,7 @@ bool ProcessActions(GameData& data, Level& level, PlayField& playField,
 
                 TraceLog(LOG_INFO, "EndDialogue: npcId = %i", ev.npcId);
 
-                playField.mode = PlayFieldMode::Explore;
+                playField.mode = LevelMode::Explore;
                 data.state = GameState::PLAY_LEVEL;
 
                 break;

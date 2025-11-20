@@ -12,7 +12,7 @@
 void InitActionBar(GameData& data);
 void RenderActionBarUI(GameData& data);
 void UpdateActionBar(GameData& data, float dt);
-bool HandleActionBarInput(GameData& data, Level& level, PlayField& playField); // returns true if it "swallowed" the input
-void ExecuteAction(GameData& data, ActionBarAction action, Level& level, PlayField& playField, bool wasSelected);
+bool HandleActionBarInput(GameData& data, Level& level, LevelSystemData& playField); // returns true if it "swallowed" the input
+void ExecuteAction(GameData& data, ActionBarAction action, Level& level, LevelSystemData& playField, bool wasSelected);
 
 #endif //SANDBOX_ACTIONBAR_H

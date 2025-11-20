@@ -36,12 +36,12 @@ static bool SetupMeleeAttack(GameData& data, Level &level) {
     return false;
 }
 
-static bool CanMoveIntoRange(GameData& data, Level& level, PlayField& playField) {
+static bool CanMoveIntoRange(GameData& data, Level& level, LevelSystemData& playField) {
     auto playersWithinRange = GetCharactersWithinMoveRangePartial(data, level, level.currentCharacter, 1, false, CharacterFaction::Player);
     return !playersWithinRange.empty();
 }
 
-static bool SetupMoveIntoRange(GameData& data, Level& level, PlayField& playField) {
+static bool SetupMoveIntoRange(GameData& data, Level& level, LevelSystemData& playField) {
     auto playersWithinRange = GetCharactersWithinMoveRangePartial(data, level, level.currentCharacter, 1, false, CharacterFaction::Player);
     //SortCharactersByThreat(level, playersWithinRange);
     CharacterStats& stats = data.charData.stats[level.currentCharacter];
@@ -58,7 +58,7 @@ static bool SetupMoveIntoRange(GameData& data, Level& level, PlayField& playFiel
             TraceLog(LOG_INFO, "Cant move further toward player");
             return false;
         }
-        playField.mode = PlayFieldMode::None;
+        playField.mode = LevelMode::None;
         playField.path = path;
         playField.moving = true;
         stats.AP -= path.cost;
@@ -75,13 +75,13 @@ static bool SetupMoveIntoRange(GameData& data, Level& level, PlayField& playFiel
     return false;
 }
 
-static bool SetupMoveToTile(GameData& data, Level& level, PlayField& playField, int charId, Vector2i tilePos) {
+static bool SetupMoveToTile(GameData& data, Level& level, LevelSystemData& playField, int charId, Vector2i tilePos) {
     Path path;
     Vector2i charPos = GetCharacterGridPosI(data.spriteData, data.charData.sprite[charId]);
     CalcPath(data.spriteData, data.charData, level, path, charPos, tilePos, charId, IsTileOccupied);
 
     CharacterStats& stats = data.charData.stats[level.currentCharacter];
-    playField.mode = PlayFieldMode::None;
+    playField.mode = LevelMode::None;
     playField.path = path;
     playField.moving = true;
     stats.AP -= path.cost;
@@ -186,12 +186,12 @@ static bool PartialMoveIfPossible(GameData& data, Level& level, PlayField& playF
 
 static AiState aiState = AiState::Idle;
 
-static void StartTurn(GameData& data, Level &level, PlayField &playField) {
+static void StartTurn(GameData& data, Level &level, LevelSystemData &playField) {
     TraceLog(LOG_INFO, "FighterAi::StartTurn");
     aiState = AiState::Idle;
 }
 
-static void HandleTurn(GameData& data, Level &level, PlayField &playField) {
+static void HandleTurn(GameData& data, Level &level, LevelSystemData &playField) {
     switch(aiState) {
         case AiState::Idle: {
             TraceLog(LOG_INFO, "FighterAi state: Idle");

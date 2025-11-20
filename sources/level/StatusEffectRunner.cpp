@@ -8,7 +8,7 @@
 #include "graphics/CharacterSprite.h"
 #include "character/StatusEffect.h"
 
-static void ApplyStatusEffect(GameData& data, Level &combat, PlayField &gridState, int character, StatusEffect& effect) {
+static void ApplyStatusEffect(GameData& data, Level &combat, LevelSystemData &gridState, int character, StatusEffect& effect) {
     SpriteData& spriteData = data.spriteData;
     CharacterData& charData = data.charData;
     Vector2 charPos = GetCharacterSpritePos(spriteData, charData.sprite[character]);
@@ -47,7 +47,7 @@ static void ApplyStatusEffect(GameData& data, Level &combat, PlayField &gridStat
     }
 }
 
-void ApplyStatusEffects(GameData& data, Level &level, PlayField &playField) {
+void ApplyStatusEffects(GameData& data, Level &level, LevelSystemData &playField) {
     for(auto& character : level.turnOrder) {
         // skip dead characters
         if(data.charData.stats[character].HP <= 0) {

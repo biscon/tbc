@@ -252,19 +252,19 @@ void UpdateActionBar(GameData &data, float dt) {
     UpdateModes(data);
 }
 
-void ExecuteAction(GameData& data, ActionBarAction action, Level& level, PlayField& playField, bool wasSelected) {
+void ExecuteAction(GameData& data, ActionBarAction action, Level& level, LevelSystemData& playField, bool wasSelected) {
     switch(action) {
         case ActionBarAction::Move: {
             if(wasSelected) {
                 level.turnState = TurnState::SelectDestination;
-                playField.mode = PlayFieldMode::SelectingTile;
+                playField.mode = LevelMode::SelectingTile;
             }
             break;
         }
         case ActionBarAction::Attack: {
             if(wasSelected) {
                 level.turnState = TurnState::SelectEnemy;
-                playField.mode = PlayFieldMode::SelectingEnemyTarget;
+                playField.mode = LevelMode::SelectingEnemyTarget;
             }
             break;
         }
@@ -280,7 +280,7 @@ void ExecuteAction(GameData& data, ActionBarAction action, Level& level, PlayFie
         }
         case ActionBarAction::EndTurn: {
             level.turnState = TurnState::EndTurn;
-            playField.mode = PlayFieldMode::None;
+            playField.mode = LevelMode::None;
             break;
         }
         default:
@@ -288,7 +288,7 @@ void ExecuteAction(GameData& data, ActionBarAction action, Level& level, PlayFie
     }
 }
 
-bool HandleActionBarInput(GameData &data, Level& level, PlayField& playField) {
+bool HandleActionBarInput(GameData &data, Level& level, LevelSystemData& playField) {
     Vector2 mouse = GetMousePosition();
     data.ui.actionBar.switchWeapons.Update(mouse);
 

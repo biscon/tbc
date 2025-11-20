@@ -7,9 +7,9 @@
 
 #include "data/GameData.h"
 
-void DrawLevelScreen(GameData& data, Level &level, PlayField &playField);
+void DrawLevelScreen(GameData& data, Level &level, LevelSystemData &playField);
 void RenderFloatingStats(GameData& data, Level& level);
 Vector2 GetAnimatedCharPos(GameData& data, Level &level, int character);
-void DrawPlayField(GameData& data, PlayField &playField, Level &level);
+void DrawPlayField(GameData& data, LevelSystemData &playField, Level &level);
 
 #endif //SANDBOX_LEVELRENDERER_H

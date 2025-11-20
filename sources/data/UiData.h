@@ -187,7 +187,7 @@ struct AttackInfo {
     int ammoCost = 0;
 };
 
-struct PlayFieldUI {
+struct LevelUI {
     int floatingStatsCharacter = -1;
     Path movePath;
     bool validMovePath = false;
@@ -199,11 +199,11 @@ struct UiState {
     InventoryUiState inventory;
     LootInventoryUiState lootInventory;
     ActionBarUI actionBar{};
-    PlayFieldUI playField;
+    LevelUI level;
     int selectedCharacter = 0;
     bool inCombat = false;
-    int iconSpriteSheet;
-    int portraitSpriteSheet;
+    int iconSpriteSheet = -1;
+    int portraitSpriteSheet = -1;
     bool showActionBar = false;
     int currentCursorIcon = -1;
 };

@@ -8,7 +8,7 @@
 #include "PathFindingData.h"
 #include "graphics/ParticleSystem.h"
 
-enum class PlayFieldMode {
+enum class LevelMode {
     None,
     SelectingTile,
     SelectingEnemyTarget,
@@ -21,9 +21,9 @@ struct CharacterMove {
     bool isDone;
 };
 
-struct PlayField {
+struct LevelSystemData {
     bool moving;
-    PlayFieldMode mode;
+    LevelMode mode;
     Vector2 selectedTile;
     Vector2i selectedTilePos;
     int selectedCharacter;

@@ -7,7 +7,7 @@
 
 #include "data/GameData.h"
 
-void HandleInputCombat(GameData& data, Level &level, PlayField &playField);
-void HandleInputRealtime(GameData& data, PlayField &playField, Level &level);
+void HandleInputCombat(GameData& data, Level &level, LevelSystemData &playField);
+void HandleInputRealtime(GameData& data, LevelSystemData &playField, Level &level);
 
 #endif //SANDBOX_LEVELINPUT_H

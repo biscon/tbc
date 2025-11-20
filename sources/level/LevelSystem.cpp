@@ -33,16 +33,16 @@ void UpdateLevelSystem(GameData& data, Level &level, float dt) {
     UpdateAnimations(data.spriteData, data.charData, level, dt);
 }
 
-void CreatePlayField(PlayField &playField, ParticleManager* particleManager) {
-    playField.particleManager = particleManager;
-    playField.moving = false;
-    playField.mode = PlayFieldMode::None;
-    playField.selectedCharacter = -1;
-    playField.selectedTile = {-1, -1};
-    playField.path = {};
+void InitLevelSystem(LevelSystemData &systemData, ParticleManager* particleManager) {
+    systemData.particleManager = particleManager;
+    systemData.moving = false;
+    systemData.mode = LevelMode::None;
+    systemData.selectedCharacter = -1;
+    systemData.selectedTile = {-1, -1};
+    systemData.path = {};
 }
 
-static void updateTurnBasedMove(GameData& data, PlayField &playField, Level &level, float dt) {
+static void updateTurnBasedMove(GameData& data, LevelSystemData &playField, Level &level, float dt) {
     if (playField.moving) {
         playField.path.moveTime += dt;
 
@@ -101,10 +101,10 @@ static void updateTurnBasedMove(GameData& data, PlayField &playField, Level &lev
                     auto finalPos = playField.path.path[playField.path.path.size() - 1];
                     SetCharacterSpritePos(data.spriteData, sprite, GridToPixelPosition(finalPos.x, finalPos.y));
 
-                    ResetPlayField(playField);
+                    ResetLevelSystem(playField);
                     if (IsPlayerCharacter(data.charData, level.currentCharacter)) {
                         level.turnState = TurnState::SelectDestination;
-                        playField.mode = PlayFieldMode::SelectingTile;
+                        playField.mode = LevelMode::SelectingTile;
                     } else {
                         level.turnState = TurnState::EnemyTurn;
                     }
@@ -114,7 +114,7 @@ static void updateTurnBasedMove(GameData& data, PlayField &playField, Level &lev
     }
 }
 
-static void updateActiveMovement(GameData& data, PlayField &playField, Level& level, float dt) {
+static void updateActiveMovement(GameData& data, LevelSystemData &playField, Level& level, float dt) {
     for(auto& move : playField.activeMoves) {
         move.path.moveTime += dt;
 
@@ -188,7 +188,7 @@ static void updateActiveMovement(GameData& data, PlayField &playField, Level& le
     );
 }
 
-static void checkIfPartySpotted(GameData& data, PlayField &playField, Level &level) {
+static void checkIfPartySpotted(GameData& data, LevelSystemData &playField, Level &level) {
     for(auto& c : level.allCharacters) {
         if(data.charData.faction[c] != CharacterFaction::Enemy || data.charData.stats[c].HP <= 0) {
             continue;
@@ -205,28 +205,28 @@ static void checkIfPartySpotted(GameData& data, PlayField &playField, Level &lev
     }
 }
 
-void UpdatePlayField(GameData& data, PlayField &playField, Level &level, float dt) {
+void UpdateLevelSystem(GameData& data, LevelSystemData &systemData, Level &level, float dt) {
     // Update the pulsing alpha
-    if (playField.increasing) {
-        playField.highlightAlpha = Lerp(playField.highlightAlpha, 1.0f, dt * playField.pulseSpeed);
-        if (playField.highlightAlpha >= 0.99f) {
-            playField.increasing = false;
+    if (systemData.increasing) {
+        systemData.highlightAlpha = Lerp(systemData.highlightAlpha, 1.0f, dt * systemData.pulseSpeed);
+        if (systemData.highlightAlpha >= 0.99f) {
+            systemData.increasing = false;
         }
     } else {
-        playField.highlightAlpha = Lerp(playField.highlightAlpha, 0.25f, dt * playField.pulseSpeed);
-        if (playField.highlightAlpha <= 0.26f) {
-            playField.increasing = true;
+        systemData.highlightAlpha = Lerp(systemData.highlightAlpha, 0.25f, dt * systemData.pulseSpeed);
+        if (systemData.highlightAlpha <= 0.26f) {
+            systemData.increasing = true;
         }
     }
-    updateActiveMovement(data, playField, level, dt);
-    updateTurnBasedMove(data, playField, level, dt);
+    updateActiveMovement(data, systemData, level, dt);
+    updateTurnBasedMove(data, systemData, level, dt);
 
     // Update animations for all characters
     for (auto &character: level.allCharacters) {
         UpdateCharacterSprite(data.spriteData, data.charData.sprite[character], dt);
     }
     if(level.turnState == TurnState::None) {
-        checkIfPartySpotted(data, playField, level);
+        checkIfPartySpotted(data, systemData, level);
         //checkLevelExits(data, level);
     }
     for(auto& entry : level.objects) {
@@ -239,7 +239,7 @@ void UpdatePlayField(GameData& data, PlayField &playField, Level &level, float d
     }
 }
 
-void MoveCharacter(GameData& data, PlayField &playField, Level &level, int character, Vector2i target) {
+void MoveCharacter(GameData& data, LevelSystemData &systemData, Level &level, int character, Vector2i target) {
     // calculate a path and draw it as lines
     Path path;
     Vector2i cCharPos = GetCharacterSpritePosI(data.spriteData, data.charData.sprite[character]);
@@ -249,13 +249,13 @@ void MoveCharacter(GameData& data, PlayField &playField, Level &level, int chara
         move.character = character;
         move.path = path;
         move.isDone = false;
-        playField.activeMoves.push_back(move);
+        systemData.activeMoves.push_back(move);
     } else {
         TraceLog(LOG_WARNING, "No path found");
     }
 }
 
-void MoveCharacterPartial(GameData& data, PlayField &playField, Level &level, int character, Vector2i target) {
+void MoveCharacterPartial(GameData& data, LevelSystemData &systemData, Level &level, int character, Vector2i target) {
     // calculate a path and draw it as lines
     Path path;
     Vector2i cCharPos = GetCharacterSpritePosI(data.spriteData, data.charData.sprite[character]);
@@ -266,17 +266,17 @@ void MoveCharacterPartial(GameData& data, PlayField &playField, Level &level, in
         move.character = character;
         move.path = path;
         move.isDone = false;
-        playField.activeMoves.push_back(move);
+        systemData.activeMoves.push_back(move);
     } else {
         TraceLog(LOG_WARNING, "No path found");
     }
 }
 
-void ResetPlayField(PlayField &playField) {
+void ResetLevelSystem(LevelSystemData &playField) {
     playField.selectedCharacter = -1;
     playField.activeMoves.clear();
     playField.moving = false;
-    playField.mode = PlayFieldMode::None;
+    playField.mode = LevelMode::None;
     playField.selectedCharacter = -1;
     playField.selectedTile = {-1, -1};
     playField.path = {};

@@ -52,7 +52,7 @@ static bool CheckEndCombat(GameData& data, Level& level) {
     return allEnemiesDefeated || allPlayersDefeated;
 }
 
-void UpdateCombat(GameData &data, Level &level, PlayField& playField, float dt) {
+void UpdateCombat(GameData &data, Level &level, LevelSystemData& playField, float dt) {
     SpriteData& spriteData = data.spriteData;
     CharacterData& charData = data.charData;
     switch(level.turnState) {
@@ -255,9 +255,9 @@ void UpdateCombat(GameData &data, Level &level, PlayField& playField, float dt) 
             } else {
                 WaitTurnState(level, nextState, 0.60f);
             }
-            ResetPlayField(playField);
+            ResetLevelSystem(playField);
             if(IsPlayerCharacter(data.charData, level.currentCharacter)) {
-                playField.mode = PlayFieldMode::SelectingEnemyTarget;
+                playField.mode = LevelMode::SelectingEnemyTarget;
             }
             CheckEndCombat(data, level);
             break;

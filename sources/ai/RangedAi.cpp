@@ -47,7 +47,7 @@ static bool SetupRangedAttack(GameData& data, Level &level) {
     return false;
 }
 
-static bool CanMoveIntoRange(GameData& data, Level& level, PlayField& playField) {
+static bool CanMoveIntoRange(GameData& data, Level& level, LevelSystemData& playField) {
     int range = GetCurrentWeaponRange(data, level.currentCharacter);
     Vector2i charPos = GetCharacterGridPosI(data.spriteData, data.charData.sprite[level.currentCharacter]);
     CharacterStats& stats = data.charData.stats[level.currentCharacter];
@@ -72,7 +72,7 @@ static bool CanMoveIntoRange(GameData& data, Level& level, PlayField& playField)
     return false;
 }
 
-static bool SetupMoveToTile(GameData& data, Level& level, PlayField& playField, int charId, Vector2i tilePos) {
+static bool SetupMoveToTile(GameData& data, Level& level, LevelSystemData& playField, int charId, Vector2i tilePos) {
     Path path;
     Vector2i charPos = GetCharacterGridPosI(data.spriteData, data.charData.sprite[charId]);
     if(tilePos == charPos) {
@@ -82,7 +82,7 @@ static bool SetupMoveToTile(GameData& data, Level& level, PlayField& playField, 
     CalcPath(data.spriteData, data.charData, level, path, charPos, tilePos, charId, IsTileOccupied);
 
     CharacterStats& stats = data.charData.stats[level.currentCharacter];
-    playField.mode = PlayFieldMode::None;
+    playField.mode = LevelMode::None;
     playField.path = path;
     playField.moving = true;
     stats.AP -= path.cost;
@@ -97,7 +97,7 @@ static bool SetupMoveToTile(GameData& data, Level& level, PlayField& playField, 
     return true;
 }
 
-static bool MoveTowards(GameData& data, Level& level, PlayField& playField, Vector2i targetPos, int attackRange) {
+static bool MoveTowards(GameData& data, Level& level, LevelSystemData& playField, Vector2i targetPos, int attackRange) {
     Path path;
     Vector2i charPos = GetCharacterGridPosI(data.spriteData, data.charData.sprite[level.currentCharacter]);
     CalcPathWithRangePartial(data.spriteData, data.charData, level, path, charPos, targetPos, attackRange, level.currentCharacter, IsTileOccupied);
@@ -114,7 +114,7 @@ static bool MoveTowards(GameData& data, Level& level, PlayField& playField, Vect
             TraceLog(LOG_INFO, "Cant move further toward player");
             return false;
         }
-        playField.mode = PlayFieldMode::None;
+        playField.mode = LevelMode::None;
         playField.path = path;
         playField.moving = true;
         stats.AP -= path.cost;
@@ -131,7 +131,7 @@ static bool MoveTowards(GameData& data, Level& level, PlayField& playField, Vect
     return false;
 }
 
-static bool SetupMoveIntoRange(GameData& data, Level& level, PlayField& playField) {
+static bool SetupMoveIntoRange(GameData& data, Level& level, LevelSystemData& playField) {
     int range = GetCurrentWeaponRange(data, level.currentCharacter);
     Vector2i charPos = GetCharacterGridPosI(data.spriteData, data.charData.sprite[level.currentCharacter]);
     CharacterStats& stats = data.charData.stats[level.currentCharacter];
@@ -168,12 +168,12 @@ static bool ShouldRetreat(GameData& data, Level& level, float threshold) {
 
 static AiState aiState = AiState::Idle;
 
-static void StartTurn(GameData& data, Level &level, PlayField &playField) {
+static void StartTurn(GameData& data, Level &level, LevelSystemData &playField) {
     TraceLog(LOG_INFO, "RangedAi::StartTurn");
     aiState = AiState::Idle;
 }
 
-static void HandleTurn(GameData& data, Level &level, PlayField &playField) {
+static void HandleTurn(GameData& data, Level &level, LevelSystemData &playField) {
     CharacterStats& stats = data.charData.stats[level.currentCharacter];
     switch(aiState) {
         case AiState::Idle: {

@@ -17,15 +17,15 @@ enum class AiState {
 };
 
 struct AiInterface {
-    void (*HandleTurn)(GameData&, Level &level, PlayField &playField);
-    void (*StartTurn)(GameData&, Level &level, PlayField &playField);
+    void (*HandleTurn)(GameData&, Level &level, LevelSystemData &playField);
+    void (*StartTurn)(GameData&, Level &level, LevelSystemData &playField);
 };
 
-void CreateAiInterface(const std::string& name, void (*HandleTurn)(GameData& data, Level& level, PlayField& playField),
-                       void (*StartTurn)(GameData& data, Level& level, PlayField& playField));
+void CreateAiInterface(const std::string& name, void (*HandleTurn)(GameData& data, Level& level, LevelSystemData& playField),
+                       void (*StartTurn)(GameData& data, Level& level, LevelSystemData& playField));
 AiInterface* GetAiInterface(const std::string& name);
-void HandleTurn(AiInterface& ai, GameData& data, Level& level, PlayField& playField);
-void StartTurn(AiInterface &ai, GameData& data, Level &level, PlayField &playField);
+void HandleTurn(AiInterface& ai, GameData& data, Level& level, LevelSystemData& playField);
+void StartTurn(AiInterface &ai, GameData& data, Level &level, LevelSystemData &playField);
 std::vector<int> GetCharactersWithinAttackRange(GameData& data, Level &level, int character, int range, CharacterFaction faction);
 std::vector<std::pair<int, Path>> GetCharactersWithinMoveRange(GameData& data, Level &level, int character, int attackRange, bool checkPoints, CharacterFaction faction);
 std::vector<std::pair<int, Path>> GetCharactersWithinMoveRangePartial(GameData& data, Level &level, int character, int attackRange, bool checkPoints, CharacterFaction faction);
