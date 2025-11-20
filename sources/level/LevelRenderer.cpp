@@ -214,14 +214,14 @@ static void DrawSelectActionHighlight(GameData& data, Level &level, LevelSystemD
     }
 }
 
-void DrawLevelScreen(GameData& data, Level &level, LevelSystemData &playField) {
+void RenderLevelUi(GameData& data, Level &level) {
     BeginMode2D(level.camera.camera);
-    DrawSelectActionHighlight(data, level, playField);
-    if(playField.mode == LevelMode::Explore) {
-        DrawTileSelection(data, playField, level);
-        RenderActiveCharacterIndicator(data, playField.highlightAlpha, data.ui.selectedCharacter);
+    DrawSelectActionHighlight(data, level, data.levelData);
+    if(data.levelData.mode == LevelMode::Explore) {
+        DrawTileSelection(data, data.levelData, level);
+        RenderActiveCharacterIndicator(data, data.levelData.highlightAlpha, data.ui.selectedCharacter);
     } else {
-        DrawPathAndSelection(data, playField, level);
+        DrawPathAndSelection(data, data.levelData, level);
     }
     DisplaySpeechBubbleAnimations(level);
     DisplayDamageNumbers(level);
@@ -231,9 +231,9 @@ void DrawLevelScreen(GameData& data, Level &level, LevelSystemData &playField) {
 
 
     // Display hint text
-    if(!playField.hintText.empty()) {
-        DrawStatusTextBg(playField.hintText.c_str(), WHITE, 318, 5, data.smallFont1);
-        playField.hintText = "";
+    if(!data.levelData.hintText.empty()) {
+        DrawStatusTextBg(data.levelData.hintText.c_str(), WHITE, 318, 5, data.smallFont1);
+        data.levelData.hintText = "";
     }
 }
 
@@ -381,7 +381,7 @@ static void DrawDoors(SpriteData& spriteData, Level &level) {
     }
 }
 
-void DrawPlayField(GameData& data, LevelSystemData &playField, Level &level) {
+void RenderLevel(GameData& data, Level &level) {
     // Back layers
     BeginMode2D(level.camera.camera);
     DrawLayers(data, level.lighting, data.spriteData.sheet, level.tileMap, level.tileMap.backLayers, 0, 0);
@@ -397,12 +397,12 @@ void DrawPlayField(GameData& data, LevelSystemData &playField, Level &level) {
 
     // Characters
     BeginMode2D(level.camera.camera);
-    DrawGridCharacters(data, level, playField);
+    DrawGridCharacters(data, level, data.levelData);
 
     //DrawWeather(level.weather, {200, 200, 255, 120});
     EndMode2D();
 
-    DrawParticleManager(*playField.particleManager);
+    DrawParticleManager(data.particleManager);
 
     // Front layers
     BeginMode2D(level.camera.camera);

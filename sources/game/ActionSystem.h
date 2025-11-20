@@ -27,6 +27,6 @@ void PushCloseActionBar(ActionQueue& q);
 void PushOpenLootInventory(ActionQueue& q, int invId);
 void PushCloseLootInventory(ActionQueue& q);
 
-bool ProcessActions(GameData& data, Level& level, LevelSystemData& playField, ActionQueue& queue, float dt);
+bool ProcessActions(GameData& data, Level& level, float dt);
 
 #endif //SANDBOX_ACTIONSYSTEM_H

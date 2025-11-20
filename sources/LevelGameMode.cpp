@@ -28,9 +28,9 @@ void LevelInit(GameData& data) {
     auto* state = static_cast<LevelGameModeState*>(gm->userData);
     
     CreateLevel(state->level);
-    CreateParticleManager(state->particleManager, {0, 0}, gameScreenWidth, gameScreenHeight);
+    CreateParticleManager(data.particleManager, {0, 0}, gameScreenWidth, gameScreenHeight);
 
-    InitLevelSystem(state->playField, &state->particleManager);
+    InitLevelSystem(data.levelData);
 
     InitBloodRendering();
     InitInventory(data);
@@ -41,13 +41,13 @@ void LevelDestroy(GameData& data) {
     GameMode* gm = GetGameMode(GameModes::Level);
     auto* state = static_cast<LevelGameModeState*>(gm->userData);
     
-    DestroyParticleManager(state->particleManager);
+    DestroyParticleManager(data.particleManager);
     DestroyBloodRendering();
     DestroyLevel(data.spriteData.sheet, state->level);
 }
 
 
-static void UpdateWorld(GameData& data, Level& level, LevelSystemData& playField, float dt) {
+static void UpdateWorld(GameData& data, Level& level, float dt) {
     //level.hourOfDay = 1;
     if(IsKeyDown(KEY_SPACE)) {
         level.hourOfDay += dt;
@@ -61,9 +61,8 @@ static void UpdateWorld(GameData& data, Level& level, LevelSystemData& playField
 
     UpdateCamera(level.camera, dt);
 
-    UpdateCombat(data, level, playField, dt);
+    UpdateCombat(data, level, dt);
     UpdateLevelSystem(data, level, dt);
-    UpdateLevelSystem(data, playField, level, dt);
 }
 
 static void UpdateUI(GameData& data, float dt) {
@@ -89,8 +88,8 @@ static void UpdateLighting(GameData& data, Level& level, float dt) {
     }
 }
 
-static void UpdateFX(GameData& data, Level& level, ParticleManager& particleManager, float dt) {
-    UpdateParticleManager(particleManager, dt);
+static void UpdateFX(GameData& data, Level& level, float dt) {
+    UpdateParticleManager(data.particleManager, dt);
     UpdateWeather(data, level.outdoor, dt);
 }
 
@@ -99,8 +98,9 @@ void LevelUpdate(GameData& data, float dt) {
     auto* state = static_cast<LevelGameModeState*>(gm->userData);
 
     data.shaderTime += dt;
-    UpdateWorld(data, state->level, state->playField, dt);
-    UpdateFX(data, state->level, state->particleManager, dt);
+
+    UpdateWorld(data, state->level, dt);
+    UpdateFX(data, state->level, dt);
     UpdateUI(data, dt);
     UpdateLighting(data, state->level, dt);
 }
@@ -113,7 +113,7 @@ static bool HandleGlobalInput(GameData& data) {
     return false;
 }
 
-static bool HandleUIInput(GameData& data, Level& level, LevelSystemData& playField) {
+static bool HandleUIInput(GameData& data, Level& level) {
     if(data.state == GameState::DIALOGUE) {
         HandleDialogueInput(data);
         return true;
@@ -128,7 +128,7 @@ static bool HandleUIInput(GameData& data, Level& level, LevelSystemData& playFie
         return true;
     }
     if(data.ui.showActionBar) {
-        if(HandleActionBarInput(data, level, playField)) {
+        if(HandleActionBarInput(data, level, data.levelData)) {
             return true;
         }
     }
@@ -144,20 +144,19 @@ void LevelHandleInput(GameData& data) {
     
     UpdateInput(data.inputData, state->level.camera.camera);
 
-    if(ProcessActions(data, state->level, state->playField, data.actionQueue, GetFrameTime())) {
+    if(ProcessActions(data, state->level, GetFrameTime())) {
         PopGameMode(data);
         return;
     }
 
     if (HandleGlobalInput(data))  return;
-    if (HandleUIInput(data, state->level, state->playField))      return;
+    if (HandleUIInput(data, state->level))      return;
 
     HandleCameraInput(state->level.camera);
 
-    HandleInputRealtime(data, state->playField, state->level);
-    HandleInputCombat(data, state->level, state->playField);
+    HandleInputRealtime(data, state->level);
+    HandleInputCombat(data, state->level);
 }
-
 
 void LevelRenderLevel(GameData& data) {
     GameMode* gm = GetGameMode(GameModes::Level);
@@ -212,7 +211,7 @@ void LevelRenderLevel(GameData& data) {
             level.lighting.ambient = ambient;
         }
         PropagateLight(level.lighting, level.tileMap);
-        DrawPlayField(data, state->playField, level);
+        RenderLevel(data, level);
         EndScissorMode();
     }
 }
@@ -220,8 +219,8 @@ void LevelRenderLevel(GameData& data) {
 void LevelRenderUi(GameData& data) {
     GameMode* gm = GetGameMode(GameModes::Level);
     auto* state = static_cast<LevelGameModeState*>(gm->userData);
-    
-    DrawLevelScreen(data, state->level, state->playField);
+
+    RenderLevelUi(data, state->level);
     RenderPartySideBarUI(data);
     if(data.ui.showActionBar && data.state != GameState::INVENTORY) {
         RenderActionBarUI(data);
@@ -251,7 +250,7 @@ void LevelPreRender(GameData& data) {
     auto* state = static_cast<LevelGameModeState*>(gm->userData);
     
     PreRenderBloodPools(state->level);
-    PreRenderParticleManager(state->level.lighting, state->particleManager, state->level.camera.camera);
+    PreRenderParticleManager(state->level.lighting, data.particleManager, state->level.camera.camera);
 }
 
 void LevelPause(GameData& data) {
@@ -269,14 +268,14 @@ void LevelResume(GameData& data) {
         AddPartyToLevel(data.spriteData, data.charData, level, data.party, "default");
         StartCameraPanToTargetCharTime(data.spriteData, data.charData, level.camera, data.party[0], 0.01f);
         data.state = GameState::PLAY_LEVEL;
-        state->playField.mode = LevelMode::Explore;
+        data.levelData.mode = LevelMode::Explore;
     }
     if(data.state == GameState::LOAD_LEVEL_FROM_SAVE) {
         LoadLevel(data, level, data.levelFileName);
         AddPartyToLevelNoPositioning(data.spriteData, data.charData, level, data.party);
         StartCameraPanToTargetCharTime(data.spriteData, data.charData, level.camera, data.party[0], 0.01f);
         data.state = GameState::PLAY_LEVEL;
-        state->playField.mode = LevelMode::Explore;
+        data.levelData.mode = LevelMode::Explore;
     }
 }
 

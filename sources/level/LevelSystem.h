@@ -7,12 +7,10 @@
 
 #include "data/GameData.h"
 
-void InitLevelSystem(LevelSystemData &systemData, ParticleManager* particleManager);
-void UpdateLevelSystem(GameData& data, LevelSystemData &systemData, Level &level, float dt);
-void MoveCharacter(GameData& data, LevelSystemData &systemData, Level &level, int character, Vector2i target);
-void MoveCharacterPartial(GameData& data, LevelSystemData &systemData, Level &level, int character, Vector2i target);
+void InitLevelSystem(LevelSystemData &systemData);
+void MoveCharacter(GameData& data, Level &level, int character, Vector2i target);
+void MoveCharacterPartial(GameData& data, Level &level, int character, Vector2i target);
 void ResetLevelSystem(LevelSystemData &playField);
-
 void UpdateLevelSystem(GameData& data, Level &level, float dt);
 
 #endif //SANDBOX_LEVELSYSTEM_H

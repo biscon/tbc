@@ -52,14 +52,14 @@ static bool CheckEndCombat(GameData& data, Level& level) {
     return allEnemiesDefeated || allPlayersDefeated;
 }
 
-void UpdateCombat(GameData &data, Level &level, LevelSystemData& playField, float dt) {
+void UpdateCombat(GameData &data, Level &level, float dt) {
     SpriteData& spriteData = data.spriteData;
     CharacterData& charData = data.charData;
     switch(level.turnState) {
         case TurnState::StartRound: {
             TraceLog(LOG_INFO, "Start round");
             WaitTurnState(level, TurnState::StartTurn, 1.0f);
-            ApplyStatusEffects(data, level, playField);
+            ApplyStatusEffects(data, level);
             PlaySfx(data.soundData, "startRound", false, 0.5f);
             break;
         }
@@ -84,7 +84,7 @@ void UpdateCombat(GameData &data, Level &level, LevelSystemData& playField, floa
             } else {
                 // obtain AiInterface
                 AiInterface* ai = GetAiInterface(charData.ai[level.currentCharacter]);
-                ai->StartTurn(data, level, playField);
+                ai->StartTurn(data, level, data.levelData);
                 SetupBlinkAnimation(blinkAnim, level.currentCharacter, 1.0f);
                 level.nextState = TurnState::EnemyTurn;
             }
@@ -144,7 +144,7 @@ void UpdateCombat(GameData &data, Level &level, LevelSystemData& playField, floa
                 float intensity = (float) GetBloodIntensity(damage, level.attackResult.minDmg, level.attackResult.maxDmg);
                 TraceLog(LOG_INFO, "Damage: %d, intensity: %f", damage, intensity);
                 Vector2 bloodPos = {defenderX + (float) RandomInRange(-2,2), defenderY - 8 + (float) RandomInRange(-2,2)};
-                CreateBloodSplatter(*playField.particleManager, bloodPos, 10, intensity);
+                CreateBloodSplatter(data.particleManager, bloodPos, 10, intensity);
                 Animation damageNumberAnim{};
                 Color dmgColor = GetDamageColor(damage, level.attackResult.minDmg, level.attackResult.maxDmg);
                 SetupDamageNumberAnimation(damageNumberAnim, TextFormat("%d", damage), defenderX, defenderY-25, dmgColor, hit.crit ? 20 : 10, 0);
@@ -209,7 +209,7 @@ void UpdateCombat(GameData &data, Level &level, LevelSystemData& playField, floa
                     float intensity = (float) GetBloodIntensity(damage, level.attackResult.minDmg, level.attackResult.maxDmg);
                     TraceLog(LOG_INFO, "Damage: %d, intensity: %f", damage, intensity);
                     Vector2 bloodPos = {defenderX + (float) RandomInRange(-2,2), defenderY - 8 + (float) RandomInRange(-2,2)};
-                    CreateBloodSplatter(*playField.particleManager, bloodPos, 10, intensity, waitTime);
+                    CreateBloodSplatter(data.particleManager, bloodPos, 10, intensity, waitTime);
                     Animation damageNumberAnim{};
                     Color dmgColor = GetDamageColor(damage, level.attackResult.minDmg, level.attackResult.maxDmg);
                     SetupDamageNumberAnimation(damageNumberAnim, TextFormat("%d", damage), defenderX, defenderY-25, dmgColor, hit.crit ? 20 : 10, waitTime);
@@ -255,9 +255,9 @@ void UpdateCombat(GameData &data, Level &level, LevelSystemData& playField, floa
             } else {
                 WaitTurnState(level, nextState, 0.60f);
             }
-            ResetLevelSystem(playField);
+            ResetLevelSystem(data.levelData);
             if(IsPlayerCharacter(data.charData, level.currentCharacter)) {
-                playField.mode = LevelMode::SelectingEnemyTarget;
+                data.levelData.mode = LevelMode::SelectingEnemyTarget;
             }
             CheckEndCombat(data, level);
             break;
@@ -268,7 +268,7 @@ void UpdateCombat(GameData &data, Level &level, LevelSystemData& playField, floa
             // obtain AiInterface
             AiInterface* ai = GetAiInterface(charData.ai[level.currentCharacter]);
             if(ai != nullptr) {
-                HandleTurn(*ai, data, level, playField);
+                HandleTurn(*ai, data, level, data.levelData);
             } else {
                 TraceLog(LOG_WARNING, "No AI interface found for %s", charData.ai[level.currentCharacter].c_str());
                 level.turnState = TurnState::EndTurn;

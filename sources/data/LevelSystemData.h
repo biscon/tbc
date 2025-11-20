@@ -32,7 +32,6 @@ struct LevelSystemData {
     float highlightAlpha = 0.25f; // Current alpha value
     bool increasing = true;       // Direction of the alpha
     float pulseSpeed = 4.0f; // Speed of the pulsing
-    ParticleManager* particleManager;
     std::vector<CharacterMove> activeMoves;
     std::string hintText;
 };

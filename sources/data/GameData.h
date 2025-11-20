@@ -64,6 +64,8 @@ struct GameData {
     WeatherData weatherData;
     InputData inputData;
     ActionQueue actionQueue;
+    LevelSystemData levelData;
+    ParticleManager particleManager;
 
     // global save state
     std::unordered_map<std::string, LevelState> levelState;

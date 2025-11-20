@@ -8,7 +8,7 @@
 #include "graphics/CharacterSprite.h"
 #include "character/StatusEffect.h"
 
-static void ApplyStatusEffect(GameData& data, Level &combat, LevelSystemData &gridState, int character, StatusEffect& effect) {
+static void ApplyStatusEffect(GameData& data, Level &combat, int character, StatusEffect& effect) {
     SpriteData& spriteData = data.spriteData;
     CharacterData& charData = data.charData;
     Vector2 charPos = GetCharacterSpritePos(spriteData, charData.sprite[character]);
@@ -34,7 +34,7 @@ static void ApplyStatusEffect(GameData& data, Level &combat, LevelSystemData &gr
             // Burning effect
             int damage = DealDamageStatusEffect(data, combat, character, (int) effect.value);
             if(damage > 0) {
-                CreateExplosionEffect(*gridState.particleManager, {charPos.x, charPos.y}, 5, 10.0f, 0.2f);
+                CreateExplosionEffect(data.particleManager, {charPos.x, charPos.y}, 5, 10.0f, 0.2f);
             }
             break;
         }
@@ -47,14 +47,14 @@ static void ApplyStatusEffect(GameData& data, Level &combat, LevelSystemData &gr
     }
 }
 
-void ApplyStatusEffects(GameData& data, Level &level, LevelSystemData &playField) {
+void ApplyStatusEffects(GameData& data, Level &level) {
     for(auto& character : level.turnOrder) {
         // skip dead characters
         if(data.charData.stats[character].HP <= 0) {
             continue;
         }
         for(auto& effect : data.charData.statusEffects[character]) {
-            ApplyStatusEffect(data, level, playField, character, effect);
+            ApplyStatusEffect(data, level, character, effect);
         }
     }
 }

@@ -14,6 +14,7 @@
 #include "ai/PathFinding.h"
 #include "audio/Sound.h"
 #include "game/ActionSystem.h"
+#include "ui/Icons.h"
 
 static void UpdateAnimations(SpriteData& spriteData, CharacterData& charData, Level &level, float dt) {
     for (auto &anim : level.animations) {
@@ -29,12 +30,7 @@ static void UpdateAnimations(SpriteData& spriteData, CharacterData& charData, Le
     );
 }
 
-void UpdateLevelSystem(GameData& data, Level &level, float dt) {
-    UpdateAnimations(data.spriteData, data.charData, level, dt);
-}
-
-void InitLevelSystem(LevelSystemData &systemData, ParticleManager* particleManager) {
-    systemData.particleManager = particleManager;
+void InitLevelSystem(LevelSystemData &systemData) {
     systemData.moving = false;
     systemData.mode = LevelMode::None;
     systemData.selectedCharacter = -1;
@@ -42,21 +38,22 @@ void InitLevelSystem(LevelSystemData &systemData, ParticleManager* particleManag
     systemData.path = {};
 }
 
-static void updateTurnBasedMove(GameData& data, LevelSystemData &playField, Level &level, float dt) {
-    if (playField.moving) {
-        playField.path.moveTime += dt;
+static void updateTurnBasedMove(GameData& data, Level &level, float dt) {
+    LevelSystemData& levelData = data.levelData;
+    if (levelData.moving) {
+        levelData.path.moveTime += dt;
 
         // Calculate the percentage of completion for the current step
-        float t = playField.path.moveTime / playField.path.moveSpeed;
+        float t = levelData.path.moveTime / levelData.path.moveSpeed;
 
-        if (playField.path.currentStep < playField.path.path.size() - 1) {
+        if (levelData.path.currentStep < levelData.path.path.size() - 1) {
             // Get the current and next waypoint positions
             Vector2 start = GridToPixelPosition(
-                    playField.path.path[playField.path.currentStep].x,
-                    playField.path.path[playField.path.currentStep].y);
+                    levelData.path.path[levelData.path.currentStep].x,
+                    levelData.path.path[levelData.path.currentStep].y);
             Vector2 end = GridToPixelPosition(
-                    playField.path.path[playField.path.currentStep + 1].x,
-                    playField.path.path[playField.path.currentStep + 1].y);
+                    levelData.path.path[levelData.path.currentStep + 1].x,
+                    levelData.path.path[levelData.path.currentStep + 1].y);
 
             CharacterSprite& sprite = data.charData.sprite[level.currentCharacter];
             // Lerp the x and y components separately
@@ -85,26 +82,26 @@ static void updateTurnBasedMove(GameData& data, LevelSystemData &playField, Leve
             }
 
             // Check if we have completed the current step
-            if (playField.path.moveTime >= playField.path.moveSpeed) {
-                playField.path.moveTime = 0.0f;
-                playField.path.currentStep++;
+            if (levelData.path.moveTime >= levelData.path.moveSpeed) {
+                levelData.path.moveTime = 0.0f;
+                levelData.path.currentStep++;
 
                 // If the last step is reached, stop moving
-                if (playField.path.currentStep >= playField.path.path.size() - 1) {
+                if (levelData.path.currentStep >= levelData.path.path.size() - 1) {
                     StopSfx(data.soundData, level.footStepsHandle);
                     level.footStepsHandle = -1;
-                    playField.moving = false;
+                    levelData.moving = false;
                     PauseCharacterSpriteAnim(data.spriteData, sprite);
 
                     SetCharacterSpriteFrame(data.spriteData, sprite, 0);
                     // set final position
-                    auto finalPos = playField.path.path[playField.path.path.size() - 1];
+                    auto finalPos = levelData.path.path[levelData.path.path.size() - 1];
                     SetCharacterSpritePos(data.spriteData, sprite, GridToPixelPosition(finalPos.x, finalPos.y));
 
-                    ResetLevelSystem(playField);
+                    ResetLevelSystem(levelData);
                     if (IsPlayerCharacter(data.charData, level.currentCharacter)) {
                         level.turnState = TurnState::SelectDestination;
-                        playField.mode = LevelMode::SelectingTile;
+                        levelData.mode = LevelMode::SelectingTile;
                     } else {
                         level.turnState = TurnState::EnemyTurn;
                     }
@@ -114,8 +111,8 @@ static void updateTurnBasedMove(GameData& data, LevelSystemData &playField, Leve
     }
 }
 
-static void updateActiveMovement(GameData& data, LevelSystemData &playField, Level& level, float dt) {
-    for(auto& move : playField.activeMoves) {
+static void updateActiveMovement(GameData& data, Level& level, float dt) {
+    for(auto& move : data.levelData.activeMoves) {
         move.path.moveTime += dt;
 
         // Calculate the percentage of completion for the current step
@@ -177,18 +174,18 @@ static void updateActiveMovement(GameData& data, LevelSystemData &playField, Lev
         }
     }
     // Use erase-remove idiom to remove animations which are done
-    playField.activeMoves.erase(
-            std::remove_if(playField.activeMoves.begin(), playField.activeMoves.end(),
+    data.levelData.activeMoves.erase(
+            std::remove_if(data.levelData.activeMoves.begin(), data.levelData.activeMoves.end(),
                            [](const CharacterMove& m) {
                                if(m.isDone)
                                    TraceLog(LOG_INFO, "Removing move from active list");
                                return m.isDone;
                            }),
-            playField.activeMoves.end()
+            data.levelData.activeMoves.end()
     );
 }
 
-static void checkIfPartySpotted(GameData& data, LevelSystemData &playField, Level &level) {
+static void checkIfPartySpotted(GameData& data, Level &level) {
     for(auto& c : level.allCharacters) {
         if(data.charData.faction[c] != CharacterFaction::Enemy || data.charData.stats[c].HP <= 0) {
             continue;
@@ -205,7 +202,101 @@ static void checkIfPartySpotted(GameData& data, LevelSystemData &playField, Leve
     }
 }
 
-void UpdateLevelSystem(GameData& data, LevelSystemData &systemData, Level &level, float dt) {
+static void UpdateFloatingStats(GameData& data, Level &level) {
+    // get mouse position
+    data.ui.level.floatingStatsCharacter = -1;
+    Vector2 mousePos = GetScreenToWorld2D(GetMousePosition(), level.camera.camera);
+    Vector2 gridPos = PixelToGridPosition(mousePos.x, mousePos.y);
+    // check if mouse is over character
+    for (auto &character: level.allCharacters) {
+        // skip dead
+        if (data.charData.stats[character].HP <= 0) {
+            continue;
+        }
+
+        // don't show floating stats for characters out of LoS
+        if(!HasLineOfSightToParty(data.spriteData, data.charData, level, character))
+            continue;
+
+        Vector2 gridPosCharacter = PixelToGridPosition(GetCharacterSpritePosX(data.spriteData, data.charData.sprite[character]),
+                                                       GetCharacterSpritePosY(data.spriteData, data.charData.sprite[character]));
+        if ((int) gridPosCharacter.x == (int) gridPos.x && (int) gridPosCharacter.y == (int) gridPos.y) {
+            data.ui.level.floatingStatsCharacter = character;
+        }
+    }
+}
+
+static void UpdateMousePointer(GameData& data, Level &level) {
+    Vector2 mousePos = GetScreenToWorld2D(GetMousePosition(), level.camera.camera);
+    Vector2i gridPos = PixelToGridPositionI(mousePos.x, mousePos.y);
+
+    for (auto& entry : level.doors) {
+        auto &door = entry.second;
+        // door world pixel rect
+        Vector2 pos = GridToPixelPosition(door.gridPos.x, door.gridPos.y);
+        auto frameInfo = GetFrameInfo(data.spriteData, door.animPlayer);
+        Rectangle frameRectWorld = {
+                pos.x - 8.0f,
+                pos.y - 8.0f,
+                frameInfo.srcRect.width,
+                frameInfo.srcRect.height
+        };
+        // Hover sets the cursor icon
+        if (CheckCollisionPointRec(mousePos, frameRectWorld)) {
+            data.ui.currentCursorIcon = ICON_INTERACT;
+        }
+    }
+
+    if(!HasLineOfSightToPartyLight(data.spriteData, data.charData, level, gridPos)) {
+        return;
+    }
+
+    for (int npcId : level.npcCharacters) {
+        Vector2i npcPos = GetCharacterGridPosI(data.spriteData, data.charData.sprite[npcId]);
+        if (npcPos == gridPos) {
+            data.ui.currentCursorIcon = ICON_TALK;
+            break;
+        }
+    }
+
+    for (auto& entry : level.objects) {
+        auto &obj = entry.second;
+
+        // position and bounds
+        Vector2 pos = GridToPixelPosition(obj.gridPos.x, obj.gridPos.y);
+        auto frameInfo = GetFrameInfo(data.spriteData, obj.animPlayer);
+
+        Rectangle frameRectWorld = {
+                pos.x - 8.0f,
+                pos.y - 8.0f,
+                frameInfo.srcRect.width,
+                frameInfo.srcRect.height
+        };
+
+        // require click on object + proximity
+        if (!CheckCollisionPointRec(mousePos, frameRectWorld))
+            continue;
+        // object has inventory?
+        auto& state = data.levelState[level.name];
+        if (state.objectInventories.count(obj.id) > 0) {
+            data.ui.currentCursorIcon = ICON_INTERACT;
+            break;
+        }
+    }
+
+    for(auto& exit : level.exits){
+        Vector2 pos = GridToPixelPosition(exit.x, exit.y);
+        Rectangle frameRectWorld = {pos.x - 8.0f, pos.y - 8.0f, (float) exit.width * 16, (float) exit.height * 16};
+        if(CheckCollisionPointRec(mousePos, frameRectWorld)) {
+            data.ui.currentCursorIcon = ICON_EXIT;
+            return;
+        }
+    }
+}
+
+void UpdateLevelSystem(GameData& data, Level &level, float dt) {
+    UpdateAnimations(data.spriteData, data.charData, level, dt);
+    LevelSystemData& systemData = data.levelData;
     // Update the pulsing alpha
     if (systemData.increasing) {
         systemData.highlightAlpha = Lerp(systemData.highlightAlpha, 1.0f, dt * systemData.pulseSpeed);
@@ -218,15 +309,15 @@ void UpdateLevelSystem(GameData& data, LevelSystemData &systemData, Level &level
             systemData.increasing = true;
         }
     }
-    updateActiveMovement(data, systemData, level, dt);
-    updateTurnBasedMove(data, systemData, level, dt);
+    updateActiveMovement(data, level, dt);
+    updateTurnBasedMove(data, level, dt);
 
     // Update animations for all characters
     for (auto &character: level.allCharacters) {
         UpdateCharacterSprite(data.spriteData, data.charData.sprite[character], dt);
     }
     if(level.turnState == TurnState::None) {
-        checkIfPartySpotted(data, systemData, level);
+        checkIfPartySpotted(data, level);
         //checkLevelExits(data, level);
     }
     for(auto& entry : level.objects) {
@@ -237,9 +328,12 @@ void UpdateLevelSystem(GameData& data, LevelSystemData &systemData, Level &level
         auto& door = entry.second;
         UpdateSpriteAnimation(data.spriteData, door.animPlayer, dt);
     }
+
+    UpdateFloatingStats(data, level);
+    UpdateMousePointer(data, level);
 }
 
-void MoveCharacter(GameData& data, LevelSystemData &systemData, Level &level, int character, Vector2i target) {
+void MoveCharacter(GameData& data, Level &level, int character, Vector2i target) {
     // calculate a path and draw it as lines
     Path path;
     Vector2i cCharPos = GetCharacterSpritePosI(data.spriteData, data.charData.sprite[character]);
@@ -249,13 +343,13 @@ void MoveCharacter(GameData& data, LevelSystemData &systemData, Level &level, in
         move.character = character;
         move.path = path;
         move.isDone = false;
-        systemData.activeMoves.push_back(move);
+        data.levelData.activeMoves.push_back(move);
     } else {
         TraceLog(LOG_WARNING, "No path found");
     }
 }
 
-void MoveCharacterPartial(GameData& data, LevelSystemData &systemData, Level &level, int character, Vector2i target) {
+void MoveCharacterPartial(GameData& data, Level &level, int character, Vector2i target) {
     // calculate a path and draw it as lines
     Path path;
     Vector2i cCharPos = GetCharacterSpritePosI(data.spriteData, data.charData.sprite[character]);
@@ -266,7 +360,7 @@ void MoveCharacterPartial(GameData& data, LevelSystemData &systemData, Level &le
         move.character = character;
         move.path = path;
         move.isDone = false;
-        systemData.activeMoves.push_back(move);
+        data.levelData.activeMoves.push_back(move);
     } else {
         TraceLog(LOG_WARNING, "No path found");
     }

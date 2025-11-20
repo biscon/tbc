@@ -10,8 +10,7 @@
 
 struct LevelGameModeState {
     Level level;
-    ParticleManager particleManager;
-    LevelSystemData playField;
+    //ParticleManager particleManager;
 };
 
 void SetupLevelGameMode(LevelGameModeState* state);

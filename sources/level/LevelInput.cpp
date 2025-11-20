@@ -18,7 +18,7 @@
 #include "game/ActionSystem.h"
 #include "LevelSystem.h"
 
-static void HandleInputPathSelection(GameData& data, LevelSystemData &playField, Level &level) {
+static void HandleInputPathSelection(GameData& data, Level &level) {
     SpriteData& spriteData = data.spriteData;
     CharacterData& charData = data.charData;
     // check if mouse is over tile
@@ -27,7 +27,7 @@ static void HandleInputPathSelection(GameData& data, LevelSystemData &playField,
     data.ui.actionBar.previewApUse = -1;
     data.ui.level.validMovePath = false;
     if (!IsTileOccupied(spriteData, charData, level, static_cast<int>(gridPos.x), static_cast<int>(gridPos.y), -1)) {
-        playField.selectedTile = gridPos;
+        data.levelData.selectedTile = gridPos;
         // calculate a path and draw it as lines
         Path& path = data.ui.level.movePath;
         CharacterStats& stats = charData.stats[level.currentCharacter];
@@ -42,9 +42,9 @@ static void HandleInputPathSelection(GameData& data, LevelSystemData &playField,
             }
             // Check for a mouse click
             if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT) && path.cost <= stats.AP) {
-                playField.mode = LevelMode::None;
-                playField.path = path;
-                playField.moving = true;
+                data.levelData.mode = LevelMode::None;
+                data.levelData.path = path;
+                data.levelData.moving = true;
                 stats.AP -= path.cost;
                 // cap at zero
                 if (stats.AP < 0) {
@@ -60,9 +60,9 @@ static void HandleInputPathSelection(GameData& data, LevelSystemData &playField,
     }
 }
 
-static void HandleMeleeTargetSelection(GameData& data, Level& level, LevelSystemData& playField, WeaponTemplate* weaponTemplate, int targetId) {
+static void HandleMeleeTargetSelection(GameData& data, Level& level, WeaponTemplate* weaponTemplate, int targetId) {
     if (IsCharacterAdjacentToPlayer(data.spriteData, data.charData, data.ui.selectedCharacter, targetId)) {
-        playField.selectedCharacter = targetId;
+        data.levelData.selectedCharacter = targetId;
         int weaponItemId = GetSelectedWeaponItemId(data, data.ui.selectedCharacter);
         CalcHitChance(data, data.ui.selectedCharacter, weaponItemId, -1, data.ui.level.attackInfo);
         data.ui.actionBar.previewApUse = data.ui.level.attackInfo.apCost;
@@ -71,21 +71,21 @@ static void HandleMeleeTargetSelection(GameData& data, Level& level, LevelSystem
         if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT) && ap >= data.ui.level.attackInfo.apCost) {
             level.turnState = TurnState::Waiting;
             level.waitTime = 0.25f;
-            level.selectedCharacter = playField.selectedCharacter;
+            level.selectedCharacter = data.levelData.selectedCharacter;
             level.nextState = TurnState::Attack;
-            ResetLevelSystem(playField);
+            ResetLevelSystem(data.levelData);
         }
     }
 }
 
-static void HandleRangedTargetSelection(GameData& data, Level& level, LevelSystemData& playField, WeaponTemplate* weaponTemplate, int targetId) {
+static void HandleRangedTargetSelection(GameData& data, Level& level, WeaponTemplate* weaponTemplate, int targetId) {
     Vector2i start = GetCharacterGridPosI(data.spriteData, data.charData.sprite[data.ui.selectedCharacter]);
     Vector2i end = GetCharacterGridPosI(data.spriteData, data.charData.sprite[targetId]);
     if(HasLineOfSightFriendlies(data, level, start, end, weaponTemplate->range, data.ui.selectedCharacter)) {
         int weaponItemId = GetSelectedWeaponItemId(data, data.ui.selectedCharacter);
         CalcHitChance(data, data.ui.selectedCharacter, weaponItemId, data.ui.actionBar.selectedModeIdx, data.ui.level.attackInfo);
         data.ui.actionBar.previewApUse = data.ui.level.attackInfo.apCost;
-        playField.selectedCharacter = targetId;
+        data.levelData.selectedCharacter = targetId;
         int ap = data.charData.stats[data.ui.selectedCharacter].AP;
         auto* weaponInstance = GetSelectedWeaponInstance(data, data.ui.selectedCharacter);
         int currentAmmo = weaponInstance->currentAmmo;
@@ -97,19 +97,19 @@ static void HandleRangedTargetSelection(GameData& data, Level& level, LevelSyste
                 if (ap >= data.ui.level.attackInfo.apCost) {
                     level.turnState = TurnState::Waiting;
                     level.waitTime = 0.25f;
-                    level.selectedCharacter = playField.selectedCharacter;
+                    level.selectedCharacter = data.levelData.selectedCharacter;
                     level.nextState = TurnState::AttackRanged;
-                    ResetLevelSystem(playField);
+                    ResetLevelSystem(data.levelData);
                 }
             }
         }
     }
 }
 
-static void HandleInputTargetSelection(GameData& data, Level& level, LevelSystemData &playField, bool onlyEnemies) {
+static void HandleInputTargetSelection(GameData& data, Level& level, bool onlyEnemies) {
     Vector2 mousePos = GetScreenToWorld2D(GetMousePosition(), level.camera.camera);
     Vector2i gridPos = PixelToGridPositionI(mousePos.x, mousePos.y);
-    playField.selectedCharacter = -1;
+    data.levelData.selectedCharacter = -1;
     data.ui.actionBar.previewApUse = -1;
     for (auto &character: level.allCharacters) {
         // skip death characters
@@ -124,15 +124,15 @@ static void HandleInputTargetSelection(GameData& data, Level& level, LevelSystem
             WeaponTemplate* weaponTemplate = GetSelectedWeaponTemplate(data, data.ui.selectedCharacter);
             // Treat unarmed as melee
             if(weaponTemplate == nullptr) {
-                HandleMeleeTargetSelection(data, level, playField, weaponTemplate, character);
+                HandleMeleeTargetSelection(data, level, weaponTemplate, character);
             }
             else {
                 switch (weaponTemplate->type) {
                     case WeaponType::Melee:
-                        HandleMeleeTargetSelection(data, level, playField, weaponTemplate, character);
+                        HandleMeleeTargetSelection(data, level, weaponTemplate, character);
                         break;
                     case WeaponType::Ranged:
-                        HandleRangedTargetSelection(data, level, playField, weaponTemplate, character);
+                        HandleRangedTargetSelection(data, level, weaponTemplate, character);
                         break;
                 }
             }
@@ -140,35 +140,13 @@ static void HandleInputTargetSelection(GameData& data, Level& level, LevelSystem
     }
 }
 
-void HandleInputCombat(GameData& data, Level &level, LevelSystemData &playField) {
-    // get mouse position
-    data.ui.level.floatingStatsCharacter = -1;
-    Vector2 mousePos = GetScreenToWorld2D(GetMousePosition(), level.camera.camera);
-    Vector2 gridPos = PixelToGridPosition(mousePos.x, mousePos.y);
-    // check if mouse is over character
-    for (auto &character: level.allCharacters) {
-        // skip dead
-        if (data.charData.stats[character].HP <= 0) {
-            continue;
-        }
-
-        // don't show floating stats for characters out of LoS
-        if(!HasLineOfSightToParty(data.spriteData, data.charData, level, character))
-            continue;
-
-        Vector2 gridPosCharacter = PixelToGridPosition(GetCharacterSpritePosX(data.spriteData, data.charData.sprite[character]),
-                                                       GetCharacterSpritePosY(data.spriteData, data.charData.sprite[character]));
-        if ((int) gridPosCharacter.x == (int) gridPos.x && (int) gridPosCharacter.y == (int) gridPos.y) {
-            data.ui.level.floatingStatsCharacter = character;
-        }
-    }
-
+void HandleInputCombat(GameData& data, Level &level) {
     if(data.state == GameState::PLAY_LEVEL) {
-        if (playField.mode == LevelMode::SelectingTile) {
-            HandleInputPathSelection(data, playField, level);
+        if (data.levelData.mode == LevelMode::SelectingTile) {
+            HandleInputPathSelection(data, level);
         }
-        if (playField.mode == LevelMode::SelectingEnemyTarget) {
-            HandleInputTargetSelection(data, level, playField, true);
+        if (data.levelData.mode == LevelMode::SelectingEnemyTarget) {
+            HandleInputTargetSelection(data, level, true);
         }
     }
 }
@@ -206,11 +184,6 @@ static bool handleDoors(GameData& data, Level &level, Vector2i playerPos, Vector
         // Cheap distance check
         if (Distance(playerPos, door.gridPos) >= 5)
             continue;
-
-        // Hover sets the cursor icon
-        if (CheckCollisionPointRec(mousePos, frameRectWorld)) {
-            data.ui.currentCursorIcon = ICON_INTERACT;
-        }
 
         // Now process input events
         for (auto& ev : FilterEvents(data.inputData, true, InputEventType::MouseClick)) {
@@ -297,9 +270,6 @@ static bool handleObjects(GameData& data, Level &level, Vector2i playerPos)
 
             int invId = state.objectInventories.at(obj.id);
 
-            // cursor update
-            data.ui.currentCursorIcon = ICON_INTERACT;
-
             // consume event & open loot
             ConsumeEvent(evt);
             PushOpenLootInventory(data.actionQueue, invId);
@@ -311,7 +281,6 @@ static bool handleObjects(GameData& data, Level &level, Vector2i playerPos)
 }
 
 static bool handleMovementClick(GameData& data,
-                                LevelSystemData& playField,
                                 Level& level,
                                 Vector2i playerPos,
                                 Vector2i gridPos)
@@ -338,7 +307,7 @@ static bool handleMovementClick(GameData& data,
     }
 
     // highlight tile
-    playField.selectedTilePos = gridPos;
+    data.levelData.selectedTilePos = gridPos;
 
     // handle left-click event
     for (InputEvent& evt : FilterEvents(data.inputData, true, InputEventType::MouseClick))
@@ -354,7 +323,6 @@ static bool handleMovementClick(GameData& data,
 }
 
 static bool handleDialogueClick(GameData& data,
-                                LevelSystemData& playField,
                                 Level& level,
                                 Vector2i playerPos,
                                 Vector2i gridPos)
@@ -372,9 +340,7 @@ static bool handleDialogueClick(GameData& data,
         // NPC found on clicked tile
         if (Distance(playerPos, npcPos) < 3)
         {
-            playField.hintText = "Talk to " + charData.name[npcId];
-            data.ui.currentCursorIcon = ICON_TALK;
-
+            data.levelData.hintText = "Talk to " + charData.name[npcId];
             // click-to-talk
             for (InputEvent& evt : FilterEvents(data.inputData, true, InputEventType::MouseClick))
             {
@@ -387,27 +353,14 @@ static bool handleDialogueClick(GameData& data,
         }
         else
         {
-            playField.hintText = "Too far away!";
+            data.levelData.hintText = "Too far away!";
         }
     }
 
     return false;
 }
 
-
-
-static void showExits(GameData& data, Level &level, Vector2 mousePos) {
-    for(auto& exit : level.exits){
-        Vector2 pos = GridToPixelPosition(exit.x, exit.y);
-        Rectangle frameRectWorld = {pos.x - 8.0f, pos.y - 8.0f, (float) exit.width * 16, (float) exit.height * 16};
-        if(CheckCollisionPointRec(mousePos, frameRectWorld)) {
-            data.ui.currentCursorIcon = ICON_EXIT;
-            return;
-        }
-    }
-}
-
-static void CheckLevelExits(GameData& data, Level& level)
+static bool handleExits(GameData& data, Level& level)
 {
     for (InputEvent& evt : FilterEvents(data.inputData, true, InputEventType::MouseClick))
     {
@@ -441,33 +394,32 @@ static void CheckLevelExits(GameData& data, Level& level)
                 if (close) {
                     ConsumeEvent(evt);
                     PushExitLevel(data.actionQueue, exit.levelFile, exit.spawnPoint);
-                    return;
+                    return true;
                 }
             }
         }
     }
+    return false;
 }
 
-static void handleInputPlayFieldExploration(GameData& data,
-                                            LevelSystemData &playField,
-                                            Level &level)
-{
+void HandleInputRealtime(GameData& data, Level &level) {
+    if(data.levelData.mode != LevelMode::Explore) {
+        return;
+    }
     SpriteData& spriteData = data.spriteData;
     CharacterData& charData = data.charData;
 
-    playField.selectedTilePos = {-1, -1};
+    data.levelData.selectedTilePos = {-1, -1};
 
     Vector2 mouseWorld = GetScreenToWorld2D(GetMousePosition(), level.camera.camera);
     Vector2i gridPos = PixelToGridPositionI((int) mouseWorld.x, (int) mouseWorld.y);
 
     int playerChar = data.ui.selectedCharacter;
-    Vector2i playerPos =
-            GetCharacterGridPosI(spriteData, charData.sprite[playerChar]);
+    Vector2i playerPos = GetCharacterGridPosI(spriteData, charData.sprite[playerChar]);
 
-    // Show exits and check them (existing logic)
-    showExits(data, level, mouseWorld);
     if (level.turnState == TurnState::None) {
-        CheckLevelExits(data, level);
+        if(handleExits(data, level))
+            return;
     }
 
     // Objects take priority
@@ -483,20 +435,13 @@ static void handleInputPlayFieldExploration(GameData& data,
                         gridPos.x, gridPos.y, -1))
     {
         // movement handler
-        if (handleMovementClick(data, playField, level, playerPos, gridPos))
+        if (handleMovementClick(data, level, playerPos, gridPos))
             return;
     }
     else
     {
         // dialogue handler
-        if (handleDialogueClick(data, playField, level, playerPos, gridPos))
+        if (handleDialogueClick(data, level, playerPos, gridPos))
             return;
-    }
-}
-
-
-void HandleInputRealtime(GameData& data, LevelSystemData &playField, Level &level) {
-    if(playField.mode == LevelMode::Explore) {
-        handleInputPlayFieldExploration(data, playField, level);
     }
 }
