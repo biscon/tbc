@@ -7,6 +7,8 @@
 #include "data/GameData.h"
 #include "graphics/SpriteSheet.h"
 
+#define RAYGUI_IMPLEMENTATION
+
 static const Color bgColor = Color{15, 15, 15, 200};
 
 void DrawStatusText(const char* text, Color color, int y, int size) {

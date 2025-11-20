@@ -17,6 +17,7 @@ void AddPartyToLevelNoPositioning(SpriteData& spriteData, CharacterData& charDat
 void AddPartyToLevel(SpriteData& spriteData, CharacterData& charData, Level &level, std::vector<int> &party, const std::string& spawnPoint);
 void AddEnemiesToLevel(SpriteData& spriteData, CharacterData& charData, Level &level, std::vector<int> &enemies, const std::string& spawnPoint);
 void UpdateVisibilityMap(GameData& data, Level& level);
+void UpdateLevel(GameData& data, Level &level, float dt);
 
 
 #endif //SANDBOX_LEVEL_H

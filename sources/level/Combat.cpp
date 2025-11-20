@@ -13,8 +13,6 @@
 #include "graphics/Animation.h"
 #include "raylib.h"
 #include "ui/UI.h"
-#include "LevelScreen.h"
-#include "ai/PathFinding.h"
 #include "game/Items.h"
 #include "raymath.h"
 #include "audio/Sound.h"

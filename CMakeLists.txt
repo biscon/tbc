@@ -39,8 +39,6 @@ add_executable(${PROJECT_NAME}
         sources/level/Combat.h
         sources/util/Random.cpp
         sources/util/Random.h
-        sources/level/LevelScreen.cpp
-        sources/level/LevelScreen.h
         sources/raygui.h
         sources/graphics/Animation.cpp
         sources/graphics/Animation.h
@@ -174,6 +172,8 @@ add_executable(${PROJECT_NAME}
         sources/game/ActionSystem.h
         sources/level/LevelRenderer.cpp
         sources/level/LevelRenderer.h
+        sources/level/LevelInput.cpp
+        sources/level/LevelInput.h
 )
 
 

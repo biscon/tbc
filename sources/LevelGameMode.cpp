@@ -5,7 +5,6 @@
 #include "LevelGameMode.h"
 #include "character/Character.h"
 #include "level/Level.h"
-#include "level/LevelScreen.h"
 #include "graphics/BloodPool.h"
 #include "rcamera.h"
 #include "level/CombatEngine.h"
@@ -20,13 +19,14 @@
 #include "level/Weather.h"
 #include "game/Input.h"
 #include "game/ActionSystem.h"
+#include "level/LevelRenderer.h"
+#include "level/LevelInput.h"
 
 void LevelInit(GameData& data) {
     GameMode* gm = GetGameMode(GameModes::Level);
     auto* state = static_cast<LevelGameModeState*>(gm->userData);
     
     CreateLevel(state->level);
-    CreateLevelScreen(data);
     CreateParticleManager(state->particleManager, {0, 0}, gameScreenWidth, gameScreenHeight);
 
     CreatePlayField(state->playField, &state->particleManager);
@@ -42,7 +42,6 @@ void LevelDestroy(GameData& data) {
     
     DestroyParticleManager(state->particleManager);
     DestroyBloodRendering();
-    DestroyLevelScreen(data);
     DestroyLevel(data.spriteData.sheet, state->level);
 }
 
@@ -62,7 +61,7 @@ static void UpdateWorld(GameData& data, Level& level, PlayField& playField, floa
     UpdateCamera(level.camera, dt);
 
     UpdateCombat(data, level, playField, dt);
-    UpdateLevelScreen(data, level, dt);
+    UpdateLevel(data, level, dt);
     UpdatePlayField(data, playField, level, dt);
 }
 
@@ -138,11 +137,6 @@ static bool HandleUIInput(GameData& data, Level& level, PlayField& playField) {
     return false;
 }
 
-static void HandleLevelMouseInput(GameData& data, Level& level, PlayField& playField) {
-    HandleInputPlayField(data, playField, level);
-    HandleInputLevelScreen(data, level, playField);
-}
-
 void LevelHandleInput(GameData& data) {
     GameMode* gm = GetGameMode(GameModes::Level);
     auto* state = static_cast<LevelGameModeState*>(gm->userData);
@@ -158,7 +152,9 @@ void LevelHandleInput(GameData& data) {
     if (HandleUIInput(data, state->level, state->playField))      return;
 
     HandleCameraInput(state->level.camera);
-    HandleLevelMouseInput(data, state->level, state->playField);
+
+    HandleInputRealtime(data, state->playField, state->level);
+    HandleInputCombat(data, state->level, state->playField);
 }
 
 
