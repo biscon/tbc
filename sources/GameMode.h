@@ -23,6 +23,7 @@ struct GameMode {
     void (*Destroy)(GameData& data);
     void (*Pause)(GameData& data);
     void (*Resume)(GameData& data);
+    void* userData;
 };
 
 struct GameModeFlags {
@@ -31,7 +32,7 @@ struct GameModeFlags {
 
 void InitGameMode(GameData& data);
 void CreateGameMode(GameModes gm, void (*Init)(GameData&), void (*Update)(GameData&, float), void (*HandleInput)(GameData&), void (*RenderLevel)(GameData&), void (*RenderUi)(GameData&),
-                    void (*PreRender)(GameData&), void (*Shutdown)(GameData&), void (*Pause)(GameData&), void (*Resume)(GameData&));
+                    void (*PreRender)(GameData&), void (*Shutdown)(GameData&), void (*Pause)(GameData&), void (*Resume)(GameData&), void* userData = nullptr);
 GameMode* GetGameMode(GameModes gm);
 void PopGameMode(GameData& data);
 void PushGameMode(GameData& data, GameModes gm);

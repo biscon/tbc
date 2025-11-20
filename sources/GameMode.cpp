@@ -33,7 +33,7 @@ void StartFadeIn() {
 }
 
 void CreateGameMode(GameModes gm, void (*Init)(GameData&), void (*Update)(GameData&, float), void (*HandleInput)(GameData&), void (*RenderLevel)(GameData&), void (*RenderUi)(GameData&),
-                    void (*PreRender)(GameData&), void (*Shutdown)(GameData&), void (*Pause)(GameData&), void (*Resume)(GameData&)) {
+                    void (*PreRender)(GameData&), void (*Shutdown)(GameData&), void (*Pause)(GameData&), void (*Resume)(GameData&), void* userData) {
     GameMode mode{};
     mode.Init = Init;
     mode.Update = Update;
@@ -44,6 +44,7 @@ void CreateGameMode(GameModes gm, void (*Init)(GameData&), void (*Update)(GameDa
     mode.Destroy = Shutdown;
     mode.Pause = Pause;
     mode.Resume = Resume;
+    mode.userData = userData;
     gameModes[gm] = mode;
 }
 

@@ -28,7 +28,9 @@ int main() {
     //CreateGame(game, "outdoor_level.json");
     CreateGame(game, "fort_arlen_level.json");
     SetupMenuGameMode(&game);
-    SetupLevelGameMode(&game);
+
+    LevelGameModeState levelGameModeState;
+    SetupLevelGameMode(&levelGameModeState);
 
     //SetConfigFlags(FLAG_WINDOW_UNDECORATED);
     //SetConfigFlags(FLAG_BORDERLESS_WINDOWED_MODE);

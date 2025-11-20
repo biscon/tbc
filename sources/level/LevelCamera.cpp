@@ -182,3 +182,67 @@ void InitLevelCamera(LevelCamera &cam) {
     cam.overscrollRight = 48;
     cam.overscrollBottom = 32;
 }
+
+void HandleCameraInput(LevelCamera &cam) {
+    float dt = GetFrameTime();
+    float speed = 8.0f;
+    float accelerationTime = 0.75f;
+    float decelerationTime = 0.75f;
+
+    float acceleration = speed / accelerationTime;
+    float deceleration = speed / decelerationTime;
+
+    // X-axis movement (A/D)
+    if (!cam.cameraLockX) {
+        if (IsKeyDown(KEY_A)) {
+            cam.cameraVelocity.x -= acceleration * dt;
+            if (cam.cameraVelocity.x < -speed) {
+                cam.cameraVelocity.x = -speed;
+            }
+        } else if (IsKeyDown(KEY_D)) {
+            cam.cameraVelocity.x += acceleration * dt;
+            if (cam.cameraVelocity.x > speed) {
+                cam.cameraVelocity.x = speed;
+            }
+        } else {
+            // Decelerate when no input
+            if (cam.cameraVelocity.x > 0.0f) {
+                cam.cameraVelocity.x -= deceleration * dt;
+                if (cam.cameraVelocity.x < 0.0f) cam.cameraVelocity.x = 0.0f;
+            } else if (cam.cameraVelocity.x < 0.0f) {
+                cam.cameraVelocity.x += deceleration * dt;
+                if (cam.cameraVelocity.x > 0.0f) cam.cameraVelocity.x = 0.0f;
+            }
+        }
+    } else {
+        // Reset velocity if axis is locked
+        cam.cameraVelocity.x = 0.0f;
+    }
+
+    // Y-axis movement (W/S)
+    if (!cam.cameraLockY) {
+        if (IsKeyDown(KEY_W)) {
+            cam.cameraVelocity.y -= acceleration * dt;
+            if (cam.cameraVelocity.y < -speed) {
+                cam.cameraVelocity.y = -speed;
+            }
+        } else if (IsKeyDown(KEY_S)) {
+            cam.cameraVelocity.y += acceleration * dt;
+            if (cam.cameraVelocity.y > speed) {
+                cam.cameraVelocity.y = speed;
+            }
+        } else {
+            // Decelerate when no input
+            if (cam.cameraVelocity.y > 0.0f) {
+                cam.cameraVelocity.y -= deceleration * dt;
+                if (cam.cameraVelocity.y < 0.0f) cam.cameraVelocity.y = 0.0f;
+            } else if (cam.cameraVelocity.y < 0.0f) {
+                cam.cameraVelocity.y += deceleration * dt;
+                if (cam.cameraVelocity.y > 0.0f) cam.cameraVelocity.y = 0.0f;
+            }
+        }
+    } else {
+        // Reset velocity if axis is locked
+        cam.cameraVelocity.y = 0.0f;
+    }
+}

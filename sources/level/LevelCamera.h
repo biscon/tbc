@@ -15,5 +15,6 @@ void StartCameraPanToTilePos(LevelCamera& cam, Vector2i target, float speed);
 void StartCameraPanToTargetChar(SpriteData& spriteData, CharacterData& charData, LevelCamera& cam, int target, float speed);
 void StartCameraPanToTargetCharTime(SpriteData& spriteData, CharacterData& charData, LevelCamera& cam, int target, float duration);
 void UpdateCamera(LevelCamera& cam, float dt);
+void HandleCameraInput(LevelCamera &cam);
 
 #endif //SANDBOX_LEVELCAMERA_H

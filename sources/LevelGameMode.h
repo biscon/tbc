@@ -8,6 +8,12 @@
 #include "GameMode.h"
 #include "game/Game.h"
 
-void SetupLevelGameMode(GameData* gameState);
+struct LevelGameModeState {
+    Level level;
+    ParticleManager particleManager;
+    PlayField playField;
+};
+
+void SetupLevelGameMode(LevelGameModeState* state);
 
 #endif //SANDBOX_LEVELGAMEMODE_H
