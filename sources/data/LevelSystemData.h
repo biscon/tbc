@@ -2,8 +2,8 @@
 // Created by bison on 01-07-25.
 //
 
-#ifndef SANDBOX_PLAYFIELDDATA_H
-#define SANDBOX_PLAYFIELDDATA_H
+#ifndef SANDBOX_LEVELSYSTEMDATA_H
+#define SANDBOX_LEVELSYSTEMDATA_H
 
 #include "PathFindingData.h"
 #include "graphics/ParticleSystem.h"
@@ -37,4 +37,4 @@ struct PlayField {
     std::string hintText;
 };
 
-#endif //SANDBOX_PLAYFIELDDATA_H
+#endif //SANDBOX_LEVELSYSTEMDATA_H
