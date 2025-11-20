@@ -5,7 +5,7 @@
 #ifndef SANDBOX_AI_H
 #define SANDBOX_AI_H
 
-#include "level/PlayField.h"
+#include "data/GameData.h"
 
 enum class AiState {
     Idle,

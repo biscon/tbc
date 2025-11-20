@@ -4,7 +4,6 @@
 
 #include <algorithm>
 #include "FighterAi.h"
-#include "level/PlayField.h"
 #include "Ai.h"
 #include "level/LevelCamera.h"
 #include "util/Random.h"

@@ -21,6 +21,7 @@
 #include "game/ActionSystem.h"
 #include "level/LevelRenderer.h"
 #include "level/LevelInput.h"
+#include "level/LevelSystem.h"
 
 void LevelInit(GameData& data) {
     GameMode* gm = GetGameMode(GameModes::Level);
@@ -61,7 +62,7 @@ static void UpdateWorld(GameData& data, Level& level, PlayField& playField, floa
     UpdateCamera(level.camera, dt);
 
     UpdateCombat(data, level, playField, dt);
-    UpdateLevel(data, level, dt);
+    UpdateLevelSystem(data, level, dt);
     UpdatePlayField(data, playField, level, dt);
 }
 

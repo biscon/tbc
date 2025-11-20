@@ -15,6 +15,7 @@
 #include "ui/LootInventory.h"
 #include "audio/Sound.h"
 #include "game/Input.h"
+#include "level/LevelSystem.h"
 // -----------------------------------------------------------------------------
 // QUEUE POP
 // -----------------------------------------------------------------------------

@@ -6,7 +6,6 @@
 #define SANDBOX_COMBATENGINE_H
 
 #include "Combat.h"
-#include "PlayField.h"
 
 void UpdateCombat(GameData &data, Level &level, PlayField& playField, float dt);
 

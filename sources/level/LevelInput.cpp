@@ -7,7 +7,6 @@
 #include "raylib.h"
 
 #include "character/Character.h"
-#include "PlayField.h"
 #include "Combat.h"
 #include "ai/PathFinding.h"
 #include "LevelCamera.h"
@@ -17,6 +16,7 @@
 #include "ui/Icons.h"
 #include "game/Input.h"
 #include "game/ActionSystem.h"
+#include "LevelSystem.h"
 
 static void HandleInputPathSelection(GameData& data, PlayField &playField, Level &level) {
     SpriteData& spriteData = data.spriteData;

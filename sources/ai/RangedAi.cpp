@@ -5,7 +5,6 @@
 #include "RangedAi.h"
 
 #include <algorithm>
-#include "level/PlayField.h"
 #include "Ai.h"
 #include "level/LevelCamera.h"
 #include "util/Random.h"

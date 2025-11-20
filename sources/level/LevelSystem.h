@@ -1,13 +1,11 @@
 //
-// Created by bison on 16-01-25.
+// Created by bison on 20-11-25.
 //
 
-#ifndef SANDBOX_PLAYFIELD_H
-#define SANDBOX_PLAYFIELD_H
+#ifndef SANDBOX_LEVELSYSTEM_H
+#define SANDBOX_LEVELSYSTEM_H
 
-#include "util/MathUtil.h"
-#include "graphics/ParticleSystem.h"
-#include "Level.h"
+#include "data/GameData.h"
 
 void CreatePlayField(PlayField &playField, ParticleManager* particleManager);
 void UpdatePlayField(GameData& data, PlayField &playField, Level &level, float dt);
@@ -15,4 +13,6 @@ void MoveCharacter(GameData& data, PlayField &playField, Level &level, int chara
 void MoveCharacterPartial(GameData& data, PlayField &playField, Level &level, int character, Vector2i target);
 void ResetPlayField(PlayField &playField);
 
-#endif //SANDBOX_PLAYFIELD_H
+void UpdateLevelSystem(GameData& data, Level &level, float dt);
+
+#endif //SANDBOX_LEVELSYSTEM_H

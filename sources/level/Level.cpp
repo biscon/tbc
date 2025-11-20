@@ -411,20 +411,3 @@ void UpdateVisibilityMap(GameData& data, Level& level) {
     }
 }
 
-static void UpdateAnimations(SpriteData& spriteData, CharacterData& charData, Level &level, float dt) {
-    for (auto &anim : level.animations) {
-        UpdateAnimation(spriteData, charData, anim, dt);
-    }
-    // Use erase-remove idiom to remove animations which are done
-    level.animations.erase(
-            std::remove_if(level.animations.begin(), level.animations.end(),
-                           [](const Animation& anim) {
-                               return anim.IsDone();
-                           }),
-            level.animations.end()
-    );
-}
-
-void UpdateLevel(GameData& data, Level &level, float dt) {
-    UpdateAnimations(data.spriteData, data.charData, level, dt);
-}

@@ -45,8 +45,6 @@ add_executable(${PROJECT_NAME}
         sources/reasings.h
         sources/graphics/SpriteAnimation.cpp
         sources/graphics/SpriteAnimation.h
-        sources/level/PlayField.cpp
-        sources/level/PlayField.h
         sources/ui/UI.cpp
         sources/ui/UI.h
         sources/util/MathUtil.cpp
@@ -174,6 +172,8 @@ add_executable(${PROJECT_NAME}
         sources/level/LevelRenderer.h
         sources/level/LevelInput.cpp
         sources/level/LevelInput.h
+        sources/level/LevelSystem.cpp
+        sources/level/LevelSystem.h
 )
 
 

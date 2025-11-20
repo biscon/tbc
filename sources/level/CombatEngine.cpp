@@ -14,6 +14,7 @@
 #include "LevelCamera.h"
 #include "audio/Sound.h"
 #include "game/ActionSystem.h"
+#include "LevelSystem.h"
 
 static bool CheckEndCombat(GameData& data, Level& level) {
     // check victory condition, all enemies have zero health

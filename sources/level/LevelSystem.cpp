@@ -1,20 +1,37 @@
 //
-// Created by bison on 16-01-25.
+// Created by bison on 20-11-25.
 //
 
+#include "LevelSystem.h"
 #include <algorithm>
 #include <cmath>
-#include <queue>
-#include "PlayField.h"
+#include "graphics/Animation.h"
 #include "raylib.h"
 #include "ui/UI.h"
 #include "raymath.h"
 #include "graphics/ParticleSystem.h"
 #include "level/Combat.h"
-#include "graphics/TileMap.h"
 #include "ai/PathFinding.h"
 #include "audio/Sound.h"
 #include "game/ActionSystem.h"
+
+static void UpdateAnimations(SpriteData& spriteData, CharacterData& charData, Level &level, float dt) {
+    for (auto &anim : level.animations) {
+        UpdateAnimation(spriteData, charData, anim, dt);
+    }
+    // Use erase-remove idiom to remove animations which are done
+    level.animations.erase(
+            std::remove_if(level.animations.begin(), level.animations.end(),
+                           [](const Animation& anim) {
+                               return anim.IsDone();
+                           }),
+            level.animations.end()
+    );
+}
+
+void UpdateLevelSystem(GameData& data, Level &level, float dt) {
+    UpdateAnimations(data.spriteData, data.charData, level, dt);
+}
 
 void CreatePlayField(PlayField &playField, ParticleManager* particleManager) {
     playField.particleManager = particleManager;
@@ -163,8 +180,8 @@ static void updateActiveMovement(GameData& data, PlayField &playField, Level& le
     playField.activeMoves.erase(
             std::remove_if(playField.activeMoves.begin(), playField.activeMoves.end(),
                            [](const CharacterMove& m) {
-                                if(m.isDone)
-                                    TraceLog(LOG_INFO, "Removing move from active list");
+                               if(m.isDone)
+                                   TraceLog(LOG_INFO, "Removing move from active list");
                                return m.isDone;
                            }),
             playField.activeMoves.end()
