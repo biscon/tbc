@@ -15,7 +15,7 @@
 void PushMoveParty(ActionQueue& q, Vector2i target);
 void PushPartySpotted(ActionQueue& q, int spotter);
 void PushEndCombat(ActionQueue& q, bool victory);
-void PushExitLevel(ActionQueue& q, const std::string& levelFile, const std::string& spawnPoint);
+void PushExitLevel(ActionQueue& q, const std::string& levelFile, const std::string& spawnPoint, const std::string& onEnterFunc = "");
 void PushInitiateDialogue(ActionQueue& q, int npcId, int dialogueNodeId);
 void PushEndDialogue(ActionQueue& q, int npcId);
 void PushStartQuest(ActionQueue& q, const std::string& questId);

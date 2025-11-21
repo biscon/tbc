@@ -51,6 +51,7 @@ struct EndCombatAction {
 struct ExitLevelAction {
     std::string levelFile;
     std::string spawnPoint;
+    std::string onEnterFunc;
 };
 
 struct InitiateDialogueAction {

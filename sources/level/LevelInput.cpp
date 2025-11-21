@@ -164,7 +164,6 @@ static bool playerInTheWay(GameData& data, LevelDoor& door) {
     return false;
 }
 
-
 static Vector2i ChooseDoorInteractionPos(GameData& data,
                                          Level& level,
                                          const LevelDoor& door,
@@ -289,74 +288,6 @@ static bool handleDoors(GameData& data, Level& level, Vector2i playerPos)
     return false;
 }
 
-
-static bool handleDoorsOLD(GameData& data, Level &level, Vector2i playerPos) {
-    SpriteData& spriteData = data.spriteData;
-
-    for (auto& entry : level.doors) {
-        auto& door = entry.second;
-
-        // door world pixel rect
-        Vector2 pos = GridToPixelPosition(door.gridPos.x, door.gridPos.y);
-        auto frameInfo = GetFrameInfo(data.spriteData, door.animPlayer);
-
-        Rectangle frameRectWorld = {
-                pos.x - 8.0f,
-                pos.y - 8.0f,
-                frameInfo.srcRect.width,
-                frameInfo.srcRect.height
-        };
-
-        // Cheap distance check
-        if (Distance(playerPos, door.gridPos) >= 5)
-            continue;
-
-        // Now process input events
-        for (auto& ev : FilterEvents(data.inputData, true, InputEventType::MouseClick)) {
-            if (ev.mouse.button != MOUSE_LEFT_BUTTON) continue;
-
-            // Check if click is on this door
-            if (!CheckCollisionPointRec(ev.mouse.worldPos, frameRectWorld))
-                continue;
-
-            // Extra block: avoid opening doors the player is blocking
-            if (playerInTheWay(data, door))
-                continue;
-
-            // ---- Handle door interaction ----
-            ConsumeEvent(ev);
-            DoorSaveState &doorState = data.levelState[level.name].doors[door.id];
-
-            if (!doorState.open) {
-                TraceLog(LOG_INFO, "Opening door %s", door.id.c_str());
-                doorState.open = true;
-                SetReverseSpriteAnimation(spriteData, door.animPlayer, false);
-                ResumeSpriteAnimation(spriteData, door.animPlayer);
-                SetFrame(spriteData, door.animPlayer, 0);
-            } else {
-                TraceLog(LOG_INFO, "Closing door %s", door.id.c_str());
-                doorState.open = false;
-                SetReverseSpriteAnimation(spriteData, door.animPlayer, true);
-                int anim = spriteData.player.animationIdx[door.animPlayer];
-                int frames = (int)spriteData.anim.frames[anim].size();
-                SetFrame(spriteData, door.animPlayer, frames - 1);
-                ResumeSpriteAnimation(spriteData, door.animPlayer);
-            }
-
-            // Update tile layers
-            SetTiles(level.tileMap, door.blockedTiles, NAV_LAYER, doorState.open ? 0 : 1);
-            SetTiles(level.tileMap, door.shadowTiles, SHADOW_LAYER, doorState.open ? 0 : 1);
-            SetTiles(level.tileMap, door.shadowTiles, LIGHT_LAYER, doorState.open ? 0 : 1);
-
-            PropagateLight(level.lighting, level.tileMap);
-
-            return true;    // one door handled
-        }
-    }
-
-    return false;
-}
-
 static bool handleObjects(GameData& data, Level& level, Vector2i playerPos)
 {
     for (InputEvent& evt : FilterEvents(data.inputData, true, InputEventType::MouseClick))
@@ -455,15 +386,9 @@ static bool handleMovementClick(GameData& data,
 
     int playerChar = data.ui.selectedCharacter;
 
-    // Construct player sprite position in pixel space
-    Vector2i playerPixel = {
-            (int)GetCharacterSpritePosX(spriteData, charData.sprite[playerChar]),
-            (int)GetCharacterSpritePosY(spriteData, charData.sprite[playerChar])
-    };
-
     Path path;
     if (!CalcPath(spriteData, charData, level, path,
-                  PixelToGridPositionI(playerPixel.x, playerPixel.y),
+                  playerPos,
                   gridPos,
                   playerChar,
                   IsTileOccupiedEnemies))
@@ -563,26 +488,26 @@ static bool handleExits(GameData& data, Level& level)
             //   Defined interactionPos path
             // -----------------------------
 
-            const float maxDist = 2.0f;
+            const float maxDist = 1.0f;
 
             if (IsAnyPartyMemberNear(data, level, interactPos, maxDist))
             {
                 // Already in range → fire exit immediately
-                PushExitLevel(data.actionQueue, exit.levelFile, exit.spawnPoint);
+                PushExitLevel(data.actionQueue, exit.levelFile, exit.spawnPoint, exit.onEnterFunc);
                 return true;
             }
             else
             {
                 // Out of range → move + pending action
                 PushMoveParty(data.actionQueue, interactPos);
-
                 SetPendingAction(
                         data,
                         GameAction{
                                 ActionType::ExitLevel,
                                 ExitLevelAction{
                                         exit.levelFile,
-                                        exit.spawnPoint
+                                        exit.spawnPoint,
+                                        exit.onEnterFunc
                                 }
                         }
                 );

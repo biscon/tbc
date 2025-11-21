@@ -32,7 +32,7 @@ struct LevelSystemData {
     // Static variables for pulsing highlight
     float highlightAlpha = 0.25f; // Current alpha value
     bool increasing = true;       // Direction of the alpha
-    float pulseSpeed = 4.0f; // Speed of the pulsing
+    float pulseSpeed = 8.0f; // Speed of the pulsing
     std::vector<CharacterMove> activeMoves;
     std::string hintText;
     PendingAction pendingAction;

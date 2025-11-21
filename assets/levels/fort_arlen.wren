@@ -11,14 +11,11 @@ class Level {
         if(!Game.flag("fort_arlen_first_enter")) {
             onFirstTimeEntered()
             Game.setFlag("fort_arlen_first_enter", true)
-        }
-        /*
-        else {
+        } else {
             System.print("not the first time entering")
             Game.setWeather("sunny")
-            Game.setHourOfDay(12)
+            Game.setHourOfDay(7)
         }
-        */
         //System.print("flag = %(Game.flag("flag"))")
     }
 

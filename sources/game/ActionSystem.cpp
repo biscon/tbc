@@ -18,6 +18,7 @@
 #include "level/LevelSystem.h"
 #include "graphics/TileMap.h"
 #include "graphics/Lighting.h"
+#include "ScriptSystem.h"
 // -----------------------------------------------------------------------------
 // QUEUE POP
 // -----------------------------------------------------------------------------
@@ -45,8 +46,8 @@ void PushEndCombat(ActionQueue& q, bool victory) {
     q.push({ ActionType::EndCombat, EndCombatAction{victory} });
 }
 
-void PushExitLevel(ActionQueue& q, const std::string& levelFile, const std::string& spawnPoint) {
-    q.push({ ActionType::ExitLevel, ExitLevelAction{levelFile, spawnPoint} });
+void PushExitLevel(ActionQueue& q, const std::string& levelFile, const std::string& spawnPoint, const std::string& onEnterFunc) {
+    q.push({ ActionType::ExitLevel, ExitLevelAction{levelFile, spawnPoint, onEnterFunc} });
 }
 
 void PushInitiateDialogue(ActionQueue& q, int npcId, int dialogueNodeId) {
@@ -231,6 +232,13 @@ bool ProcessActions(GameData& data, Level& level, float dt)
             case ActionType::ExitLevel:
             {
                 auto& ev = std::get<ExitLevelAction>(a.payload);
+
+                if(!ev.onEnterFunc.empty()) {
+                    bool result = false;
+                    ScriptSystemCallFunctionBool(data.scriptData, level.name, "Level." + ev.onEnterFunc, result);
+                    if(!result)
+                        return false;
+                }
 
                 TraceLog(LOG_INFO, "ExitLevel: %s, spawnPoint: %s",
                          ev.levelFile.c_str(),
