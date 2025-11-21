@@ -264,6 +264,7 @@ static bool handleDoors(GameData& data, Level& level, Vector2i playerPos)
             // Check if already close enough (1-tile radius)
             if (IsAnyPartyMemberNear(data, level, interactPos, 1.0f))
             {
+                ClearPendingAction(data);
                 PushDoorInteract(data.actionQueue, door.id);
                 return true;
             }
@@ -339,6 +340,7 @@ static bool handleObjects(GameData& data, Level& level, Vector2i playerPos)
                     continue;
 
                 // in range: open immediately
+                ClearPendingAction(data);
                 ConsumeEvent(evt);
                 PushOpenLootInventory(data.actionQueue, invId);
                 return true;
@@ -352,6 +354,7 @@ static bool handleObjects(GameData& data, Level& level, Vector2i playerPos)
             if (IsAnyPartyMemberNear(data, level, interactPos, maxDist))
             {
                 // Already in range → open immediately
+                ClearPendingAction(data);
                 ConsumeEvent(evt);
                 PushOpenLootInventory(data.actionQueue, invId);
                 return true;
@@ -403,7 +406,7 @@ static bool handleMovementClick(GameData& data,
     for (InputEvent& evt : FilterEvents(data.inputData, true, InputEventType::MouseClick))
     {
         if (evt.mouse.button != MOUSE_LEFT_BUTTON) continue;
-
+        ClearPendingAction(data);
         ConsumeEvent(evt);
         PushMoveParty(data.actionQueue, gridPos);
         return true;
@@ -435,7 +438,7 @@ static bool handleDialogueClick(GameData& data,
             for (InputEvent& evt : FilterEvents(data.inputData, true, InputEventType::MouseClick))
             {
                 if (evt.mouse.button != MOUSE_LEFT_BUTTON) continue;
-
+                ClearPendingAction(data);
                 ConsumeEvent(evt);
                 PushInitiateDialogue(data.actionQueue, npcId, level.npcDialogueNodeIds[npcId]);
                 return true;
@@ -492,6 +495,7 @@ static bool handleExits(GameData& data, Level& level)
 
             if (IsAnyPartyMemberNear(data, level, interactPos, maxDist))
             {
+                ClearPendingAction(data);
                 // Already in range → fire exit immediately
                 PushExitLevel(data.actionQueue, exit.levelFile, exit.spawnPoint, exit.onEnterFunc);
                 return true;

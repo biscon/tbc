@@ -33,6 +33,10 @@ inline void SetPendingAction(GameData& data, const GameAction& a) {
     data.levelData.pendingAction.action = a;
 }
 
+inline void ClearPendingAction(GameData& data) {
+    data.levelData.pendingAction.hasPending = false;
+}
+
 bool ProcessActions(GameData& data, Level& level, float dt);
 void ExecutePendingAction(GameData& data);
 
