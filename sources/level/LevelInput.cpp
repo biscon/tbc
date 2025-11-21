@@ -2,6 +2,7 @@
 // Created by bison on 20-11-25.
 //
 
+#include <climits>
 #include "LevelInput.h"
 
 #include "raylib.h"
@@ -164,7 +165,132 @@ static bool playerInTheWay(GameData& data, LevelDoor& door) {
 }
 
 
-static bool handleDoors(GameData& data, Level &level, Vector2i playerPos, Vector2 mousePos) {
+static Vector2i ChooseDoorInteractionPos(GameData& data,
+                                         Level& level,
+                                         const LevelDoor& door,
+                                         Vector2i playerPos)
+{
+    SpriteData& spriteData = data.spriteData;
+    CharacterData& charData = data.charData;
+    int playerChar = data.ui.selectedCharacter;
+
+    Vector2i bestPos = { -1, -1 };
+    int bestCost = INT_MAX;
+    float bestDist = 999999.0f;
+
+    // --- Helper lambda so we don't repeat as much boilerplate ---
+    auto tryPos = [&](Vector2i targetPos)
+    {
+        if (targetPos.x == -1) return; // undefined → ignore
+
+        Path path;
+
+        if (!CalcPath(spriteData,
+                      charData,
+                      level,
+                      path,
+                      playerPos,       // start
+                      targetPos,       // target
+                      playerChar,
+                      IsTileOccupiedEnemies))
+        {
+            return; // unreachable → ignore
+        }
+
+        // Prefer lowest cost. If equal cost, prefer shortest Euclidean.
+        float dist = Distance(playerPos, targetPos);
+
+        if (path.cost < bestCost ||
+            (path.cost == bestCost && dist < bestDist))
+        {
+            bestCost = path.cost;
+            bestDist = dist;
+            bestPos  = targetPos;
+        }
+    };
+
+    // Try both candidates
+    tryPos(door.interactionPos1);
+    tryPos(door.interactionPos2);
+
+    return bestPos;
+}
+
+static bool handleDoors(GameData& data, Level& level, Vector2i playerPos)
+{
+    SpriteData& spriteData = data.spriteData;
+
+    // Iterate unhandled left-click events
+    for (auto& ev : FilterEvents(data.inputData, true, InputEventType::MouseClick))
+    {
+        if (ev.mouse.button != MOUSE_LEFT_BUTTON)
+            continue;
+
+        Vector2 clickPos = ev.mouse.worldPos;
+
+        // Check against all doors
+        for (auto& entry : level.doors)
+        {
+            auto& door = entry.second;
+
+            // Compute world rect for click detection
+            Vector2 pos = GridToPixelPosition(door.gridPos.x, door.gridPos.y);
+            auto frameInfo = GetFrameInfo(spriteData, door.animPlayer);
+
+            Rectangle frameRectWorld = {
+                    pos.x - 8.0f,
+                    pos.y - 8.0f,
+                    frameInfo.srcRect.width,
+                    frameInfo.srcRect.height
+            };
+
+            // Click not on this door?
+            if (!CheckCollisionPointRec(clickPos, frameRectWorld))
+                continue;
+
+            // Avoid door interactions if the player is physically overlapping the door
+            if (playerInTheWay(data, door))
+                continue;
+
+            // Determine which interaction tile (A or B) is reachable
+            Vector2i interactPos =
+                    ChooseDoorInteractionPos(data, level, door, playerPos);
+
+            // Neither side reachable
+            if (interactPos.x == -1)
+                continue;
+
+            ConsumeEvent(ev);
+
+            // Check if already close enough (1-tile radius)
+            if (IsAnyPartyMemberNear(data, level, interactPos, 1.0f))
+            {
+                PushDoorInteract(data.actionQueue, door.id);
+                return true;
+            }
+            else
+            {
+                // ---- TOO FAR → MOVE FIRST, THEN INTERACT ----
+                PushMoveParty(data.actionQueue, interactPos);
+
+                SetPendingAction(
+                        data,
+                        GameAction{
+                                ActionType::DoorInteract,
+                                DoorInteractAction{ door.id }
+                        }
+                );
+
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
+
+
+static bool handleDoorsOLD(GameData& data, Level &level, Vector2i playerPos) {
     SpriteData& spriteData = data.spriteData;
 
     for (auto& entry : level.doors) {
@@ -231,21 +357,20 @@ static bool handleDoors(GameData& data, Level &level, Vector2i playerPos, Vector
     return false;
 }
 
-static bool handleObjects(GameData& data, Level &level, Vector2i playerPos)
+static bool handleObjects(GameData& data, Level& level, Vector2i playerPos)
 {
-    // iterate only unhandled left-click events
     for (InputEvent& evt : FilterEvents(data.inputData, true, InputEventType::MouseClick))
     {
         if (evt.mouse.button != MOUSE_LEFT_BUTTON)
             continue;
 
-        Vector2 clickPos = evt.mouse.worldPos; // always use event’s world pos
+        Vector2 clickPos = evt.mouse.worldPos;
 
         for (auto& entry : level.objects)
         {
-            auto& obj = entry.second;
+            LevelObject& obj = entry.second;
 
-            // position and bounds
+            // Compute world-space sprite rectangle
             Vector2 pos = GridToPixelPosition(obj.gridPos.x, obj.gridPos.y);
             auto frameInfo = GetFrameInfo(data.spriteData, obj.animPlayer);
 
@@ -256,27 +381,67 @@ static bool handleObjects(GameData& data, Level &level, Vector2i playerPos)
                     frameInfo.srcRect.height
             };
 
-            // require click on object + proximity
+            // Click must hit object sprite
             if (!CheckCollisionPointRec(clickPos, frameRectWorld))
                 continue;
 
-            if (Distance(playerPos, obj.gridPos) >= 5)
-                continue;
-
-            // object has inventory?
+            // Object must have inventory
             auto& state = data.levelState[level.name];
             if (state.objectInventories.count(obj.id) == 0)
                 continue;
 
             int invId = state.objectInventories.at(obj.id);
 
-            // consume event & open loot
-            ConsumeEvent(evt);
-            PushOpenLootInventory(data.actionQueue, invId);
-            return true;
+            // -----------------------------
+            //    Interaction distance
+            // -----------------------------
+            // Use interactionPos if defined, otherwise just use object gridPos.
+            Vector2i interactPos = obj.interactionPos;
+
+            bool hasDefinedInteractionPos =
+                    !(interactPos.x == -1 && interactPos.y == -1);
+
+            if (!hasDefinedInteractionPos)
+            {
+                // if no interactionPos defined AND player too far → do nothing
+                if (Distance(playerPos, obj.gridPos) >= 5)
+                    continue;
+
+                // in range: open immediately
+                ConsumeEvent(evt);
+                PushOpenLootInventory(data.actionQueue, invId);
+                return true;
+            }
+
+            // ---------------------------------------
+            //   interactionPos *is defined*
+            // ---------------------------------------
+            const float maxDist = 1.0f;
+
+            if (IsAnyPartyMemberNear(data, level, interactPos, maxDist))
+            {
+                // Already in range → open immediately
+                ConsumeEvent(evt);
+                PushOpenLootInventory(data.actionQueue, invId);
+                return true;
+            }
+            else
+            {
+                // Too far → schedule move + pending open-loot
+                ConsumeEvent(evt);
+                PushMoveParty(data.actionQueue, interactPos);
+                SetPendingAction(
+                        data,
+                        GameAction{
+                                ActionType::OpenLootInventory,
+                                OpenLootInventoryAction{ invId }
+                        }
+                );
+
+                return true;
+            }
         }
     }
-
     return false;
 }
 
@@ -360,42 +525,69 @@ static bool handleDialogueClick(GameData& data,
     return false;
 }
 
+
 static bool handleExits(GameData& data, Level& level)
 {
     for (InputEvent& evt : FilterEvents(data.inputData, true, InputEventType::MouseClick))
     {
-        if (evt.mouse.button != MOUSE_LEFT_BUTTON) continue;
+        if (evt.mouse.button != MOUSE_LEFT_BUTTON)
+            continue;
 
         Vector2 world = evt.mouse.worldPos;
         Vector2i clickGrid = PixelToGridPositionI((int)world.x, (int)world.y);
 
-        for (auto& exit : level.exits) {
-
-            // click inside exit rect?
+        for (auto& exit : level.exits)
+        {
+            // Is click inside exit rect?
             if (clickGrid.x < exit.x || clickGrid.x >= exit.x + exit.width ||
                 clickGrid.y < exit.y || clickGrid.y >= exit.y + exit.height)
                 continue;
 
-            // check character proximity
-            for (auto& c : level.partyCharacters) {
+            // Click hits the exit → consume event
+            ConsumeEvent(evt);
 
-                Vector2i cPos = GetCharacterGridPosI(
-                        data.spriteData,
-                        data.charData.sprite[c]
+            // -----------------------------
+            //   Handle undefined interactPos
+            // -----------------------------
+            Vector2i interactPos = exit.interactionPos;
+            bool hasDefinedInteractionPos =
+                    !(interactPos.x == -1 && interactPos.y == -1);
+
+            if (!hasDefinedInteractionPos)
+            {
+                // undefined interactionPos means "do nothing"
+                return true;
+            }
+
+            // -----------------------------
+            //   Defined interactionPos path
+            // -----------------------------
+
+            const float maxDist = 2.0f;
+
+            if (IsAnyPartyMemberNear(data, level, interactPos, maxDist))
+            {
+                // Already in range → fire exit immediately
+                PushExitLevel(data.actionQueue, exit.levelFile, exit.spawnPoint);
+                return true;
+            }
+            else
+            {
+                // Out of range → move + pending action
+                PushMoveParty(data.actionQueue, interactPos);
+
+                SetPendingAction(
+                        data,
+                        GameAction{
+                                ActionType::ExitLevel,
+                                ExitLevelAction{
+                                        exit.levelFile,
+                                        exit.spawnPoint
+                                }
+                        }
                 );
 
-                bool close = false;
-
-                for (int y = exit.y; y < exit.y + exit.height && !close; ++y)
-                    for (int x = exit.x; x < exit.x + exit.width && !close; ++x)
-                        if (Distance(cPos, {x, y}) <= 1.0f)
-                            close = true;
-
-                if (close) {
-                    ConsumeEvent(evt);
-                    PushExitLevel(data.actionQueue, exit.levelFile, exit.spawnPoint);
-                    return true;
-                }
+                return true;
             }
         }
     }
@@ -427,7 +619,7 @@ void HandleInputRealtime(GameData& data, Level &level) {
         return;
 
     // Doors next
-    if (handleDoors(data, level, playerPos, mouseWorld))
+    if (handleDoors(data, level, playerPos))
         return;
 
     // Movement or dialogue

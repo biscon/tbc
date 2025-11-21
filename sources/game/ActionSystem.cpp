@@ -16,6 +16,8 @@
 #include "audio/Sound.h"
 #include "game/Input.h"
 #include "level/LevelSystem.h"
+#include "graphics/TileMap.h"
+#include "graphics/Lighting.h"
 // -----------------------------------------------------------------------------
 // QUEUE POP
 // -----------------------------------------------------------------------------
@@ -87,79 +89,55 @@ void PushCloseLootInventory(ActionQueue& q) {
     q.push({ ActionType::CloseLootInventory, std::monostate{} });
 }
 
+void PushDoorInteract(ActionQueue& q, const std::string& doorId) {
+    q.push({ ActionType::DoorInteract, DoorInteractAction{doorId} });
+}
+
 // -----------------------------------------------------------------------------
 // ACTION PROCESSING
 // -----------------------------------------------------------------------------
 
-void ProcessActionsOLD(GameData& data, Level& level, LevelSystemData& playField, ActionQueue& queue, float dt)
+static void ExecuteDoorInteractAction(GameData& data, Level& level, const DoorInteractAction& act)
 {
-    GameAction a;
-    while (queue.pop(a))
+    SpriteData& spriteData = data.spriteData;
+
+    // Look up door
+    auto it = level.doors.find(act.doorId);
+    if (it == level.doors.end())
+        return;
+
+    auto& door = it->second;
+    DoorSaveState& doorState = data.levelState[level.name].doors[door.id];
+
+    // Toggle open → closed or closed → open
+    if (!doorState.open)
     {
-        switch (a.type)
-        {
-            case ActionType::MoveParty: {
-                auto& ev = std::get<MovePartyAction>(a.payload);
-                // your logic here
-                break;
-            }
+        TraceLog(LOG_INFO, "Opening door %s", door.id.c_str());
+        doorState.open = true;
 
-            case ActionType::PartySpotted: {
-                auto& ev = std::get<PartySpottedAction>(a.payload);
-                break;
-            }
-
-            case ActionType::EndCombat: {
-                auto& ev = std::get<EndCombatAction>(a.payload);
-                break;
-            }
-
-            case ActionType::ExitLevel: {
-                auto& ev = std::get<ExitLevelAction>(a.payload);
-                break;
-            }
-
-            case ActionType::InitiateDialogue: {
-                auto& ev = std::get<InitiateDialogueAction>(a.payload);
-                break;
-            }
-
-            case ActionType::EndDialogue: {
-                auto& ev = std::get<EndDialogueAction>(a.payload);
-                break;
-            }
-
-            case ActionType::StartQuest: {
-                auto& ev = std::get<StartQuestAction>(a.payload);
-                break;
-            }
-
-            case ActionType::OpenInventory: {
-                auto& ev = std::get<OpenInventoryAction>(a.payload);
-                break;
-            }
-
-            case ActionType::CloseInventory:
-                break;
-
-            case ActionType::OpenMenu:
-                break;
-
-            case ActionType::OpenActionBar:
-                break;
-
-            case ActionType::CloseActionBar:
-                break;
-
-            case ActionType::OpenLootInventory: {
-                auto& ev = std::get<OpenLootInventoryAction>(a.payload);
-                break;
-            }
-
-            case ActionType::CloseLootInventory:
-                break;
-        }
+        SetReverseSpriteAnimation(spriteData, door.animPlayer, false);
+        ResumeSpriteAnimation(spriteData, door.animPlayer);
+        SetFrame(spriteData, door.animPlayer, 0);
     }
+    else
+    {
+        TraceLog(LOG_INFO, "Closing door %s", door.id.c_str());
+        doorState.open = false;
+
+        SetReverseSpriteAnimation(spriteData, door.animPlayer, true);
+        int anim = spriteData.player.animationIdx[door.animPlayer];
+        int frames = (int)spriteData.anim.frames[anim].size();
+        SetFrame(spriteData, door.animPlayer, frames - 1);
+        ResumeSpriteAnimation(spriteData, door.animPlayer);
+    }
+
+    // Update tile layers
+    SetTiles(level.tileMap, door.blockedTiles, NAV_LAYER, doorState.open ? 0 : 1);
+    SetTiles(level.tileMap, door.shadowTiles, SHADOW_LAYER, doorState.open ? 0 : 1);
+    SetTiles(level.tileMap, door.shadowTiles, LIGHT_LAYER, doorState.open ? 0 : 1);
+
+    // Recompute lighting
+    PropagateLight(level.lighting, level.tileMap);
 }
 
 // return true if the gamemode should be popped
@@ -430,10 +408,27 @@ bool ProcessActions(GameData& data, Level& level, float dt)
                 break;
             }
 
+            case ActionType::DoorInteract: {
+                ExecuteDoorInteractAction(
+                        data,
+                        level,
+                        std::get<DoorInteractAction>(a.payload)
+                );
+                break;
+            }
+
                 // -----------------------------------------------------------------
             default:
                 break;
         }
     }
     return false;
+}
+
+void ExecutePendingAction(GameData &data) {
+    if(data.levelData.pendingAction.hasPending) {
+        data.levelData.pendingAction.hasPending = false;
+        TraceLog(LOG_DEBUG, "Executing pending action...");
+        data.actionQueue.push(std::move(data.levelData.pendingAction.action));
+    }
 }

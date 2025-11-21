@@ -786,3 +786,28 @@ std::vector<Vector2i> GetReachableTiles(Level& level, Vector2i start, int maxCos
     return reachableTiles;
 }
 
+bool IsAnyPartyMemberNear(
+        GameData& data,
+        const Level& level,
+        Vector2i pos,
+        float maxDist)
+{
+    SpriteData& spriteData = data.spriteData;
+    CharacterData& charData = data.charData;
+
+    for (int c : level.partyCharacters)
+    {
+        Vector2i cPos = GetCharacterGridPosI(
+                spriteData,
+                charData.sprite[c]
+        );
+        auto dist = Distance(cPos, pos);
+        //TraceLog(LOG_DEBUG, "IsAnyPartyMemberNear distance: %f", dist);
+        if (dist <= maxDist)
+            return true;
+    }
+
+    return false;
+}
+
+

@@ -271,10 +271,15 @@ void LoadLevel(GameData& data, Level &level, const std::string &filename) {
             DoorSaveState& doorState = data.levelState[level.name].doors[door.id];
             doorJson["position"].get_to(door.gridPos);
 
-            if(doorJson.contains("interactionPos"))
-                doorJson["interactionPos"].get_to(door.interactionPos);
+            if(doorJson.contains("interactionPos1"))
+                doorJson["interactionPos1"].get_to(door.interactionPos1);
             else
-                door.interactionPos = {-1,-1};
+                door.interactionPos1 = {-1,-1};
+
+            if(doorJson.contains("interactionPos2"))
+                doorJson["interactionPos2"].get_to(door.interactionPos2);
+            else
+                door.interactionPos2 = {-1,-1};
 
             if (doorJson.contains("blockedTiles") && doorJson["blockedTiles"].is_array()) {
                 for (const auto& item : doorJson["blockedTiles"]) {

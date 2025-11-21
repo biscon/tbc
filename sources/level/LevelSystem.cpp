@@ -111,7 +111,7 @@ static void updateTurnBasedMove(GameData& data, Level &level, float dt) {
     }
 }
 
-static void updateActiveMovement(GameData& data, Level& level, float dt) {
+static void updateRealtimeMovement(GameData& data, Level& level, float dt) {
     for(auto& move : data.levelData.activeMoves) {
         move.path.moveTime += dt;
 
@@ -169,6 +169,7 @@ static void updateActiveMovement(GameData& data, Level& level, float dt) {
                     SetCharacterSpritePos(data.spriteData, sprite, GridToPixelPosition(finalPos.x, finalPos.y));
                     move.isDone = true;
                     TraceLog(LOG_INFO, "Move done");
+                    ExecutePendingAction(data);
                 }
             }
         }
@@ -309,7 +310,7 @@ void UpdateLevelSystem(GameData& data, Level &level, float dt) {
             systemData.increasing = true;
         }
     }
-    updateActiveMovement(data, level, dt);
+    updateRealtimeMovement(data, level, dt);
     updateTurnBasedMove(data, level, dt);
 
     // Update animations for all characters

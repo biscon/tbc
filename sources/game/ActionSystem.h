@@ -26,7 +26,14 @@ void PushOpenActionBar(ActionQueue& q);
 void PushCloseActionBar(ActionQueue& q);
 void PushOpenLootInventory(ActionQueue& q, int invId);
 void PushCloseLootInventory(ActionQueue& q);
+void PushDoorInteract(ActionQueue& q, const std::string& doorId);
+
+inline void SetPendingAction(GameData& data, const GameAction& a) {
+    data.levelData.pendingAction.hasPending = true;
+    data.levelData.pendingAction.action = a;
+}
 
 bool ProcessActions(GameData& data, Level& level, float dt);
+void ExecutePendingAction(GameData& data);
 
 #endif //SANDBOX_ACTIONSYSTEM_H

@@ -101,7 +101,8 @@ struct LevelDoor {
     std::vector<Vector2i> blockedTiles;
     std::vector<Vector2i> shadowTiles;
     int animPlayer;
-    Vector2i interactionPos;
+    Vector2i interactionPos1;
+    Vector2i interactionPos2;
 };
 
 struct Level {

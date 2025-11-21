@@ -7,6 +7,7 @@
 
 #include "PathFindingData.h"
 #include "graphics/ParticleSystem.h"
+#include "ActionData.h"
 
 enum class LevelMode {
     None,
@@ -34,6 +35,7 @@ struct LevelSystemData {
     float pulseSpeed = 4.0f; // Speed of the pulsing
     std::vector<CharacterMove> activeMoves;
     std::string hintText;
+    PendingAction pendingAction;
 };
 
 #endif //SANDBOX_LEVELSYSTEMDATA_H

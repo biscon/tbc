@@ -32,5 +32,6 @@ bool IsCharacterAdjacentToPlayer(SpriteData& spriteData, CharacterData& charData
 std::vector<Vector2i> FindFreePositionsCircular(Level &level, int x, int y, int radius);
 std::vector<int> GetTargetsInLine(SpriteData& spriteData, CharacterData& charData, Level &level, Vector2i start, Vector2 direction, int range, int exceptCharacter);
 std::vector<Vector2i> GetReachableTiles(Level& level, Vector2i start, int maxCost);
+bool IsAnyPartyMemberNear(GameData& data, const Level& level, Vector2i pos, float maxDist);
 
 #endif //SANDBOX_PATHFINDING_H

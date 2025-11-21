@@ -29,6 +29,7 @@ enum class ActionType {
     CloseActionBar,
     OpenLootInventory,
     CloseLootInventory,
+    DoorInteract
 };
 
 // -----------------------------------------------------------------------------
@@ -73,6 +74,10 @@ struct StartQuestAction {
     std::string questId;
 };
 
+struct DoorInteractAction {
+    std::string doorId;
+};
+
 // -----------------------------------------------------------------------------
 // ACTION UNION USING std::variant
 // -----------------------------------------------------------------------------
@@ -87,7 +92,8 @@ using ActionPayload = std::variant<
         EndDialogueAction,
         StartQuestAction,
         OpenInventoryAction,
-        OpenLootInventoryAction
+        OpenLootInventoryAction,
+        DoorInteractAction
 >;
 
 // -----------------------------------------------------------------------------
@@ -97,6 +103,11 @@ using ActionPayload = std::variant<
 struct GameAction {
     ActionType type;
     ActionPayload payload;
+};
+
+struct PendingAction {
+    bool hasPending = false;
+    GameAction action;
 };
 
 // -----------------------------------------------------------------------------
