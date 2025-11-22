@@ -5,24 +5,6 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # -------------------------------
-# Raylib FetchContent
-# -------------------------------
-include(FetchContent)
-set(FETCHCONTENT_QUIET FALSE)
-
-set(BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
-set(BUILD_GAMES OFF CACHE BOOL "" FORCE)
-
-FetchContent_Declare(
-        raylib
-        GIT_REPOSITORY "https://github.com/raysan5/raylib.git"
-        GIT_TAG "master"
-        GIT_PROGRESS TRUE
-)
-
-FetchContent_MakeAvailable(raylib)
-
-# -------------------------------
 # Source collection
 # -------------------------------
 # Automatically gather every .cpp/.c/.h file under sources/
@@ -89,10 +71,29 @@ if (CMAKE_BUILD_TYPE STREQUAL "Release")
     )
     if(WIN32)
         target_link_options(${PROJECT_NAME} PRIVATE
+                -static
                 -Wl,-subsystem,windows
         )
     endif()
 endif()
+
+# -------------------------------
+# Raylib FetchContent
+# -------------------------------
+include(FetchContent)
+set(FETCHCONTENT_QUIET FALSE)
+
+set(BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+set(BUILD_GAMES OFF CACHE BOOL "" FORCE)
+
+FetchContent_Declare(
+        raylib
+        GIT_REPOSITORY "https://github.com/raysan5/raylib.git"
+        GIT_TAG "master"
+        GIT_PROGRESS TRUE
+)
+
+FetchContent_MakeAvailable(raylib)
 
 # -------------------------------
 # ASSETS_PATH define
