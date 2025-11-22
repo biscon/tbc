@@ -20,6 +20,10 @@ add_executable(${PROJECT_NAME} ${PROJECT_SOURCES})
 target_include_directories(${PROJECT_NAME} PRIVATE sources)
 target_link_libraries(${PROJECT_NAME} PRIVATE raylib)
 
+if(UNIX AND NOT APPLE)
+    target_link_libraries(${PROJECT_NAME} PRIVATE X11 Xcursor)
+endif()
+
 # -------------------------------
 # macOS: let Cursor.cpp compile as OBJC++
 # -------------------------------
@@ -41,9 +45,11 @@ if (CMAKE_BUILD_TYPE STREQUAL "Debug")
             -fno-strict-aliasing
             -g
     )
-    target_link_options(${PROJECT_NAME} PRIVATE
-            -static
-    )
+    if(WIN32)
+        target_link_options(${PROJECT_NAME} PRIVATE
+                -static
+        )
+    endif ()
 
     if (NOT WIN32)
         target_compile_options(${PROJECT_NAME} PRIVATE

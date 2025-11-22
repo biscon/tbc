@@ -13,24 +13,24 @@ struct CursorHandle {
     void* native = nullptr;
 };
 
-namespace Cursor {
+void InitCursorPlatform();
 
-    bool CreateFromPixels(CursorHandle& out,
-                          const void* rgbaPixels,
-                          int width,
-                          int height,
-                          int hotspotX,
-                          int hotspotY);
+bool CursorCreateFromPixels(CursorHandle& out,
+                      const void* rgbaPixels,
+                      int width,
+                      int height,
+                      int hotspotX,
+                      int hotspotY);
 
-    bool CreateFromImage(CursorHandle& out,
-                         const Image& img,
-                         int hotspotX,
-                         int hotspotY);
+bool CursorCreateFromImage(CursorHandle& out,
+                     const Image& img,
+                     int hotspotX,
+                     int hotspotY);
 
-    void Set(const CursorHandle& cursor);
-    void ResetToSystemDefault();
-    void Destroy(CursorHandle& cursor);
+void CursorSet(const CursorHandle& cursor);
+void CursorResetToSystemDefault();
+void CursorDestroy(CursorHandle& cursor);
 
-}
+
 
 #endif //SANDBOX_CURSOR_H

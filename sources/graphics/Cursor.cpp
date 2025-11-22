@@ -3,14 +3,13 @@
 //
 
 #include "Cursor.h"
-
-#include "Cursor.h"
 #include <cstring> // memcpy
 
 // ------------------------------
 // RAYLIB HOOK (Linux)
 // ------------------------------
 #if defined(__linux__)
+
 #include <X11/Xlib.h>
 #include <X11/Xcursor/Xcursor.h>
 
@@ -43,7 +42,13 @@ struct Image {
 };
 }
 
-namespace Cursor {
+void InitCursorPlatform()
+{
+    #if defined(__linux__)
+        //g_X11Display = GetX11Display();
+        g_X11Window  = DefaultRootWindow(g_X11Display);
+    #endif
+}
 
 // ======================================================
 // HELPERS
@@ -73,7 +78,7 @@ namespace Cursor {
 // WINDOWS IMPLEMENTATION
 // ======================================================
 #if defined(_WIN32)
-    bool CreateFromPixels(CursorHandle& out,
+    bool CursorCreateFromPixels(CursorHandle& out,
                           const void* rgbaPixels,
                           int width,
                           int height,
@@ -113,18 +118,18 @@ namespace Cursor {
         return true;
     }
 
-    void Set(const CursorHandle& cursor)
+    void CursorSet(const CursorHandle& cursor)
     {
         if (cursor.native)
             ::SetCursor((HCURSOR)cursor.native);
     }
 
-    void ResetToSystemDefault()
+    void CursorResetToSystemDefault()
     {
         ::SetCursor(LoadCursor(nullptr, IDC_ARROW));
     }
 
-    void Destroy(CursorHandle& cursor)
+    void CursorDestroy(CursorHandle& cursor)
     {
         if (cursor.native) {
             DestroyIcon((HCURSOR)cursor.native);
@@ -141,7 +146,7 @@ namespace Cursor {
 // ======================================================
 #if defined(__linux__)
 
-    bool CreateFromPixels(CursorHandle& out,
+    bool CursorCreateFromPixels(CursorHandle& out,
                       const void* rgbaPixels,
                       int width,
                       int height,
@@ -169,7 +174,7 @@ namespace Cursor {
     return true;
 }
 
-void Set(const CursorHandle& cursor)
+void CursorSet(const CursorHandle& cursor)
 {
     if (cursor.native) {
         XDefineCursor(g_X11Display, g_X11Window, (Cursor)(uintptr_t)cursor.native);
@@ -177,14 +182,14 @@ void Set(const CursorHandle& cursor)
     }
 }
 
-void ResetToSystemDefault()
+void CursorResetToSystemDefault()
 {
     if (!g_X11Display || !g_X11Window) return;
     XUndefineCursor(g_X11Display, g_X11Window);
     XFlush(g_X11Display);
 }
 
-void Destroy(CursorHandle& cursor)
+void CursorDestroy(CursorHandle& cursor)
 {
     if (cursor.native) {
         XFreeCursor(g_X11Display, (Cursor)(uintptr_t)cursor.native);
@@ -202,7 +207,7 @@ void Destroy(CursorHandle& cursor)
 #if defined(__APPLE__)
     #import <Cocoa/Cocoa.h>
 
-bool CreateFromPixels(CursorHandle& out,
+bool CursorCreateFromPixels(CursorHandle& out,
                       const void* rgbaPixels,
                       int width,
                       int height,
@@ -241,7 +246,7 @@ bool CreateFromPixels(CursorHandle& out,
     return true;
 }
 
-void Set(const CursorHandle& cursor)
+void CursorSet(const CursorHandle& cursor)
 {
     if (cursor.native) {
         NSCursor* c = (__bridge NSCursor*)cursor.native;
@@ -249,12 +254,12 @@ void Set(const CursorHandle& cursor)
     }
 }
 
-void ResetToSystemDefault()
+void CursorResetToSystemDefault()
 {
     [[NSCursor arrowCursor] set];
 }
 
-void Destroy(CursorHandle& cursor)
+void CursorDestroy(CursorHandle& cursor)
 {
     if (cursor.native) {
         CFBridgingRelease(cursor.native);
@@ -269,20 +274,20 @@ void Destroy(CursorHandle& cursor)
 // ======================================================
 // GENERIC CreateFromImage (uses raylib Image)
 // ======================================================
-    bool CreateFromImage(CursorHandle& out,
-                         const Image& img,
-                         int hotspotX,
-                         int hotspotY)
-    {
-        if (!img.data)
-            return false;
+bool CursorCreateFromImage(CursorHandle& out,
+                     const Image& img,
+                     int hotspotX,
+                     int hotspotY)
+{
+    if (!img.data)
+        return false;
 
-        return CreateFromPixels(out,
-                                img.data,
-                                img.width,
-                                img.height,
-                                hotspotX,
-                                hotspotY);
-    }
+    return CursorCreateFromPixels(out,
+                            img.data,
+                            img.width,
+                            img.height,
+                            hotspotX,
+                            hotspotY);
+}
 
-} // namespace Cursor
+

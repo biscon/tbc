@@ -1,6 +1,4 @@
 #include "raylib.h"
-
-#include "raymath.h"        // Required for: Vector2Clamp()
 #include "graphics/SpriteAnimation.h"
 #include "ai/FighterAi.h"
 #include "character/Weapon.h"
@@ -16,6 +14,7 @@
 #include "ai/RangedAi.h"
 #include "audio/Sound.h"
 #include "game/Input.h"
+#include "graphics/Cursor.h"
 
 #define MAX(a, b) ((a)>(b)? (a) : (b))
 #define MIN(a, b) ((a)<(b)? (a) : (b))
@@ -37,6 +36,8 @@ int main() {
     // Enable config flags for resizable window and vertical synchro
     SetConfigFlags(FLAG_VSYNC_HINT);
     InitWindow(gameScreenWidth, gameScreenHeight, "RPG");
+
+    //InitCursorPlatform();
 
     SetExitKey(0);
 
@@ -85,7 +86,7 @@ int main() {
 
     game.windShader = LoadShader("../shaders/vegetation_wind.vs.glsl", "../shaders/vegetation_wind.fs.glsl");
 
-    HideCursor();
+    //HideCursor();
 
     // Main game loop
     while (!WindowShouldClose())        // Detect window close button or ESC key
