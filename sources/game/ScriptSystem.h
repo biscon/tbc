@@ -30,5 +30,20 @@ bool ScriptSystemCallFunctionBool(ScriptData& script,
                                   const std::string& functionName,
                                   bool& outResult);
 
+bool ScriptSystemCallFunctionInt(ScriptData& script,
+                                 const std::string& moduleName,
+                                 const std::string& functionName,
+                                 int& outResult);
+
+bool ScriptSystemCallFunctionDouble(ScriptData& script,
+                                    const std::string& moduleName,
+                                    const std::string& functionName,
+                                    double& outResult);
+
+bool ScriptSystemCallFunctionString(ScriptData& script,
+                                    const std::string& moduleName,
+                                    const std::string& functionName,
+                                    std::string& outResult);
+
 
 #endif //SANDBOX_SCRIPTSYSTEM_H

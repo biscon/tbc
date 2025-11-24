@@ -109,6 +109,8 @@ void LoadGame(GameData &data) {
     }
     // Load flags
     data.scriptData.flags = saveData.flags;
+    data.scriptData.ints = saveData.ints;
+    data.scriptData.strings = saveData.strings;
 
     PushGameMode(data, GameModes::Level);
 }
@@ -171,6 +173,8 @@ void SaveGame(GameData &data) {
 
     // save flags
     saveData.flags = data.scriptData.flags;
+    saveData.ints = data.scriptData.ints;
+    saveData.strings = data.scriptData.strings;
 
     SaveGameData(saveData, "savegame.json");
 }

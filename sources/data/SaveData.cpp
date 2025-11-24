@@ -132,6 +132,8 @@ bool SaveGameData(SaveData& data, const std::string& filename) {
     j["partyInventory"] = data.partyInventory;
     j["weaponInstances"] = data.weaponInstances;
     j["flags"] = data.flags;
+    j["ints"] = data.ints;
+    j["strings"] = data.strings;
 
     //const Inventory& partyInventory = game->
 
@@ -162,6 +164,13 @@ bool LoadGameData(SaveData& data, const std::string& filename) {
     if(j.contains("flags")) {
         j.at("flags").get_to(data.flags);
     }
+    if(j.contains("ints")) {
+        j.at("ints").get_to(data.ints);
+    }
+    if(j.contains("strings")) {
+        j.at("strings").get_to(data.strings);
+    }
+
 
     // Handle QuestSaveState
     const nlohmann::json& nodes = j.at("quests");

@@ -86,7 +86,7 @@ int main() {
 
     game.windShader = LoadShader("../shaders/vegetation_wind.vs.glsl", "../shaders/vegetation_wind.fs.glsl");
 
-    //HideCursor();
+    HideCursor();
 
     // Main game loop
     while (!WindowShouldClose())        // Detect window close button or ESC key

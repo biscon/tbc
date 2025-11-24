@@ -14,6 +14,8 @@ extern "C" {
 struct ScriptData {
     WrenVM* vm = nullptr;
     std::unordered_map<std::string, bool> flags;
+    std::unordered_map<std::string, int> ints;
+    std::unordered_map<std::string, std::string> strings;
 };
 
 

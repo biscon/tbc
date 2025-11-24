@@ -5,6 +5,7 @@
 #include "ScriptSystem.h"
 #include "data/GameData.h"
 #include "level/Weather.h"
+#include "ActionSystem.h"
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -62,6 +63,10 @@ static void C_setHourOfDay(WrenVM* vm) {
     }
 }
 
+static void C_getHourOfDay(WrenVM* vm) {
+    wrenSetSlotDouble(vm, 0, level->hourOfDay);
+}
+
 static void C_showText(WrenVM* vm) {
     const char* text = wrenGetSlotString(vm, 1);
     if (text) {
@@ -91,6 +96,57 @@ static void C_flag(WrenVM* vm) {
     wrenSetSlotBool(vm, 0, val); // return boolean in slot 0
 }
 
+static void C_setInt(WrenVM* vm) {
+    const char* name = wrenGetSlotString(vm, 1);
+    int value = static_cast<int>(wrenGetSlotDouble(vm, 2));
+    if (name) {
+        gameData->scriptData.ints[std::string(name)] = value;
+        // Optionally print for debug
+        std::cout << "[GAME] setInt '" << name << "' = " << value << "\n";
+    }
+}
+
+static void C_getInt(WrenVM* vm) {
+    const char* name = wrenGetSlotString(vm, 1);
+    int val = -1;
+    auto& ints = gameData->scriptData.ints;
+    if (name) {
+        auto it = ints.find(name);
+        if (it != ints.end()) val = it->second;
+    }
+    wrenSetSlotDouble(vm, 0, static_cast<double>(val)); // return boolean in slot 0
+}
+
+static void C_setString(WrenVM* vm) {
+    const char* name = wrenGetSlotString(vm, 1);
+    std::string value = wrenGetSlotString(vm, 2);
+    if (name) {
+        gameData->scriptData.strings[std::string(name)] = value;
+        // Optionally print for debug
+        std::cout << "[GAME] setString '" << name << "' = " << value << "\n";
+    }
+}
+
+static void C_getString(WrenVM* vm) {
+    const char* name = wrenGetSlotString(vm, 1);
+    std::string val;
+    auto& strings = gameData->scriptData.strings;
+    if (name) {
+        auto it = strings.find(name);
+        if (it != strings.end()) val = it->second;
+    }
+    wrenSetSlotString(vm, 0, val.c_str()); // return boolean in slot 0
+}
+
+
+static void C_speechBubble(WrenVM* vm) {
+    const char* text = wrenGetSlotString(vm, 1);
+    int x = static_cast<int>(wrenGetSlotDouble(vm, 2));
+    int y = static_cast<int>(wrenGetSlotDouble(vm, 3));
+    float duration = static_cast<float>(wrenGetSlotDouble(vm, 4));
+    PushSpeechBubble(gameData->actionQueue, text, {x, y}, duration);
+}
+
 // -----------------------------------------------------------------------------
 // bindForeignMethod callback to map Wren signatures to native functions
 static WrenForeignMethodFn BindForeignMethod(WrenVM* vm,
@@ -105,11 +161,17 @@ static WrenForeignMethodFn BindForeignMethod(WrenVM* vm,
 
     // We expose a single foreign class: Game
     if (strcmp(module, "game") == 0 && strcmp(className, "Game") == 0) {
-        if (strcmp(signature, "setWeather(_)") == 0) return C_setWeather;
-        if (strcmp(signature, "setHourOfDay(_)") == 0) return C_setHourOfDay;
-        if (strcmp(signature, "showText(_)") == 0)   return C_showText;
-        if (strcmp(signature, "setFlag(_,_)") == 0)  return C_setFlag;
-        if (strcmp(signature, "flag(_)") == 0)       return C_flag;
+        if (strcmp(signature, "setWeather(_)") == 0)                return C_setWeather;
+        if (strcmp(signature, "setHourOfDay(_)") == 0)              return C_setHourOfDay;
+        if (strcmp(signature, "getHourOfDay()") == 0)               return C_getHourOfDay;
+        if (strcmp(signature, "showText(_)") == 0)                  return C_showText;
+        if (strcmp(signature, "setFlag(_,_)") == 0)                 return C_setFlag;
+        if (strcmp(signature, "flag(_)") == 0)                      return C_flag;
+        if (strcmp(signature, "setInt(_,_)") == 0)                  return C_setInt;
+        if (strcmp(signature, "getInt(_)") == 0)                    return C_getInt;
+        if (strcmp(signature, "setString(_,_)") == 0)               return C_setString;
+        if (strcmp(signature, "getString(_)") == 0)                 return C_getString;
+        if (strcmp(signature, "speechBubble(_,_,_,_)") == 0)        return C_speechBubble;
     }
 
     return nullptr;
@@ -124,9 +186,15 @@ static void ScriptSystemRegisterAPI_Internal(ScriptData& script) {
         foreign class Game {
             foreign static setWeather(weather)
             foreign static setHourOfDay(hour)
+            foreign static getHourOfDay()
             foreign static showText(text)
             foreign static setFlag(name, value)
             foreign static flag(name)
+            foreign static setInt(name, value)
+            foreign static getInt(name)
+            foreign static setString(name, value)
+            foreign static getString(name)
+            foreign static speechBubble(text, x, y, duration)
         }
     )";
 
@@ -206,55 +274,6 @@ std::string SanitizeModuleName(const std::string& input)
     }
     return out;
 }
-
-bool ScriptSystemCallFunctionOLD(ScriptData& script,
-                              const std::string& moduleName,
-                              const std::string& functionName)
-{
-    if (!script.vm) return false;
-
-    // Sanitize module name to avoid spaces/punctuation issues
-    std::string safeModule = SanitizeModuleName(moduleName);
-
-    size_t dot = functionName.find('.');
-    if (dot == std::string::npos) {
-        std::cerr << "[WREN] Internal error: malformed signature '" << functionName << "'\n";
-        return false;
-    }
-
-    std::string sig = functionName.substr(dot+1);
-    std::string className = functionName.substr(0, dot);
-
-    WrenHandle* callHandle = wrenMakeCallHandle(script.vm, sig.c_str());
-    if (!callHandle) {
-        std::cerr << "[WREN] Failed to create call handle for '" << sig << "'\n";
-        return false;
-    }
-
-    wrenEnsureSlots(script.vm, 1);
-    wrenGetVariable(script.vm, safeModule.c_str(), className.c_str(), 0);
-
-    WrenType type = wrenGetSlotType(script.vm, 0);
-    if (type == WREN_TYPE_NULL) {
-        std::cerr << "[WREN] Class '" << className
-                  << "' not found in module '" << safeModule << "'\n";
-        wrenReleaseHandle(script.vm, callHandle);
-        return false;
-    }
-
-    WrenInterpretResult result = wrenCall(script.vm, callHandle);
-    wrenReleaseHandle(script.vm, callHandle);
-
-    if (result != WREN_RESULT_SUCCESS) {
-        std::cerr << "[WREN] Call to " << sig
-                  << " in module '" << safeModule
-                  << "' failed with code " << result << "\n";
-        return false;
-    }
-
-    return true;
-}
-
 
 static bool ScriptSystemCallFunctionInternal(
         ScriptData& script,
@@ -364,6 +383,121 @@ bool ScriptSystemCallFunctionBool(ScriptData& script,
     }
 
     outResult = wrenGetSlotBool(script.vm, 0);
+    return true;
+}
+
+bool ScriptSystemCallFunctionInt(ScriptData& script,
+                                 const std::string& moduleName,
+                                 const std::string& functionName,
+                                 int& outResult)
+{
+    WrenHandle* callHandle = nullptr;
+    std::string sig, className, safeModule;
+
+    if (!ScriptSystemCallFunctionInternal(
+            script, moduleName, functionName,
+            callHandle, sig, className, safeModule))
+    {
+        return false;
+    }
+
+    WrenInterpretResult result = wrenCall(script.vm, callHandle);
+    wrenReleaseHandle(script.vm, callHandle);
+
+    if (result != WREN_RESULT_SUCCESS) {
+        std::cerr << "[WREN] Call to " << sig
+                  << " in module '" << safeModule
+                  << "' failed with code " << result << "\n";
+        return false;
+    }
+
+    // Extract numeric return value from slot 0
+    WrenType type = wrenGetSlotType(script.vm, 0);
+    if (type != WREN_TYPE_NUM) {
+        std::cerr << "[WREN] Expected numeric return from '" << sig
+                  << "' but got type " << type << "\n";
+        return false;
+    }
+
+    double numValue = wrenGetSlotDouble(script.vm, 0);
+    outResult = static_cast<int>(numValue);  // Wren numbers are doubles
+
+    return true;
+}
+
+bool ScriptSystemCallFunctionDouble(ScriptData& script,
+                                    const std::string& moduleName,
+                                    const std::string& functionName,
+                                    double& outResult)
+{
+    WrenHandle* callHandle = nullptr;
+    std::string sig, className, safeModule;
+
+    if (!ScriptSystemCallFunctionInternal(
+            script, moduleName, functionName,
+            callHandle, sig, className, safeModule))
+    {
+        return false;
+    }
+
+    WrenInterpretResult result = wrenCall(script.vm, callHandle);
+    wrenReleaseHandle(script.vm, callHandle);
+
+    if (result != WREN_RESULT_SUCCESS) {
+        std::cerr << "[WREN] Call to " << sig
+                  << " in module '" << safeModule
+                  << "' failed with code " << result << "\n";
+        return false;
+    }
+
+    // Return type must be a number
+    WrenType type = wrenGetSlotType(script.vm, 0);
+    if (type != WREN_TYPE_NUM) {
+        std::cerr << "[WREN] Expected numeric return from '" << sig
+                  << "' but got type " << type << "\n";
+        return false;
+    }
+
+    outResult = wrenGetSlotDouble(script.vm, 0);
+    return true;
+}
+
+bool ScriptSystemCallFunctionString(ScriptData& script,
+                                    const std::string& moduleName,
+                                    const std::string& functionName,
+                                    std::string& outResult)
+{
+    WrenHandle* callHandle = nullptr;
+    std::string sig, className, safeModule;
+
+    if (!ScriptSystemCallFunctionInternal(
+            script, moduleName, functionName,
+            callHandle, sig, className, safeModule))
+    {
+        return false;
+    }
+
+    WrenInterpretResult result = wrenCall(script.vm, callHandle);
+    wrenReleaseHandle(script.vm, callHandle);
+
+    if (result != WREN_RESULT_SUCCESS) {
+        std::cerr << "[WREN] Call to " << sig
+                  << " in module '" << safeModule
+                  << "' failed with code " << result << "\n";
+        return false;
+    }
+
+    // Return type must be a string
+    WrenType type = wrenGetSlotType(script.vm, 0);
+    if (type != WREN_TYPE_STRING) {
+        std::cerr << "[WREN] Expected string return from '" << sig
+                  << "' but got type " << type << "\n";
+        return false;
+    }
+
+    const char* wrenStr = wrenGetSlotString(script.vm, 0);
+    outResult = (wrenStr != nullptr ? wrenStr : "");
+
     return true;
 }
 

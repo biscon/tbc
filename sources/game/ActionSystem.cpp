@@ -94,6 +94,10 @@ void PushDoorInteract(ActionQueue& q, const std::string& doorId) {
     q.push({ ActionType::DoorInteract, DoorInteractAction{doorId} });
 }
 
+void PushSpeechBubble(ActionQueue &q, const std::string &text, const Vector2i &pos, float duration) {
+    q.push({ ActionType::SpeechBubble, SpeechBubbleAction{pos, duration, text} });
+}
+
 // -----------------------------------------------------------------------------
 // ACTION PROCESSING
 // -----------------------------------------------------------------------------
@@ -425,6 +429,23 @@ bool ProcessActions(GameData& data, Level& level, float dt)
                 break;
             }
 
+            case ActionType::SpeechBubble:
+            {
+                // Erase existing speech bubbles, probably need to be a param in the future
+                level.animations.erase(
+                        std::remove_if(level.animations.begin(), level.animations.end(),
+                                       [](const Animation& anim) {
+                                           return anim.type == AnimationType::SpeechBubble;
+                                       }),
+                        level.animations.end()
+                );
+                auto& ev = std::get<SpeechBubbleAction>(a.payload);
+                Animation speechBubble{};
+                SetupSpeechBubbleAnimation(speechBubble, ev.text.c_str(), ev.pos.x, ev.pos.y, ev.duration, 0.0f);
+                level.animations.push_back(speechBubble);
+                break;
+            }
+
                 // -----------------------------------------------------------------
             default:
                 break;
@@ -440,3 +461,4 @@ void ExecutePendingAction(GameData &data) {
         data.actionQueue.push(std::move(data.levelData.pendingAction.action));
     }
 }
+
