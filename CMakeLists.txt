@@ -28,6 +28,12 @@ endif()
 # macOS: let Cursor.cpp compile as OBJC++
 # -------------------------------
 if(APPLE)
+    target_link_libraries(${PROJECT_NAME}
+            PRIVATE
+            "-framework Cocoa"
+            "-framework CoreFoundation"
+    )
+
     enable_language(OBJCXX)
     set_source_files_properties(
             sources/graphics/Cursor.cpp
@@ -92,10 +98,14 @@ set(FETCHCONTENT_QUIET FALSE)
 set(BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 set(BUILD_GAMES OFF CACHE BOOL "" FORCE)
 
+if(APPLE)
+    set(USE_EXTERNAL_GLFW ON CACHE BOOL "" FORCE)
+endif()
+
 FetchContent_Declare(
         raylib
         GIT_REPOSITORY "https://github.com/raysan5/raylib.git"
-        GIT_TAG "master"
+        GIT_TAG "5.5"
         GIT_PROGRESS TRUE
 )
 
