@@ -19,6 +19,7 @@
 #include "Weather.h"
 #include "audio/Sound.h"
 #include "game/ScriptSystem.h"
+#include "ui/Icons.h"
 
 using json = nlohmann::json;
 
@@ -306,6 +307,34 @@ void LoadLevel(GameData& data, Level &level, const std::string &filename) {
 
             level.doors[door.id] = door;
         }
+    }
+
+    // load exits
+    level.triggers.clear();
+    for (auto &jTrigger : j["triggers"]) {
+        LevelTrigger tr;
+        tr.id = jTrigger["id"].get<std::string>();
+        tr.func = jTrigger["func"].get<std::string>();
+
+        tr.x = jTrigger["x"].get<int>();
+        tr.y = jTrigger["y"].get<int>();
+        tr.width = jTrigger.value("width", 1);
+        tr.height = jTrigger.value("height", 1);
+
+        if(jTrigger.contains("interactionPos"))
+            jTrigger["interactionPos"].get_to(tr.interactionPos);
+        else
+            tr.interactionPos = {-1,-1};
+
+        tr.walkable = jTrigger["walkable"].get<bool>();
+        if(!tr.walkable) {
+            SetTileRect(level.tileMap, tr.x, tr.y, tr.width, tr.height, NAV_LAYER, -1);
+        }
+        std::string iconName = jTrigger["icon"].get<std::string>();
+        if(iconName == "interact") tr.icon = ICON_INTERACT;
+        if(iconName == "talk") tr.icon = ICON_TALK;
+        if(iconName == "exit") tr.icon = ICON_EXIT;
+        level.triggers[tr.id] = tr;
     }
 
     // Load flags

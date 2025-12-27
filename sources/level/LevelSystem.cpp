@@ -285,6 +285,17 @@ static void UpdateMousePointer(GameData& data, Level &level) {
         }
     }
 
+    for (auto& entry : level.triggers) {
+        auto &tr = entry.second;
+
+        Vector2 pos = GridToPixelPosition(tr.x, tr.y);
+        Rectangle frameRectWorld = {pos.x - 8.0f, pos.y - 8.0f, (float) tr.width * 16, (float) tr.height * 16};
+        if(CheckCollisionPointRec(mousePos, frameRectWorld)) {
+            data.ui.currentCursorIcon = tr.icon;
+            return;
+        }
+    }
+
     for(auto& exit : level.exits){
         Vector2 pos = GridToPixelPosition(exit.x, exit.y);
         Rectangle frameRectWorld = {pos.x - 8.0f, pos.y - 8.0f, (float) exit.width * 16, (float) exit.height * 16};

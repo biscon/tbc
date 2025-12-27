@@ -50,12 +50,12 @@ void PushExitLevel(ActionQueue& q, const std::string& levelFile, const std::stri
     q.push({ ActionType::ExitLevel, ExitLevelAction{levelFile, spawnPoint, onEnterFunc} });
 }
 
-void PushInitiateDialogue(ActionQueue& q, int npcId, int dialogueNodeId) {
-    q.push({ ActionType::InitiateDialogue, InitiateDialogueAction{npcId, dialogueNodeId} });
+void PushInitiateDialogue(ActionQueue& q, int dialogueNodeId) {
+    q.push({ ActionType::InitiateDialogue, InitiateDialogueAction{dialogueNodeId} });
 }
 
-void PushEndDialogue(ActionQueue& q, int npcId) {
-    q.push({ ActionType::EndDialogue, EndDialogueAction{npcId} });
+void PushEndDialogue(ActionQueue& q) {
+    q.push({ ActionType::EndDialogue, EndDialogueAction{} });
 }
 
 void PushStartQuest(ActionQueue& q, const std::string& questId) {
@@ -97,6 +97,11 @@ void PushDoorInteract(ActionQueue& q, const std::string& doorId) {
 void PushSpeechBubble(ActionQueue &q, const std::string &text, const Vector2i &pos, float duration) {
     q.push({ ActionType::SpeechBubble, SpeechBubbleAction{pos, duration, text} });
 }
+
+void PushActivateTrigger(ActionQueue& q, const std::string& triggerId) {
+    q.push({ ActionType::ActivateTrigger, ActivateTriggerAction{triggerId} });
+}
+
 
 // -----------------------------------------------------------------------------
 // ACTION PROCESSING
@@ -287,10 +292,10 @@ bool ProcessActions(GameData& data, Level& level, float dt)
 
                 TraceLog(LOG_INFO,
                          "InitiateDialogue: npcId = %i, dialogueNodeId = %i",
-                         ev.npcId, ev.dialogueNodeId
+                         ev.dialogueNodeId
                 );
 
-                InitiateDialogue(data, ev.dialogueNodeId, ev.npcId);
+                InitiateDialogue(data, ev.dialogueNodeId);
 
                 break;
             }
@@ -302,7 +307,7 @@ bool ProcessActions(GameData& data, Level& level, float dt)
             {
                 auto& ev = std::get<EndDialogueAction>(a.payload);
 
-                TraceLog(LOG_INFO, "EndDialogue: npcId = %i", ev.npcId);
+                TraceLog(LOG_INFO, "EndDialogue");
 
                 levelData.mode = LevelMode::Explore;
                 data.state = GameState::PLAY_LEVEL;
@@ -444,6 +449,15 @@ bool ProcessActions(GameData& data, Level& level, float dt)
                 SetupSpeechBubbleAnimation(speechBubble, ev.text.c_str(), ev.pos.x, ev.pos.y, ev.duration, 0.0f);
                 level.animations.push_back(speechBubble);
                 break;
+            }
+
+            case ActionType::ActivateTrigger: {
+                auto &ev = std::get<ActivateTriggerAction>(a.payload);
+                LevelTrigger& tr = level.triggers[ev.triggerId];
+
+                if (!tr.func.empty()) {
+                    ScriptSystemCallFunction(data.scriptData, level.name, "Level." + tr.func);
+                }
             }
 
                 // -----------------------------------------------------------------

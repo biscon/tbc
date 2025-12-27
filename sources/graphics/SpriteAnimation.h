@@ -25,8 +25,8 @@ void SetFrame(SpriteData& sprite, int player, int frame);
 void PauseSpriteAnimation(SpriteData& sprite, int player);
 void ResumeSpriteAnimation(SpriteData& sprite, int player);
 void SetReverseSpriteAnimation(SpriteData& sprite, int player, bool reverse);
-
-void InitSpriteAnimationData(SpriteData& spriteData, const std::string &filename);
+void InitSpriteAnimationData(SpriteData& spriteData, const std::string &path);
+void LoadAseSpriteAnimationFile(SpriteData& spriteData, const std::string &filename, const Vector2& origin, const std::string& prefix = "");
 void DestroySpriteAnimationData(SpriteData& spriteData);
 int GetSpriteAnimation(SpriteData& spriteData, const std::string& name);
 

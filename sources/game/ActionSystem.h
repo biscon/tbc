@@ -16,8 +16,8 @@ void PushMoveParty(ActionQueue& q, Vector2i target);
 void PushPartySpotted(ActionQueue& q, int spotter);
 void PushEndCombat(ActionQueue& q, bool victory);
 void PushExitLevel(ActionQueue& q, const std::string& levelFile, const std::string& spawnPoint, const std::string& onEnterFunc = "");
-void PushInitiateDialogue(ActionQueue& q, int npcId, int dialogueNodeId);
-void PushEndDialogue(ActionQueue& q, int npcId);
+void PushInitiateDialogue(ActionQueue& q, int dialogueNodeId);
+void PushEndDialogue(ActionQueue& q);
 void PushStartQuest(ActionQueue& q, const std::string& questId);
 void PushOpenInventory(ActionQueue& q, int charId);
 void PushCloseInventory(ActionQueue& q);
@@ -28,6 +28,7 @@ void PushOpenLootInventory(ActionQueue& q, int invId);
 void PushCloseLootInventory(ActionQueue& q);
 void PushDoorInteract(ActionQueue& q, const std::string& doorId);
 void PushSpeechBubble(ActionQueue& q, const std::string& text, const Vector2i& pos, float duration);
+void PushActivateTrigger(ActionQueue& q, const std::string& triggerId);
 
 inline void SetPendingAction(GameData& data, const GameAction& a) {
     data.levelData.pendingAction.hasPending = true;

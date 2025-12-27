@@ -7,13 +7,13 @@
 
 #include "raylib.h"
 
-void DrawTexturedQuadWithVertexColors(Texture2D tex, Rectangle src, Rectangle dest, Color c1, Color c2, Color c3, Color c4);
+void DrawTexturedQuadWithVertexColors(Texture2D tex, Rectangle src, Rectangle dest, Color c1, Color c2, Color c3, Color c4, bool flipX = false);
 
 void DrawTexturedQuadWithVertexColorsRotated(
         Texture2D tex,
         Rectangle src,
         Rectangle dest,
         Color c1, Color c2, Color c3, Color c4,
-        Vector2 origin, float rotationDegrees);
+        Vector2 origin, float rotationDegrees, bool flipX = false);
 
 #endif //SANDBOX_RENDERING_H

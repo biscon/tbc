@@ -13,7 +13,7 @@ void InitDialogueData(DialogueData& data, const std::string &filename);
 void RenderDialogueUI(GameData& data);
 void UpdateDialogue(GameData& data, float dt);
 void HandleDialogueInput(GameData& data);
-void InitiateDialogue(GameData& data, int nodeId, int npcId);
+void InitiateDialogue(GameData& data, int nodeId);
 
 
 #endif //SANDBOX_DIALOGUE_H

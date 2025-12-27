@@ -30,7 +30,8 @@ enum class ActionType {
     OpenLootInventory,
     CloseLootInventory,
     DoorInteract,
-    SpeechBubble
+    SpeechBubble,
+    ActivateTrigger
 };
 
 // -----------------------------------------------------------------------------
@@ -56,12 +57,11 @@ struct ExitLevelAction {
 };
 
 struct InitiateDialogueAction {
-    int npcId;
     int dialogueNodeId;
 };
 
 struct EndDialogueAction {
-    int npcId;
+
 };
 
 struct OpenInventoryAction {
@@ -86,6 +86,10 @@ struct SpeechBubbleAction {
     std::string text;
 };
 
+struct ActivateTriggerAction {
+    std::string triggerId;
+};
+
 // -----------------------------------------------------------------------------
 // ACTION UNION USING std::variant
 // -----------------------------------------------------------------------------
@@ -102,7 +106,8 @@ using ActionPayload = std::variant<
         OpenInventoryAction,
         OpenLootInventoryAction,
         DoorInteractAction,
-        SpeechBubbleAction
+        SpeechBubbleAction,
+        ActivateTriggerAction
 >;
 
 // -----------------------------------------------------------------------------

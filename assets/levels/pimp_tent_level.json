@@ -1,0 +1,68 @@
+{
+    "name": "A Rugged Tent",
+    "map": "pimp_tent_map.json",
+    "tileset": "indoor_tiles2.png",
+    "script": "pimp_tent.wren",
+    "ambientLight": "050A1E",
+    "outdoor": false,
+    "spawnPoints": [
+        {
+            "name": "default",
+            "x": 3,
+            "y": 9,
+            "radius": 3
+        }
+    ],
+    "exits": [
+        {
+            "level": "fort_arlen_level.json",
+            "spawnPoint": "outsideTent",
+            "x": 3,
+            "y": 9,
+            "width": 2,
+            "height": 1,
+            "interactionPos": [3, 8]
+        }
+    ],
+    "triggers": [
+        {
+            "id": "pimpTentDialogueTrigger",
+            "func": "onPimpTentDialogueTrigger()",
+            "x": 1,
+            "y": 3,
+            "width": 6,
+            "height": 2,
+            "walkable": false,
+            "icon": "talk",
+            "interactionPos": [3, 5]
+        }
+    ],
+    "npcs": [
+
+    ],
+    "enemies": [
+
+    ],
+    "lights": [
+        {
+            "id": "light1",
+            "intensity": "15",
+            "active": true,
+            "x": 2,
+            "y": 2,
+            "falloff": 2.0,
+            "color": "FFE6B4"
+        }
+    ],
+    "objects": [
+        {
+            "id": "walltorch1",
+            "sprite": "WallTorchFront",
+            "loop": true,
+            "lit": false,
+            "position": [2, 2]
+        }
+    ],
+    "doors": [
+    ]
+}

@@ -9,7 +9,50 @@
 #include <string>
 #include <map>
 #include <unordered_map>
+#include <array>
 #include "raylib.h"
+
+constexpr int INVALID_ANIM = -1;
+
+enum class CharAnimationType {
+    Idle,
+    MeleeIdle,
+    MeleeHit,
+    MeleeAttack,
+    PistolIdle,
+    PistolHit,
+    PistolAttack,
+    COUNT
+};
+
+enum class CharOrientation {
+    Left, Right
+};
+
+enum class CharAnimationLayerType {
+    Naked,
+    Outfit,
+    Hair,
+    Weapon,
+    COUNT
+};
+
+struct CharAnimationLayer {
+    std::array<int, (size_t)CharAnimationType::COUNT> animations =
+            []{
+                std::array<int, (size_t)CharAnimationType::COUNT> a{};
+                a.fill(INVALID_ANIM);
+                return a;
+            }();
+    int player = -1;
+};
+
+struct CharSprite {
+    std::string spriteTemplate;
+    CharOrientation orientation = CharOrientation::Right;
+    std::array<CharAnimationLayer,(size_t) CharAnimationLayerType::COUNT> layers;
+};
+
 
 enum class SpriteAnimationType {
     Idle,
@@ -64,6 +107,7 @@ struct SpriteAnimationPlayerRenderData {
     Vector2 scale;
     float rotation;
     Color tint;
+    bool flipX;
 };
 
 struct SpriteAnimationPlayerAnimData {

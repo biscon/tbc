@@ -1,0 +1,1672 @@
+{ "frames": {
+   "Idle_Naked_0": {
+    "frame": { "x": 240, "y": 432, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "Idle_Naked_1": {
+    "frame": { "x": 0, "y": 384, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "Idle_Outfit1_0": {
+    "frame": { "x": 480, "y": 336, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "Idle_Outfit1_1": {
+    "frame": { "x": 432, "y": 336, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "Idle_Hair1_0": {
+    "frame": { "x": 384, "y": 336, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "Idle_Hair1_1": {
+    "frame": { "x": 336, "y": 336, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "Idle_Hair2_0": {
+    "frame": { "x": 288, "y": 336, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "Idle_Hair2_1": {
+    "frame": { "x": 240, "y": 336, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "Idle_Hair3_0": {
+    "frame": { "x": 192, "y": 336, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "Idle_Hair3_1": {
+    "frame": { "x": 144, "y": 336, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "Idle_Hair4_0": {
+    "frame": { "x": 96, "y": 336, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "Idle_Hair4_1": {
+    "frame": { "x": 48, "y": 336, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "Idle_Sword_0": {
+    "frame": { "x": 0, "y": 336, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "Idle_Sword_1": {
+    "frame": { "x": 480, "y": 288, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "Idle_Pistol_0": {
+    "frame": { "x": 432, "y": 288, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "Idle_Pistol_1": {
+    "frame": { "x": 192, "y": 240, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "MeleeIdle_Naked_0": {
+    "frame": { "x": 336, "y": 288, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "MeleeIdle_Naked_1": {
+    "frame": { "x": 288, "y": 288, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "MeleeIdle_Naked_2": {
+    "frame": { "x": 240, "y": 288, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "MeleeIdle_Naked_3": {
+    "frame": { "x": 288, "y": 288, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "MeleeIdle_Outfit1_0": {
+    "frame": { "x": 192, "y": 288, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "MeleeIdle_Outfit1_1": {
+    "frame": { "x": 144, "y": 288, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "MeleeIdle_Outfit1_2": {
+    "frame": { "x": 96, "y": 288, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "MeleeIdle_Outfit1_3": {
+    "frame": { "x": 144, "y": 288, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "MeleeIdle_Hair1_0": {
+    "frame": { "x": 384, "y": 336, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "MeleeIdle_Hair1_1": {
+    "frame": { "x": 336, "y": 336, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "MeleeIdle_Hair1_2": {
+    "frame": { "x": 336, "y": 336, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "MeleeIdle_Hair1_3": {
+    "frame": { "x": 336, "y": 336, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "MeleeIdle_Hair2_0": {
+    "frame": { "x": 288, "y": 336, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "MeleeIdle_Hair2_1": {
+    "frame": { "x": 240, "y": 336, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "MeleeIdle_Hair2_2": {
+    "frame": { "x": 240, "y": 336, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "MeleeIdle_Hair2_3": {
+    "frame": { "x": 240, "y": 336, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "MeleeIdle_Hair3_0": {
+    "frame": { "x": 192, "y": 336, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "MeleeIdle_Hair3_1": {
+    "frame": { "x": 144, "y": 336, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "MeleeIdle_Hair3_2": {
+    "frame": { "x": 144, "y": 336, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "MeleeIdle_Hair3_3": {
+    "frame": { "x": 144, "y": 336, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "MeleeIdle_Hair4_0": {
+    "frame": { "x": 96, "y": 336, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "MeleeIdle_Hair4_1": {
+    "frame": { "x": 48, "y": 336, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "MeleeIdle_Hair4_2": {
+    "frame": { "x": 48, "y": 336, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "MeleeIdle_Hair4_3": {
+    "frame": { "x": 48, "y": 336, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "MeleeIdle_Sword_0": {
+    "frame": { "x": 48, "y": 288, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "MeleeIdle_Sword_1": {
+    "frame": { "x": 0, "y": 288, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "MeleeIdle_Sword_2": {
+    "frame": { "x": 480, "y": 240, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "MeleeIdle_Sword_3": {
+    "frame": { "x": 0, "y": 288, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "MeleeHit_Naked_0": {
+    "frame": { "x": 432, "y": 240, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "MeleeHit_Naked_1": {
+    "frame": { "x": 384, "y": 240, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "MeleeHit_Naked_2": {
+    "frame": { "x": 336, "y": 240, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "MeleeHit_Naked_3": {
+    "frame": { "x": 336, "y": 288, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "MeleeHit_Outfit1_0": {
+    "frame": { "x": 288, "y": 240, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "MeleeHit_Outfit1_1": {
+    "frame": { "x": 240, "y": 240, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "MeleeHit_Outfit1_2": {
+    "frame": { "x": 384, "y": 288, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "MeleeHit_Outfit1_3": {
+    "frame": { "x": 192, "y": 288, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "MeleeHit_Hair1_0": {
+    "frame": { "x": 336, "y": 480, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "MeleeHit_Hair1_1": {
+    "frame": { "x": 288, "y": 480, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "MeleeHit_Hair1_2": {
+    "frame": { "x": 384, "y": 336, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "MeleeHit_Hair1_3": {
+    "frame": { "x": 384, "y": 336, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "MeleeHit_Hair2_0": {
+    "frame": { "x": 240, "y": 480, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "MeleeHit_Hair2_1": {
+    "frame": { "x": 192, "y": 480, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "MeleeHit_Hair2_2": {
+    "frame": { "x": 288, "y": 336, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "MeleeHit_Hair2_3": {
+    "frame": { "x": 288, "y": 336, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "MeleeHit_Hair3_0": {
+    "frame": { "x": 144, "y": 480, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "MeleeHit_Hair3_1": {
+    "frame": { "x": 96, "y": 480, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "MeleeHit_Hair3_2": {
+    "frame": { "x": 192, "y": 336, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "MeleeHit_Hair3_3": {
+    "frame": { "x": 192, "y": 336, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "MeleeHit_Hair4_0": {
+    "frame": { "x": 48, "y": 480, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "MeleeHit_Hair4_1": {
+    "frame": { "x": 0, "y": 480, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "MeleeHit_Hair4_2": {
+    "frame": { "x": 96, "y": 336, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "MeleeHit_Hair4_3": {
+    "frame": { "x": 96, "y": 336, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "MeleeHit_Sword_0": {
+    "frame": { "x": 480, "y": 432, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "MeleeHit_Sword_1": {
+    "frame": { "x": 432, "y": 432, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "MeleeHit_Sword_2": {
+    "frame": { "x": 384, "y": 432, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "MeleeHit_Sword_3": {
+    "frame": { "x": 48, "y": 288, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "MeleeSwing_Naked_0": {
+    "frame": { "x": 336, "y": 432, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "MeleeSwing_Naked_1": {
+    "frame": { "x": 288, "y": 432, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "MeleeSwing_Naked_2": {
+    "frame": { "x": 48, "y": 384, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "MeleeSwing_Naked_3": {
+    "frame": { "x": 192, "y": 432, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "MeleeSwing_Naked_4": {
+    "frame": { "x": 144, "y": 432, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "MeleeSwing_Naked_5": {
+    "frame": { "x": 96, "y": 432, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "MeleeSwing_Outfit1_0": {
+    "frame": { "x": 48, "y": 432, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "MeleeSwing_Outfit1_1": {
+    "frame": { "x": 0, "y": 432, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "MeleeSwing_Outfit1_2": {
+    "frame": { "x": 480, "y": 384, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "MeleeSwing_Outfit1_3": {
+    "frame": { "x": 432, "y": 384, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "MeleeSwing_Outfit1_4": {
+    "frame": { "x": 384, "y": 384, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "MeleeSwing_Outfit1_5": {
+    "frame": { "x": 192, "y": 288, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "MeleeSwing_Hair1_0": {
+    "frame": { "x": 384, "y": 336, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "MeleeSwing_Hair1_1": {
+    "frame": { "x": 336, "y": 384, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "MeleeSwing_Hair1_2": {
+    "frame": { "x": 288, "y": 384, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "MeleeSwing_Hair1_3": {
+    "frame": { "x": 288, "y": 384, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "MeleeSwing_Hair1_4": {
+    "frame": { "x": 336, "y": 336, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "MeleeSwing_Hair1_5": {
+    "frame": { "x": 384, "y": 336, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "MeleeSwing_Hair2_0": {
+    "frame": { "x": 288, "y": 336, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "MeleeSwing_Hair2_1": {
+    "frame": { "x": 240, "y": 384, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "MeleeSwing_Hair2_2": {
+    "frame": { "x": 192, "y": 384, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "MeleeSwing_Hair2_3": {
+    "frame": { "x": 192, "y": 384, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "MeleeSwing_Hair2_4": {
+    "frame": { "x": 240, "y": 336, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "MeleeSwing_Hair2_5": {
+    "frame": { "x": 288, "y": 336, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "MeleeSwing_Hair3_0": {
+    "frame": { "x": 192, "y": 336, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "MeleeSwing_Hair3_1": {
+    "frame": { "x": 144, "y": 384, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "MeleeSwing_Hair3_2": {
+    "frame": { "x": 96, "y": 384, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "MeleeSwing_Hair3_3": {
+    "frame": { "x": 96, "y": 384, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "MeleeSwing_Hair3_4": {
+    "frame": { "x": 144, "y": 336, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "MeleeSwing_Hair3_5": {
+    "frame": { "x": 192, "y": 336, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "MeleeSwing_Hair4_0": {
+    "frame": { "x": 96, "y": 336, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "MeleeSwing_Hair4_1": {
+    "frame": { "x": 48, "y": 192, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "MeleeSwing_Hair4_2": {
+    "frame": { "x": 336, "y": 96, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "MeleeSwing_Hair4_3": {
+    "frame": { "x": 336, "y": 96, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "MeleeSwing_Hair4_4": {
+    "frame": { "x": 48, "y": 336, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "MeleeSwing_Hair4_5": {
+    "frame": { "x": 96, "y": 336, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "MeleeSwing_Sword_0": {
+    "frame": { "x": 288, "y": 96, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "MeleeSwing_Sword_1": {
+    "frame": { "x": 240, "y": 96, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "MeleeSwing_Sword_2": {
+    "frame": { "x": 192, "y": 96, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "MeleeSwing_Sword_3": {
+    "frame": { "x": 144, "y": 96, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "MeleeSwing_Sword_4": {
+    "frame": { "x": 96, "y": 96, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "MeleeSwing_Sword_5": {
+    "frame": { "x": 48, "y": 288, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "PistolIdle_Naked_0": {
+    "frame": { "x": 48, "y": 96, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "PistolIdle_Naked_1": {
+    "frame": { "x": 0, "y": 96, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "PistolIdle_Naked_2": {
+    "frame": { "x": 480, "y": 48, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "PistolIdle_Naked_3": {
+    "frame": { "x": 432, "y": 48, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "PistolIdle_Outfit1_0": {
+    "frame": { "x": 384, "y": 48, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "PistolIdle_Outfit1_1": {
+    "frame": { "x": 336, "y": 48, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "PistolIdle_Outfit1_2": {
+    "frame": { "x": 288, "y": 48, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "PistolIdle_Outfit1_3": {
+    "frame": { "x": 240, "y": 48, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "PistolIdle_Hair1_0": {
+    "frame": { "x": 384, "y": 336, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "PistolIdle_Hair1_1": {
+    "frame": { "x": 336, "y": 336, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "PistolIdle_Hair1_2": {
+    "frame": { "x": 336, "y": 336, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "PistolIdle_Hair1_3": {
+    "frame": { "x": 384, "y": 336, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "PistolIdle_Hair2_0": {
+    "frame": { "x": 288, "y": 336, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "PistolIdle_Hair2_1": {
+    "frame": { "x": 240, "y": 336, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "PistolIdle_Hair2_2": {
+    "frame": { "x": 240, "y": 336, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "PistolIdle_Hair2_3": {
+    "frame": { "x": 288, "y": 336, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "PistolIdle_Hair3_0": {
+    "frame": { "x": 192, "y": 336, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "PistolIdle_Hair3_1": {
+    "frame": { "x": 144, "y": 336, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "PistolIdle_Hair3_2": {
+    "frame": { "x": 144, "y": 336, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "PistolIdle_Hair3_3": {
+    "frame": { "x": 192, "y": 336, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "PistolIdle_Hair4_0": {
+    "frame": { "x": 96, "y": 336, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "PistolIdle_Hair4_1": {
+    "frame": { "x": 48, "y": 336, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "PistolIdle_Hair4_2": {
+    "frame": { "x": 48, "y": 336, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "PistolIdle_Hair4_3": {
+    "frame": { "x": 96, "y": 336, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "PistolIdle_Pistol_0": {
+    "frame": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "PistolIdle_Pistol_1": {
+    "frame": { "x": 144, "y": 48, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "PistolIdle_Pistol_2": {
+    "frame": { "x": 96, "y": 48, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "PistolIdle_Pistol_3": {
+    "frame": { "x": 48, "y": 48, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "PistolHit_Naked_0": {
+    "frame": { "x": 0, "y": 48, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "PistolHit_Naked_1": {
+    "frame": { "x": 480, "y": 0, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "PistolHit_Naked_2": {
+    "frame": { "x": 48, "y": 96, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "PistolHit_Outfit1_0": {
+    "frame": { "x": 432, "y": 0, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "PistolHit_Outfit1_1": {
+    "frame": { "x": 384, "y": 0, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "PistolHit_Outfit1_2": {
+    "frame": { "x": 384, "y": 48, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "PistolHit_Hair1_0": {
+    "frame": { "x": 336, "y": 0, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "PistolHit_Hair1_1": {
+    "frame": { "x": 288, "y": 0, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "PistolHit_Hair1_2": {
+    "frame": { "x": 384, "y": 336, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "PistolHit_Hair2_0": {
+    "frame": { "x": 240, "y": 0, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "PistolHit_Hair2_1": {
+    "frame": { "x": 192, "y": 0, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "PistolHit_Hair2_2": {
+    "frame": { "x": 288, "y": 336, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "PistolHit_Hair3_0": {
+    "frame": { "x": 144, "y": 0, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "PistolHit_Hair3_1": {
+    "frame": { "x": 96, "y": 0, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "PistolHit_Hair3_2": {
+    "frame": { "x": 192, "y": 336, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "PistolHit_Hair4_0": {
+    "frame": { "x": 48, "y": 0, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "PistolHit_Hair4_1": {
+    "frame": { "x": 192, "y": 48, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "PistolHit_Hair4_2": {
+    "frame": { "x": 96, "y": 336, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "PistolHit_Pistol_0": {
+    "frame": { "x": 144, "y": 240, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "PistolHit_Pistol_1": {
+    "frame": { "x": 96, "y": 240, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "PistolHit_Pistol_2": {
+    "frame": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "PistolAttack_Naked_0": {
+    "frame": { "x": 48, "y": 240, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "PistolAttack_Naked_1": {
+    "frame": { "x": 0, "y": 240, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "PistolAttack_Naked_2": {
+    "frame": { "x": 480, "y": 192, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "PistolAttack_Naked_3": {
+    "frame": { "x": 432, "y": 192, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "PistolAttack_Naked_4": {
+    "frame": { "x": 384, "y": 192, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "PistolAttack_Naked_5": {
+    "frame": { "x": 336, "y": 192, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "PistolAttack_Outfit1_0": {
+    "frame": { "x": 288, "y": 192, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "PistolAttack_Outfit1_1": {
+    "frame": { "x": 240, "y": 192, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "PistolAttack_Outfit1_2": {
+    "frame": { "x": 192, "y": 192, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "PistolAttack_Outfit1_3": {
+    "frame": { "x": 144, "y": 192, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "PistolAttack_Outfit1_4": {
+    "frame": { "x": 96, "y": 192, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "PistolAttack_Outfit1_5": {
+    "frame": { "x": 384, "y": 96, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "PistolAttack_Hair1_0": {
+    "frame": { "x": 384, "y": 336, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "PistolAttack_Hair1_1": {
+    "frame": { "x": 384, "y": 336, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "PistolAttack_Hair1_2": {
+    "frame": { "x": 0, "y": 192, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "PistolAttack_Hair1_3": {
+    "frame": { "x": 480, "y": 144, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "PistolAttack_Hair1_4": {
+    "frame": { "x": 384, "y": 336, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "PistolAttack_Hair1_5": {
+    "frame": { "x": 384, "y": 336, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "PistolAttack_Hair2_0": {
+    "frame": { "x": 288, "y": 336, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "PistolAttack_Hair2_1": {
+    "frame": { "x": 288, "y": 336, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "PistolAttack_Hair2_2": {
+    "frame": { "x": 432, "y": 144, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "PistolAttack_Hair2_3": {
+    "frame": { "x": 384, "y": 144, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "PistolAttack_Hair2_4": {
+    "frame": { "x": 288, "y": 336, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "PistolAttack_Hair2_5": {
+    "frame": { "x": 288, "y": 336, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "PistolAttack_Hair3_0": {
+    "frame": { "x": 192, "y": 336, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "PistolAttack_Hair3_1": {
+    "frame": { "x": 192, "y": 336, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "PistolAttack_Hair3_2": {
+    "frame": { "x": 336, "y": 144, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "PistolAttack_Hair3_3": {
+    "frame": { "x": 288, "y": 144, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "PistolAttack_Hair3_4": {
+    "frame": { "x": 192, "y": 336, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "PistolAttack_Hair3_5": {
+    "frame": { "x": 192, "y": 336, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "PistolAttack_Hair4_0": {
+    "frame": { "x": 96, "y": 336, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "PistolAttack_Hair4_1": {
+    "frame": { "x": 96, "y": 336, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "PistolAttack_Hair4_2": {
+    "frame": { "x": 240, "y": 144, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "PistolAttack_Hair4_3": {
+    "frame": { "x": 192, "y": 144, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "PistolAttack_Hair4_4": {
+    "frame": { "x": 96, "y": 336, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "PistolAttack_Hair4_5": {
+    "frame": { "x": 96, "y": 336, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "PistolAttack_Pistol_0": {
+    "frame": { "x": 144, "y": 144, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "PistolAttack_Pistol_1": {
+    "frame": { "x": 96, "y": 144, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "PistolAttack_Pistol_2": {
+    "frame": { "x": 48, "y": 144, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "PistolAttack_Pistol_3": {
+    "frame": { "x": 0, "y": 144, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "PistolAttack_Pistol_4": {
+    "frame": { "x": 480, "y": 96, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   "PistolAttack_Pistol_5": {
+    "frame": { "x": 432, "y": 96, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   }
+ },
+ "meta": {
+  "app": "http://www.aseprite.org/",
+  "version": "1.3.15.4-dev",
+  "image": "human_male.png",
+  "format": "RGBA8888",
+  "size": { "w": 528, "h": 528 },
+  "scale": "1",
+  "frameTags": [
+   { "name": "Idle", "from": 0, "to": 1, "direction": "forward", "color": "#000000ff" },
+   { "name": "MeleeIdle", "from": 2, "to": 5, "direction": "forward", "repeat": "4", "color": "#000000ff" },
+   { "name": "MeleeHit", "from": 6, "to": 9, "direction": "forward", "color": "#000000ff" },
+   { "name": "MeleeSwing", "from": 10, "to": 15, "direction": "forward", "color": "#000000ff" },
+   { "name": "PistolIdle", "from": 16, "to": 19, "direction": "forward", "repeat": "3", "color": "#000000ff" },
+   { "name": "PistolHit", "from": 20, "to": 22, "direction": "forward", "color": "#000000ff" },
+   { "name": "PistolAttack", "from": 23, "to": 28, "direction": "forward", "color": "#000000ff" }
+  ],
+  "layers": [
+   { "name": "Naked", "opacity": 255, "blendMode": "normal" },
+   { "name": "Outfit1", "opacity": 255, "blendMode": "normal" },
+   { "name": "Hair1", "opacity": 255, "blendMode": "normal" },
+   { "name": "Hair2", "opacity": 255, "blendMode": "normal" },
+   { "name": "Hair3", "opacity": 255, "blendMode": "normal" },
+   { "name": "Hair4", "opacity": 255, "blendMode": "normal" },
+   { "name": "Sword", "opacity": 255, "blendMode": "normal" },
+   { "name": "Pistol", "opacity": 255, "blendMode": "normal" }
+  ],
+  "slices": [
+  ]
+ }
+}

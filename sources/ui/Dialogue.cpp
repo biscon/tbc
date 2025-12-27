@@ -181,7 +181,8 @@ void RenderDialogueUI(GameData& data) {
     DrawRectangleRoundedLinesEx(imgRect, 0.1f, 16, halfBoxPad, DARKGRAY);
 
     // Draw NPC name centered above
-    std::string npcName = data.charData.name[dlg.currentNpc];
+    //std::string npcName = data.charData.name[dlg.currentNpc];
+    std::string npcName = "Nemma Nameson";
     int nameFontSize = 20;
     int nameWidth = MeasureText(npcName.c_str(), nameFontSize);
     DrawText(npcName.c_str(), gameScreenWidth / 2 - nameWidth / 2, 16, nameFontSize, WHITE);
@@ -283,8 +284,7 @@ static void AdvanceDialogue(GameData& data, int virtualNodeId) {
     data.dialogueData.currentDialogueNode = nodeId;
     if(nodeId == -1) {
         TraceLog(LOG_ERROR, "Could not resolve a dialogue node for virtual node id: %i. Aborting dialogue.", virtualNodeId);
-        PushEndDialogue(data.actionQueue, data.dialogueData.currentNpc);
-        data.dialogueData.currentNpc = -1; // Exit dialogue mode
+        PushEndDialogue(data.actionQueue);
     }
 }
 
@@ -313,8 +313,7 @@ void HandleDialogueInput(GameData& data) {
     }
 }
 
-void InitiateDialogue(GameData &data, int nodeId, int npcId) {
-    data.dialogueData.currentNpc = npcId;
+void InitiateDialogue(GameData &data, int nodeId) {
     data.dialogueData.currentDialogueNode = nodeId;
     data.dialogueData.idleAnimPlayer = CreateSpriteAnimationPlayer(data.spriteData);
     int idleAnim = GetSpriteAnimation(data.spriteData, "SerDonaldPortraitTalkTalk");

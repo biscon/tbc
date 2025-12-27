@@ -105,6 +105,18 @@ struct LevelDoor {
     Vector2i interactionPos2;
 };
 
+struct LevelTrigger {
+    std::string id;
+    std::string func;
+    int x;
+    int y;
+    int width;
+    int height;
+    bool walkable;
+    int icon = -1;
+    Vector2i interactionPos;
+};
+
 struct Level {
     std::string name;
     std::vector<std::string> log;
@@ -132,6 +144,7 @@ struct Level {
     std::unordered_map<int, int> npcDialogueNodeIds;
     std::unordered_map<std::string, LevelObject> objects;
     std::unordered_map<std::string, LevelDoor> doors;
+    std::unordered_map<std::string, LevelTrigger> triggers;
     // lighting
     LightingData lighting;
     float hourOfDay = 12;

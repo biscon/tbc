@@ -79,20 +79,23 @@ void DrawSpriteAnimation(SpriteData& sprite, int player, float x, float y) {
     Rectangle sourceRect = sheetData.frameRects[spriteSheetIdx][frameIndex];
     SpriteAnimationPlayerRenderData& renderData = playerData.renderData[player];
 
-    // Calculate destination rectangle without manually applying origin
     Rectangle destRect = {
-            x,                                // World x position
-            y,                                // World y position
-            sourceRect.width * renderData.scale.x, // Scaled width
-            sourceRect.height * renderData.scale.y // Scaled height
+            x,
+            y,
+            sourceRect.width  * fabsf(renderData.scale.x),
+            sourceRect.height * fabsf(renderData.scale.y)
     };
 
-
-    // Define the rotation origin relative to the sprite space
     Vector2 rotationOrigin = {
             spriteData.origin[animIdx].x * renderData.scale.x, // Scaled x origin
             spriteData.origin[animIdx].y * renderData.scale.y  // Scaled y origin
     };
+    //Vector2 rotationOrigin = spriteData.origin[animIdx];
+
+    // Horizontal flip
+    if (renderData.flipX) {
+        sourceRect.width = -sourceRect.width;
+    }
 
     // Draw the texture with rotation, scale, and tint
     DrawTexturePro(
@@ -146,6 +149,11 @@ void DrawSpriteAnimationScaled(SpriteData& sprite, int player, float x, float y,
             spriteData.origin[animIdx].y * scale  // Scaled y origin
     };
 
+    // Horizontal flip
+    if (renderData.flipX) {
+        sourceRect.width = -sourceRect.width;
+    }
+
     // Draw the texture with rotation, scale, and tint
     DrawTexturePro(
             sheetData.texture[spriteSheetIdx], // The texture
@@ -177,6 +185,7 @@ int CreateSpriteAnimationPlayer(SpriteData& sprite) {
     renderData.rotation = 0;
     renderData.scale = {1, 1};
     renderData.tint = WHITE;
+    renderData.flipX = false;
     playerData.renderData.push_back(renderData);
 
     playerData.animationIdx.push_back(-1);
@@ -272,12 +281,12 @@ int GetSpriteAnimation(SpriteData& spriteData, const std::string& name) {
         return animData.nameIndexMap[name];
     } else {
         TraceLog(LOG_ERROR, "GetSpriteAnimation: Animation not found: %s", name.c_str());
-        std::abort();
+        //std::abort();
     }
     return -1;
 }
 
-void InitSpriteAnimationData(SpriteData& spriteData, const std::string &filename) {
+static void LoadSpriteAnimationFile(SpriteData& spriteData, const std::string &filename) {
     SpriteSheetData& sheetData = spriteData.sheet;
     SpriteAnimationData& animData = spriteData.anim;
     std::ifstream file(filename);
@@ -304,6 +313,115 @@ void InitSpriteAnimationData(SpriteData& spriteData, const std::string &filename
             TraceLog(LOG_INFO, "SpriteAnimationManager: Creating animation: %s", name.c_str());
             CreateSpriteAnimation(animData, name, sheet, frames, frameDelays, origin);
         }
+    }
+}
+
+struct TempFrame
+{
+    int frameIndex;   // index into spritesheet (you will fill this)
+    float delay;
+    int order;
+};
+
+void LoadAseSpriteAnimationFile(SpriteData& spriteData, const std::string &filename, const Vector2& origin, const std::string& prefix) {
+    SpriteSheetData& sheetData = spriteData.sheet;
+    std::ifstream file(filename);
+    json j;
+    file >> j;
+    std::string sheetFilename = ASSETS_PATH"sprites/" + j["meta"]["image"].get<std::string>();
+    TraceLog(LOG_INFO, "SpriteAnimationManager: Loading aseprite sheet: %s", sheetFilename.c_str());
+
+    int sheet = LoadSpriteSheet(sheetData, sheetFilename.c_str(), -1, -1, false);
+
+    std::unordered_map<std::string, std::vector<TempFrame>> animBuckets;
+
+    const json& frames = j["frames"];
+
+    for (auto it = frames.begin(); it != frames.end(); ++it)
+    {
+        const std::string& fullName = it.key();
+        const json& frameData = it.value();
+
+        // Split name: Name_Layer_FrameNo
+        size_t lastUnderscore = fullName.rfind('_');
+        if (lastUnderscore == std::string::npos)
+            continue; // invalid format
+
+        size_t secondLastUnderscore = fullName.rfind('_', lastUnderscore - 1);
+        if (secondLastUnderscore == std::string::npos)
+            continue; // invalid format
+
+        std::string animName = fullName.substr(0, lastUnderscore); // Name_Layer
+        int frameNo = std::stoi(fullName.substr(lastUnderscore + 1));
+
+        // Pull frame rect
+        int x = frameData["frame"]["x"].get<int>();
+        int y = frameData["frame"]["y"].get<int>();
+        int w = frameData["frame"]["w"].get<int>();
+        int h = frameData["frame"]["h"].get<int>();
+        float delay = frameData["duration"].get<float>() / 1000.0f;
+
+        int frameIndex = AddSpriteSheetFrame(sheetData, sheet, x, y, w, h);
+        animBuckets[animName].push_back({
+            frameIndex,
+            delay,
+            frameNo
+        });
+    }
+    // Finalize animations (sorting + creation)
+    for (auto& [animName, tempFrames] : animBuckets)
+    {
+        std::sort(
+                tempFrames.begin(),
+                tempFrames.end(),
+                [](const TempFrame& a, const TempFrame& b)
+                {
+                    return a.order < b.order;
+                }
+        );
+
+        std::vector<int> frames;
+        std::vector<float> delays;
+
+        frames.reserve(tempFrames.size());
+        delays.reserve(tempFrames.size());
+
+        for (const TempFrame& f : tempFrames)
+        {
+            frames.push_back(f.frameIndex);
+            delays.push_back(f.delay);
+        }
+        std::string finalName = prefix + animName;
+
+        TraceLog(LOG_INFO, "SpriteAnimationManager: Creating aseprite animation: %s", finalName.c_str());
+
+        CreateSpriteAnimation(
+                spriteData.anim,
+                finalName,
+                sheet,
+                frames,
+                delays,
+                origin
+        );
+    }
+}
+
+void InitSpriteAnimationData(SpriteData& spriteData, const std::string& path)
+{
+    namespace fs = std::filesystem;
+
+    for (const auto& entry : fs::directory_iterator(path))
+    {
+        if (!entry.is_regular_file())
+            continue;
+
+        if (entry.path().extension() != ".json")
+            continue;
+
+        const std::string filename = entry.path().string();
+        TraceLog(LOG_INFO, "SpriteAnimationManager: Loading animation file: %s", filename.c_str());
+
+        LoadSpriteAnimationFile(spriteData, filename);
     }
 }
 
@@ -358,22 +476,7 @@ void DrawSpriteAnimationColors(SpriteData& sprite, int player, float x, float y,
             sourceRect.width * renderData.scale.x, // Scaled width
             sourceRect.height * renderData.scale.y // Scaled height
     };
-
-
-
-    // Draw the texture with rotation, scale, and tint
-    /*
-    DrawTexturePro(
-            sheetData.texture[spriteSheetIdx], // The texture
-            sourceRect,           // The source rectangle
-            destRect,             // The destination rectangle
-            rotationOrigin,       // Rotation origin relative to destRect
-            renderData.rotation,      // The rotation in degrees
-            renderData.tint           // The color tint
-    );
-    */
-
-    DrawTexturedQuadWithVertexColorsRotated(sheetData.texture[spriteSheetIdx], sourceRect, destRect, c1, c2, c3, c4, scaledOrigin, renderData.rotation);
+    DrawTexturedQuadWithVertexColorsRotated(sheetData.texture[spriteSheetIdx], sourceRect, destRect, c1, c2, c3, c4, scaledOrigin, renderData.rotation, renderData.flipX);
 }
 
 

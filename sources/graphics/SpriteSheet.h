@@ -12,7 +12,8 @@
 
 
 // Load a sprite sheet from a file and split it into frames
-int LoadSpriteSheet(SpriteSheetData& sheetData, const char* filename, int frameWidth, int frameHeight);
+int LoadSpriteSheet(SpriteSheetData& sheetData, const char* filename, int frameWidth, int frameHeight, bool autoRects = true);
 void UnloadSpriteSheet(SpriteSheetData& sheetData, int spriteSheet);
+int AddSpriteSheetFrame(SpriteSheetData& sheetData, int spriteSheet, int x, int y, int w, int h);
 
 #endif //SANDBOX_SPRITESHEET_H

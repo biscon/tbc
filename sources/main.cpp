@@ -15,6 +15,7 @@
 #include "audio/Sound.h"
 #include "game/Input.h"
 #include "graphics/Cursor.h"
+#include "graphics/CharSprite.h"
 
 #define MAX(a, b) ((a)>(b)? (a) : (b))
 #define MIN(a, b) ((a)<(b)? (a) : (b))
@@ -66,7 +67,10 @@ int main() {
 
     InitDialogueData(game.dialogueData, ASSETS_PATH"dialogue.json");
     InitQuestData(game, ASSETS_PATH"quests.json");
-    InitSpriteAnimationData(game.spriteData, ASSETS_PATH"animations.json");
+    InitSpriteAnimationData(game.spriteData, ASSETS_PATH"anim");
+
+    LoadAseSpriteAnimationFile(game.spriteData, ASSETS_PATH"sprites/human_male.json", {24,39}, "HumanMale_");
+
     InitWeaponData(game.weaponData, ASSETS_PATH"weapons.json");
     InitItemData(game, ASSETS_PATH"items.json");
 
@@ -87,6 +91,11 @@ int main() {
     game.windShader = LoadShader("../shaders/vegetation_wind.vs.glsl", "../shaders/vegetation_wind.fs.glsl");
 
     HideCursor();
+
+
+    CharSprite charSprite;
+    InitCharSprite(game.spriteData, charSprite, "HumanMale");
+
 
     // Main game loop
     while (!WindowShouldClose())        // Detect window close button or ESC key
@@ -140,6 +149,12 @@ int main() {
                 //DrawTextEx(font2, TextFormat("MouseOff: %f,%f", finalX, finalY), (Vector2) {1, 28}, 5, 1, YELLOW);
                 //DrawTextEx(font2, TextFormat("MouseScale: %f,%f", mouseScaleX, mouseScaleY), (Vector2) {1, 36}, 5, 1, YELLOW);
             }
+
+        if(IsKeyReleased(KEY_SPACE)) {
+
+        }
+
+
         EndTextureMode();
 
         BeginDrawing();

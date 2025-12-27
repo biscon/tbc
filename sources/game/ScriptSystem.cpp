@@ -147,6 +147,11 @@ static void C_speechBubble(WrenVM* vm) {
     PushSpeechBubble(gameData->actionQueue, text, {x, y}, duration);
 }
 
+static void C_startDialogue(WrenVM* vm) {
+    int id = static_cast<int>(wrenGetSlotDouble(vm, 1));
+    PushInitiateDialogue(gameData->actionQueue, id);
+}
+
 // -----------------------------------------------------------------------------
 // bindForeignMethod callback to map Wren signatures to native functions
 static WrenForeignMethodFn BindForeignMethod(WrenVM* vm,
@@ -172,6 +177,7 @@ static WrenForeignMethodFn BindForeignMethod(WrenVM* vm,
         if (strcmp(signature, "setString(_,_)") == 0)               return C_setString;
         if (strcmp(signature, "getString(_)") == 0)                 return C_getString;
         if (strcmp(signature, "speechBubble(_,_,_,_)") == 0)        return C_speechBubble;
+        if (strcmp(signature, "startDialogue(_)") == 0)             return C_startDialogue;
     }
 
     return nullptr;
@@ -195,6 +201,7 @@ static void ScriptSystemRegisterAPI_Internal(ScriptData& script) {
             foreign static setString(name, value)
             foreign static getString(name)
             foreign static speechBubble(text, x, y, duration)
+            foreign static startDialogue(id)
         }
     )";
 

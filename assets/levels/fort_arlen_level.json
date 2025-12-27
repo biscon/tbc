@@ -17,6 +17,12 @@
             "x": 31,
             "y": 9,
             "radius": 2
+        },
+        {
+            "name": "outsideTent",
+            "x": 40,
+            "y": 18,
+            "radius": 2
         }
     ],
     "flags": [
@@ -35,6 +41,15 @@
             "height": 1,
             "interactionPos": [31, 9],
             "onEnterFunc": "onEnter_mallExit()"
+        },
+        {
+            "level": "pimp_tent_level.json",
+            "spawnPoint": "default",
+            "x": 40,
+            "y": 16,
+            "width": 2,
+            "height": 2,
+            "interactionPos": [40, 18]
         }
     ],
     "npcs": [

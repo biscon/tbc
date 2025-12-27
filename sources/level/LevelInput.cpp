@@ -440,7 +440,7 @@ static bool handleDialogueClick(GameData& data,
                 if (evt.mouse.button != MOUSE_LEFT_BUTTON) continue;
                 ClearPendingAction(data);
                 ConsumeEvent(evt);
-                PushInitiateDialogue(data.actionQueue, npcId, level.npcDialogueNodeIds[npcId]);
+                PushInitiateDialogue(data.actionQueue, level.npcDialogueNodeIds[npcId]);
                 return true;
             }
         }
@@ -452,7 +452,6 @@ static bool handleDialogueClick(GameData& data,
 
     return false;
 }
-
 
 static bool handleExits(GameData& data, Level& level)
 {
@@ -523,6 +522,72 @@ static bool handleExits(GameData& data, Level& level)
     return false;
 }
 
+static bool handleTriggers(GameData& data, Level& level)
+{
+    for (InputEvent& evt : FilterEvents(data.inputData, true, InputEventType::MouseClick))
+    {
+        if (evt.mouse.button != MOUSE_LEFT_BUTTON)
+            continue;
+
+        Vector2 world = evt.mouse.worldPos;
+        Vector2i clickGrid = PixelToGridPositionI((int)world.x, (int)world.y);
+
+        for (auto& entry : level.triggers)
+        {
+            LevelTrigger& tr = entry.second;
+            // Is click inside exit rect?
+            if (clickGrid.x < tr.x || clickGrid.x >= tr.x + tr.width ||
+                clickGrid.y < tr.y || clickGrid.y >= tr.y + tr.height)
+                continue;
+
+            // Click hits the exit → consume event
+            ConsumeEvent(evt);
+
+            // -----------------------------
+            //   Handle undefined interactPos
+            // -----------------------------
+            Vector2i interactPos = tr.interactionPos;
+            bool hasDefinedInteractionPos =
+                    !(interactPos.x == -1 && interactPos.y == -1);
+
+            if (!hasDefinedInteractionPos)
+            {
+                // undefined interactionPos means "do nothing"
+                return true;
+            }
+
+            // -----------------------------
+            //   Defined interactionPos path
+            // -----------------------------
+
+            const float maxDist = 1.0f;
+
+            if (IsAnyPartyMemberNear(data, level, interactPos, maxDist))
+            {
+                ClearPendingAction(data);
+                PushActivateTrigger(data.actionQueue, tr.id);
+                return true;
+            }
+            else
+            {
+                // Out of range → move + pending action
+                PushMoveParty(data.actionQueue, interactPos);
+                SetPendingAction(
+                        data,
+                        GameAction{
+                                ActionType::ActivateTrigger,
+                                ActivateTriggerAction{ tr.id }
+                        }
+                );
+
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+
 void HandleInputRealtime(GameData& data, Level &level) {
     if(data.levelData.mode != LevelMode::Explore) {
         return;
@@ -549,6 +614,10 @@ void HandleInputRealtime(GameData& data, Level &level) {
 
     // Doors next
     if (handleDoors(data, level, playerPos))
+        return;
+
+    // Doors next
+    if (handleTriggers(data, level))
         return;
 
     // Movement or dialogue
