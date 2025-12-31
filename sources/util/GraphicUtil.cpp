@@ -4,6 +4,7 @@
 
 #include "GraphicUtil.h"
 #include <cmath>
+#include <cstdint>
 
 static inline unsigned char FloatToByte(float f) {
     if (f <= 0.0f) return 0;
@@ -86,4 +87,28 @@ Texture2D LoadTexturePreMultiplied(const char* fileName) {
     // Free the original unmodified image
     UnloadImage(img);
     return tex;
+}
+
+
+Vector3 ColorToVec3(const std::string& hex)
+{
+    std::string s = hex;
+
+    if (!s.empty() && s[0] == '#')
+        s.erase(0, 1);
+
+    // Default alpha if not provided
+    if (s.length() == 6)
+        s += "FF";
+
+    // Parse hex to integer
+    uint32_t value = static_cast<uint32_t>(std::stoul(s, nullptr, 16));
+
+    Color c = GetColor(value);
+
+    return {
+            c.r / 255.0f,
+            c.g / 255.0f,
+            c.b / 255.0f
+    };
 }

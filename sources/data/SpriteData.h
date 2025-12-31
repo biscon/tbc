@@ -47,10 +47,46 @@ struct CharAnimationLayer {
     int player = -1;
 };
 
+struct ColorPair {
+    Vector3 c1; // darker / shadow
+    Vector3 c2; // lighter / highlight
+};
+
+struct SkinPreset {
+    const char* name;
+    ColorPair colors;
+};
+
+struct HairPreset {
+    const char* name;
+    ColorPair colors;
+};
+
+struct OutfitColors {
+    Vector3 lowerDark;
+    Vector3 lowerLight;
+    Vector3 upperDark;
+    Vector3 upperLight;
+};
+
+struct OutfitPreset {
+    const char* name;
+    OutfitColors colors;
+};
+
 struct CharSprite {
     std::string spriteTemplate;
     CharOrientation orientation = CharOrientation::Right;
     std::array<CharAnimationLayer,(size_t) CharAnimationLayerType::COUNT> layers;
+    Vector3 skinColor1;
+    Vector3 skinColor2;
+    Vector3 hairColor1;
+    Vector3 hairColor2;
+    Vector3 outfitColor1;
+    Vector3 outfitColor2;
+    Vector3 outfitColor3;
+    Vector3 outfitColor4;
+    CharAnimationType currentAnim;
 };
 
 
@@ -124,10 +160,36 @@ struct SpriteAnimationPlayerData {
     std::vector<SpriteAnimationPlayerAnimData> animData;
 };
 
+struct CharShaderData {
+    Shader shader;
+    // source colors, never change
+    int locSkinSrc1;
+    int locSkinSrc2;
+    int locHairSrc1;
+    int locHairSrc2;
+    int locOutfitSrc1;
+    int locOutfitSrc2;
+    int locOutfitSrc3;
+    int locOutfitSrc4;
+
+    // dst colors
+    int locSkinDst1;
+    int locSkinDst2;
+    int locHairDst1;
+    int locHairDst2;
+    int locOutfitDst1;
+    int locOutfitDst2;
+    int locOutfitDst3;
+    int locOutfitDst4;
+
+    int locTolerance;
+};
+
 struct SpriteData {
     SpriteSheetData sheet;
     SpriteAnimationData anim;
     SpriteAnimationPlayerData player;
+    CharShaderData charShader;
 };
 
 #endif //SANDBOX_SPRITEDATA_H

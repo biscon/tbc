@@ -90,12 +90,18 @@ int main() {
 
     game.windShader = LoadShader("../shaders/vegetation_wind.vs.glsl", "../shaders/vegetation_wind.fs.glsl");
 
+    InitCharShader(game.spriteData);
+
     HideCursor();
 
 
     CharSprite charSprite;
     InitCharSprite(game.spriteData, charSprite, "HumanMale");
-
+    RandomizeCharAppearance(game.spriteData, charSprite);
+    PlayCharSpriteAnim(game.spriteData, charSprite, CharAnimationType::MeleeIdle, true);
+    SetCharSpritePosI(game.spriteData, charSprite, Vector2i{100, 100});
+    SetCharWeaponType(game.spriteData, charSprite, "Sword");
+    //SetCharSpriteScale(game.spriteData, charSprite, 2.0f);
 
     // Main game loop
     while (!WindowShouldClose())        // Detect window close button or ESC key
@@ -150,10 +156,16 @@ int main() {
                 //DrawTextEx(font2, TextFormat("MouseScale: %f,%f", mouseScaleX, mouseScaleY), (Vector2) {1, 36}, 5, 1, YELLOW);
             }
 
-        if(IsKeyReleased(KEY_SPACE)) {
-
-        }
-
+            if(IsKeyReleased(KEY_SPACE)) {
+                RandomizeCharAppearance(game.spriteData, charSprite);
+                PlayCharSpriteAnim(game.spriteData, charSprite, CharAnimationType::MeleeAttack, true);
+                if(charSprite.orientation == CharOrientation::Left)
+                    charSprite.orientation = CharOrientation::Right;
+                else
+                    charSprite.orientation = CharOrientation::Left;
+            }
+            UpdateCharSprite(game.spriteData, charSprite, dt);
+            DrawCharSpriteColors(game.spriteData, charSprite, WHITE, WHITE, WHITE, WHITE);
 
         EndTextureMode();
 
