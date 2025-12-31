@@ -315,6 +315,22 @@ void PlayCharSpriteAnim(SpriteData& spriteData, CharSprite &sprite, CharAnimatio
     }
 }
 
+void PauseCharSpriteAnim(SpriteData& spriteData, CharSprite &sprite) {
+    for(auto& layer : sprite.layers) {
+        if(layer.player != -1) {
+            PauseSpriteAnimation(spriteData, layer.player);
+        }
+    }
+}
+
+void ResumeCharSpriteAnim(SpriteData& spriteData, CharSprite &sprite) {
+    for(auto& layer : sprite.layers) {
+        if(layer.player != -1) {
+            ResumeSpriteAnimation(spriteData, layer.player);
+        }
+    }
+}
+
 Vector2 GetCharSpritePos(SpriteData& spriteData, CharSprite &sprite) {
     return spriteData.player.renderData[sprite.layers[0].player].position;
 }
@@ -580,6 +596,22 @@ void RandomizeCharAppearance(SpriteData& spriteData, CharSprite& sprite) {
     SetOutfitColorPreset(sprite, outfitColorIdx);
     SetOutfit(spriteData, sprite, outfitIdx);
     SetHairStyle(spriteData, sprite, hairStyleIdx);
+}
+
+CharAnimationType GetCharIdleAnimType(CharSprite &sprite) {
+    switch(sprite.weaponType) {
+        case WeaponAnimType::Sword: return CharAnimationType::MeleeIdle;
+        case WeaponAnimType::Pistol: return CharAnimationType::PistolIdle;
+    }
+    throw std::runtime_error("Never should have come here");
+}
+
+CharAnimationType GetCharAttackAnimType(CharSprite &sprite) {
+    switch(sprite.weaponType) {
+        case WeaponAnimType::Sword: return CharAnimationType::MeleeAttack;
+        case WeaponAnimType::Pistol: return CharAnimationType::PistolAttack;
+    }
+    throw std::runtime_error("Never should have come here");
 }
 
 

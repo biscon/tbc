@@ -16,6 +16,8 @@ void UpdateCharSprite(SpriteData& spriteData, CharSprite& sprite, float deltaTim
 void DrawCharSpriteColors(SpriteData& spriteData, CharSprite &sprite, Color c1, Color c2, Color c3, Color c4);
 void DrawCharSpriteColors(SpriteData& spriteData, CharSprite &sprite, float x, float y, Color c1, Color c2, Color c3, Color c4);
 void PlayCharSpriteAnim(SpriteData& spriteData, CharSprite &sprite, CharAnimationType type, bool loop);
+void PauseCharSpriteAnim(SpriteData& spriteData, CharSprite &sprite);
+void ResumeCharSpriteAnim(SpriteData& spriteData, CharSprite &sprite);
 
 Vector2 GetCharSpritePos(SpriteData& spriteData, CharSprite &sprite);
 Vector2i GetCharSpritePosI(SpriteData& spriteData, CharSprite& sprite);
@@ -40,5 +42,8 @@ void RandomizeCharAppearance(SpriteData& spriteData, CharSprite& sprite);
 
 void SetCharWeaponType(SpriteData& spriteData, CharSprite& sprite, WeaponAnimType type);
 void SetCharHideWeapon(SpriteData& spriteData, CharSprite& sprite, bool hide);
+
+CharAnimationType GetCharIdleAnimType(CharSprite& sprite);
+CharAnimationType GetCharAttackAnimType(CharSprite &sprite);
 
 #endif //SANDBOX_CHARSPRITE_H

@@ -173,10 +173,12 @@ bool ProcessActions(GameData& data, Level& level, float dt)
                 TraceLog(LOG_INFO, "MoveParty event,target: %d,%d", ev.target.x, ev.target.y);
                 levelData.activeMoves.clear();
                 MoveCharacter(data, level, data.ui.selectedCharacter, ev.target);
+                PauseCharSpriteAnim(data.spriteData, data.charData.sprite[data.ui.selectedCharacter]);
                 // move the rest partially
                 for(int i = 0; i < (int)level.partyCharacters.size(); i++) {
                     if(level.partyCharacters[i] != data.ui.selectedCharacter) {
                         MoveCharacterPartial(data, level, level.partyCharacters[i], ev.target);
+                        PauseCharSpriteAnim(data.spriteData, data.charData.sprite[level.partyCharacters[i]]);
                     }
                 }
 
@@ -216,7 +218,7 @@ bool ProcessActions(GameData& data, Level& level, float dt)
                 for (auto& c : level.partyCharacters)
                 {
                     CharSprite& sprite = data.charData.sprite[c];
-                    PlayCharSpriteAnim(data.spriteData, sprite, CharAnimationType::Idle, true);
+                    PlayCharSpriteAnim(data.spriteData, sprite, GetCharIdleAnimType(sprite), true);
 
                     data.charData.orientation[c] = Orientation::Down;
                     data.charData.statusEffects[c].clear();

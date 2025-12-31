@@ -52,7 +52,7 @@ static void setInitialGridPositions(SpriteData& spriteData, CharacterData& charD
         positions.pop_back();
         SetCharSpritePos(spriteData, charData.sprite[character], GridToPixelPosition(pos.x, pos.y));
         // Set initial animation to paused
-        PlayCharSpriteAnim(spriteData, charData.sprite[character], CharAnimationType::Idle, true);
+        PlayCharSpriteAnim(spriteData, charData.sprite[character], GetCharIdleAnimType(charData.sprite[character]), true);
         Vector2 charPos = GetCharSpritePos(spriteData, charData.sprite[character]);
         Vector2i gridPos = GetCharGridPosI(spriteData, charData.sprite[character]);
         TraceLog(LOG_INFO, "Placed character %s at %f,%f, grid: %i,%i", charData.name[character].c_str(), charPos.x, charPos.y, gridPos.x, gridPos.y);
@@ -65,7 +65,7 @@ void AddPartyToLevelNoPositioning(SpriteData& spriteData, CharacterData& charDat
         level.partyCharacters.push_back(character);
         level.allCharacters.push_back(character);
         // Set initial animation to paused
-        PlayCharSpriteAnim(spriteData, charData.sprite[character], CharAnimationType::Idle, true);
+        PlayCharSpriteAnim(spriteData, charData.sprite[character], GetCharIdleAnimType(charData.sprite[character]), true);
         Vector2 charPos = GetCharSpritePos(spriteData, charData.sprite[character]);
         Vector2i gridPos = GetCharGridPosI(spriteData, charData.sprite[character]);
         TraceLog(LOG_INFO, "Placed character %s at %f,%f, grid: %i,%i", charData.name[character].c_str(), charPos.x, charPos.y, gridPos.x, gridPos.y);
@@ -77,7 +77,7 @@ void AddNpcToLevel(SpriteData& spriteData, CharacterData& charData, Level &level
     level.npcCharacters.push_back(id);
     level.allCharacters.push_back(id);
     // Set initial animation to paused
-    PlayCharSpriteAnim(spriteData, charData.sprite[id], CharAnimationType::Idle, true);
+    PlayCharSpriteAnim(spriteData, charData.sprite[id], GetCharIdleAnimType(charData.sprite[id]), true);
     Vector2 charPos = GetCharSpritePos(spriteData, charData.sprite[id]);
     Vector2i gridPos = GetCharGridPosI(spriteData, charData.sprite[id]);
     TraceLog(LOG_INFO, "Placed npc %s at %f,%f, grid: %i,%i", charData.name[id].c_str(), charPos.x, charPos.y, gridPos.x, gridPos.y);
@@ -358,7 +358,7 @@ void LoadLevel(GameData& data, Level &level, const std::string &filename) {
         level.lighting.ambient = HexToColor(j["ambientLight"]);
     }
 
-    AddLight(level.lighting, "partyLight", 10, 10, 8.0f, 1.5f, Color{255,230,180,255}, true);
+    //AddLight(level.lighting, "partyLight", 10, 10, 8.0f, 1.5f, Color{255,230,180,255}, true);
 
     // Load lights
     if (j.contains("lights") && j["lights"].is_array()) {

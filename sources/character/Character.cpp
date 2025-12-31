@@ -125,16 +125,6 @@ void SetEquippedItem(GameData& data, int charIdx, ItemEquipSlot slot, int itemId
     }
 }
 
-SpriteAnimationType CharacterOrientationToAnimType(GameData& data, int charId) {
-    switch(data.charData.orientation[charId]) {
-        case Orientation::Up:   return SpriteAnimationType::WalkUp;
-        case Orientation::Down: return SpriteAnimationType::WalkDown;
-        case Orientation::Left: return SpriteAnimationType::WalkLeft;
-        case Orientation::Right: return SpriteAnimationType::WalkRight;
-    }
-    std::abort();
-}
-
 int CalculateCharHealth(CharacterStats &stats) {
     // HP = baseHP + (END × hpPerPoint) + (level - 1) × hpPerLevel
     //return 10 + (stats.END * 3) + ((stats.LVL - 1) * (stats.END / 2));

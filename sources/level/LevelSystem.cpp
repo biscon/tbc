@@ -140,6 +140,7 @@ static void updateRealtimeMovement(GameData& data, Level& level, float dt) {
                     auto finalPos = move.path.path[move.path.path.size() - 1];
                     SetCharSpritePos(data.spriteData, sprite, GridToPixelPosition(finalPos.x, finalPos.y));
                     move.isDone = true;
+                    ResumeCharSpriteAnim(data.spriteData, sprite);
                     TraceLog(LOG_INFO, "Move done");
                     ExecutePendingAction(data);
                 }
