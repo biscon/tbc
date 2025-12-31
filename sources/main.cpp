@@ -98,9 +98,9 @@ int main() {
     CharSprite charSprite;
     InitCharSprite(game.spriteData, charSprite, "HumanMale");
     RandomizeCharAppearance(game.spriteData, charSprite);
-    PlayCharSpriteAnim(game.spriteData, charSprite, CharAnimationType::MeleeIdle, true);
+    PlayCharSpriteAnim(game.spriteData, charSprite, CharAnimationType::Idle, true);
     SetCharSpritePosI(game.spriteData, charSprite, Vector2i{100, 100});
-    SetCharWeaponType(game.spriteData, charSprite, "Sword");
+    SetCharWeaponType(game.spriteData, charSprite, "Pistol");
     //SetCharSpriteScale(game.spriteData, charSprite, 2.0f);
 
     // Main game loop
@@ -158,7 +158,7 @@ int main() {
 
             if(IsKeyReleased(KEY_SPACE)) {
                 RandomizeCharAppearance(game.spriteData, charSprite);
-                PlayCharSpriteAnim(game.spriteData, charSprite, CharAnimationType::MeleeAttack, true);
+                //PlayCharSpriteAnim(game.spriteData, charSprite, CharAnimationType::MeleeAttack, true);
                 if(charSprite.orientation == CharOrientation::Left)
                     charSprite.orientation = CharOrientation::Right;
                 else
