@@ -7,6 +7,7 @@
 #include "PathFinding.h"
 #include "graphics/CharacterSprite.h"
 #include "raymath.h"
+#include "graphics/CharSprite.h"
 
 static std::map<std::string, AiInterface> aiInterfaces;
 
@@ -54,7 +55,7 @@ void SortCharactersByThreat(Level& level, std::vector<std::pair<int, Path>>& cha
 
 std::vector<int> GetCharactersWithinAttackRange(GameData& data, Level &level, int character, int range, CharacterFaction faction) {
     // loop through all characters in combat
-    Vector2i charPos = GetCharacterSpritePosI(data.spriteData, data.charData.sprite[character]);
+    Vector2i charPos = GetCharSpritePosI(data.spriteData, data.charData.sprite[character]);
     Vector2i charGridPos = PixelToGridPositionI(charPos.x, charPos.y);
     std::vector<int> charactersInRange;
     for(auto &c : level.allCharacters) {
@@ -63,7 +64,7 @@ std::vector<int> GetCharactersWithinAttackRange(GameData& data, Level &level, in
             continue;
         }
         Path path;
-        Vector2i cCharPos = GetCharacterSpritePosI(data.spriteData, data.charData.sprite[c]);
+        Vector2i cCharPos = GetCharSpritePosI(data.spriteData, data.charData.sprite[c]);
         Vector2i cGridPos = PixelToGridPositionI(cCharPos.x, cCharPos.y);
         if(CalcPathWithRange(data.spriteData, data.charData, level, path, charGridPos, cGridPos, range, character, IsTileOccupied)) {
             if(path.cost <= range) {
@@ -76,7 +77,7 @@ std::vector<int> GetCharactersWithinAttackRange(GameData& data, Level &level, in
 
 std::vector<std::pair<int, Path>> GetCharactersWithinMoveRange(GameData& data, Level &level, int character, int attackRange, bool checkPoints, CharacterFaction faction) {
     // loop through all characters in combat
-    Vector2i charPos = GetCharacterSpritePosI(data.spriteData, data.charData.sprite[character]);
+    Vector2i charPos = GetCharSpritePosI(data.spriteData, data.charData.sprite[character]);
     Vector2i charGridPos = PixelToGridPositionI(charPos.x, charPos.y);
     std::vector<std::pair<int, Path>> charactersInRange;
     for(auto &c : level.allCharacters) {
@@ -85,7 +86,7 @@ std::vector<std::pair<int, Path>> GetCharactersWithinMoveRange(GameData& data, L
             continue;
         }
         Path path;
-        Vector2i cCharPos = GetCharacterSpritePosI(data.spriteData, data.charData.sprite[c]);
+        Vector2i cCharPos = GetCharSpritePosI(data.spriteData, data.charData.sprite[c]);
         Vector2i cGridPos = PixelToGridPositionI(cCharPos.x, cCharPos.y);
         if(CalcPathWithRange(data.spriteData, data.charData, level, path, charGridPos, cGridPos, attackRange, character, IsTileOccupied)) {
             if(checkPoints) {
@@ -102,7 +103,7 @@ std::vector<std::pair<int, Path>> GetCharactersWithinMoveRange(GameData& data, L
 
 std::vector<std::pair<int, Path>> GetCharactersWithinMoveRangePartial(GameData& data, Level &level, int character, int attackRange, bool checkPoints, CharacterFaction faction) {
     // loop through all characters in combat
-    Vector2i charPos = GetCharacterSpritePosI(data.spriteData, data.charData.sprite[character]);
+    Vector2i charPos = GetCharSpritePosI(data.spriteData, data.charData.sprite[character]);
     Vector2i charGridPos = PixelToGridPositionI(charPos.x, charPos.y);
     std::vector<std::pair<int, Path>> charactersInRange;
     for(auto &c : level.allCharacters) {
@@ -111,7 +112,7 @@ std::vector<std::pair<int, Path>> GetCharactersWithinMoveRangePartial(GameData& 
             continue;
         }
         Path path;
-        Vector2i cCharPos = GetCharacterSpritePosI(data.spriteData, data.charData.sprite[c]);
+        Vector2i cCharPos = GetCharSpritePosI(data.spriteData, data.charData.sprite[c]);
         Vector2i cGridPos = PixelToGridPositionI(cCharPos.x, cCharPos.y);
         CalcPathWithRangePartial(data.spriteData, data.charData, level, path, charGridPos, cGridPos, attackRange, character, IsTileOccupied);
         if(!path.path.empty()) {
@@ -128,7 +129,7 @@ std::vector<std::pair<int, Path>> GetCharactersWithinMoveRangePartial(GameData& 
 }
 
 std::vector<int> GetAdjacentCharacters(GameData& data, Level &level, int character, CharacterFaction faction) {
-    Vector2i charPos = GetCharacterSpritePosI(data.spriteData, data.charData.sprite[character]);
+    Vector2i charPos = GetCharSpritePosI(data.spriteData, data.charData.sprite[character]);
     Vector2i charGridPos = PixelToGridPositionI(charPos.x, charPos.y);
     std::vector<int> charactersInRange;
     for(auto &c : level.allCharacters) {
@@ -136,7 +137,7 @@ std::vector<int> GetAdjacentCharacters(GameData& data, Level &level, int charact
         if(c == character || data.charData.stats[c].HP <= 0 || data.charData.faction[c] != faction) {
             continue;
         }
-        Vector2i cCharPos = GetCharacterSpritePosI(data.spriteData, data.charData.sprite[c]);
+        Vector2i cCharPos = GetCharSpritePosI(data.spriteData, data.charData.sprite[c]);
         Vector2i cGridPos = PixelToGridPositionI(cCharPos.x, cCharPos.y);
         if(abs(cGridPos.x - charGridPos.x) <= 1 && abs(cGridPos.y - charGridPos.y) <= 1) {
             charactersInRange.push_back(c);
@@ -152,7 +153,7 @@ bool IsAdjacentToCharacter(GameData& data, Level &level, Vector2i gridPos, Chara
         if(data.charData.stats[c].HP <= 0 || data.charData.faction[c] != faction) {
             continue;
         }
-        Vector2i cCharPos = GetCharacterSpritePosI(data.spriteData, data.charData.sprite[c]);
+        Vector2i cCharPos = GetCharSpritePosI(data.spriteData, data.charData.sprite[c]);
         Vector2i cGridPos = PixelToGridPositionI(cCharPos.x, cCharPos.y);
         if(abs(cGridPos.x - gridPos.x) <= 1 && abs(cGridPos.y - gridPos.y) <= 1) {
             return true;
@@ -168,7 +169,7 @@ float GetDistanceToClosestCharacter(GameData& data, Level& level, Vector2i gridP
         if(data.charData.stats[c].HP <= 0 || data.charData.faction[c] != faction) {
             continue;
         }
-        Vector2i cCharPos = GetCharacterSpritePosI(data.spriteData, data.charData.sprite[c]);
+        Vector2i cCharPos = GetCharSpritePosI(data.spriteData, data.charData.sprite[c]);
         Vector2i cGridPos = PixelToGridPositionI(cCharPos.x, cCharPos.y);
         float d = Distance(gridPos, cGridPos);
         if(d < distance) {
@@ -186,7 +187,7 @@ int GetClosestCharacter(GameData& data, Level& level, Vector2i gridPos, Characte
         if(data.charData.stats[c].HP <= 0 || data.charData.faction[c] != faction) {
             continue;
         }
-        Vector2i cCharPos = GetCharacterSpritePosI(data.spriteData, data.charData.sprite[c]);
+        Vector2i cCharPos = GetCharSpritePosI(data.spriteData, data.charData.sprite[c]);
         Vector2i cGridPos = PixelToGridPositionI(cCharPos.x, cCharPos.y);
         float d = Distance(gridPos, cGridPos);
         if(d < distance) {
@@ -200,9 +201,9 @@ int GetClosestCharacter(GameData& data, Level& level, Vector2i gridPos, Characte
 Vector2i ComputeFleeDirection(GameData& data, Level& level, int aiCharId) {
     Vector2 center = {0, 0};
     int count = 0;
-    Vector2i aiPos = GetCharacterSpritePosI(data.spriteData, data.charData.sprite[aiCharId]);
+    Vector2i aiPos = GetCharSpritePosI(data.spriteData, data.charData.sprite[aiCharId]);
     for (auto& pc : level.partyCharacters) {
-        Vector2i pcPos = GetCharacterSpritePosI(data.spriteData, data.charData.sprite[pc]);
+        Vector2i pcPos = GetCharSpritePosI(data.spriteData, data.charData.sprite[pc]);
         if(HasLineOfSight(level, aiPos, pcPos, 16)) {
             center.x += (float) pcPos.x;
             center.y += (float) pcPos.y;
@@ -218,7 +219,7 @@ Vector2i ComputeFleeDirection(GameData& data, Level& level, int aiCharId) {
 }
 
 Vector2i ChooseBestFleeTile(GameData& data,  Level& level, int aiCharId, int maxAP) {
-    Vector2i aiPos = GetCharacterGridPosI(data.spriteData, data.charData.sprite[aiCharId]);
+    Vector2i aiPos = GetCharGridPosI(data.spriteData, data.charData.sprite[aiCharId]);
     std::vector<Vector2i> reachable = GetReachableTiles(level, aiPos, maxAP);
     Vector2i bestTile = aiPos;
     float bestScore = -INFINITY;
@@ -238,7 +239,7 @@ Vector2i ChooseBestFleeTile(GameData& data,  Level& level, int aiCharId, int max
 }
 
 std::vector<int> GetCharactersWithinShootingRange(GameData &data, Level &level, int charId, int range, CharacterFaction faction) {
-    Vector2i charPos = GetCharacterGridPosI(data.spriteData, data.charData.sprite[charId]);
+    Vector2i charPos = GetCharGridPosI(data.spriteData, data.charData.sprite[charId]);
 
     // Pair distance with character ID
     std::vector<std::pair<float, int>> charactersWithDistance;
@@ -253,7 +254,7 @@ std::vector<int> GetCharactersWithinShootingRange(GameData &data, Level &level, 
             continue;
         }
 
-        Vector2i otherCharPos = GetCharacterGridPosI(data.spriteData, data.charData.sprite[c]);
+        Vector2i otherCharPos = GetCharGridPosI(data.spriteData, data.charData.sprite[c]);
         float d = Distance(charPos, otherCharPos);
 
         if (d <= range) {

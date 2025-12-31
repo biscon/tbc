@@ -16,6 +16,7 @@
 #include "game/Items.h"
 #include "raymath.h"
 #include "audio/Sound.h"
+#include "graphics/CharSprite.h"
 
 bool IsIncapacitated(CharacterData& charData, int character) {
     // Check if the character is stunned
@@ -155,9 +156,9 @@ int DealDamage(GameData& data, Level& level, int attacker, int defender, int dam
     SpriteData& spriteData = data.spriteData;
     CharacterData& charData = data.charData;
 
-    CharacterSprite& defenderSprite = charData.sprite[defender];
-    float defenderX = GetCharacterSpritePosX(spriteData, defenderSprite);
-    float defenderY = GetCharacterSpritePosY(spriteData, defenderSprite);
+    CharSprite& defenderSprite = charData.sprite[defender];
+    float defenderX = GetCharSpritePosX(spriteData, defenderSprite);
+    float defenderY = GetCharSpritePosY(spriteData, defenderSprite);
 
     // Base baseAttack calculation
     int baseDamage = damage;
@@ -181,8 +182,8 @@ int DealDamageStatusEffect(GameData& data, Level& level, int target, int damage)
     SpriteData& spriteData = data.spriteData;
     CharacterData& charData = data.charData;
 
-    float targetX = GetCharacterSpritePosX(spriteData, charData.sprite[target]);
-    float targetY = GetCharacterSpritePosY(spriteData, charData.sprite[target]);
+    float targetX = GetCharSpritePosX(spriteData, charData.sprite[target]);
+    float targetY = GetCharSpritePosY(spriteData, charData.sprite[target]);
 
     // Base baseAttack calculation
     int baseDamage = damage;
@@ -215,7 +216,7 @@ void KillCharacter(GameData& data, Level &level, int character) {
     // Remove character from turn order
     //combat.turnOrder.erase(std::remove(combat.turnOrder.begin(), combat.turnOrder.end(), &character), combat.turnOrder.end());
     Animation bloodAnim{};
-    Vector2 bloodPos = GetCharacterSpritePos(data.spriteData, data.charData.sprite[character]);
+    Vector2 bloodPos = GetCharSpritePos(data.spriteData, data.charData.sprite[character]);
     //bloodPos = GetWorldToScreen2D(bloodPos, combat.camera.camera);
     SetupBloodPoolAnimation(bloodAnim, bloodPos, 5.0f);
     level.animations.push_back(bloodAnim);

@@ -272,6 +272,34 @@ void DrawCharSpriteColors(SpriteData& spriteData, CharSprite &sprite, Color c1, 
     EndShaderMode();
 }
 
+void DrawCharSpriteColors(SpriteData& spriteData, CharSprite &sprite, float x, float y, Color c1, Color c2, Color c3, Color c4) {
+    auto& shader = spriteData.charShader.shader;
+    auto& params = spriteData.charShader;
+    BeginShaderMode(shader);
+
+    // configure colors
+    SetShaderValue(shader, params.locSkinDst1, &sprite.skinColor1, SHADER_UNIFORM_VEC3);
+    SetShaderValue(shader, params.locSkinDst2, &sprite.skinColor2, SHADER_UNIFORM_VEC3);
+
+    SetShaderValue(shader, params.locHairDst1, &sprite.hairColor1, SHADER_UNIFORM_VEC3);
+    SetShaderValue(shader, params.locHairDst2, &sprite.hairColor2, SHADER_UNIFORM_VEC3);
+
+    SetShaderValue(shader, params.locOutfitDst1, &sprite.outfitColor1, SHADER_UNIFORM_VEC3);
+    SetShaderValue(shader, params.locOutfitDst2, &sprite.outfitColor2, SHADER_UNIFORM_VEC3);
+    SetShaderValue(shader, params.locOutfitDst3, &sprite.outfitColor3, SHADER_UNIFORM_VEC3);
+    SetShaderValue(shader, params.locOutfitDst4, &sprite.outfitColor4, SHADER_UNIFORM_VEC3);
+
+    for(auto& layer : sprite.layers) {
+        if(layer.player != -1 && !layer.hide) {
+            SpriteAnimationPlayerRenderData& renderData = spriteData.player.renderData[layer.player];
+            renderData.flipX = sprite.orientation == CharOrientation::Left;
+            DrawSpriteAnimationColors(spriteData, layer.player, x, y, c1, c2, c3, c4);
+        }
+    }
+    EndShaderMode();
+}
+
+
 void PlayCharSpriteAnim(SpriteData& spriteData, CharSprite &sprite, CharAnimationType type, bool loop) {
     sprite.currentAnim = type;
     for(auto& layer : sprite.layers) {
@@ -301,6 +329,14 @@ Vector2i GetCharGridPosI(SpriteData& spriteData, CharSprite &sprite) {
     return PixelToGridPositionI((int) renderData.position.x, (int) renderData.position.y);
 }
 
+float GetCharSpritePosX(SpriteData& spriteData, CharSprite &sprite) {
+    return spriteData.player.renderData[sprite.layers[0].player].position.x;
+}
+
+float GetCharSpritePosY(SpriteData& spriteData, CharSprite &sprite) {
+    return spriteData.player.renderData[sprite.layers[0].player].position.y;
+}
+
 void SetCharSpritePos(SpriteData& spriteData, CharSprite &sprite, Vector2 pos) {
     for(auto& layer : sprite.layers) {
         if(layer.player != -1) {
@@ -319,12 +355,39 @@ void SetCharGridPosI(SpriteData& spriteData, CharSprite& sprite, Vector2i pos) {
     SetCharSpritePos(spriteData, sprite, spritePos);
 }
 
+void SetCharSpritePosX(SpriteData& spriteData, CharSprite& sprite, float x) {
+    for(auto& layer : sprite.layers) {
+        if(layer.player != -1) {
+            SpriteAnimationPlayerRenderData& renderData = spriteData.player.renderData[layer.player];
+            renderData.position.x = x;
+        }
+    }
+}
+
+void SetCharSpritePosY(SpriteData& spriteData, CharSprite& sprite, float y) {
+    for(auto& layer : sprite.layers) {
+        if(layer.player != -1) {
+            SpriteAnimationPlayerRenderData& renderData = spriteData.player.renderData[layer.player];
+            renderData.position.y = y;
+        }
+    }
+}
+
 void SetCharSpriteScale(SpriteData& spriteData, CharSprite &sprite, float scale) {
     for(auto& layer : sprite.layers) {
         if(layer.player != -1) {
             SpriteAnimationPlayerRenderData& renderData = spriteData.player.renderData[layer.player];
             renderData.scale.x = scale;
             renderData.scale.y = scale;
+        }
+    }
+}
+
+void SetCharSpriteRotation(SpriteData& spriteData, CharSprite &sprite, float degrees) {
+    for(auto& layer : sprite.layers) {
+        if(layer.player != -1) {
+            SpriteAnimationPlayerRenderData& renderData = spriteData.player.renderData[layer.player];
+            renderData.rotation = degrees;
         }
     }
 }
@@ -467,10 +530,12 @@ void SetOutfit(SpriteData& spriteData, CharSprite& sprite, size_t presetIndex)
     }
 }
 
-void SetCharWeaponType(SpriteData& spriteData, CharSprite& sprite, const std::string& type)
+void SetCharWeaponType(SpriteData& spriteData, CharSprite& sprite, WeaponAnimType weaponAnimType)
 {
     auto& weapon = sprite.layers[(size_t)CharAnimationLayerType::Weapon];
 
+    sprite.weaponType = weaponAnimType;
+    std::string type = WeaponAnimTypeToString(weaponAnimType);
     TraceLog(LOG_INFO, "Setting weapon type to %s", type.c_str());
 
     // Only rebind animations
@@ -497,6 +562,10 @@ void SetCharWeaponType(SpriteData& spriteData, CharSprite& sprite, const std::st
         SpriteAnimationPlayerAnimData& bodyAnimData = spriteData.player.animData[sprite.layers[0].player];
         spriteData.player.animData[weapon.player] = bodyAnimData;
     }
+}
+
+void SetCharHideWeapon(SpriteData& spriteData, CharSprite& sprite, bool hide) {
+    sprite.layers[(size_t) CharAnimationLayerType::Weapon].hide = hide;
 }
 
 void RandomizeCharAppearance(SpriteData& spriteData, CharSprite& sprite) {

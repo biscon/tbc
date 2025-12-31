@@ -11,6 +11,7 @@
 #include <unordered_map>
 #include <array>
 #include "raylib.h"
+#include "WeaponData.h"
 
 constexpr int INVALID_ANIM = -1;
 
@@ -37,6 +38,7 @@ enum class CharAnimationLayerType {
     COUNT
 };
 
+
 struct CharAnimationLayer {
     std::array<int, (size_t)CharAnimationType::COUNT> animations =
             []{
@@ -45,6 +47,7 @@ struct CharAnimationLayer {
                 return a;
             }();
     int player = -1;
+    bool hide = false;
 };
 
 struct ColorPair {
@@ -87,6 +90,7 @@ struct CharSprite {
     Vector3 outfitColor3;
     Vector3 outfitColor4;
     CharAnimationType currentAnim;
+    WeaponAnimType weaponType;
 };
 
 

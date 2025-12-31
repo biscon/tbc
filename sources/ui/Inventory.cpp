@@ -104,6 +104,7 @@ static void RenderCharacterInfo(GameData& data) {
 
     //DrawLine(charInfoRect.x + 5, 28, charInfoRect.x + charInfoRect.width - 5, 28, DARKGRAY);
 
+    /*
     StartPausedCharacterSpriteAnim(data.spriteData, sprite, SpriteAnimationType::WalkRight, true);
     DrawCharacterSpriteScaled(data.spriteData, sprite, floorf(charInfoRect.x + 40), charInfoRect.y + 60, 2.0f);
 
@@ -113,6 +114,7 @@ static void RenderCharacterInfo(GameData& data) {
     // restore
     SpriteAnimationType animType = CharacterOrientationToAnimType(data, charId);
     StartPausedCharacterSpriteAnim(data.spriteData, sprite, animType, true);
+     */
 
     DrawLine(charInfoRect.x + 5, 72, charInfoRect.x + charInfoRect.width - 5, 72, DARKGRAY);
 

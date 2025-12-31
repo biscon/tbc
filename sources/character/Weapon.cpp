@@ -26,7 +26,6 @@ inline WeaponType WeaponTypeFromString(const std::string& str) {
     throw std::runtime_error("Unknown WeaponType: " + str);
 }
 
-
 void InitWeaponData(WeaponData& weaponData, const std::string& filename) {
     std::ifstream file(filename);
     if (!file.is_open()) throw std::runtime_error("Could not open file: " + filename);
@@ -46,7 +45,7 @@ void InitWeaponData(WeaponData& weaponData, const std::string& filename) {
         tmpl.apCost = value.at("apCost");
         tmpl.skillUsed = value.at("skillUsed");
         tmpl.type = WeaponTypeFromString(value.at("type"));
-        tmpl.animationTemplate = value.at("animationTemplate");
+        tmpl.animType = WeaponAnimTypeFromString(value.at("animType"));
 
         if (tmpl.type == WeaponType::Ranged) {
             WeaponRanged ranged;

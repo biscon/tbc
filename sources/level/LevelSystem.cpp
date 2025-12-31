@@ -15,6 +15,7 @@
 #include "audio/Sound.h"
 #include "game/ActionSystem.h"
 #include "ui/Icons.h"
+#include "graphics/CharSprite.h"
 
 static void UpdateAnimations(SpriteData& spriteData, CharacterData& charData, Level &level, float dt) {
     for (auto &anim : level.animations) {
@@ -55,30 +56,18 @@ static void updateTurnBasedMove(GameData& data, Level &level, float dt) {
                     levelData.path.path[levelData.path.currentStep + 1].x,
                     levelData.path.path[levelData.path.currentStep + 1].y);
 
-            CharacterSprite& sprite = data.charData.sprite[level.currentCharacter];
+            CharSprite& sprite = data.charData.sprite[level.currentCharacter];
             // Lerp the x and y components separately
-            SetCharacterSpritePosX(data.spriteData, sprite, Lerp(start.x, end.x, t));
-            SetCharacterSpritePosY(data.spriteData, sprite, Lerp(start.y, end.y, t));
+            SetCharSpritePosX(data.spriteData, sprite, Lerp(start.x, end.x, t));
+            SetCharSpritePosY(data.spriteData, sprite, Lerp(start.y, end.y, t));
 
-            // Determine the direction of movement and set the appropriate animation
-            if (fabs(end.x - start.x) > fabs(end.y - start.y)) {
-                // Horizontal movement
-                if (end.x > start.x) {
-                    PlayCharacterSpriteAnim(data.spriteData, sprite, SpriteAnimationType::WalkRight, true);
-                    data.charData.orientation[level.currentCharacter] = Orientation::Right;
-                } else {
-                    PlayCharacterSpriteAnim(data.spriteData, sprite, SpriteAnimationType::WalkLeft, true);
-                    data.charData.orientation[level.currentCharacter] = Orientation::Left;
-                }
+            // Horizontal movement
+            if (end.x > start.x) {
+                sprite.orientation = CharOrientation::Right;
+                data.charData.orientation[level.currentCharacter] = Orientation::Right;
             } else {
-                // Vertical movement
-                if (end.y > start.y) {
-                    PlayCharacterSpriteAnim(data.spriteData, sprite, SpriteAnimationType::WalkDown, true);
-                    data.charData.orientation[level.currentCharacter] = Orientation::Down;
-                } else {
-                    PlayCharacterSpriteAnim(data.spriteData, sprite, SpriteAnimationType::WalkUp, true);
-                    data.charData.orientation[level.currentCharacter] = Orientation::Up;
-                }
+                sprite.orientation = CharOrientation::Left;
+                data.charData.orientation[level.currentCharacter] = Orientation::Left;
             }
 
             // Check if we have completed the current step
@@ -91,12 +80,9 @@ static void updateTurnBasedMove(GameData& data, Level &level, float dt) {
                     StopSfx(data.soundData, level.footStepsHandle);
                     level.footStepsHandle = -1;
                     levelData.moving = false;
-                    PauseCharacterSpriteAnim(data.spriteData, sprite);
-
-                    SetCharacterSpriteFrame(data.spriteData, sprite, 0);
                     // set final position
                     auto finalPos = levelData.path.path[levelData.path.path.size() - 1];
-                    SetCharacterSpritePos(data.spriteData, sprite, GridToPixelPosition(finalPos.x, finalPos.y));
+                    SetCharSpritePos(data.spriteData, sprite, GridToPixelPosition(finalPos.x, finalPos.y));
 
                     ResetLevelSystem(levelData);
                     if (IsPlayerCharacter(data.charData, level.currentCharacter)) {
@@ -127,30 +113,18 @@ static void updateRealtimeMovement(GameData& data, Level& level, float dt) {
                     move.path.path[move.path.currentStep + 1].x,
                     move.path.path[move.path.currentStep + 1].y);
 
-            CharacterSprite& sprite = data.charData.sprite[move.character];
+            CharSprite& sprite = data.charData.sprite[move.character];
             // Lerp the x and y components separately
-            SetCharacterSpritePosX(data.spriteData, sprite, Lerp(start.x, end.x, t));
-            SetCharacterSpritePosY(data.spriteData, sprite, Lerp(start.y, end.y, t));
+            SetCharSpritePosX(data.spriteData, sprite, Lerp(start.x, end.x, t));
+            SetCharSpritePosY(data.spriteData, sprite, Lerp(start.y, end.y, t));
 
-            // Determine the direction of movement and set the appropriate animation
-            if (fabs(end.x - start.x) > fabs(end.y - start.y)) {
-                // Horizontal movement
-                if (end.x > start.x) {
-                    PlayCharacterSpriteAnim(data.spriteData, sprite, SpriteAnimationType::WalkRight, true);
-                    data.charData.orientation[move.character] = Orientation::Right;
-                } else {
-                    PlayCharacterSpriteAnim(data.spriteData, sprite, SpriteAnimationType::WalkLeft, true);
-                    data.charData.orientation[move.character] = Orientation::Left;
-                }
+            // Horizontal movement
+            if (end.x > start.x) {
+                sprite.orientation = CharOrientation::Right;
+                data.charData.orientation[move.character] = Orientation::Right;
             } else {
-                // Vertical movement
-                if (end.y > start.y) {
-                    PlayCharacterSpriteAnim(data.spriteData, sprite, SpriteAnimationType::WalkDown, true);
-                    data.charData.orientation[move.character] = Orientation::Down;
-                } else {
-                    PlayCharacterSpriteAnim(data.spriteData, sprite, SpriteAnimationType::WalkUp, true);
-                    data.charData.orientation[move.character] = Orientation::Up;
-                }
+                sprite.orientation = CharOrientation::Left;
+                data.charData.orientation[move.character] = Orientation::Left;
             }
 
             // Check if we have completed the current step
@@ -162,11 +136,9 @@ static void updateRealtimeMovement(GameData& data, Level& level, float dt) {
                 if (move.path.currentStep >= move.path.path.size() - 1) {
                     StopSfx(data.soundData, level.footStepsHandle);
                     level.footStepsHandle = -1;
-                    PauseCharacterSpriteAnim(data.spriteData, sprite);
-                    SetCharacterSpriteFrame(data.spriteData, sprite, 0);
                     // set final position
                     auto finalPos = move.path.path[move.path.path.size() - 1];
-                    SetCharacterSpritePos(data.spriteData, sprite, GridToPixelPosition(finalPos.x, finalPos.y));
+                    SetCharSpritePos(data.spriteData, sprite, GridToPixelPosition(finalPos.x, finalPos.y));
                     move.isDone = true;
                     TraceLog(LOG_INFO, "Move done");
                     ExecutePendingAction(data);
@@ -191,9 +163,9 @@ static void checkIfPartySpotted(GameData& data, Level &level) {
         if(data.charData.faction[c] != CharacterFaction::Enemy || data.charData.stats[c].HP <= 0) {
             continue;
         }
-        Vector2i enemyGridPos = GetCharacterGridPosI(data.spriteData, data.charData.sprite[c]);
+        Vector2i enemyGridPos = GetCharGridPosI(data.spriteData, data.charData.sprite[c]);
         for(auto& partyChar : level.partyCharacters) {
-            Vector2i partyGridPos = GetCharacterGridPosI(data.spriteData, data.charData.sprite[partyChar]);
+            Vector2i partyGridPos = GetCharGridPosI(data.spriteData, data.charData.sprite[partyChar]);
             if(HasLineOfSight(level, enemyGridPos, partyGridPos, 16)) {
                 TraceLog(LOG_INFO, "Party last spotted by %s", data.charData.name[c].c_str());
                 PushPartySpotted(data.actionQueue, c);
@@ -219,8 +191,8 @@ static void UpdateFloatingStats(GameData& data, Level &level) {
         if(!HasLineOfSightToParty(data.spriteData, data.charData, level, character))
             continue;
 
-        Vector2 gridPosCharacter = PixelToGridPosition(GetCharacterSpritePosX(data.spriteData, data.charData.sprite[character]),
-                                                       GetCharacterSpritePosY(data.spriteData, data.charData.sprite[character]));
+        Vector2 gridPosCharacter = PixelToGridPosition(GetCharSpritePosX(data.spriteData, data.charData.sprite[character]),
+                                                       GetCharSpritePosY(data.spriteData, data.charData.sprite[character]));
         if ((int) gridPosCharacter.x == (int) gridPos.x && (int) gridPosCharacter.y == (int) gridPos.y) {
             data.ui.level.floatingStatsCharacter = character;
         }
@@ -253,7 +225,7 @@ static void UpdateMousePointer(GameData& data, Level &level) {
     }
 
     for (int npcId : level.npcCharacters) {
-        Vector2i npcPos = GetCharacterGridPosI(data.spriteData, data.charData.sprite[npcId]);
+        Vector2i npcPos = GetCharGridPosI(data.spriteData, data.charData.sprite[npcId]);
         if (npcPos == gridPos) {
             data.ui.currentCursorIcon = ICON_TALK;
             break;
@@ -326,7 +298,7 @@ void UpdateLevelSystem(GameData& data, Level &level, float dt) {
 
     // Update animations for all characters
     for (auto &character: level.allCharacters) {
-        UpdateCharacterSprite(data.spriteData, data.charData.sprite[character], dt);
+        UpdateCharSprite(data.spriteData, data.charData.sprite[character], dt);
     }
     if(level.turnState == TurnState::None) {
         checkIfPartySpotted(data, level);
@@ -348,7 +320,7 @@ void UpdateLevelSystem(GameData& data, Level &level, float dt) {
 void MoveCharacter(GameData& data, Level &level, int character, Vector2i target) {
     // calculate a path and draw it as lines
     Path path;
-    Vector2i cCharPos = GetCharacterSpritePosI(data.spriteData, data.charData.sprite[character]);
+    Vector2i cCharPos = GetCharSpritePosI(data.spriteData, data.charData.sprite[character]);
     Vector2i cGridPos = PixelToGridPositionI(cCharPos.x, cCharPos.y);
     if (CalcPath(data.spriteData, data.charData, level, path, cGridPos, target, character, IsTileOccupiedEnemies)) {
         CharacterMove move;
@@ -364,7 +336,7 @@ void MoveCharacter(GameData& data, Level &level, int character, Vector2i target)
 void MoveCharacterPartial(GameData& data, Level &level, int character, Vector2i target) {
     // calculate a path and draw it as lines
     Path path;
-    Vector2i cCharPos = GetCharacterSpritePosI(data.spriteData, data.charData.sprite[character]);
+    Vector2i cCharPos = GetCharSpritePosI(data.spriteData, data.charData.sprite[character]);
     Vector2i cGridPos = PixelToGridPositionI(cCharPos.x, cCharPos.y);
     CalcPathWithRangePartial(data.spriteData, data.charData, level, path, cGridPos, target, 1, character, IsTileOccupiedEnemies);
     if(!path.path.empty()) {

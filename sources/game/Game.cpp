@@ -8,6 +8,7 @@
 #include "GameMode.h"
 #include "Items.h"
 #include "character/Skill.h"
+#include "graphics/CharSprite.h"
 
 void CreateGame(GameData &game, const std::string& levelFileName) {
     game.state = GameState::START_NEW_GAME;
@@ -20,7 +21,9 @@ void DestroyGame(GameData &game) {
 
 void StartNewGame(GameData &data) {
     int id = CreateCharacter(data.charData, CharacterFaction::Player, "Player1", "Fighter");
-    InitCharacterSprite(data.spriteData, data.charData.sprite[id], "MaleWarrior", true);
+    InitCharSprite(data.spriteData, data.charData.sprite[id], "HumanMale");
+    RandomizeCharAppearance(data.spriteData, data.charData.sprite[id]);
+
     GiveWeapon(data, id, "item_weapon_knife", ItemEquipSlot::Weapon1);
     data.charData.stats[id].STR = 8;
     data.charData.stats[id].END = 7;
@@ -34,8 +37,10 @@ void StartNewGame(GameData &data) {
     data.party.emplace_back(id);
 
     id = CreateCharacter(data.charData, CharacterFaction::Player, "Player2", "Fighter");
-    InitCharacterSprite(data.spriteData, data.charData.sprite[id], "MaleBase", true);
-    GiveWeapon(data, id, "item_weapon_club", ItemEquipSlot::Weapon1);
+    InitCharSprite(data.spriteData, data.charData.sprite[id], "HumanMale");
+    RandomizeCharAppearance(data.spriteData, data.charData.sprite[id]);
+
+    GiveWeapon(data, id, "item_weapon_pistol", ItemEquipSlot::Weapon1);
     data.charData.stats[id].REF = 8;
     data.charData.stats[id].LVL = 5;
     data.charData.stats[id].HP = CalculateCharHealth(data.charData.stats[id]);
@@ -82,7 +87,8 @@ void LoadGame(GameData &data) {
     data.party.clear();
     for(auto& ch : saveData.party) {
         int id = CreateCharacter(data.charData, ch.faction, ch.name, ch.ai);
-        InitCharacterSprite(data.spriteData, data.charData.sprite[id], ch.spriteTemplate, true);
+        InitCharSprite(data.spriteData, data.charData.sprite[id], ch.spriteTemplate);
+        RandomizeCharAppearance(data.spriteData, data.charData.sprite[id]);
 
         SetSelectedWeaponSlot(data, id, static_cast<ItemEquipSlot>(ch.selectedWeaponSlot));
 
@@ -104,7 +110,7 @@ void LoadGame(GameData &data) {
 
         //SetSelectedWeaponSlot(data, id, static_cast<ItemEquipSlot>(ch.selectedWeaponSlot));
         Vector2i savedPos = { ch.tilePosX, ch.tilePosY};
-        SetCharacterGridPosI(data.spriteData, data.charData.sprite[id], savedPos);
+        SetCharGridPosI(data.spriteData, data.charData.sprite[id], savedPos);
         data.party.emplace_back(id);
     }
     // Load flags
@@ -164,7 +170,7 @@ void SaveGame(GameData &data) {
         pc.skillValues = data.charData.skillValues[id];
 
         // save position
-        Vector2i pos = GetCharacterGridPosI(data.spriteData, data.charData.sprite[id]);
+        Vector2i pos = GetCharGridPosI(data.spriteData, data.charData.sprite[id]);
         pc.tilePosX = pos.x;
         pc.tilePosY = pos.y;
 

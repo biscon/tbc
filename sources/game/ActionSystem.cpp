@@ -19,6 +19,7 @@
 #include "graphics/TileMap.h"
 #include "graphics/Lighting.h"
 #include "ScriptSystem.h"
+#include "graphics/CharSprite.h"
 // -----------------------------------------------------------------------------
 // QUEUE POP
 // -----------------------------------------------------------------------------
@@ -214,13 +215,8 @@ bool ProcessActions(GameData& data, Level& level, float dt)
 
                 for (auto& c : level.partyCharacters)
                 {
-                    CharacterSprite& sprite = data.charData.sprite[c];
-                    StartPausedCharacterSpriteAnim(
-                            data.spriteData,
-                            sprite,
-                            SpriteAnimationType::WalkDown,
-                            true
-                    );
+                    CharSprite& sprite = data.charData.sprite[c];
+                    PlayCharSpriteAnim(data.spriteData, sprite, CharAnimationType::Idle, true);
 
                     data.charData.orientation[c] = Orientation::Down;
                     data.charData.statusEffects[c].clear();
@@ -228,7 +224,6 @@ bool ProcessActions(GameData& data, Level& level, float dt)
                     if (data.charData.stats[c].HP <= 0) {
                         data.charData.stats[c].HP =
                                 CalculateCharHealth(data.charData.stats[c]);
-                        SetCharacterSpriteRotation(data.spriteData, sprite, 0);
                     }
                 }
 

@@ -5,6 +5,7 @@
 #include "LevelCamera.h"
 #include "raymath.h"
 #include "graphics/CharacterSprite.h"
+#include "graphics/CharSprite.h"
 
 void StartCameraPanToTargetPos(LevelCamera& cam, Vector2 target, float speed) {
     // Compute visible screen center offset from overscroll
@@ -41,7 +42,7 @@ void StartCameraPanToTilePos(LevelCamera& cam, Vector2i target, float speed) {
 }
 
 void StartCameraPanToTargetChar(SpriteData& spriteData, CharacterData& charData, LevelCamera& cam, int target, float speed) {
-    Vector2 charPos = GetCharacterSpritePos(spriteData, charData.sprite[target]);
+    Vector2 charPos = GetCharSpritePos(spriteData, charData.sprite[target]);
 
     // Same offset logic
     float offsetX = (cam.overscrollRight - cam.overscrollLeft) / 2.0f;
@@ -70,7 +71,7 @@ void StartCameraPanToTargetChar(SpriteData& spriteData, CharacterData& charData,
 
 
 void StartCameraPanToTargetCharTime(SpriteData& spriteData, CharacterData& charData, LevelCamera& cam, int target, float duration) {
-    Vector2 charPos = GetCharacterSpritePos(spriteData, charData.sprite[target]);
+    Vector2 charPos = GetCharSpritePos(spriteData, charData.sprite[target]);
 
     float offsetX = (cam.overscrollRight - cam.overscrollLeft) / 2.0f;
     float offsetY = (cam.overscrollBottom - cam.overscrollTop) / 2.0f;

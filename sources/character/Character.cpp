@@ -6,6 +6,7 @@
 #include "Character.h"
 #include "util/Random.h"
 #include "game/Items.h"
+#include "graphics/CharSprite.h"
 
 
 bool IsAlive(CharacterData &data, int characterIdx) {
@@ -88,26 +89,17 @@ Vector2 GetOrientationVector(Orientation orientation) {
 
 void FaceCharacter(SpriteData& spriteData, CharacterData &charData, int attackerId, int defenderId) {
     // Determine the direction of movement and set the appropriate animation
-    Vector2 start = GetCharacterSpritePos(spriteData, charData.sprite[attackerId]);
-    Vector2 end = GetCharacterSpritePos(spriteData, charData.sprite[defenderId]);
-    if (fabs(end.x - start.x) > fabs(end.y - start.y)) {
-        // Horizontal movement
-        if (end.x > start.x) {
-            StartPausedCharacterSpriteAnim(spriteData, charData.sprite[attackerId], SpriteAnimationType::WalkRight, true);
-            charData.orientation[attackerId] = Orientation::Right;
-        } else {
-            StartPausedCharacterSpriteAnim(spriteData, charData.sprite[attackerId], SpriteAnimationType::WalkLeft, true);
-            charData.orientation[attackerId] = Orientation::Left;
-        }
+    Vector2 start = GetCharSpritePos(spriteData, charData.sprite[attackerId]);
+    Vector2 end = GetCharSpritePos(spriteData, charData.sprite[defenderId]);
+    auto& charSprite = charData.sprite[attackerId];
+
+    // Horizontal movement
+    if (end.x > start.x) {
+        charSprite.orientation = CharOrientation::Right;
+        charData.orientation[attackerId] = Orientation::Right;
     } else {
-        // Vertical movement
-        if (end.y > start.y) {
-            StartPausedCharacterSpriteAnim(spriteData, charData.sprite[attackerId], SpriteAnimationType::WalkDown, true);
-            charData.orientation[attackerId] = Orientation::Down;
-        } else {
-            StartPausedCharacterSpriteAnim(spriteData, charData.sprite[attackerId], SpriteAnimationType::WalkUp, true);
-            charData.orientation[attackerId] = Orientation::Up;
-        }
+        charSprite.orientation = CharOrientation::Left;
+        charData.orientation[attackerId] = Orientation::Left;
     }
 }
 
@@ -126,12 +118,9 @@ void SetEquippedItem(GameData& data, int charIdx, ItemEquipSlot slot, int itemId
     if(data.charData.selectedWeaponSlot[charIdx] == static_cast<int>(slot)) {
         if(itemIdx != -1) {
             int tplIdx = GetItemTypeTemplateId(data, itemIdx);
-            SetCharacterSpriteWeaponAnimation(data.spriteData, data.charData.sprite[charIdx],
-                                              data.weaponData.templateData[tplIdx].animationTemplate);
-            SpriteAnimationType animType = CharacterOrientationToAnimType(data, charIdx);
-            StartPausedCharacterSpriteAnim(data.spriteData, data.charData.sprite[charIdx], animType, true);
+            SetCharWeaponType(data.spriteData, data.charData.sprite[charIdx], data.weaponData.templateData[tplIdx].animType);
         } else {
-            data.charData.sprite[charIdx].displayWeapon = false;
+            SetCharHideWeapon(data.spriteData, data.charData.sprite[charIdx], true);
         }
     }
 }
@@ -180,15 +169,13 @@ void SetSelectedWeaponSlot(GameData& data, int charId, ItemEquipSlot slot) {
     }
 
     data.charData.selectedWeaponSlot[charId] = static_cast<int>(slot);
-    int itemId = GetEquippedItem(data, data.ui.selectedCharacter, slot);
-    if(itemId != -1) {
-        int tplIdx = GetItemTypeTemplateId(data, itemId);
-        SetCharacterSpriteWeaponAnimation(data.spriteData, data.charData.sprite[charId],
-                                          data.weaponData.templateData[tplIdx].animationTemplate);
-        SpriteAnimationType animType = CharacterOrientationToAnimType(data, charId);
-        StartPausedCharacterSpriteAnim(data.spriteData, data.charData.sprite[charId], animType, true);
+    int itemIdx = GetEquippedItem(data, data.ui.selectedCharacter, slot);
+
+    if(itemIdx != -1) {
+        int tplIdx = GetItemTypeTemplateId(data, itemIdx);
+        SetCharWeaponType(data.spriteData, data.charData.sprite[charId], data.weaponData.templateData[tplIdx].animType);
     } else {
-        data.charData.sprite[charId].displayWeapon = false;
+        SetCharHideWeapon(data.spriteData, data.charData.sprite[charId], true);
     }
 }
 
@@ -205,16 +192,13 @@ void SwapWeapons(GameData &data, int charIdx) {
             throw std::runtime_error("");
     }
     selectedSlot = static_cast<ItemEquipSlot>(data.charData.selectedWeaponSlot[charIdx]);
-    int itemId = GetEquippedItem(data, data.ui.selectedCharacter, selectedSlot);
-    if(itemId != -1) {
-        int tplIdx = GetItemTypeTemplateId(data, itemId);
-        SetCharacterSpriteWeaponAnimation(data.spriteData, data.charData.sprite[charIdx],
-                                          data.weaponData.templateData[tplIdx].animationTemplate);
+    int itemIdx = GetEquippedItem(data, data.ui.selectedCharacter, selectedSlot);
 
-        SpriteAnimationType animType = CharacterOrientationToAnimType(data, charIdx);
-        StartPausedCharacterSpriteAnim(data.spriteData, data.charData.sprite[charIdx], animType, true);
+    if(itemIdx != -1) {
+        int tplIdx = GetItemTypeTemplateId(data, itemIdx);
+        SetCharWeaponType(data.spriteData, data.charData.sprite[charIdx], data.weaponData.templateData[tplIdx].animType);
     } else {
-        data.charData.sprite[charIdx].displayWeapon = false;
+        SetCharHideWeapon(data.spriteData, data.charData.sprite[charIdx], true);
     }
 }
 

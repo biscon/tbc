@@ -9,6 +9,7 @@
 #include "raymath.h"
 #include "util/Random.h"
 #include "CharacterSprite.h"
+#include "CharSprite.h"
 
 void SetupBlinkAnimation(Animation &animation, int character, float duration) {
     animation.type = AnimationType::Blink;
@@ -62,7 +63,7 @@ void SetupTextAnimation(Animation &animation, const char *text, float y, float d
 }
 
 void SetupDeathAnimation(SpriteData& spriteData, CharacterData& charData, Animation &animation, int character, float duration) {
-    Vector2 charPos = GetCharacterSpritePos(spriteData, charData.sprite[character]);
+    Vector2 charPos = GetCharSpritePos(spriteData, charData.sprite[character]);
     animation.type = AnimationType::Death;
     animation.duration = duration;
     animation.time = 0;
@@ -120,7 +121,8 @@ void SetupVictoryAnimation(SpriteData& spriteData, CharacterData& charData, Anim
 
     VictoryAnimationState &state = animation.state.victory;
     state.character = character;
-    state.baseY = GetCharacterSpritePosY(spriteData, charData.sprite[character]); // Assuming `position.y` is the character's initial vertical position
+    Vector2 pos = GetCharSpritePos(spriteData, charData.sprite[character]);
+    state.baseY = pos.y;
     state.jumpHeight = jumpHeight;
     state.jumpSpeed = jumpSpeed;
     state.currentY = state.baseY;
@@ -241,11 +243,11 @@ void UpdateAnimation(SpriteData& spriteData, CharacterData& charData, Animation 
             // Duration is split into two phases: bounce and fall
             float bounceDuration = animation.duration * 0.3f; // 30% of duration for bounce
             float fallDuration = animation.duration * 0.7f;   // 70% of duration for fall
-            CharacterSprite& charSprite = charData.sprite[animation.state.death.character];
-            Vector2 charPos = GetCharacterSpritePos(spriteData, charSprite);
+            CharSprite& charSprite = charData.sprite[animation.state.death.character];
+            Vector2 charPos = GetCharSpritePos(spriteData, charSprite);
             if (animation.time <= bounceDuration) {
                 // Bounce phase (upwards motion)
-                SetCharacterSpritePosY(spriteData, charSprite, EaseQuadOut(animation.time, animation.state.death.startY, animation.state.death.bounceY - animation.state.death.startY, bounceDuration));
+                SetCharSpritePosY(spriteData, charSprite, EaseQuadOut(animation.time, animation.state.death.startY, animation.state.death.bounceY - animation.state.death.startY, bounceDuration));
             } else {
                 // Fall phase (downwards motion)
                 float fallTime = animation.time - bounceDuration;
@@ -253,10 +255,10 @@ void UpdateAnimation(SpriteData& spriteData, CharacterData& charData, Animation 
                     EaseQuadIn(fallTime, animation.state.death.startX, animation.state.death.endX - animation.state.death.startX, fallDuration),
                     EaseQuadIn(fallTime, animation.state.death.bounceY, animation.state.death.endY - animation.state.death.bounceY, fallDuration)
                 };
-                SetCharacterSpritePos(spriteData, charSprite, newPos);
+                SetCharSpritePos(spriteData, charSprite, newPos);
             }
             // Rotate the character
-            SetCharacterSpriteRotation(spriteData, charSprite, EaseQuadOut(animation.time, 0, 90, animation.duration));
+            SetCharSpriteRotation(spriteData, charSprite, EaseQuadOut(animation.time, 0, 90, animation.duration));
             break;
         }
         case AnimationType::BloodPool: {
@@ -314,7 +316,7 @@ void UpdateAnimation(SpriteData& spriteData, CharacterData& charData, Animation 
             }
 
             // Update character's position
-            SetCharacterSpritePosY(spriteData, charData.sprite[state.character], state.currentY);
+            SetCharSpritePosY(spriteData, charData.sprite[state.character], state.currentY);
             break;
         }
         case AnimationType::FancyText: {

@@ -15,6 +15,7 @@
 #include "audio/Sound.h"
 #include "game/ActionSystem.h"
 #include "LevelSystem.h"
+#include "graphics/CharSprite.h"
 
 static bool CheckEndCombat(GameData& data, Level& level) {
     // check victory condition, all enemies have zero health
@@ -92,9 +93,9 @@ void UpdateCombat(GameData &data, Level &level, float dt) {
                 level.nextState = TurnState::EndTurn;
                 std::string logMessage = charData.name[level.currentCharacter] + " is skipping the turn!";
                 level.log.push_back(logMessage);
-                CharacterSprite& sprite = charData.sprite[level.currentCharacter];
-                float charX = GetCharacterSpritePosX(spriteData, sprite);
-                float charY = GetCharacterSpritePosY(spriteData, sprite);
+                CharSprite& sprite = charData.sprite[level.currentCharacter];
+                float charX = GetCharSpritePosX(spriteData, sprite);
+                float charY = GetCharSpritePosY(spriteData, sprite);
                 Animation anim{};
                 SetupDamageNumberAnimation(anim, "STUNNED", charX, charY-25, WHITE, 10, 0);
                 level.animations.push_back(anim);
@@ -133,10 +134,10 @@ void UpdateCombat(GameData &data, Level &level, float dt) {
         case TurnState::AttackDone: {
             assert(level.attackResult.defender == level.selectedCharacter);
             assert(level.attackResult.attacker == level.currentCharacter);
-            float attackerX = GetCharacterSpritePosX(spriteData, charData.sprite[level.currentCharacter]);
-            float attackerY = GetCharacterSpritePosY(spriteData, charData.sprite[level.currentCharacter]);
-            float defenderX = GetCharacterSpritePosX(spriteData, charData.sprite[level.selectedCharacter]);
-            float defenderY = GetCharacterSpritePosY(spriteData, charData.sprite[level.selectedCharacter]);
+            float attackerX = GetCharSpritePosX(spriteData, charData.sprite[level.currentCharacter]);
+            float attackerY = GetCharSpritePosY(spriteData, charData.sprite[level.currentCharacter]);
+            float defenderX = GetCharSpritePosX(spriteData, charData.sprite[level.selectedCharacter]);
+            float defenderY = GetCharSpritePosY(spriteData, charData.sprite[level.selectedCharacter]);
             AttackResult& result = level.attackResult;
             AttackHit& hit = result.hits.back();
             int damage = hit.damage;
@@ -192,8 +193,8 @@ void UpdateCombat(GameData &data, Level &level, float dt) {
         case TurnState::AttackRangedDone: {
             assert(level.attackResult.defender == level.selectedCharacter);
             assert(level.attackResult.attacker == level.currentCharacter);
-            float defenderX = GetCharacterSpritePosX(spriteData, charData.sprite[level.selectedCharacter]);
-            float defenderY = GetCharacterSpritePosY(spriteData, charData.sprite[level.selectedCharacter]);
+            float defenderX = GetCharSpritePosX(spriteData, charData.sprite[level.selectedCharacter]);
+            float defenderY = GetCharSpritePosY(spriteData, charData.sprite[level.selectedCharacter]);
             AttackResult& result = level.attackResult;
             float dmgNumDelay = 0.25f;
             float waitTime = 0;
@@ -242,8 +243,8 @@ void UpdateCombat(GameData &data, Level &level, float dt) {
             break;
         }
         case TurnState::KillCharacters: {
-            float attackerX = GetCharacterSpritePosX(spriteData, charData.sprite[level.currentCharacter]);
-            float attackerY = GetCharacterSpritePosY(spriteData, charData.sprite[level.currentCharacter]);
+            float attackerX = GetCharSpritePosX(spriteData, charData.sprite[level.currentCharacter]);
+            float attackerY = GetCharSpritePosY(spriteData, charData.sprite[level.currentCharacter]);
             TurnState nextState = IsPlayerCharacter(data.charData, level.currentCharacter) ? TurnState::SelectEnemy : TurnState::EnemyTurn;
             if(charData.stats[level.attackResult.defender].HP <= 0) {
                 Animation speechBubble{};

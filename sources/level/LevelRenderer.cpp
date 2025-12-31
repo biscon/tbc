@@ -15,6 +15,7 @@
 #include "graphics/Lighting.h"
 #include "graphics/BloodPool.h"
 #include "Weather.h"
+#include "graphics/CharSprite.h"
 #include <cassert>
 
 static bool IsCharacterVisible(Level &combat, int character) {
@@ -162,7 +163,7 @@ static void DrawSelectTargetCharacter(GameData& data, LevelSystemData &playField
     if (playField.selectedCharacter != -1) {
         AttackInfo& info = data.ui.level.attackInfo;
         int ap = data.charData.stats[data.ui.selectedCharacter].AP;
-        Vector2i gridPos = GetCharacterGridPosI(data.spriteData, data.charData.sprite[playField.selectedCharacter]);
+        Vector2i gridPos = GetCharGridPosI(data.spriteData, data.charData.sprite[playField.selectedCharacter]);
         if(ap < info.apCost) {
             DrawIcon(data, gridPos.x * 16, gridPos.y * 16, ColorAlpha(RED, playField.highlightAlpha), ICON_END_TURN);
         } else {
@@ -197,11 +198,13 @@ static void DrawTileSelection(GameData& data, LevelSystemData &playField, Level 
 
 static void RenderActiveCharacterIndicator(GameData& data, float alpha, int charId) {
     auto& sprite = data.charData.sprite[charId];
-    Vector2 pos = GetCharacterSpritePos(data.spriteData, sprite);
-    if(sprite.bodyPlayer == -1) {
+    Vector2 pos = GetCharSpritePos(data.spriteData, sprite);
+
+    int player = sprite.layers[(size_t) CharAnimationLayerType::Naked].player;
+    if(player == -1) {
         return;
     }
-    int animIdx = data.spriteData.player.animationIdx[sprite.bodyPlayer];
+    int animIdx = data.spriteData.player.animationIdx[player];
     Vector2 origin = data.spriteData.anim.origin[animIdx];
     Rectangle rect = {pos.x - origin.x + 6, pos.y - origin.y + 7, 19, 25};
     DrawRectangleCorners(rect, ColorAlpha(YELLOW, alpha), 4);
@@ -241,10 +244,9 @@ void RenderFloatingStats(GameData& data, Level& level) {
     int statsCharId = data.ui.level.floatingStatsCharacter;
     if (data.state != GameState::DIALOGUE && statsCharId != -1 && (level.turnState == TurnState::None || level.turnState == TurnState::SelectAction ||
                                                                    level.turnState == TurnState::SelectEnemy || level.turnState == TurnState::SelectDestination)) {
-        float x = GetCharacterSpritePosX(data.spriteData, data.charData.sprite[statsCharId]);
-        float y = GetCharacterSpritePosY(data.spriteData, data.charData.sprite[statsCharId]);
+        Vector2 pos = GetCharSpritePos(data.spriteData, data.charData.sprite[statsCharId]);
         // to screen space
-        Vector2 screenPos = GetWorldToScreen2D(Vector2{x, y}, level.camera.camera);
+        Vector2 screenPos = GetWorldToScreen2D(pos, level.camera.camera);
         DisplayCharacterStatsFloating(data.charData, statsCharId, (int) screenPos.x - 10, (int) screenPos.y + 12,
                                       IsPlayerCharacter(data.charData, statsCharId), data.smallFont1);
     }
@@ -260,7 +262,7 @@ Vector2 GetAnimatedCharPos(GameData& data, Level &level, int character) {
             }
         }
     }
-    return GetCharacterSpritePos(data.spriteData, data.charData.sprite[character]);
+    return GetCharSpritePos(data.spriteData, data.charData.sprite[character]);
 }
 
 // Function to draw the health bar
@@ -286,8 +288,8 @@ static void DrawGridCharacters(GameData& data, Level &level, LevelSystemData& pl
 
     // Draw characters
     for (auto &character: sortedCharacters) {
-        CharacterSprite& charSprite = charData.sprite[character];
-        auto gridPos = GetCharacterGridPosI(data.spriteData, charSprite);
+        CharSprite& charSprite = charData.sprite[character];
+        auto gridPos = GetCharGridPosI(data.spriteData, charSprite);
         if(!HasLineOfSightToPartyLight(spriteData, charData, level, gridPos))
             continue;
         Vector2 charPos = GetAnimatedCharPos(data, level, character);
@@ -297,17 +299,13 @@ static void DrawGridCharacters(GameData& data, Level &level, LevelSystemData& pl
 
 
         if (IsCharacterVisible(level, character)) {
-            Vector2i t = GetCharacterGridPosI(spriteData, charSprite);
+            Vector2i t = GetCharGridPosI(spriteData, charSprite);
             Color v1 = GetVertexLight(level.lighting, level.tileMap, t.x, t.y);     // top-left corner
             Color v2 = GetVertexLight(level.lighting, level.tileMap, t.x+1, t.y);   // top-right
             Color v3 = GetVertexLight(level.lighting, level.tileMap, t.x+1, t.y+1); // bottom-right
             Color v4 = GetVertexLight(level.lighting, level.tileMap, t.x, t.y+1);   // bottom-left
 
-            DrawCharacterSpriteColors(spriteData, charSprite, charPos.x, charPos.y, v1, v2, v3, v4);
-        } else {
-            SetCharacterSpriteTint(spriteData, charSprite, {255, 255, 255, 64});
-            DrawCharacterSprite(spriteData, charSprite, charPos.x, charPos.y);
-            SetCharacterSpriteTint(spriteData, charSprite, WHITE); // Reset tint
+            DrawCharSpriteColors(spriteData, charSprite, charPos.x, charPos.y, v1, v2, v3, v4);
         }
         CharacterStats& stats = charData.stats[character];
         // Draw health bar

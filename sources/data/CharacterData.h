@@ -55,7 +55,7 @@ struct CharacterData {
     std::vector<std::string> name;
     std::vector<std::string> ai;
     std::vector<CharacterStats> stats;
-    std::vector<CharacterSprite> sprite;
+    std::vector<CharSprite> sprite;
     std::vector<std::vector<StatusEffect>> statusEffects;
     std::vector<Orientation> orientation;
     std::vector<std::array<int, static_cast<size_t>(ItemEquipSlot::COUNT)>> equippedItemIdx;

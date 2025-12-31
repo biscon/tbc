@@ -6,6 +6,7 @@
 #include "raymath.h"
 #include "graphics/TileMap.h"
 #include "graphics/CharacterSprite.h"
+#include "graphics/CharSprite.h"
 #include <queue>
 #include <functional>
 #include <algorithm>
@@ -94,7 +95,7 @@ bool IsTileOccupied(SpriteData& spriteData, CharacterData& charData, Level &leve
     for (auto &character: level.allCharacters) {
         // skip dead
         if (charData.stats[character].HP <= 0) continue;
-        Vector2 gridPos = PixelToGridPosition(GetCharacterSpritePosX(spriteData, charData.sprite[character]), GetCharacterSpritePosY(spriteData, charData.sprite[character]));
+        Vector2 gridPos = PixelToGridPosition(GetCharSpritePosX(spriteData, charData.sprite[character]), GetCharSpritePosY(spriteData, charData.sprite[character]));
         if ((int) gridPos.x == x && (int) gridPos.y == y && character != exceptCharacter) {
             //TraceLog(LOG_WARNING, "Player character in the way, x: %d, y: %d", x, y);
             return true;
@@ -109,7 +110,7 @@ bool IsTileOccupiedEnemies(SpriteData& spriteData, CharacterData& charData, Leve
         // skip dead
         if (charData.stats[character].HP <= 0 || charData.faction[character] == CharacterFaction::Player)
             continue;
-        Vector2 gridPos = PixelToGridPosition(GetCharacterSpritePosX(spriteData, charData.sprite[character]), GetCharacterSpritePosY(spriteData, charData.sprite[character]));
+        Vector2 gridPos = PixelToGridPosition(GetCharSpritePosX(spriteData, charData.sprite[character]), GetCharSpritePosY(spriteData, charData.sprite[character]));
         if ((int) gridPos.x == x && (int) gridPos.y == y && character != exceptCharacter) {
             //TraceLog(LOG_WARNING, "Enemy character in the way, x: %d, y: %d", x, y);
             return true;
@@ -124,7 +125,7 @@ bool IsTileOccupiedFriendlies(SpriteData& spriteData, CharacterData& charData, L
         // skip dead
         if (charData.stats[character].HP <= 0 || charData.faction[character] != CharacterFaction::Player)
             continue;
-        Vector2 gridPos = PixelToGridPosition(GetCharacterSpritePosX(spriteData, charData.sprite[character]), GetCharacterSpritePosY(spriteData, charData.sprite[character]));
+        Vector2 gridPos = PixelToGridPosition(GetCharSpritePosX(spriteData, charData.sprite[character]), GetCharSpritePosY(spriteData, charData.sprite[character]));
         if ((int) gridPos.x == x && (int) gridPos.y == y && character != exceptCharacter) {
             //TraceLog(LOG_WARNING, "Enemy character in the way, x: %d, y: %d", x, y);
             return true;
@@ -453,8 +454,8 @@ bool CalcPathWithRangePartial(SpriteData& spriteData, CharacterData& charData, L
 }
 
 bool IsCharacterAdjacentToPlayer(SpriteData& spriteData, CharacterData& charData, int player, int character) {
-    Vector2i charPos = GetCharacterSpritePosI(spriteData, charData.sprite[character]);
-    Vector2i playerPos = GetCharacterSpritePosI(spriteData, charData.sprite[player]);
+    Vector2i charPos = GetCharSpritePosI(spriteData, charData.sprite[character]);
+    Vector2i playerPos = GetCharSpritePosI(spriteData, charData.sprite[player]);
 
     Vector2i charGridPos = PixelToGridPositionI(charPos.x, charPos.y);
     Vector2i playerGridPos = PixelToGridPositionI(playerPos.x, playerPos.y);
@@ -541,8 +542,8 @@ bool HasLineOfSight(Level &level, Vector2i start, Vector2i end, int maxDist) {
 }
 
 bool HasLineOfSight(GameData& data, Level &level, int firstChar, int secondChar, int maxDist) {
-    Vector2i firstPos = GetCharacterGridPosI(data.spriteData, data.charData.sprite[firstChar]);
-    Vector2i secondPos = GetCharacterGridPosI(data.spriteData, data.charData.sprite[secondChar]);
+    Vector2i firstPos = GetCharGridPosI(data.spriteData, data.charData.sprite[firstChar]);
+    Vector2i secondPos = GetCharGridPosI(data.spriteData, data.charData.sprite[secondChar]);
     return HasLineOfSight(level, firstPos, secondPos, maxDist);
 }
 
@@ -638,9 +639,9 @@ bool HasLineOfSightToParty(SpriteData& spriteData, CharacterData& charData, Leve
     if (std::find(level.partyCharacters.begin(), level.partyCharacters.end(), charId) != level.partyCharacters.end()) {
         return true;
     }
-    Vector2i charPos = GetCharacterGridPosI(spriteData, charData.sprite[charId]);
+    Vector2i charPos = GetCharGridPosI(spriteData, charData.sprite[charId]);
     for(auto& partyCharId : level.partyCharacters) {
-        Vector2i partyCharPos = GetCharacterGridPosI(spriteData, charData.sprite[partyCharId]);
+        Vector2i partyCharPos = GetCharGridPosI(spriteData, charData.sprite[partyCharId]);
         if(HasLineOfSight(level, partyCharPos, charPos, 50))
             return true;
     }
@@ -649,7 +650,7 @@ bool HasLineOfSightToParty(SpriteData& spriteData, CharacterData& charData, Leve
 
 bool HasLineOfSightToPartyLight(SpriteData& spriteData, CharacterData& charData, Level &level, const Vector2i& pos) {
     for(auto& partyCharId : level.partyCharacters) {
-        Vector2i partyCharPos = GetCharacterGridPosI(spriteData, charData.sprite[partyCharId]);
+        Vector2i partyCharPos = GetCharGridPosI(spriteData, charData.sprite[partyCharId]);
         if(HasLineOfSightLight(level, partyCharPos, pos, 50))
             return true;
     }
@@ -720,7 +721,7 @@ std::vector<int> GetTargetsInLine(SpriteData& spriteData, CharacterData& charDat
             if(character == exceptCharacter) continue;
             // skip dead
             if (charData.stats[character].HP <= 0) continue;
-            Vector2i charPos = GetCharacterSpritePosI(spriteData, charData.sprite[character]);
+            Vector2i charPos = GetCharSpritePosI(spriteData, charData.sprite[character]);
             Vector2i gridPos = PixelToGridPositionI(charPos.x, charPos.y);
             if (gridPos == tilePos) {
                 affectedCharacters.push_back(character);
@@ -797,7 +798,7 @@ bool IsAnyPartyMemberNear(
 
     for (int c : level.partyCharacters)
     {
-        Vector2i cPos = GetCharacterGridPosI(
+        Vector2i cPos = GetCharGridPosI(
                 spriteData,
                 charData.sprite[c]
         );

@@ -95,6 +95,7 @@ int main() {
     HideCursor();
 
 
+    /*
     CharSprite charSprite;
     InitCharSprite(game.spriteData, charSprite, "HumanMale");
     RandomizeCharAppearance(game.spriteData, charSprite);
@@ -102,6 +103,7 @@ int main() {
     SetCharSpritePosI(game.spriteData, charSprite, Vector2i{100, 100});
     SetCharWeaponType(game.spriteData, charSprite, "Pistol");
     //SetCharSpriteScale(game.spriteData, charSprite, 2.0f);
+    */
 
     // Main game loop
     while (!WindowShouldClose())        // Detect window close button or ESC key
@@ -156,6 +158,7 @@ int main() {
                 //DrawTextEx(font2, TextFormat("MouseScale: %f,%f", mouseScaleX, mouseScaleY), (Vector2) {1, 36}, 5, 1, YELLOW);
             }
 
+            /*
             if(IsKeyReleased(KEY_SPACE)) {
                 RandomizeCharAppearance(game.spriteData, charSprite);
                 //PlayCharSpriteAnim(game.spriteData, charSprite, CharAnimationType::MeleeAttack, true);
@@ -166,6 +169,7 @@ int main() {
             }
             UpdateCharSprite(game.spriteData, charSprite, dt);
             DrawCharSpriteColors(game.spriteData, charSprite, WHITE, WHITE, WHITE, WHITE);
+             */
 
         EndTextureMode();
 

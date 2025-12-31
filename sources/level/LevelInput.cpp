@@ -18,6 +18,7 @@
 #include "game/Input.h"
 #include "game/ActionSystem.h"
 #include "LevelSystem.h"
+#include "graphics/CharSprite.h"
 
 static void HandleInputPathSelection(GameData& data, Level &level) {
     SpriteData& spriteData = data.spriteData;
@@ -33,8 +34,8 @@ static void HandleInputPathSelection(GameData& data, Level &level) {
         Path& path = data.ui.level.movePath;
         CharacterStats& stats = charData.stats[level.currentCharacter];
         Vector2i target = PixelToGridPositionI(static_cast<int>(mousePos.x), static_cast<int>(mousePos.y));
-        if (CalcPath(spriteData, charData, level, path, PixelToGridPositionI((int) GetCharacterSpritePosX(spriteData, charData.sprite[level.currentCharacter]),
-                                                                             (int) GetCharacterSpritePosY(spriteData, charData.sprite[level.currentCharacter])),
+        if (CalcPath(spriteData, charData, level, path, PixelToGridPositionI((int) GetCharSpritePosX(spriteData, charData.sprite[level.currentCharacter]),
+                                                                             (int) GetCharSpritePosY(spriteData, charData.sprite[level.currentCharacter])),
                      target, level.currentCharacter, IsTileOccupied)) {
 
             if (path.cost <= stats.AP) {
@@ -80,8 +81,8 @@ static void HandleMeleeTargetSelection(GameData& data, Level& level, WeaponTempl
 }
 
 static void HandleRangedTargetSelection(GameData& data, Level& level, WeaponTemplate* weaponTemplate, int targetId) {
-    Vector2i start = GetCharacterGridPosI(data.spriteData, data.charData.sprite[data.ui.selectedCharacter]);
-    Vector2i end = GetCharacterGridPosI(data.spriteData, data.charData.sprite[targetId]);
+    Vector2i start = GetCharGridPosI(data.spriteData, data.charData.sprite[data.ui.selectedCharacter]);
+    Vector2i end = GetCharGridPosI(data.spriteData, data.charData.sprite[targetId]);
     if(HasLineOfSightFriendlies(data, level, start, end, weaponTemplate->range, data.ui.selectedCharacter)) {
         int weaponItemId = GetSelectedWeaponItemId(data, data.ui.selectedCharacter);
         CalcHitChance(data, data.ui.selectedCharacter, weaponItemId, data.ui.actionBar.selectedModeIdx, data.ui.level.attackInfo);
@@ -120,7 +121,7 @@ static void HandleInputTargetSelection(GameData& data, Level& level, bool onlyEn
         if(onlyEnemies && data.charData.faction[character] == CharacterFaction::Player) {
             continue;
         }
-        Vector2i charPos = GetCharacterGridPosI(data.spriteData, data.charData.sprite[character]);
+        Vector2i charPos = GetCharGridPosI(data.spriteData, data.charData.sprite[character]);
         if (charPos.x == gridPos.x && charPos.y == gridPos.y) {
             WeaponTemplate* weaponTemplate = GetSelectedWeaponTemplate(data, data.ui.selectedCharacter);
             // Treat unarmed as melee
@@ -155,7 +156,7 @@ void HandleInputCombat(GameData& data, Level &level) {
 static bool playerInTheWay(GameData& data, LevelDoor& door) {
     for(auto& tile : door.blockedTiles) {
         for(auto& partyChar : data.party) {
-            auto partyCharPos = GetCharacterGridPosI(data.spriteData, data.charData.sprite[partyChar]);
+            auto partyCharPos = GetCharGridPosI(data.spriteData, data.charData.sprite[partyChar]);
             if(tile == partyCharPos) {
                 return true;
             }
@@ -425,7 +426,7 @@ static bool handleDialogueClick(GameData& data,
 
     for (int npcId : level.npcCharacters)
     {
-        Vector2i npcPos = GetCharacterGridPosI(spriteData, charData.sprite[npcId]);
+        Vector2i npcPos = GetCharGridPosI(spriteData, charData.sprite[npcId]);
 
         if (npcPos != gridPos)
             continue;
@@ -601,7 +602,7 @@ void HandleInputRealtime(GameData& data, Level &level) {
     Vector2i gridPos = PixelToGridPositionI((int) mouseWorld.x, (int) mouseWorld.y);
 
     int playerChar = data.ui.selectedCharacter;
-    Vector2i playerPos = GetCharacterGridPosI(spriteData, charData.sprite[playerChar]);
+    Vector2i playerPos = GetCharGridPosI(spriteData, charData.sprite[playerChar]);
 
     if (level.turnState == TurnState::None) {
         if(handleExits(data, level))

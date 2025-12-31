@@ -22,6 +22,7 @@
 #include "level/LevelRenderer.h"
 #include "level/LevelInput.h"
 #include "level/LevelSystem.h"
+#include "graphics/CharSprite.h"
 
 void LevelInit(GameData& data) {
     GameMode* gm = GetGameMode(GameModes::Level);
@@ -81,7 +82,7 @@ static void UpdateLighting(GameData& data, Level& level, float dt) {
         UpdateVisibilityMap(data, level);
         UpdateVisibilityTexture(level.lighting);
     }
-    Vector2i partyPos = GetCharacterGridPosI(data.spriteData, data.charData.sprite[data.ui.selectedCharacter]);
+    Vector2i partyPos = GetCharGridPosI(data.spriteData, data.charData.sprite[data.ui.selectedCharacter]);
     if(!level.lighting.lights.empty()) {
         level.lighting.lights[0].x = partyPos.x;
         level.lighting.lights[0].y = partyPos.y;

@@ -7,11 +7,12 @@
 #include "Combat.h"
 #include "graphics/CharacterSprite.h"
 #include "character/StatusEffect.h"
+#include "graphics/CharSprite.h"
 
 static void ApplyStatusEffect(GameData& data, Level &combat, int character, StatusEffect& effect) {
     SpriteData& spriteData = data.spriteData;
     CharacterData& charData = data.charData;
-    Vector2 charPos = GetCharacterSpritePos(spriteData, charData.sprite[character]);
+    Vector2 charPos = GetCharSpritePos(spriteData, charData.sprite[character]);
 
     switch(effect.type) {
         case StatusEffectType::DamageReduction:

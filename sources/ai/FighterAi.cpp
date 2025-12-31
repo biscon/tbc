@@ -10,6 +10,7 @@
 #include "level/Combat.h"
 #include "character/Character.h"
 #include "PathFinding.h"
+#include "graphics/CharSprite.h"
 
 static bool CanMeleeAttack(GameData& data, Level &level) {
     CharacterStats& stats = data.charData.stats[level.currentCharacter];
@@ -77,7 +78,7 @@ static bool SetupMoveIntoRange(GameData& data, Level& level, LevelSystemData& pl
 
 static bool SetupMoveToTile(GameData& data, Level& level, LevelSystemData& playField, int charId, Vector2i tilePos) {
     Path path;
-    Vector2i charPos = GetCharacterGridPosI(data.spriteData, data.charData.sprite[charId]);
+    Vector2i charPos = GetCharGridPosI(data.spriteData, data.charData.sprite[charId]);
     CalcPath(data.spriteData, data.charData, level, path, charPos, tilePos, charId, IsTileOccupied);
 
     CharacterStats& stats = data.charData.stats[level.currentCharacter];
@@ -232,7 +233,7 @@ static void HandleTurn(GameData& data, Level &level, LevelSystemData &playField)
             TraceLog(LOG_INFO, "FighterAi state: Retreating");
             CharacterStats& stats = data.charData.stats[level.currentCharacter];
             Vector2i fleeTile = ChooseBestFleeTile(data, level, level.currentCharacter, stats.AP);
-            if(fleeTile != GetCharacterGridPosI(data.spriteData, data.charData.sprite[level.currentCharacter]))
+            if(fleeTile != GetCharGridPosI(data.spriteData, data.charData.sprite[level.currentCharacter]))
                 SetupMoveToTile(data, level, playField, level.currentCharacter, fleeTile);
             aiState = AiState::Done;
             break;

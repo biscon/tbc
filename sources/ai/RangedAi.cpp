@@ -11,6 +11,7 @@
 #include "level/Combat.h"
 #include "character/Character.h"
 #include "PathFinding.h"
+#include "graphics/CharSprite.h"
 
 static bool CanShoot(GameData& data, Level &level) {
     CharacterStats& stats = data.charData.stats[level.currentCharacter];
@@ -49,14 +50,14 @@ static bool SetupRangedAttack(GameData& data, Level &level) {
 
 static bool CanMoveIntoRange(GameData& data, Level& level, LevelSystemData& playField) {
     int range = GetCurrentWeaponRange(data, level.currentCharacter);
-    Vector2i charPos = GetCharacterGridPosI(data.spriteData, data.charData.sprite[level.currentCharacter]);
+    Vector2i charPos = GetCharGridPosI(data.spriteData, data.charData.sprite[level.currentCharacter]);
     CharacterStats& stats = data.charData.stats[level.currentCharacter];
 
     int targetChar = GetClosestCharacter(data, level, charPos, CharacterFaction::Player);
     if(targetChar == -1) {
         return false;
     }
-    Vector2i targetPos = GetCharacterGridPosI(data.spriteData, data.charData.sprite[targetChar]);
+    Vector2i targetPos = GetCharGridPosI(data.spriteData, data.charData.sprite[targetChar]);
 
     std::vector<Vector2i> reachable = GetReachableTiles(level, charPos, stats.AP);
     std::sort(reachable.begin(), reachable.end(), [&](const Vector2i& a, const Vector2i& b) {
@@ -74,7 +75,7 @@ static bool CanMoveIntoRange(GameData& data, Level& level, LevelSystemData& play
 
 static bool SetupMoveToTile(GameData& data, Level& level, LevelSystemData& playField, int charId, Vector2i tilePos) {
     Path path;
-    Vector2i charPos = GetCharacterGridPosI(data.spriteData, data.charData.sprite[charId]);
+    Vector2i charPos = GetCharGridPosI(data.spriteData, data.charData.sprite[charId]);
     if(tilePos == charPos) {
         TraceLog(LOG_INFO, "Not moving, already there.");
         return false;
@@ -99,7 +100,7 @@ static bool SetupMoveToTile(GameData& data, Level& level, LevelSystemData& playF
 
 static bool MoveTowards(GameData& data, Level& level, LevelSystemData& playField, Vector2i targetPos, int attackRange) {
     Path path;
-    Vector2i charPos = GetCharacterGridPosI(data.spriteData, data.charData.sprite[level.currentCharacter]);
+    Vector2i charPos = GetCharGridPosI(data.spriteData, data.charData.sprite[level.currentCharacter]);
     CalcPathWithRangePartial(data.spriteData, data.charData, level, path, charPos, targetPos, attackRange, level.currentCharacter, IsTileOccupied);
     CharacterStats& stats = data.charData.stats[level.currentCharacter];
 
@@ -133,14 +134,14 @@ static bool MoveTowards(GameData& data, Level& level, LevelSystemData& playField
 
 static bool SetupMoveIntoRange(GameData& data, Level& level, LevelSystemData& playField) {
     int range = GetCurrentWeaponRange(data, level.currentCharacter);
-    Vector2i charPos = GetCharacterGridPosI(data.spriteData, data.charData.sprite[level.currentCharacter]);
+    Vector2i charPos = GetCharGridPosI(data.spriteData, data.charData.sprite[level.currentCharacter]);
     CharacterStats& stats = data.charData.stats[level.currentCharacter];
 
     int targetChar = GetClosestCharacter(data, level, charPos, CharacterFaction::Player);
     if(targetChar == -1) {
         return false;
     }
-    Vector2i targetPos = GetCharacterGridPosI(data.spriteData, data.charData.sprite[targetChar]);
+    Vector2i targetPos = GetCharGridPosI(data.spriteData, data.charData.sprite[targetChar]);
 
     std::vector<Vector2i> reachable = GetReachableTiles(level, charPos, stats.AP);
     std::sort(reachable.begin(), reachable.end(), [&](const Vector2i& a, const Vector2i& b) {
@@ -217,7 +218,7 @@ static void HandleTurn(GameData& data, Level &level, LevelSystemData &playField)
             TraceLog(LOG_INFO, "RangedAi state: Retreating");
             CharacterStats& stats = data.charData.stats[level.currentCharacter];
             Vector2i fleeTile = ChooseBestFleeTile(data, level, level.currentCharacter, stats.AP);
-            if(fleeTile != GetCharacterGridPosI(data.spriteData, data.charData.sprite[level.currentCharacter]))
+            if(fleeTile != GetCharGridPosI(data.spriteData, data.charData.sprite[level.currentCharacter]))
                 SetupMoveToTile(data, level, playField, level.currentCharacter, fleeTile);
             aiState = AiState::Done;
             break;

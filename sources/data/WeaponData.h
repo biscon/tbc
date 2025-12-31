@@ -8,10 +8,16 @@
 #include <vector>
 #include <string>
 #include <unordered_map>
+#include <stdexcept>
 
 enum class WeaponType {
     Melee,
     Ranged,
+};
+
+enum class WeaponAnimType {
+    Sword,
+    Pistol,
 };
 
 struct FireMode {
@@ -41,7 +47,7 @@ struct WeaponTemplate {
     std::string skillUsed;
     WeaponType type;
     int rangeDataId;
-    std::string animationTemplate;
+    WeaponAnimType animType;
     int apCost;
 };
 
@@ -61,5 +67,21 @@ struct WeaponData {
     // additional template data for ranged weapon
     std::vector<WeaponRanged> rangedData;
 };
+
+// Helper functions for WeaponType
+inline std::string WeaponAnimTypeToString(WeaponAnimType type) {
+    switch (type) {
+        case WeaponAnimType::Sword: return "Sword";
+        case WeaponAnimType::Pistol: return "Pistol";
+        default: return "Unknown";
+    }
+}
+
+inline WeaponAnimType WeaponAnimTypeFromString(const std::string& str) {
+    if (str == "Sword") return WeaponAnimType::Sword;
+    if (str == "Pistol") return WeaponAnimType::Pistol;
+    throw std::runtime_error("Unknown WeaponAnimType: " + str);
+}
+
 
 #endif //SANDBOX_WEAPONDATA_H

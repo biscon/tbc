@@ -8,6 +8,7 @@
 #include "Character.h"
 #include "game/Items.h"
 #include "Skill.h"
+#include "graphics/CharSprite.h"
 
 void to_json(nlohmann::json& j, const NpcInstance& npc) {
     j = nlohmann::json{
@@ -99,7 +100,9 @@ int CreateCharacterFromTemplate(GameData& data, const std::string &npcTemplate) 
             }
         }
 
-        InitCharacterSprite(data.spriteData, data.charData.sprite[charIdx], tplData.characterSprite[templateIdx], true);
+        InitCharSprite(data.spriteData, data.charData.sprite[charIdx], tplData.characterSprite[templateIdx]);
+        RandomizeCharAppearance(data.spriteData, data.charData.sprite[charIdx]);
+
 
         // loop through equipment slots and instantiate items
         for (size_t i = 0; i < static_cast<size_t>(ItemEquipSlot::COUNT); ++i) {

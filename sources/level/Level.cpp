@@ -20,6 +20,7 @@
 #include "audio/Sound.h"
 #include "game/ScriptSystem.h"
 #include "ui/Icons.h"
+#include "graphics/CharSprite.h"
 
 using json = nlohmann::json;
 
@@ -49,11 +50,11 @@ static void setInitialGridPositions(SpriteData& spriteData, CharacterData& charD
         // take a position from the list
         auto pos = positions.back();
         positions.pop_back();
-        SetCharacterSpritePos(spriteData, charData.sprite[character], GridToPixelPosition(pos.x, pos.y));
+        SetCharSpritePos(spriteData, charData.sprite[character], GridToPixelPosition(pos.x, pos.y));
         // Set initial animation to paused
-        StartPausedCharacterSpriteAnim(spriteData, charData.sprite[character], SpriteAnimationType::WalkRight, true);
-        Vector2 charPos = GetCharacterSpritePos(spriteData, charData.sprite[character]);
-        Vector2i gridPos = GetCharacterGridPosI(spriteData, charData.sprite[character]);
+        PlayCharSpriteAnim(spriteData, charData.sprite[character], CharAnimationType::Idle, true);
+        Vector2 charPos = GetCharSpritePos(spriteData, charData.sprite[character]);
+        Vector2i gridPos = GetCharGridPosI(spriteData, charData.sprite[character]);
         TraceLog(LOG_INFO, "Placed character %s at %f,%f, grid: %i,%i", charData.name[character].c_str(), charPos.x, charPos.y, gridPos.x, gridPos.y);
         charData.orientation[character] = Orientation::Right;
     }
@@ -64,9 +65,9 @@ void AddPartyToLevelNoPositioning(SpriteData& spriteData, CharacterData& charDat
         level.partyCharacters.push_back(character);
         level.allCharacters.push_back(character);
         // Set initial animation to paused
-        StartPausedCharacterSpriteAnim(spriteData, charData.sprite[character], SpriteAnimationType::WalkRight, true);
-        Vector2 charPos = GetCharacterSpritePos(spriteData, charData.sprite[character]);
-        Vector2i gridPos = GetCharacterGridPosI(spriteData, charData.sprite[character]);
+        PlayCharSpriteAnim(spriteData, charData.sprite[character], CharAnimationType::Idle, true);
+        Vector2 charPos = GetCharSpritePos(spriteData, charData.sprite[character]);
+        Vector2i gridPos = GetCharGridPosI(spriteData, charData.sprite[character]);
         TraceLog(LOG_INFO, "Placed character %s at %f,%f, grid: %i,%i", charData.name[character].c_str(), charPos.x, charPos.y, gridPos.x, gridPos.y);
         charData.orientation[character] = Orientation::Right;
     }
@@ -76,9 +77,9 @@ void AddNpcToLevel(SpriteData& spriteData, CharacterData& charData, Level &level
     level.npcCharacters.push_back(id);
     level.allCharacters.push_back(id);
     // Set initial animation to paused
-    StartPausedCharacterSpriteAnim(spriteData, charData.sprite[id], SpriteAnimationType::WalkRight, true);
-    Vector2 charPos = GetCharacterSpritePos(spriteData, charData.sprite[id]);
-    Vector2i gridPos = GetCharacterGridPosI(spriteData, charData.sprite[id]);
+    PlayCharSpriteAnim(spriteData, charData.sprite[id], CharAnimationType::Idle, true);
+    Vector2 charPos = GetCharSpritePos(spriteData, charData.sprite[id]);
+    Vector2i gridPos = GetCharGridPosI(spriteData, charData.sprite[id]);
     TraceLog(LOG_INFO, "Placed npc %s at %f,%f, grid: %i,%i", charData.name[id].c_str(), charPos.x, charPos.y, gridPos.x, gridPos.y);
     charData.orientation[id] = Orientation::Right;
 }
@@ -209,7 +210,7 @@ void LoadLevel(GameData& data, Level &level, const std::string &filename) {
         TraceLog(LOG_INFO, "Reading npc %s", npc.npcTemplate.c_str());
         int id = CreateCharacterFromTemplate(data, npc.npcTemplate);
         Vector2 pos = GridToPixelPosition(npc.position.x, npc.position.y);
-        SetCharacterSpritePos(data.spriteData, data.charData.sprite[id], pos);
+        SetCharSpritePos(data.spriteData, data.charData.sprite[id], pos);
         AddNpcToLevel(data.spriteData, data.charData, level, id);
         level.npcDialogueNodeIds[id] = npc.dialogueNodeId;
     }
