@@ -144,6 +144,106 @@ bool IsTileBlocking(Level &combat, int x, int y) {
     return false;
 }
 
+bool CalcPath8(SpriteData& spriteData, CharacterData& charData, Level &level, Path &path, Vector2i start, Vector2i end, int exceptCharacter, CHECK_TILE_FUNC) {
+    if (checkTile(spriteData, charData, level, start.x, start.y, exceptCharacter) || checkTile(spriteData, charData, level, end.x, end.y, exceptCharacter)) {
+        TraceLog(LOG_WARNING, "Start or end position is blocked, startX: %d, startY: %d, endX: %d, endY: %d", start.x,
+                 start.y, end.x, end.y);
+        return false;  // If the start or end is blocked, return false
+    }
+
+    std::vector<std::vector<bool>> closedSet(level.tileMap.width, std::vector<bool>(level.tileMap.height, false));
+    std::vector<std::vector<Node *>> allNodes(level.tileMap.width, std::vector<Node *>(level.tileMap.height, nullptr));
+    std::priority_queue<Node *, std::vector<Node *>, std::function<bool(Node *, Node *)>> openSet(
+            [](Node *a, Node *b) { return a->fCost() > b->fCost(); });
+
+    Node *startNode = nodePool.acquireNode(start, 0, std::abs(start.x - end.x) + std::abs(start.y - end.y));
+    openSet.push(startNode);
+    allNodes[start.x][start.y] = startNode;
+
+    const std::vector<Vector2i> directions = {
+            { 0,  1},
+            { 1,  0},
+            { 0, -1},
+            {-1,  0},
+            { 1,  1},
+            { 1, -1},
+            {-1,  1},
+            {-1, -1},
+    };
+
+    while (!openSet.empty()) {
+        Node *currentNode = openSet.top();
+        openSet.pop();
+
+        if (currentNode->position == end) {
+            // Reconstruct the path from end to start
+            path.path.clear();
+            Node *temp = currentNode;
+            while (temp) {
+                path.path.push_back(temp->position);
+                temp = temp->parent;
+            }
+            std::reverse(path.path.begin(), path.path.end());
+
+            // Calculate cost and return true
+            path.cost = currentNode->gCost;
+            path.currentStep = 0;
+            path.moveTime = 0.0f;
+            path.moveSpeed = 0.15f;  // This can be adjusted based on game mechanics
+
+            nodePool.reset();  // Reset node pool for next call
+            return true;
+        }
+
+        closedSet[currentNode->position.x][currentNode->position.y] = true;
+
+        for (const Vector2i &dir : directions)
+        {
+            int nx = currentNode->position.x + dir.x;
+            int ny = currentNode->position.y + dir.y;
+
+            bool isDiagonal = (dir.x != 0 && dir.y != 0);
+
+            if (checkTile(spriteData, charData, level, nx, ny, exceptCharacter)) continue;
+            if (closedSet[nx][ny]) continue;
+
+            if (isDiagonal)
+            {
+                int x = currentNode->position.x;
+                int y = currentNode->position.y;
+
+                if (checkTile(spriteData, charData, level, x + dir.x, y, exceptCharacter)) continue;
+                if (checkTile(spriteData, charData, level, x, y + dir.y, exceptCharacter)) continue;
+            }
+
+            int moveCost = isDiagonal ? 14 : 10;
+            int tentativeGCost = currentNode->gCost + moveCost;
+
+            Node *neighborNode = allNodes[nx][ny];
+
+            if (!neighborNode || tentativeGCost < neighborNode->gCost)
+            {
+                int dx = std::abs(nx - end.x);
+                int dy = std::abs(ny - end.y);
+                int hCost = 10 * (dx + dy) + (14 - 20) * std::min(dx, dy);
+
+                neighborNode = nodePool.acquireNode(
+                        Vector2i(nx, ny),
+                        tentativeGCost,
+                        hCost,
+                        currentNode
+                );
+
+                allNodes[nx][ny] = neighborNode;
+                openSet.push(neighborNode);
+            }
+        }
+    }
+
+    nodePool.reset();  // Reset node pool for next call
+    return false;  // Path not found
+}
+
 bool CalcPath(SpriteData& spriteData, CharacterData& charData, Level &level, Path &path, Vector2i start, Vector2i end, int exceptCharacter, CHECK_TILE_FUNC) {
     if (checkTile(spriteData, charData, level, start.x, start.y, exceptCharacter) || checkTile(spriteData, charData, level, end.x, end.y, exceptCharacter)) {
         TraceLog(LOG_WARNING, "Start or end position is blocked, startX: %d, startY: %d, endX: %d, endY: %d", start.x,

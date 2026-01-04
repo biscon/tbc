@@ -17,6 +17,7 @@ bool IsTileOccupied(SpriteData& spriteData, CharacterData& charData, Level &leve
 bool IsTileOccupiedEnemies(SpriteData& spriteData, CharacterData& charData, Level &level, int x, int y, int exceptCharacter);
 bool IsTileOccupiedFriendlies(SpriteData& spriteData, CharacterData& charData, Level &level, int x, int y, int exceptCharacter);
 bool IsTileWalkable(Level &level, int x, int y);
+bool CalcPath8(SpriteData& spriteData, CharacterData& charData, Level &level, Path &path, Vector2i start, Vector2i end, int exceptCharacter, CHECK_TILE_FUNC);
 bool CalcPath(SpriteData& spriteData, CharacterData& charData, Level &level, Path &path, Vector2i start, Vector2i end, int exceptCharacter, CHECK_TILE_FUNC);
 bool CalcPathWithRange(SpriteData& spriteData, CharacterData& charData, Level &level, Path &path, Vector2i start, Vector2i end, int range, int exceptCharacter, CHECK_TILE_FUNC);
 bool CalcPathWithRangePartial(SpriteData& spriteData, CharacterData& charData, Level &level, Path &path, Vector2i start, Vector2i end, int range, int exceptCharacter, CHECK_TILE_FUNC);

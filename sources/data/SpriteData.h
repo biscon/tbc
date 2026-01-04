@@ -91,6 +91,7 @@ struct CharSprite {
     Vector3 outfitColor4;
     CharAnimationType currentAnim;
     WeaponAnimType weaponType;
+    bool isMoving = false;
 };
 
 

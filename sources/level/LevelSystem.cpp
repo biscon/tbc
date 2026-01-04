@@ -97,6 +97,35 @@ static void updateTurnBasedMove(GameData& data, Level &level, float dt) {
     }
 }
 
+static void SetNewPos(GameData& data, const Vector2& pos, int moveChar) {
+    if(IsPlayerCharacter(data.charData, moveChar)) {
+        for(auto& character : data.party) {
+            SetCharSpritePos(data.spriteData, data.charData.sprite[character], pos);
+        }
+    }
+    SetCharSpritePos(data.spriteData, data.charData.sprite[moveChar], pos);
+}
+
+static void SetNewOrientation(GameData& data, CharOrientation orientation, int moveChar) {
+    if(IsPlayerCharacter(data.charData, moveChar)) {
+        for (auto &character: data.party) {
+            data.charData.sprite[character].orientation = orientation;
+        }
+    }
+    data.charData.sprite[moveChar].orientation = orientation;
+}
+
+static void SetMoving(GameData& data, bool moving, int moveChar) {
+    if(IsPlayerCharacter(data.charData, moveChar)) {
+        for(auto& character : data.party) {
+            data.charData.sprite[character].isMoving = moving;
+        }
+    }
+    data.charData.sprite[moveChar].isMoving = moving;
+}
+
+constexpr float MOVE_BOB_AMPLITUDE = 3.0f; // pixels, tweak to taste
+
 static void updateRealtimeMovement(GameData& data, Level& level, float dt) {
     for(auto& move : data.levelData.activeMoves) {
         move.path.moveTime += dt;
@@ -114,16 +143,46 @@ static void updateRealtimeMovement(GameData& data, Level& level, float dt) {
                     move.path.path[move.path.currentStep + 1].y);
 
             CharSprite& sprite = data.charData.sprite[move.character];
+            SetMoving(data, true, move.character);
+
+
             // Lerp the x and y components separately
-            SetCharSpritePosX(data.spriteData, sprite, Lerp(start.x, end.x, t));
-            SetCharSpritePosY(data.spriteData, sprite, Lerp(start.y, end.y, t));
+            /*
+            Vector2 newPos = {Lerp(start.x, end.x, t), Lerp(start.y, end.y, t)};
+            SetNewPos(data, newPos, move.character);
+             */
+
+            Vector2 newPos = {
+                    Lerp(start.x, end.x, t),
+                    Lerp(start.y, end.y, t)
+            };
+
+            // --- board-piece style bobbing ---
+            //float bob = sinf(t * PI) * MOVE_BOB_AMPLITUDE;
+            float bob = sinf(powf(t, 0.75f) * PI) * MOVE_BOB_AMPLITUDE;
+            //float bob = sinf(powf(t, 1.0f) * PI) * MOVE_BOB_AMPLITUDE;
+
+
+            // Determine movement direction
+            bool horizontalMove = fabsf(end.x - start.x) > fabsf(end.y - start.y);
+
+            if (horizontalMove) {
+                // Moving east/west → bob vertically
+                newPos.y -= bob;
+            } else {
+                // Moving north/south → bob horizontally
+                newPos.x += bob;
+            }
+
+            SetNewPos(data, newPos, move.character);
+
 
             // Horizontal movement
             if (end.x > start.x) {
-                sprite.orientation = CharOrientation::Right;
+                SetNewOrientation(data, CharOrientation::Right, move.character);
                 data.charData.orientation[move.character] = Orientation::Right;
             } else {
-                sprite.orientation = CharOrientation::Left;
+                SetNewOrientation(data, CharOrientation::Left, move.character);
                 data.charData.orientation[move.character] = Orientation::Left;
             }
 
@@ -138,7 +197,8 @@ static void updateRealtimeMovement(GameData& data, Level& level, float dt) {
                     level.footStepsHandle = -1;
                     // set final position
                     auto finalPos = move.path.path[move.path.path.size() - 1];
-                    SetCharSpritePos(data.spriteData, sprite, GridToPixelPosition(finalPos.x, finalPos.y));
+                    SetNewPos(data, GridToPixelPosition(finalPos.x, finalPos.y), move.character);
+                    SetMoving(data, false, move.character);
                     move.isDone = true;
                     ResumeCharSpriteAnim(data.spriteData, sprite);
                     TraceLog(LOG_INFO, "Move done");
@@ -323,7 +383,7 @@ void MoveCharacter(GameData& data, Level &level, int character, Vector2i target)
     Path path;
     Vector2i cCharPos = GetCharSpritePosI(data.spriteData, data.charData.sprite[character]);
     Vector2i cGridPos = PixelToGridPositionI(cCharPos.x, cCharPos.y);
-    if (CalcPath(data.spriteData, data.charData, level, path, cGridPos, target, character, IsTileOccupiedEnemies)) {
+    if (CalcPath8(data.spriteData, data.charData, level, path, cGridPos, target, character, IsTileOccupiedEnemies)) {
         CharacterMove move;
         move.character = character;
         move.path = path;

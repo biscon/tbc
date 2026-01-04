@@ -174,13 +174,16 @@ bool ProcessActions(GameData& data, Level& level, float dt)
                 levelData.activeMoves.clear();
                 MoveCharacter(data, level, data.ui.selectedCharacter, ev.target);
                 PauseCharSpriteAnim(data.spriteData, data.charData.sprite[data.ui.selectedCharacter]);
+
                 // move the rest partially
+                /*
                 for(int i = 0; i < (int)level.partyCharacters.size(); i++) {
                     if(level.partyCharacters[i] != data.ui.selectedCharacter) {
                         MoveCharacterPartial(data, level, level.partyCharacters[i], ev.target);
                         PauseCharSpriteAnim(data.spriteData, data.charData.sprite[level.partyCharacters[i]]);
                     }
                 }
+                 */
 
                 if (level.footStepsHandle != -1) {
                     StopSfx(data.soundData, level.footStepsHandle);

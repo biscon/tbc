@@ -205,8 +205,13 @@ static void RenderActiveCharacterIndicator(GameData& data, float alpha, int char
         return;
     }
     int animIdx = data.spriteData.player.animationIdx[player];
-    Vector2 origin = data.spriteData.anim.origin[animIdx];
-    Rectangle rect = {pos.x - origin.x + 6, pos.y - origin.y + 7, 19, 25};
+    Vector2 origin = data.spriteData.anim.origin[animIdx]/1.5f;
+
+    auto &frame = data.spriteData.anim.frames[animIdx][(size_t) data.spriteData.player.animData[player].currentFrame];
+    auto w = data.spriteData.sheet.frameRects[data.spriteData.anim.spriteSheetIdx[animIdx]][frame].width/1.5f;
+    auto h = data.spriteData.sheet.frameRects[data.spriteData.anim.spriteSheetIdx[animIdx]][frame].height/1.5f;
+
+    Rectangle rect = {pos.x - origin.x, pos.y - origin.y - 4, abs(w), abs(h)};
     DrawRectangleCorners(rect, ColorAlpha(YELLOW, alpha), 4);
 }
 
@@ -278,8 +283,11 @@ static void DrawGridCharacters(GameData& data, Level &level, LevelSystemData& pl
     CharacterData& charData = data.charData;
     // Sort characters by y position
     std::vector<int> sortedCharacters;
+    sortedCharacters.push_back(data.ui.selectedCharacter);
     for (auto &character: level.allCharacters) {
-        sortedCharacters.push_back(character);
+        if(!IsPlayerCharacter(data.charData, character)) {
+            sortedCharacters.push_back(character);
+        }
     }
     std::sort(sortedCharacters.begin(), sortedCharacters.end(), [&data, &level](int a, int b) {
         return GetAnimatedCharPos(data, level, a).y < GetAnimatedCharPos(data, level, b).y;
@@ -294,9 +302,10 @@ static void DrawGridCharacters(GameData& data, Level &level, LevelSystemData& pl
             continue;
         Vector2 charPos = GetAnimatedCharPos(data, level, character);
         // Draw oval shadow underneath
-        if(charData.stats[character].HP > 0)
-            DrawEllipse((int) charPos.x, (int) charPos.y, 6, 4, Fade(BLACK, 0.25f));
 
+        if(charData.stats[character].HP > 0 && !charSprite.isMoving) {
+            DrawEllipse((int) charPos.x, (int) charPos.y, 8, 6, Fade(BLACK, 0.25f));
+        }
 
         if (IsCharacterVisible(level, character)) {
             Vector2i t = GetCharGridPosI(spriteData, charSprite);
@@ -309,7 +318,7 @@ static void DrawGridCharacters(GameData& data, Level &level, LevelSystemData& pl
         }
         CharacterStats& stats = charData.stats[character];
         // Draw health bar
-        if(playField.mode != LevelMode::Explore) {
+        if(playField.mode != LevelMode::Explore && !charSprite.isMoving) {
             if (stats.HP > 0 && level.turnState != TurnState::None) {
                 DrawHealthBar(charPos.x - 8, charPos.y - 21, 15, (float) stats.HP, (float) CalculateCharHealth(stats));
             } else if (std::count(level.partyCharacters.begin(), level.partyCharacters.end(), character)) {
