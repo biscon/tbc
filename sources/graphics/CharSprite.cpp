@@ -570,13 +570,29 @@ void SetCharWeaponType(SpriteData& spriteData, CharSprite& sprite, WeaponAnimTyp
     InitAnims(spriteData, sprite.spriteTemplate, weapon, type,
               CharAnimationType::PistolAttack, "PistolAttack");
 
+    CharAnimationType charAnimType = CharAnimationType::Idle;
+    switch(weaponAnimType) {
+        case WeaponAnimType::Sword:
+            charAnimType = CharAnimationType::MeleeIdle;
+            break;
+        case WeaponAnimType::Pistol:
+            charAnimType = CharAnimationType::PistolIdle;
+            break;
+    }
+
     // Restart current animation safely
+    sprite.currentAnim = charAnimType;
     int anim = weapon.animations[(size_t) sprite.currentAnim];
     if (anim != INVALID_ANIM) {
+        /*
         PlaySpriteAnimation(spriteData, weapon.player, anim, true);
         // copy progress from body layer
         SpriteAnimationPlayerAnimData& bodyAnimData = spriteData.player.animData[sprite.layers[0].player];
         spriteData.player.animData[weapon.player] = bodyAnimData;
+         */
+        PlayCharSpriteAnim(spriteData, sprite, charAnimType, true);
+    } else {
+        TraceLog(LOG_INFO, "INVALID ANIM!");
     }
 }
 

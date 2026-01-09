@@ -11,8 +11,9 @@ class Level {
     }
 
     static onFirstTimeEntered() {
-        Game.setWeather("thunder")
-        Game.setHourOfDay(1)
+        //Game.setWeather("thunder")
+        Game.setWeather("sunny")
+        Game.setHourOfDay(12)
     }
 
     static onEnter() {

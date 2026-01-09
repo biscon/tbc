@@ -4,7 +4,7 @@
         "name": "MaleNinja",
         "faction": "Enemy",
         "ai": "Fighter",
-        "sprite": "MaleNinja",
+        "sprite": "HumanMale",
         "level": 1,
         "stats": {
             "STR": 5,
@@ -30,7 +30,7 @@
         "name": "MaleNinjaStaff",
         "faction": "Enemy",
         "ai": "Ranged",
-        "sprite": "MaleNinja",
+        "sprite": "HumanMale",
         "level": 1,
         "stats": {
             "STR": 5,
@@ -56,7 +56,7 @@
         "name": "SerDonald",
         "faction": "Npc",
         "ai": "Fighter",
-        "sprite": "MaleBase",
+        "sprite": "HumanMale",
         "level": 1,
         "stats": {
             "STR": 5,

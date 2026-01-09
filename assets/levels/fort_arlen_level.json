@@ -56,7 +56,14 @@
 
     ],
     "enemies": [
-
+        {
+            "group": "ninja1",
+            "characters": [
+                "MaleNinja",
+                "MaleNinjaStaff"
+            ],
+            "spawnAt": "outsideTent"
+        }
     ],
     "lights": [
         {
