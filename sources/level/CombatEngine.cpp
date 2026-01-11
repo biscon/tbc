@@ -140,6 +140,8 @@ void UpdateCombat(GameData &data, Level &level, float dt) {
             float defenderY = GetCharSpritePosY(spriteData, charData.sprite[level.selectedCharacter]);
             AttackResult& result = level.attackResult;
             AttackHit& hit = result.hits.back();
+            float dmgNumDelay = 0.25f;
+            float waitTime = 0;
             int damage = hit.damage;
             if(damage > 0) {
                 float intensity = (float) GetBloodIntensity(damage, level.attackResult.minDmg, level.attackResult.maxDmg);
@@ -152,6 +154,8 @@ void UpdateCombat(GameData &data, Level &level, float dt) {
                 level.animations.push_back(damageNumberAnim);
                 PlaySfx(data.soundData, "humanPain", false, 0.25f);
                 charData.stats[level.attackResult.defender].HP -= damage;
+                PlayCharSpriteAnim(data.spriteData, data.charData.sprite[level.attackResult.defender], CharAnimationType::MeleeHit, false);
+                waitTime += 0.25f;
             } else {
                 Animation damageNumberAnim{};
                 SetupDamageNumberAnimation(damageNumberAnim, "MISS", attackerX, attackerY-25, WHITE, 10, 0);
@@ -168,7 +172,8 @@ void UpdateCombat(GameData &data, Level &level, float dt) {
                 if(damage > 0)
                     PlaySfx(data.soundData, "meleeHit");
             }
-            level.turnState = TurnState::KillCharacters;
+            waitTime += dmgNumDelay;
+            WaitTurnState(level, TurnState::KillCharacters, waitTime);
             break;
         }
         case TurnState::AttackRanged: {
@@ -237,12 +242,15 @@ void UpdateCombat(GameData &data, Level &level, float dt) {
                 charData.stats[level.attackResult.defender].HP -= damage;
             }
             if(wasInjured) {
+                PlayCharSpriteAnim(data.spriteData, data.charData.sprite[level.attackResult.defender], CharAnimationType::PistolHit, false);
                 PlaySfx(data.soundData, "humanPain", false, waitTime);
             }
             WaitTurnState(level, TurnState::KillCharacters, waitTime);
             break;
         }
         case TurnState::KillCharacters: {
+            PlayCharSpriteAnim(spriteData, charData.sprite[level.attackResult.attacker], GetCharIdleAnimType(charData.sprite[level.attackResult.attacker]), true);
+
             float attackerX = GetCharSpritePosX(spriteData, charData.sprite[level.currentCharacter]);
             float attackerY = GetCharSpritePosY(spriteData, charData.sprite[level.currentCharacter]);
             TurnState nextState = IsPlayerCharacter(data.charData, level.currentCharacter) ? TurnState::SelectEnemy : TurnState::EnemyTurn;
@@ -254,6 +262,7 @@ void UpdateCombat(GameData &data, Level &level, float dt) {
                 KillCharacter(data, level, level.attackResult.defender);
                 WaitTurnState(level, nextState, 0.95f);
             } else {
+                PlayCharSpriteAnim(spriteData, charData.sprite[level.attackResult.defender], GetCharIdleAnimType(charData.sprite[level.attackResult.defender]), true);
                 WaitTurnState(level, nextState, 0.60f);
             }
             ResetLevelSystem(data.levelData);

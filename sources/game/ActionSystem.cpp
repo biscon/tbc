@@ -200,9 +200,16 @@ bool ProcessActions(GameData& data, Level& level, float dt)
             {
                 auto& ev = std::get<PartySpottedAction>(a.payload);
 
+                if (level.footStepsHandle != -1) {
+                    StopSfx(data.soundData, level.footStepsHandle);
+                }
+
+                levelData.activeMoves.clear();
+                levelData.pendingAction.hasPending = false;
+                levelData.moving = false;
                 data.ui.inCombat = true;
                 levelData.mode = LevelMode::None;
-                StartCombat(data.spriteData, data.charData, level, ev.spotter);
+                StartCombat(data, level, ev.spotter);
 
                 break;
             }

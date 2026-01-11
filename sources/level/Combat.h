@@ -17,7 +17,7 @@ void KillCharacter(GameData& data, Level &level, int character);
 bool IsPlayerCharacter(CharacterData& charData, int character);
 bool IsIncapacitated(CharacterData& charData, int character);
 void NextCharacter(CharacterData& charData, Level &level);
-void StartCombat(SpriteData& spriteData, CharacterData& charData, Level &level, int spotter);
+void StartCombat(GameData& data, Level &level, int spotter);
 void CalcHitChance(GameData& data, int charId, int weaponItemId, int fireModeIdx, AttackInfo& info);
 int GetAttackAPCost(GameData& data, int attacker, int fireMode);
 int GetCurrentWeaponRange(GameData& data, int charId);

@@ -209,6 +209,7 @@ int DealDamageStatusEffect(GameData& data, Level& level, int target, int damage)
 void KillCharacter(GameData& data, Level &level, int character) {
     std::string logMessage = data.charData.name[character] + " is defeated!";
     level.log.push_back(logMessage);
+    PauseCharSpriteAnim(data.spriteData, data.charData.sprite[character]);
     Animation deathAnim{};
     SetupDeathAnimation(data.spriteData, data.charData, deathAnim, character, 0.5f);
     level.animations.push_back(deathAnim);
@@ -259,7 +260,9 @@ void NextCharacter(CharacterData& charData, Level &level) {
     TraceLog(LOG_INFO, "Next character: %s", charData.name[level.currentCharacter].c_str());
 }
 
-void StartCombat(SpriteData& spriteData, CharacterData& charData, Level &level, int spotter) {
+void StartCombat(GameData& data, Level &level, int spotter) {
+    SpriteData& spriteData = data.spriteData;
+    CharacterData& charData = data.charData;
     level.turnOrder.clear();
     level.enemyCharacters.clear();
     std::unordered_set<int> alertedEnemies;
@@ -308,6 +311,11 @@ void StartCombat(SpriteData& spriteData, CharacterData& charData, Level &level, 
     Animation textAnim{};
     SetupTextAnimation(textAnim, "Entering Combat", 150, 2.0f, 0.0f);
     level.animations.push_back(textAnim);
+
+    // set positions of party members centered around the selected character
+    auto& charSprite = charData.sprite[data.ui.selectedCharacter];
+    SetPartyGridPositions(data.spriteData, data.charData, level, GetCharGridPosI(data.spriteData, charSprite), data.party, data.ui.selectedCharacter);
+    PlayCharSpriteAnim(spriteData, charSprite, GetCharIdleAnimType(charSprite), true);
 }
 
 void CalcHitChance(GameData& data, int charId, int weaponItemId, int fireModeIdx, AttackInfo& info) {

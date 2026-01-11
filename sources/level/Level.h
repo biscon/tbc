@@ -13,6 +13,7 @@ void CreateLevel(Level &level);
 void LoadLevel(GameData& data, Level &level, const std::string &filename);
 void DestroyLevel(SpriteSheetData& sheetData, Level &level);
 void WaitTurnState(Level &level, TurnState state, float waitTime);
+void SetPartyGridPositions(SpriteData& spriteData, CharacterData& charData, Level &level, Vector2i gridPos, std::vector<int>& characters, int except);
 void AddPartyToLevelNoPositioning(SpriteData& spriteData, CharacterData& charData, Level &level, std::vector<int> &party);
 void AddPartyToLevel(SpriteData& spriteData, CharacterData& charData, Level &level, std::vector<int> &party, const std::string& spawnPoint);
 void AddEnemiesToLevel(SpriteData& spriteData, CharacterData& charData, Level &level, std::vector<int> &enemies, const std::string& spawnPoint);

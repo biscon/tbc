@@ -283,7 +283,14 @@ static void DrawGridCharacters(GameData& data, Level &level, LevelSystemData& pl
     CharacterData& charData = data.charData;
     // Sort characters by y position
     std::vector<int> sortedCharacters;
-    sortedCharacters.push_back(data.ui.selectedCharacter);
+
+    if(data.ui.inCombat) {
+        sortedCharacters.reserve(sortedCharacters.size() + data.party.size());
+        sortedCharacters.insert(sortedCharacters.end(), data.party.begin(), data.party.end());
+    } else {
+        sortedCharacters.push_back(data.ui.selectedCharacter);
+    }
+
     for (auto &character: level.allCharacters) {
         if(!IsPlayerCharacter(data.charData, character)) {
             sortedCharacters.push_back(character);

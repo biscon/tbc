@@ -60,6 +60,30 @@ static void setInitialGridPositions(SpriteData& spriteData, CharacterData& charD
     }
 }
 
+void SetPartyGridPositions(SpriteData& spriteData, CharacterData& charData, Level &level, Vector2i gridPos, std::vector<int>& characters, int except) {
+    auto positions = FindFreePositionsCircular(level, gridPos.x, gridPos.y, 4);
+    positions.pop_back();
+    if(characters.size() > positions.size()) {
+        TraceLog(LOG_WARNING, "Not enough positions for all characters");
+    }
+    // Set initial grid positions for characters
+    for (auto & character : characters) {
+        if(character == except) {
+            continue;
+        }
+        // take a position from the list
+        auto pos = positions.back();
+        positions.pop_back();
+        SetCharSpritePos(spriteData, charData.sprite[character], GridToPixelPosition(pos.x, pos.y));
+        // Set initial animation to paused
+        PlayCharSpriteAnim(spriteData, charData.sprite[character], GetCharIdleAnimType(charData.sprite[character]), true);
+        Vector2 charPos = GetCharSpritePos(spriteData, charData.sprite[character]);
+        Vector2i gridPos = GetCharGridPosI(spriteData, charData.sprite[character]);
+        TraceLog(LOG_INFO, "Placed character %s at %f,%f, grid: %i,%i", charData.name[character].c_str(), charPos.x, charPos.y, gridPos.x, gridPos.y);
+        charData.orientation[character] = Orientation::Right;
+    }
+}
+
 void AddPartyToLevelNoPositioning(SpriteData& spriteData, CharacterData& charData, Level &level, std::vector<int> &party) {
     for (auto &character : party) {
         level.partyCharacters.push_back(character);
